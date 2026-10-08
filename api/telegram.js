@@ -1,4 +1,4 @@
-import { resilientChat } from "./_ai.js";
+import { openrouterSearchChat, resilientChat } from "./_ai.js";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
@@ -36,6 +36,11 @@ const DESIGN_MENU = keyboard([
 ]);
 function naturalIntent(text) {
   const t = text.toLowerCase();
+  const normalized = t.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  const importCount = (normalized.match(/(?:\d+)\s*(?:جهاز|منتج|موبايل|هاتف)/) || [])[1];
+  if (/(?:ضيف|أضف|اضف|استورد|استيراد|import)/.test(t) && /(?:من الإنترنت|من الانترنت|من النت|online|internet|web|الويب|جهاز|منتج)/.test(t)) {
+    return { command: `/importproducts ${Math.min(100, Math.max(1, Number(importCount || 100)))}` };
+  }
   const id = (t.match(/(?:منتج|رقم|#)\s*(\d+)/) || [])[1];
   const price = (t.match(/(?:سعر|بكام|بـ|الى|إلى)\s*(?:المنتج\s*)?(\d{3,})/) || [])[1];
   if (/قائمة|الأوامر|المينيو|القائمه/.test(t)) return { command: "/menu" };
@@ -71,13 +76,13 @@ async function askAi(question, catalog = []) {
 async function interpretAdminRequest(text, catalog = []) {
   const system = `أنت مخطط أوامر آمن لمتجر NoirTech. حوّل طلب المدير باللهجة الطبيعية إلى أمر واحد فقط من القائمة المسموحة، أو اترك command فارغًا إذا كان الطلب سؤالًا لا يحتاج تنفيذًا.
 الأوامر المسموحة فقط:
-/menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم.
+/menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم, /importproducts عدد [فئة].
 لا تخترع رقم منتج أو قيمة غير مذكورة. أرجع JSON فقط بالشكل: {"command":"...","reply":"تأكيد قصير بالمصرية"}.`;
   try {
     const result = await resilientChat(system, [{ role: "user", content: `طلب المدير: ${text.slice(0, 1200)}\nالمنتجات: ${JSON.stringify(catalog.slice(0, 30))}` }], 260);
     const raw = result.reply.match(/\{[\s\S]*\}/)?.[0];
     const plan = raw ? JSON.parse(raw) : {};
-    const allowed = /^(\/(?:menu|help|status|config|products|settitle|setabout|setfooter|sethero|setdesc|setbadgehero|setbtn|setname|setsite|setaddress|setphone|setemail|theme|setlayout|setorder|setcategory|setcolor|toggle|setprice|hide|show))(?:\s|$)/;
+    const allowed = /^(\/(?:menu|help|status|config|products|settitle|setabout|setfooter|sethero|setdesc|setbadgehero|setbtn|setname|setsite|setaddress|setphone|setemail|theme|setlayout|setorder|setcategory|setcolor|toggle|setprice|hide|show|importproducts))(?:\s|$)/;
     if (!plan.command || !allowed.test(plan.command)) return { command: "", reply: plan.reply || result.reply };
     return { command: plan.command.trim(), reply: plan.reply || "✅ حاضر، نفذت طلبك." };
   } catch { return { command: "", reply: "🤖 فهمت إنك عايز مساعدة، بس محتاج توضيح صغير أو استخدم زر المينيو 😄" }; }
@@ -101,7 +106,7 @@ async function putFile(path, content, message, sha) {
   return { ok: r.ok, data };
 }
 function helpText() {
-  return `🎛 <b>تحكم كامل — NoirTech</b>\n\n📦 <b>المنتجات</b>\n/products | /product id\n/setprice id سعر\n/setbadge id نص\n/hide id | /show id\n\n🎨 <b>التصميم</b>\n/config\n/theme dark|gold|purple|red\n/setcolor gold #ffaa00\n\n✍️ <b>النصوص</b>\n/sethero نص\n/setdesc وصف\n/setbadgehero شارة\n/setbtn نص الزر\n/setname الاسم\n/setsite الاسم\n\n📞 /setphone | /setemail | /setaddress\n👁 /toggle about|contact|categories|whatsapp|telegram|ai\n🛒 /orders\nℹ️ /status /help`;
+  return `🎛 <b>تحكم كامل — NoirTech</b>\n\n📦 <b>المنتجات</b>\n/products | /product id\n/setprice id سعر\n/setbadge id نص\n/importproducts 100 — استيراد أجهزة من الإنترنت\n/hide id | /show id\n\n🎨 <b>التصميم</b>\n/config\n/theme dark|gold|purple|red\n/setcolor gold #ffaa00\n\n✍️ <b>النصوص</b>\n/sethero نص\n/setdesc وصف\n/setbadgehero شارة\n/setbtn نص الزر\n/setname الاسم\n/setsite الاسم\n\n📞 /setphone | /setemail | /setaddress\n👁 /toggle about|contact|categories|whatsapp|telegram|ai\n🛒 /orders\nℹ️ /status /help`;
 }
 const THEMES = {
   dark: { bg: "#07070a", bgCard: "#0f0f14", gold: "#f0b429", goldLight: "#ffd666", goldDark: "#d4920a", accent: "#7c5cff", text: "#f4f4f8", textMuted: "#9898a6" },
@@ -109,6 +114,25 @@ const THEMES = {
   purple: { bg: "#0a0712", bgCard: "#120e1c", gold: "#c4a0ff", goldLight: "#e0c8ff", goldDark: "#8b5cf6", accent: "#a78bfa", text: "#f3e8ff", textMuted: "#a89bb8" },
   red: { bg: "#0c0707", bgCard: "#160e0e", gold: "#ff5c5c", goldLight: "#ff8a8a", goldDark: "#e11d48", accent: "#f43f5e", text: "#fff1f1", textMuted: "#b89a9a" }
 };
+async function importProductsFromWeb(count, categoryHint = "") {
+  const system = `أنت جامع بيانات منتجات إلكترونيات من الويب لمتجر في مصر. ابحث على الإنترنت الآن وأرجع JSON فقط، بدون Markdown أو شرح، عبارة عن مصفوفة من ${count} عنصرًا حقيقيًا ومختلفًا قدر الإمكان.
+
+كل عنصر يجب أن يحتوي بالضبط على: name (اسم المنتج والموديل)، category (واحدة من phones أو laptops أو audio أو wearables)، price (رقم صحيح تقريبي بالجنيه المصري)، oldPrice (رقم أو null)، image (رابط صورة مباشر https قابل للفتح)، description (وصف عربي قصير)، specs (كائن من 3 إلى 6 مواصفات قصيرة)، badge (نص قصير أو null)، sourceUrl (رابط صفحة المصدر).
+
+الشروط: اختر أجهزة إلكترونية فقط، لا تخترع روابط صور؛ استخدم روابط صور مباشرة من صفحات الشركات أو المتاجر أو مواقع الصور العامة. لا تكرر نفس الموديل. الأسعار تقريبية للسوق المصري واعتبرها قابلة للتغيير. ${categoryHint ? `ركز على فئة ${categoryHint}.` : "وزع النتائج بين الفئات الأربع."}`;
+  const result = await openrouterSearchChat(system, [{ role: "user", content: `استورد ${count} جهازًا إلكترونيًا من الإنترنت مع الصور والوصف والمواصفات. أعد JSON صالحًا فقط.` }], Math.min(7500, Math.max(1800, count * 75)));
+  const raw = result.text.match(/\[[\s\S]*\]/)?.[0];
+  if (!raw) throw new Error("لم يرجع محرك البحث قائمة JSON صالحة");
+  let list;
+  try { list = JSON.parse(raw); } catch { throw new Error("تعذر قراءة بيانات المنتجات القادمة من الويب"); }
+  const allowed = new Set(["phones", "laptops", "audio", "wearables"]);
+  return list.filter(p => p && typeof p.name === "string" && p.name.trim() && allowed.has(p.category) && Number(p.price) > 0 && /^https?:\/\//i.test(String(p.image)) && typeof p.description === "string").slice(0, count).map(p => ({
+    name: p.name.trim().slice(0, 120), category: p.category, price: Math.round(Number(p.price)), oldPrice: Number(p.oldPrice) > Number(p.price) ? Math.round(Number(p.oldPrice)) : null,
+    image: String(p.image), badge: typeof p.badge === "string" ? p.badge.slice(0, 30) : "مستورد", hidden: false,
+    description: p.description.slice(0, 500), specs: p.specs && typeof p.specs === "object" ? p.specs : {}, sourceUrl: String(p.sourceUrl || "")
+  }));
+}
+
 export default async function handler(req, res) {
   if (req.method === "GET") return res.status(200).json({ ok: true });
   if (req.method !== "POST") return res.status(405).end();
@@ -267,6 +291,26 @@ export default async function handler(req, res) {
       const result = await putFile("products.json", JSON.stringify(list, null, 2), message, prodSha);
       if (!result.ok) { await reply(chatId, `❌ ${result.error || result.data?.message || "فشل"}`); return false; }
       return true;
+    }
+    if (command === "/importproducts") {
+      const count = Math.min(100, Math.max(1, Number(args[0]) || 100));
+      const category = args.slice(1).join(" ");
+      if (!products) { await reply(chatId, "❌ ملف المنتجات غير متاح"); return res.status(200).json({ ok: true }); }
+      await reply(chatId, `🔎 جاري البحث عن ${count} جهاز من الإنترنت وتجهيز الصور والوصف...\nقد يستغرق الأمر قليلًا.`);
+      try {
+        const imported = await importProductsFromWeb(count, category);
+        if (imported.length < Math.max(1, Math.floor(count * 0.6))) throw new Error(`تم التحقق من ${imported.length} منتج فقط من أصل ${count}`);
+        const nextId = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
+        const withIds = imported.map((p, i) => ({ ...p, id: nextId + i }));
+        products.push(...withIds);
+        if (await saveProducts(products, `bot: import ${withIds.length} products from web`)) {
+          await reply(chatId, `✅ تم الاستيراد والنشر تلقائيًا\n📦 أضيف: ${withIds.length} جهاز\n🖼 كل عنصر معه صورة ووصف ومواصفات\n🌐 المصدر: الإنترنت\n\nاستخدم /products لرؤيتها.`);
+        }
+      } catch (e) {
+        console.error("product import failed", e);
+        await reply(chatId, `❌ لم يتم النشر حتى لا نضيف بيانات ناقصة.\nالسبب: ${String(e.message || "فشل البحث").slice(0, 220)}`);
+      }
+      return res.status(200).json({ ok: true });
     }
     if (command === "/products") {
       if (!products) { await reply(chatId, "لا منتجات"); return res.status(200).json({ ok: true }); }
