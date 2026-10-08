@@ -231,31 +231,51 @@ function appendAiMsg(text, who) {
 }
 function getSmartReply(msg) {
   const m = msg.trim().toLowerCase();
-  if (/سلام|مرحبا|اهلا|hi|hello|السلام/.test(m)) return "وعليكم السلام! 👋 كيف أقدر أساعدك؟ اسأل عن المنتجات أو الأسعار.";
-  if (/سعر|كام|تمن|price/.test(m)) return "الأسعار تحت كل منتج 💰<br>هواتف من 18,999<br>لابتوبات من 48,999<br>سماعات من 4,999<br>ساعات من 7,499";
-  if (/هاتف|موبايل|آيفون|ايفون|سامسونج|phone|iphone/.test(m)) return "أحدث الهواتف 📱<br>• iPhone 16 Pro Max<br>• Galaxy S25 Ultra<br>• Pixel 9 Pro<br>• Z Fold 6";
-  if (/لابتوب|ماك|macbook|laptop/.test(m)) return "اللابتوبات 💻<br>• MacBook Pro M3<br>• Dell XPS 15<br>• ASUS ROG<br>• ThinkPad X1";
-  if (/سماعة|ايربودز|airpods|صوت/.test(m)) return "الصوتيات 🎧<br>• AirPods Pro 2 / Max<br>• Sony XM5<br>• Bose Ultra<br>• JBL Charge 5";
-  if (/ساعة|watch|garmin/.test(m)) return "الساعات ⌚<br>• Apple Watch Ultra 2<br>• Galaxy Watch 7<br>• Garmin Fenix 8";
-  if (/طلب|شحن|توصيل/.test(m)) return "الشحن سريع داخل مصر 🚚 بعد الطلب هيتواصلوا معاك.";
-  if (/عنوان|فين|تواصل|رقم|واتس/.test(m)) return "📞 01064519541<br>📧 ahmedgabr1560@gmail.com<br>القاهرة، مصر";
-  if (/شكر|thanks/.test(m)) return "العفو! 😊 لو محتاج حاجة تانية أنا هنا.";
-  return "أقدر أساعدك في المنتجات والأسعار والشحن. اكتب سؤالك أو تصفح الأقسام فوق.";
+  if (/سلام|مرحبا|اهلا|hi|hello|السلام/.test(m)) return "وعليكم السلام! 👋 كيف أقدر أساعدك؟";
+  if (/سعر|كام|تمن|price/.test(m)) return "الأسعار تحت كل منتج 💰 هواتف من 18,999 — لابتوبات من 48,999";
+  if (/هاتف|موبايل|آيفون|phone|iphone/.test(m)) return "أحدث الهواتف 📱 iPhone 16 Pro Max, Galaxy S25 Ultra, Pixel 9 Pro";
+  if (/لابتوب|ماك|laptop/.test(m)) return "اللابتوبات 💻 MacBook Pro, Dell XPS, ASUS ROG";
+  if (/سماعة|airpods|صوت/.test(m)) return "الصوتيات 🎧 AirPods, Sony XM5, Bose";
+  if (/ساعة|watch/.test(m)) return "الساعات ⌚ Apple Watch Ultra 2, Galaxy Watch 7";
+  if (/طلب|شحن|توصيل/.test(m)) return "الشحن سريع داخل مصر 🚚";
+  if (/تواصل|رقم|واتس/.test(m)) return "📞 01064519541 | 📧 ahmedgabr1560@gmail.com";
+  return "أقدر أساعدك في المنتجات والأسعار والشحن. اكتب سؤالك!";
 }
-function handleAiSend() {
+window._aiHistory = window._aiHistory || [];
+async function handleAiSend() {
   const text = (aiInput?.value || "").trim();
   if (!text) return;
-  appendAiMsg(text.replace(/</g,"&lt;"), "user");
+  appendAiMsg(text.replace(/</g,"&lt;").replace(/\n/g,"<br>"), "user");
   aiInput.value = "";
+  if (aiSend) aiSend.disabled = true;
   const typing = document.createElement("div");
-  typing.className = "ai-msg bot"; typing.id = "aiTyping";
+  typing.className = "ai-msg bot";
+  typing.id = "aiTyping";
   typing.innerHTML = `<div class="ai-bubble">يكتب...</div>`;
   aiMessages.appendChild(typing);
   aiMessages.scrollTop = aiMessages.scrollHeight;
-  setTimeout(() => {
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, history: window._aiHistory })
+    });
+    const data = await res.json();
+    document.getElementById("aiTyping")?.remove();
+    if (data.reply) {
+      const safe = data.reply.replace(/</g,"&lt;").replace(/\n/g,"<br>");
+      appendAiMsg(safe, "bot");
+      window._aiHistory.push({ role: "user", content: text });
+      window._aiHistory.push({ role: "assistant", content: data.reply });
+      if (window._aiHistory.length > 20) window._aiHistory = window._aiHistory.slice(-20);
+    } else {
+      appendAiMsg(getSmartReply(text), "bot");
+    }
+  } catch (err) {
     document.getElementById("aiTyping")?.remove();
     appendAiMsg(getSmartReply(text), "bot");
-  }, 600);
+  }
+  if (aiSend) aiSend.disabled = false;
 }
 aiSend?.addEventListener("click", handleAiSend);
 aiInput?.addEventListener("keydown", e => { if (e.key === "Enter") handleAiSend(); });
