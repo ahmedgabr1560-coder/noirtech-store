@@ -1,4 +1,4 @@
-import { resilientChat } from "./_ai.js";
+import { openrouterSearchChat, resilientChat } from "./_ai.js";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -45,10 +45,29 @@ export default async function handler(req, res) {
 كتالوج المنتجات الحالي:
 ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
 
-    const result = await resilientChat(systemPrompt, [
+    const chatMessages = [
       ...(Array.isArray(history) ? history.slice(-12).filter(m => m && ["user", "assistant"].includes(m.role) && typeof m.content === "string").map(m => ({ role: m.role, content: m.content.slice(0, 2000) })) : []),
       { role: "user", content: message.slice(0, 2000) }
-    ], 450);
+    ];
+    const wantsLivePrice = /(سعر|اسعار|أسعار|بكام|بكم|تكلف|كام|price|prices|cost|how much|latest price|current price)/i.test(message);
+    if (wantsLivePrice && process.env.OPENROUTER_API_KEY) {
+      const livePrompt = `${systemPrompt}
+
+وضع البحث المباشر عن الأسعار:
+- ابحث على الويب الآن عن أحدث أسعار المنتج الذي يسأل عنه المستخدم، وفضّل مصر والجنيه المصري إذا لم يحدد بلدًا.
+- لا تخلط بين سعر مستعمل أو عرض قديم أو سعر استيراد؛ صنّف السعر بوضوح واذكر تاريخ البحث.
+- اذكر أن السعر تقريبي وقابل للتغيير، ولا تعتبره سعر NoirTech الرسمي إلا إذا كان موجودًا في الكتالوج.
+- اذكر اسم المتجر أو الموقع وموقعه كرابط إن أمكن، ولا تخترع مصادر أو أرقامًا.
+- إذا لم تجد سعرًا موثوقًا، قل ذلك بوضوح واطلب الموديل والبلد. أجب بالعربية المصرية المختصرة.`;
+      try {
+        const live = await openrouterSearchChat(livePrompt, chatMessages, 650);
+        const sources = live.citations.length ? `\n\nمصادر البحث:\n${live.citations.map((url, i) => `${i + 1}. ${url}`).join("\n")}` : "";
+        return res.status(200).json({ reply: live.text + sources, provider: "openrouter-search" });
+      } catch (searchError) {
+        console.error("Live price search failed", searchError.message);
+      }
+    }
+    const result = await resilientChat(systemPrompt, chatMessages, 450);
     return res.status(200).json({ reply: result.reply, provider: result.provider });
   } catch (err) {
     console.error(err);

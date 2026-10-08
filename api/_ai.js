@@ -63,6 +63,28 @@ export async function openrouterChat(system, messages, maxTokens = 450) {
   return text;
 }
 
+export async function openrouterSearchChat(system, messages, maxTokens = 650) {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) throw new Error("OPENROUTER_API_KEY is not configured");
+  const model = process.env.OPENROUTER_SEARCH_MODEL || "perplexity/sonar";
+  const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+      "HTTP-Referer": "https://noirtech-store.vercel.app",
+      "X-Title": "NoirTech Live Price Search"
+    },
+    body: JSON.stringify({ model, messages: [{ role: "system", content: system }, ...messages], max_tokens: maxTokens, temperature: 0.25 })
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || "OpenRouter search request failed");
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error("OpenRouter search returned no text");
+  const citations = Array.isArray(data.citations) ? data.citations.filter(Boolean).slice(0, 5) : [];
+  return { text, citations };
+}
+
 export async function geminiChat(system, messages, maxTokens = 450) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY is not configured");
