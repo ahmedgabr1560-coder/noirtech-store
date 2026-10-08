@@ -68,6 +68,21 @@ async function askAi(question, catalog = []) {
   }
 }
 
+async function interpretAdminRequest(text, catalog = []) {
+  const system = `أنت مخطط أوامر آمن لمتجر NoirTech. حوّل طلب المدير باللهجة الطبيعية إلى أمر واحد فقط من القائمة المسموحة، أو اترك command فارغًا إذا كان الطلب سؤالًا لا يحتاج تنفيذًا.
+الأوامر المسموحة فقط:
+/menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم.
+لا تخترع رقم منتج أو قيمة غير مذكورة. أرجع JSON فقط بالشكل: {"command":"...","reply":"تأكيد قصير بالمصرية"}.`;
+  try {
+    const result = await resilientChat(system, [{ role: "user", content: `طلب المدير: ${text.slice(0, 1200)}\nالمنتجات: ${JSON.stringify(catalog.slice(0, 30))}` }], 260);
+    const raw = result.reply.match(/\{[\s\S]*\}/)?.[0];
+    const plan = raw ? JSON.parse(raw) : {};
+    const allowed = /^(\/(?:menu|help|status|config|products|settitle|setabout|setfooter|sethero|setdesc|setbadgehero|setbtn|setname|setsite|setaddress|setphone|setemail|theme|setlayout|setorder|setcategory|setcolor|toggle|setprice|hide|show))(?:\s|$)/;
+    if (!plan.command || !allowed.test(plan.command)) return { command: "", reply: plan.reply || result.reply };
+    return { command: plan.command.trim(), reply: plan.reply || "✅ حاضر، نفذت طلبك." };
+  } catch { return { command: "", reply: "🤖 فهمت إنك عايز مساعدة، بس محتاج توضيح صغير أو استخدم زر المينيو 😄" }; }
+}
+
 async function putFile(path, content, message, sha) {
   if (!GH_TOKEN) return { ok: false, error: "⚠️ أضف GITHUB_TOKEN على Vercel أولاً" };
   const body = { message, content: Buffer.from(content, "utf8").toString("base64"), branch: "main" };
@@ -139,7 +154,12 @@ export default async function handler(req, res) {
     if (!text.startsWith("/")) {
       const intent = naturalIntent(text);
       if (intent) text = intent.command;
-      else { const f = await getFile("products.json"); const list = f ? JSON.parse(f.content) : []; await reply(chatId, await askAi(text, list), { reply_markup: MAIN_MENU }); return res.status(200).json({ ok: true }); }
+      else {
+        const f = await getFile("products.json"); const list = f ? JSON.parse(f.content) : [];
+        const plan = await interpretAdminRequest(text, list);
+        if (plan.command) { text = plan.command; }
+        else { await reply(chatId, plan.reply, { reply_markup: MAIN_MENU }); return res.status(200).json({ ok: true }); }
+      }
     }
     if (chatId !== ADMIN_CHAT) { await reply(chatId, "⛔ للإدارة فقط"); return res.status(200).json({ ok: true }); }
     const [cmd, ...args] = text.split(/\s+/);

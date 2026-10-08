@@ -16,13 +16,23 @@ export async function openaiChat(system, messages, maxTokens = 450) {
 export async function claudeChat(system, messages, maxTokens = 450) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error("ANTHROPIC_API_KEY is not configured");
+  const headers = { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" };
+  let model = process.env.ANTHROPIC_MODEL;
+  if (!model) {
+    try {
+      const modelsResponse = await fetch("https://api.anthropic.com/v1/models?limit=100", { headers });
+      const modelsData = await modelsResponse.json();
+      const available = (modelsData.data || []).map(item => item.id).filter(id => /claude/i.test(id));
+      model = available.find(id => /haiku/i.test(id)) || available.find(id => /sonnet/i.test(id)) || available[0];
+    } catch (_) {}
+  }
+  model = model || "claude-3-5-haiku-latest";
   const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: process.env.ANTHROPIC_MODEL || "claude-3-5-haiku-latest", system, messages, max_tokens: maxTokens, temperature: 0.85 })
+    method: "POST", headers,
+    body: JSON.stringify({ model, system, messages, max_tokens: maxTokens, temperature: 0.85 })
   });
   const data = await r.json();
-  if (!r.ok) throw new Error(data.error?.message || "Claude request failed");
+  if (!r.ok) throw new Error(data.error?.message || `Claude request failed (${model})`);
   const text = (data.content || []).filter(block => block.type === "text").map(block => block.text).join("\n").trim();
   if (!text) throw new Error("Claude returned no text");
   return text;
