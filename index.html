@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoirTech | إلكترونيات فاخرة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <a href="#" class="logo">
+        <span class="logo-icon">◆</span>
+        Noir<span>Tech</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#home" class="active">الرئيسية</a></li>
+        <li><a href="#products">المنتجات</a></li>
+        <li><a href="#about">عن المتجر</a></li>
+        <li><a href="#contact">تواصل</a></li>
+      </ul>
+      <button class="cart-btn" id="cartBtn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 01-8 0"></path>
+        </svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="home">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+      <p class="hero-badge">تشكيلة 2025</p>
+      <h1>إلكترونيات<br><span>تليق بذوقك</span></h1>
+      <p class="hero-desc">اكتشف أحدث الأجهزة والتقنيات الفاخرة بتصميم استثنائي وجودة لا تُضاهى</p>
+      <a href="#products" class="btn-primary">تسوق الآن</a>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="categories">
+    <div class="container">
+      <div class="cat-grid">
+        <div class="cat-card" data-filter="phones">
+          <div class="cat-icon">📱</div>
+          <h3>هواتف ذكية</h3>
+        </div>
+        <div class="cat-card" data-filter="laptops">
+          <div class="cat-icon">💻</div>
+          <h3>لابتوبات</h3>
+        </div>
+        <div class="cat-card" data-filter="audio">
+          <div class="cat-icon">🎧</div>
+          <h3>صوتيات</h3>
+        </div>
+        <div class="cat-card" data-filter="wearables">
+          <div class="cat-icon">⌚</div>
+          <h3>ساعات ذكية</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section class="products" id="products">
+    <div class="container">
+      <div class="section-header">
+        <h2>منتجاتنا المميزة</h2>
+        <p>أفضل الأجهزة المختارة بعناية</p>
+      </div>
+      <div class="products-grid" id="productsGrid">
+        <!-- Products injected by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="about" id="about">
+    <div class="container about-content">
+      <div class="about-text">
+        <h2>لماذا <span>NoirTech</span>؟</h2>
+        <p>نحن متجر متخصص في الإلكترونيات الفاخرة. نختار لك أفضل المنتجات من أشهر العلامات العالمية مع ضمان الجودة وأسعار تنافسية.</p>
+        <ul class="features">
+          <li>✓ شحن سريع وآمن</li>
+          <li>✓ ضمان أصلي على كل المنتجات</li>
+          <li>✓ دعم فني متخصص</li>
+          <li>✓ إرجاع مجاني خلال 14 يوم</li>
+        </ul>
+      </div>
+      <div class="about-stats">
+        <div class="stat">
+          <h3>+5000</h3>
+          <p>عميل سعيد</p>
+        </div>
+        <div class="stat">
+          <h3>+200</h3>
+          <p>منتج فاخر</p>
+        </div>
+        <div class="stat">
+          <h3>4.9</h3>
+          <p>تقييم العملاء</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="contact" id="contact">
+    <div class="container">
+      <div class="section-header">
+        <h2>تواصل معنا</h2>
+        <p>نحن هنا لمساعدتك</p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <div class="contact-icon">📍</div>
+          <h3>العنوان</h3>
+          <p>القاهرة، مصر</p>
+        </div>
+        <div class="contact-card">
+          <div class="contact-icon">📞</div>
+          <h3>الهاتف</h3>
+          <p>+20 100 000 0000</p>
+        </div>
+        <div class="contact-card">
+          <div class="contact-icon">✉️</div>
+          <h3>البريد</h3>
+          <p>info@noirtech.com</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <a href="#" class="logo">Noir<span>Tech</span></a>
+          <p>إلكترونيات فاخرة تليق بذوقك الرفيع</p>
+        </div>
+        <div class="footer-links">
+          <h4>روابط سريعة</h4>
+          <a href="#home">الرئيسية</a>
+          <a href="#products">المنتجات</a>
+          <a href="#about">عن المتجر</a>
+          <a href="#contact">تواصل</a>
+        </div>
+        <div class="footer-links">
+          <h4>الدعم</h4>
+          <a href="#">سياسة الإرجاع</a>
+          <a href="#">الشحن والتوصيل</a>
+          <a href="#">الأسئلة الشائعة</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 NoirTech. جميع الحقوق محفوظة.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cart Sidebar -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <div class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h3>سلة التسوق</h3>
+      <button class="close-cart" id="closeCart">×</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <!-- Cart items injected -->
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>الإجمالي</span>
+        <strong id="cartTotal">0 ج.م</strong>
+      </div>
+      <button class="btn-checkout" id="checkoutBtn">إتمام الطلب</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

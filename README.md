@@ -1,2 +1,18 @@
-# noirtech-store
-متجر إلكترونيات فاخر - NoirTech Luxury Electronics Store
+# NoirTech — متجر إلكترونيات فاخر
+
+متجر إلكتروني بتصميم داكن وفاخر متخصص في الإلكترونيات.
+
+## المميزات
+- تصميم داكن أنيق مع لمسات ذهبية
+- سلة تسوق تفاعلية (LocalStorage)
+- فلترة حسب التصنيف
+- متجاوب بالكامل مع الموبايل
+- واجهة عربية بالكامل (RTL)
+
+## التشغيل
+افتح `index.html` في المتصفح، أو ارفعه على أي استضافة ثابتة (Vercel / Netlify / GitHub Pages).
+
+## التقنيات
+- HTML5
+- CSS3 (Custom Properties + Flex/Grid)
+- Vanilla JavaScript
