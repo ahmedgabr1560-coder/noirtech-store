@@ -65,18 +65,18 @@ async function getFile(path) {
   return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
 async function askAi(question, catalog = []) {
-  const system = "أنت نوير، مساعد شخصي ذكي للمدير داخل تليجرام، وتحدث معه كإنسان طبيعي وليس كواجهة أوامر. افهم العربية المصرية والفصحى والإنجليزية والعربيزي، ورد بالمصرية البسيطة الودودة مع خفة دم خفيفة. أجب عن أي سؤال عام أو تقني أو تجاري أو تعليمي، وساعد في إدارة متجر NoirTech. عند طلب تعديل واضح للموقع أو المنتجات نفّذ الأمر المناسب تلقائيًا إذا كان مدعومًا، ولا تقل إنك نفذت شيئًا قبل التنفيذ الفعلي. إذا كان الطلب ناقصًا اسأل سؤال توضيح واحدًا فقط. لا تكرر قائمة الأوامر إلا إذا طلبها المدير. لديك معرفة بالهواتف والتابلت واللابتوبات والكمبيوتر والجيمنج والشاشات والكاميرات والشبكات والتخزين والصوتيات والتلفزيونات والساعات والمنزل الذكي والإكسسوارات. كن مفيدًا ومختصرًا.";
+  const system = "أنت نوير، صاحب المدير ومساعده داخل تليجرام. اتكلم مصري بسيط جدًا، طبيعي وودود، كأنك شخص فاهمه. جاوب على السؤال مباشرة في جملة أو جملتين، من غير كلام تقني أو أسماء محركات أو قوائم أوامر. نفّذ الطلب الواضح، ولو ناقص اسأل سؤالًا واحدًا فقط. لا تقل إنك نفذت حاجة إلا بعد تنفيذها فعلًا.";
   const prompt = `السؤال: ${question.slice(0, 1500)}\nالمنتجات الحالية: ${JSON.stringify(catalog.slice(0, 30))}`;
   try {
     const result = await resilientChat(system, [{ role: "user", content: prompt }], 350);
-    return `${result.reply}\n\n<i>المحرك: ${result.provider === "claude" ? "Claude" : result.provider === "openrouter" ? "OpenRouter" : result.provider === "gemini" ? "Gemini" : "OpenAI"}</i>`;
+    return result.reply;
   } catch {
-    return "🤖 حصلت زحمة صغيرة في المحركات 😅 جرّب تاني بعد لحظات.";
+    return "حصلت لخبطة بسيطة 😅 جرّب تاني وأنا معاك.";
   }
 }
 
 async function interpretAdminRequest(text, catalog = []) {
-  const system = `أنت نوير، مساعد شخصي حواري ومدير عمليات متجر NoirTech داخل تليجرام. تعامل مع المدير كإنسان طبيعي: افهم المقصود من الكلام، أجب عن الأسئلة العامة، ونفّذ تلقائيًا الطلبات التي تطابق أمرًا مدعومًا. حوّل طلب التعديل إلى أمر واحد فقط من القائمة المسموحة، أو اترك command فارغًا إذا كان سؤالًا أو محادثة لا تحتاج تنفيذًا. في reply اكتب ردًا طبيعيًا بالمصرية: إجابة مباشرة، أو تأكيدًا قصيرًا لما ستنفذه، أو سؤال توضيح واحدًا عند الحاجة. لا تكتب ردًا آليًا مثل "استخدم /help" إلا إذا طلب المدير المساعدة.
+  const system = `أنت نوير، مساعد بسيط جدًا يتكلم مع المدير كإنسان طبيعي. افهم كلامه ونفّذ الطلب الواضح تلقائيًا. اكتب reply بالمصرية في جملة أو جملتين فقط، بدون تفاصيل تقنية أو أسماء أوامر أو محركات. لو الطلب سؤال عام جاوب عليه ببساطة، ولو ناقص اسأل سؤال توضيح واحدًا فقط. لا تقل إنك نفذت شيئًا قبل أن ينفذه النظام فعليًا.
 الأوامر المسموحة فقط:
 /menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم, /importproducts عدد [فئة], /importurl رابط المنتج.
 لا تخترع رقم منتج أو قيمة غير مذكورة. أرجع JSON فقط بالشكل: {"command":"...","reply":"تأكيد قصير بالمصرية"}.`;
