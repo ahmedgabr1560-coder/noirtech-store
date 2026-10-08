@@ -1,4 +1,4 @@
-import { openrouterSearchChat, resilientChat } from "./_ai.js";
+import { openrouterChat, openrouterSearchChat, resilientChat } from "./_ai.js";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
@@ -37,6 +37,8 @@ const DESIGN_MENU = keyboard([
 function naturalIntent(text) {
   const t = text.toLowerCase();
   const normalized = t.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  const url = (text.match(/https?:\/\/[^\s<>]+/i) || [])[0];
+  if (url && /(?:ضيف|أضف|اضف|استورد|استيراد|منتج|product)/.test(t)) return { command: `/importurl ${url.replace(/[)\]،,.]+$/, "")}` };
   const importCount = (normalized.match(/(?:\d+)\s*(?:جهاز|منتج|موبايل|هاتف)/) || [])[1];
   if (/(?:ضيف|أضف|اضف|استورد|استيراد|import)/.test(t) && /(?:من الإنترنت|من الانترنت|من النت|online|internet|web|الويب|جهاز|منتج)/.test(t)) {
     return { command: `/importproducts ${Math.min(100, Math.max(1, Number(importCount || 100)))}` };
@@ -76,13 +78,13 @@ async function askAi(question, catalog = []) {
 async function interpretAdminRequest(text, catalog = []) {
   const system = `أنت نوير، مساعد شخصي حواري ومدير عمليات متجر NoirTech داخل تليجرام. تعامل مع المدير كإنسان طبيعي: افهم المقصود من الكلام، أجب عن الأسئلة العامة، ونفّذ تلقائيًا الطلبات التي تطابق أمرًا مدعومًا. حوّل طلب التعديل إلى أمر واحد فقط من القائمة المسموحة، أو اترك command فارغًا إذا كان سؤالًا أو محادثة لا تحتاج تنفيذًا. في reply اكتب ردًا طبيعيًا بالمصرية: إجابة مباشرة، أو تأكيدًا قصيرًا لما ستنفذه، أو سؤال توضيح واحدًا عند الحاجة. لا تكتب ردًا آليًا مثل "استخدم /help" إلا إذا طلب المدير المساعدة.
 الأوامر المسموحة فقط:
-/menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم, /importproducts عدد [فئة].
+/menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم, /importproducts عدد [فئة], /importurl رابط المنتج.
 لا تخترع رقم منتج أو قيمة غير مذكورة. أرجع JSON فقط بالشكل: {"command":"...","reply":"تأكيد قصير بالمصرية"}.`;
   try {
     const result = await resilientChat(system, [{ role: "user", content: `طلب المدير: ${text.slice(0, 1200)}\nالمنتجات: ${JSON.stringify(catalog.slice(0, 30))}` }], 260);
     const raw = result.reply.match(/\{[\s\S]*\}/)?.[0];
     const plan = raw ? JSON.parse(raw) : {};
-    const allowed = /^(\/(?:menu|help|status|config|products|settitle|setabout|setfooter|sethero|setdesc|setbadgehero|setbtn|setname|setsite|setaddress|setphone|setemail|theme|setlayout|setorder|setcategory|setcolor|toggle|setprice|hide|show|importproducts))(?:\s|$)/;
+    const allowed = /^(\/(?:menu|help|status|config|products|settitle|setabout|setfooter|sethero|setdesc|setbadgehero|setbtn|setname|setsite|setaddress|setphone|setemail|theme|setlayout|setorder|setcategory|setcolor|toggle|setprice|hide|show|importproducts|importurl))(?:\s|$)/;
     if (!plan.command || !allowed.test(plan.command)) return { command: "", reply: plan.reply || result.reply };
     return { command: plan.command.trim(), reply: plan.reply || "✅ حاضر، نفذت طلبك." };
   } catch { return { command: "", reply: "🤖 حصلت لخبطة بسيطة وأنا بفهم الطلب 😅 اكتبلي المطلوب بطريقتك، وأنا هحاول أساعدك أو أسألك عن الجزء الناقص." }; }
@@ -143,6 +145,34 @@ async function importProductsFromWeb(count, categoryHint = "") {
     image: String(p.image), badge: typeof p.badge === "string" ? p.badge.slice(0, 30) : "مستورد", hidden: false,
     description: p.description.slice(0, 500), specs: p.specs && typeof p.specs === "object" ? p.specs : {}, sourceUrl: String(p.sourceUrl || "")
   }));
+}
+
+function htmlMeta(html, key) {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`<meta[^>]+(?:property|name)=["']${escaped}["'][^>]+content=["']([^"']+)["'][^>]*>`, "i");
+  const alt = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${escaped}["'][^>]*>`, "i");
+  return (html.match(re)?.[1] || html.match(alt)?.[1] || "").replace(/&amp;/g, "&").trim();
+}
+function absoluteUrl(value, base) {
+  try { return new URL(value, base).toString(); } catch { return ""; }
+}
+async function importProductFromUrl(url) {
+  const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 NoirTech Product Importer" } });
+  if (!r.ok) throw new Error(`تعذر فتح الرابط (${r.status})`);
+  const html = (await r.text()).slice(0, 140000);
+  const title = htmlMeta(html, "og:title") || html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/<[^>]+>/g, " ").trim() || "";
+  const image = absoluteUrl(htmlMeta(html, "og:image"), url);
+  const description = htmlMeta(html, "og:description") || htmlMeta(html, "description");
+  const visible = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>/gi, " ").replace(/\s+/g, " ").slice(0, 18000);
+  const prompt = `استخرج بيانات منتج إلكتروني من صفحة الويب التالية. أرجع JSON فقط بهذا الشكل: {"name":"","category":"phones|laptops|audio|wearables","price":0,"oldPrice":null,"image":"","description":"","specs":{},"badge":null}. السعر رقم تقريبي بالجنيه المصري إن وجد، ولا تخترع سعرًا؛ إذا لم يوجد استخدم 0. استخدم الصورة المرفقة إن كانت صالحة.\nالعنوان: ${title}\nالصورة: ${image}\nالوصف: ${description}\nمحتوى الصفحة: ${visible}`;
+  const ai = await openrouterChat("أنت مستخرج بيانات منتجات دقيق. لا تضف شرحًا خارج JSON.", [{ role: "user", content: prompt }], 700);
+  const raw = ai.match(/\{[\s\S]*\}/)?.[0];
+  if (!raw) throw new Error("لم أستطع استخراج بيانات المنتج");
+  const item = JSON.parse(raw);
+  const categories = new Set(["phones", "laptops", "audio", "wearables"]);
+  const finalImage = absoluteUrl(item.image || image, url);
+  if (!item.name || !categories.has(item.category) || Number(item.price) <= 0 || !/^https?:\/\//i.test(finalImage)) throw new Error("الرابط لا يحتوي اسمًا وسعرًا وصورة صالحة لمنتج إلكتروني");
+  return { name: String(item.name).slice(0, 120), category: item.category, price: Math.round(Number(item.price)), oldPrice: Number(item.oldPrice) > Number(item.price) ? Math.round(Number(item.oldPrice)) : null, image: finalImage, badge: item.badge ? String(item.badge).slice(0, 30) : "مستورد", hidden: false, description: String(item.description || description || "").slice(0, 500), specs: item.specs && typeof item.specs === "object" ? item.specs : {}, sourceUrl: url };
 }
 
 export default async function handler(req, res) {
@@ -303,6 +333,22 @@ export default async function handler(req, res) {
       const result = await putFile("products.json", JSON.stringify(list, null, 2), message, prodSha);
       if (!result.ok) { await reply(chatId, `❌ ${result.error || result.data?.message || "فشل"}`); return false; }
       return true;
+    }
+    if (command === "/importurl") {
+      const url = args[0];
+      if (!url || !/^https?:\/\//i.test(url)) { await reply(chatId, "ابعت رابط المنتج مع كلمة: ضيفه"); return res.status(200).json({ ok: true }); }
+      if (!products) { await reply(chatId, "❌ ملف المنتجات غير متاح"); return res.status(200).json({ ok: true }); }
+      await reply(chatId, "🔎 بقرأ صفحة المنتج وبستخرج الصورة والسعر والوصف والمواصفات...");
+      try {
+        const item = await importProductFromUrl(url);
+        const id = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
+        products.push({ ...item, id });
+        if (await saveProducts(products, `bot: import product from ${url}`)) await reply(chatId, `✅ اتضاف المنتج ونشرته في الموقع مباشرة\n📦 ${item.name}\n💰 ${item.price} جنيه\n🖼 الصورة والوصف والمواصفات جاهزة.`);
+      } catch (e) {
+        console.error("url product import failed", e);
+        await reply(chatId, `❌ ما نشرتش المنتج لأن الرابط ناقص أو غير مناسب.\nالسبب: ${String(e.message || "فشل الاستخراج").slice(0, 220)}`);
+      }
+      return res.status(200).json({ ok: true });
     }
     if (command === "/importproducts") {
       const count = Math.min(100, Math.max(1, Number(args[0]) || 100));
