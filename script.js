@@ -221,44 +221,36 @@ function getSmartReply(msg) {
   if (/تواصل|رقم|واتس/.test(m)) return "📞 01064519541 | 📧 ahmedgabr1560@gmail.com";
   return "أقدر أساعدك في المنتجات والأسعار والشحن. اكتب سؤالك!";
 }
-window._aiHistory = window._aiHistory || [];
+window._aiHistory = JSON.parse(localStorage.getItem("noirtech_ai_history") || "[]");
+function escapeAiText(text) { return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>"); }
+function formatAiReply(text) { return escapeAiText(text).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/`([^`]+)`/g,"<code>$1</code>"); }
+function addAiTyping() {
+  const typing = document.createElement("div"); typing.className = "ai-msg bot"; typing.id = "aiTyping";
+  typing.innerHTML = `<div class="ai-bubble ai-typing"><i></i><i></i><i></i></div>`;
+  aiMessages.appendChild(typing); aiMessages.scrollTop = aiMessages.scrollHeight;
+}
 async function handleAiSend() {
+  if (window._aiBusy) return;
   const text = (aiInput?.value || "").trim();
   if (!text) return;
-  appendAiMsg(text.replace(/</g,"&lt;").replace(/\n/g,"<br>"), "user");
-  aiInput.value = "";
-  if (aiSend) aiSend.disabled = true;
-  const typing = document.createElement("div");
-  typing.className = "ai-msg bot";
-  typing.id = "aiTyping";
-  typing.innerHTML = `<div class="ai-bubble">يكتب...</div>`;
-  aiMessages.appendChild(typing);
-  aiMessages.scrollTop = aiMessages.scrollHeight;
+  window._aiBusy = true; appendAiMsg(escapeAiText(text), "user"); aiInput.value = "";
+  if (aiSend) { aiSend.disabled = true; aiSend.textContent = "…"; }
+  addAiTyping();
   try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text, history: window._aiHistory })
-    });
-    const data = await res.json();
-    document.getElementById("aiTyping")?.remove();
-    if (data.reply) {
-      const safe = data.reply.replace(/</g,"&lt;").replace(/\n/g,"<br>");
-      appendAiMsg(safe, "bot");
-      window._aiHistory.push({ role: "user", content: text });
-      window._aiHistory.push({ role: "assistant", content: data.reply });
-      if (window._aiHistory.length > 20) window._aiHistory = window._aiHistory.slice(-20);
-    } else {
-      appendAiMsg(getSmartReply(text), "bot");
-    }
+    const catalog = products.slice(0, 40).map(p => ({ id:p.id, name:p.name, category:p.category, price:p.price, oldPrice:p.oldPrice || null, badge:p.badge || "" }));
+    const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text, history: window._aiHistory.slice(-12), catalog }) });
+    const data = await res.json(); document.getElementById("aiTyping")?.remove();
+    if (!res.ok || !data.reply) throw new Error(data.error || "تعذر الاتصال");
+    appendAiMsg(formatAiReply(data.reply), "bot");
+    window._aiHistory.push({ role: "user", content: text }, { role: "assistant", content: data.reply });
+    window._aiHistory = window._aiHistory.slice(-20); localStorage.setItem("noirtech_ai_history", JSON.stringify(window._aiHistory));
   } catch (err) {
     document.getElementById("aiTyping")?.remove();
-    appendAiMsg(getSmartReply(text), "bot");
-  }
-  if (aiSend) aiSend.disabled = false;
+    appendAiMsg("حصل عطل بسيط في الاتصال بالمساعد 🤍 جرّب تبعت رسالتك تاني بعد ثواني.", "bot");
+  } finally { window._aiBusy = false; if (aiSend) { aiSend.disabled = false; aiSend.textContent = "➤"; } aiInput?.focus(); }
 }
 aiSend?.addEventListener("click", handleAiSend);
-aiInput?.addEventListener("keydown", e => { if (e.key === "Enter") handleAiSend(); });
+aiInput?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleAiSend(); } });
 async function loadProducts() {
   try {
     const r = await fetch("/products.json?t=" + Date.now());

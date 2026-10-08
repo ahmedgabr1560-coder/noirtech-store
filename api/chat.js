@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { message, history } = req.body || {};
+    const { message, history, catalog } = req.body || {};
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "Message required" });
     }
@@ -35,11 +35,15 @@ export default async function handler(req, res) {
 - استخدم 2–6 جمل غالبًا، ويمكنك استخدام نقاط مرتبة للأسئلة الطويلة.
 - استخدم الإيموجي باعتدال.
 - اختم بسؤال متابعة ذكي فقط عندما يكون مفيدًا، وليس بشكل آلي في كل رد.
-- لا تنفذ أي تعديل إداري على الموقع من دردشة الزوار؛ وجّههم للدعم أو واتساب عند الحاجة.`;
+- لا تنفذ أي تعديل إداري على الموقع من دردشة الزوار؛ وجّههم للدعم أو واتساب عند الحاجة.
+- لو أرسل لك كتالوج المنتجات، استخدمه في الترشيح واذكر السعر الموجود فيه فقط، ولا تخمن منتجًا غير موجود.
+
+كتالوج المنتجات الحالي:
+${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
 
     const messages = [
       { role: "system", content: systemPrompt },
-      ...(Array.isArray(history) ? history.slice(-12) : []),
+      ...(Array.isArray(history) ? history.slice(-12).filter(m => m && ["user", "assistant"].includes(m.role) && typeof m.content === "string").map(m => ({ role: m.role, content: m.content.slice(0, 2000) })) : []),
       { role: "user", content: message.slice(0, 2000) }
     ];
 
