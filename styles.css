@@ -48,9 +48,22 @@ a { text-decoration: none; color: inherit; }
   transition: var(--transition);
 }
 .nav-content { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.logo-area { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .logo { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 6px; }
 .logo span { color: var(--gold); }
 .logo-icon { color: var(--gold); font-size: 1.2rem; }
+.owner-name {
+  font-family: 'Great Vibes', cursive;
+  font-size: 1.15rem;
+  background: linear-gradient(135deg, #ffd666, #f0b429, #e8c96a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  padding-right: 4px;
+  filter: drop-shadow(0 0 8px rgba(240, 180, 41, 0.3));
+}
 .nav-links { display: flex; list-style: none; gap: 28px; }
 .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); transition: var(--transition); position: relative; }
 .nav-links a:hover, .nav-links a.active { color: var(--gold); }
@@ -322,4 +335,5 @@ a { text-decoration: none; color: inherit; }
   .user-btn { width: 48px; padding: 0; justify-content: center; border-radius: 50%; }
   .float-buttons { bottom: 20px; left: 16px; }
   .float-btn { width: 50px; height: 50px; }
+  .owner-name { font-size: 0.95rem; }
 }
