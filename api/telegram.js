@@ -110,7 +110,14 @@ const THEMES = {
   red: { bg: "#0c0707", bgCard: "#160e0e", gold: "#ff5c5c", goldLight: "#ff8a8a", goldDark: "#e11d48", accent: "#f43f5e", text: "#fff1f1", textMuted: "#b89a9a" }
 };
 export default async function handler(req, res) {
-  if (req.method === "GET") return res.status(200).json({ ok: true });
+  if (req.method === "GET") {
+    if (req.query?.setup === "1") {
+      if (!BOT_TOKEN) return res.status(500).json({ ok: false, error: "TELEGRAM_BOT_TOKEN missing in Production" });
+      const result = await tg("setWebhook", { url: "https://noirtech-store.vercel.app/api/telegram", allowed_updates: ["message", "edited_message", "callback_query"] });
+      return res.status(result.ok ? 200 : 502).json({ ok: Boolean(result.ok), description: result.description || "" });
+    }
+    return res.status(200).json({ ok: true });
+  }
   if (req.method !== "POST") return res.status(405).end();
   try {
     const body = req.body || {};
