@@ -114,7 +114,8 @@ export default async function handler(req, res) {
     if (req.query?.setup === "1") {
       if (!BOT_TOKEN) return res.status(500).json({ ok: false, error: "TELEGRAM_BOT_TOKEN missing in Production" });
       const result = await tg("setWebhook", { url: "https://noirtech-store.vercel.app/api/telegram", allowed_updates: ["message", "edited_message", "callback_query"] });
-      return res.status(result.ok ? 200 : 502).json({ ok: Boolean(result.ok), description: result.description || "" });
+      const info = await tg("getWebhookInfo", {});
+      return res.status(result.ok ? 200 : 502).json({ ok: Boolean(result.ok), description: result.description || "", webhook: info.result ? { url: info.result.url, pending_update_count: info.result.pending_update_count, last_error_message: info.result.last_error_message || "", last_error_date: info.result.last_error_date || null } : { error: info.description || "unknown" } });
     }
     return res.status(200).json({ ok: true });
   }
