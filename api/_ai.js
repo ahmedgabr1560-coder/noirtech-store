@@ -63,6 +63,30 @@ export async function openrouterChat(system, messages, maxTokens = 450) {
   return text;
 }
 
+export async function geminiChat(system, messages, maxTokens = 450) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY is not configured");
+  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const contents = messages.map(message => ({
+    role: message.role === "assistant" ? "model" : "user",
+    parts: [{ text: String(message.content || "") }]
+  }));
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: system }] },
+      contents,
+      generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85 }
+    })
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || `Gemini request failed (${model})`);
+  const text = (data.candidates?.[0]?.content?.parts || []).map(part => part.text || "").join("\n").trim();
+  if (!text) throw new Error("Gemini returned no text");
+  return text;
+}
+
 export async function resilientChat(system, messages, maxTokens = 450) {
   try { return { reply: await openaiChat(system, messages, maxTokens), provider: "openai" }; }
   catch (openaiError) {
@@ -70,8 +94,11 @@ export async function resilientChat(system, messages, maxTokens = 450) {
     catch (claudeError) {
       try { return { reply: await openrouterChat(system, messages, maxTokens), provider: "openrouter" }; }
       catch (openrouterError) {
-        console.error("AI providers failed", { openai: openaiError.message, claude: claudeError.message, openrouter: openrouterError.message });
-        throw new Error("All AI providers failed");
+        try { return { reply: await geminiChat(system, messages, maxTokens), provider: "gemini" }; }
+        catch (geminiError) {
+          console.error("AI providers failed", { openai: openaiError.message, claude: claudeError.message, openrouter: openrouterError.message, gemini: geminiError.message });
+          throw new Error("All AI providers failed");
+        }
       }
     }
   }
