@@ -64,6 +64,22 @@ async function getFile(path) {
   const data = await r.json();
   return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
+async function getLastBotError() {
+  try { const f = await getFile("bot-status.json"); return f ? JSON.parse(f.content) : null; } catch { return null; }
+}
+async function rememberBotError(operation, error) {
+  try {
+    const old = await getFile("bot-status.json");
+    const status = { ok: false, operation, error: String(error?.message || error || "خطأ غير معروف").slice(0, 500), time: new Date().toISOString() };
+    await putFile("bot-status.json", JSON.stringify(status, null, 2), `bot: record error in ${operation}`, old?.sha);
+  } catch (saveError) { console.error("could not save bot error", saveError.message); }
+}
+function errorText(status) {
+  if (!status || status.ok !== false) return "مفيش أخطاء مسجلة حاليًا ✅";
+  const when = new Date(status.time).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" });
+  return `آخر مشكلة حصلت كانت في: <b>${status.operation}</b>\nالسبب: ${status.error}\nالوقت: ${when}\n\nلو تحب، ابعتلي نفس الطلب تاني وأنا أحاول أصلحه.`;
+}
+
 async function askAi(question, catalog = []) {
   const system = "أنت نوير، صاحب المدير ومساعده داخل تليجرام. اتكلم مصري بسيط جدًا، طبيعي وودود، كأنك شخص فاهمه. جاوب على السؤال مباشرة في جملة أو جملتين، من غير كلام تقني أو أسماء محركات أو قوائم أوامر. نفّذ الطلب الواضح، ولو ناقص اسأل سؤالًا واحدًا فقط. لا تقل إنك نفذت حاجة إلا بعد تنفيذها فعلًا.";
   const prompt = `السؤال: ${question.slice(0, 1500)}\nالمنتجات الحالية: ${JSON.stringify(catalog.slice(0, 30))}`;
@@ -217,6 +233,10 @@ export default async function handler(req, res) {
     }
     if (!msg?.text) return res.status(200).json({ ok: true });
     let text = msg.text.trim();
+    if (/^(ايه حصل|إيه حصل|اي حصل|إيه المشكلة|ايه المشكلة|ما المشكلة|الأخطاء|الاخطاء|آخر مشكلة|اخر مشكلة)\s*[؟?!.]*$/i.test(text)) {
+      await reply(chatId, errorText(await getLastBotError()));
+      return res.status(200).json({ ok: true });
+    }
     if (!text.startsWith("/")) {
       const intent = naturalIntent(text);
       if (intent) text = intent.command;
@@ -232,7 +252,7 @@ export default async function handler(req, res) {
     const command = (cmd || "").toLowerCase().replace(/@\w+/, "");
     if (command === "/start" || command === "/help" || command === "/menu") { await reply(chatId, command === "/menu" ? "🎛 <b>لوحة NoirTech</b>\nاختار القسم:" : helpText(), { reply_markup: MAIN_MENU }); return res.status(200).json({ ok: true }); }
     if (command === "/status") {
-      await reply(chatId, `✅ NoirTech\n🌐 https://noirtech-store.vercel.app\n🔑 GitHub: ${GH_TOKEN ? "مربوط ✅" : "❌ أضف GITHUB_TOKEN"}`);
+      await reply(chatId, `✅ NoirTech\n🌐 https://noirtech-store.vercel.app\n🔑 GitHub: ${GH_TOKEN ? "مربوط ✅" : "❌ أضف GITHUB_TOKEN"}\n\n${errorText(await getLastBotError())}`);
       return res.status(200).json({ ok: true });
     }
     const cfgFile = await getFile("site-config.json");
@@ -434,6 +454,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error(err);
+    await rememberBotError("تنفيذ طلب البوت", err);
     return res.status(200).json({ ok: true });
   }
 }
