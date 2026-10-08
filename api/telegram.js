@@ -1,3 +1,5 @@
+import { resilientChat } from "./_ai.js";
+
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
 const GH_OWNER = "ahmedgabr1560-coder";
@@ -56,13 +58,14 @@ async function getFile(path) {
   return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
 async function askAi(question, catalog = []) {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return "🤖 أنا موجود، لكن مفتاح AI غير مضاف في Production. استخدم /help أو أضف OPENAI_API_KEY في Vercel.";
-  const prompt = `أنت "نوير" مساعد إدارة NoirTech داخل تليجرام. رد بالمصرية البسيطة وبروح خفيفة ومفيدة. ساعد المدير في إدارة متجر الإلكترونيات واقترح أمرًا مناسبًا من الأوامر الموجودة عند الحاجة، لكن لا تدّعِ أنك نفذت شيئًا إلا إذا كان أمرًا معروفًا. اعرف فئات الأجهزة: هواتف، تابلت، لابتوبات، كمبيوتر وجيمنج، شاشات، كاميرات، شبكات، تخزين، صوتيات، تلفزيونات، ساعات، منزل ذكي وإكسسوارات. السؤال: ${question.slice(0, 1500)}\nالمنتجات الحالية: ${JSON.stringify(catalog.slice(0, 30) )}`;
+  const system = "أنت نوير، مساعد إدارة NoirTech داخل تليجرام. رد بالمصرية البسيطة وبروح خفيفة ومفيدة. ساعد المدير في إدارة متجر الإلكترونيات واقترح أمرًا مناسبًا من الأوامر الموجودة عند الحاجة، لكن لا تدّعِ أنك نفذت شيئًا إلا إذا كان أمرًا معروفًا. لديك معرفة بالهواتف والتابلت واللابتوبات والكمبيوتر والجيمنج والشاشات والكاميرات والشبكات والتخزين والصوتيات والتلفزيونات والساعات والمنزل الذكي والإكسسوارات. كن مختصرًا واجعل الرد قابلًا للتنفيذ.";
+  const prompt = `السؤال: ${question.slice(0, 1500)}\nالمنتجات الحالية: ${JSON.stringify(catalog.slice(0, 30))}`;
   try {
-    const r = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: "أنت مساعد متجر ذكي. كن مختصرًا، لطيفًا، واجعل الرد قابلًا للتنفيذ." }, { role: "user", content: prompt }], max_tokens: 350, temperature: 0.85 }) });
-    const data = await r.json(); return data.choices?.[0]?.message?.content || "🤖 اكتب طلبك براحتك، وأنا أرتبهولك خطوة خطوة.";
-  } catch { return "🤖 حصلت زحمة صغيرة في السيرفر 😅 جرّب تاني بعد لحظات."; }
+    const result = await resilientChat(system, [{ role: "user", content: prompt }], 350);
+    return `${result.reply}\n\n<i>المحرك: ${result.provider === "claude" ? "Claude" : "OpenAI"}</i>`;
+  } catch {
+    return "🤖 حصلت زحمة صغيرة في المحركات 😅 جرّب تاني بعد لحظات.";
+  }
 }
 
 async function putFile(path, content, message, sha) {

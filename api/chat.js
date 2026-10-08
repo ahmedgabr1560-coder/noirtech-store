@@ -1,3 +1,5 @@
+import { resilientChat } from "./_ai.js";
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -43,37 +45,11 @@ export default async function handler(req, res) {
 كتالوج المنتجات الحالي:
 ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
 
-    const messages = [
-      { role: "system", content: systemPrompt },
+    const result = await resilientChat(systemPrompt, [
       ...(Array.isArray(history) ? history.slice(-12).filter(m => m && ["user", "assistant"].includes(m.role) && typeof m.content === "string").map(m => ({ role: m.role, content: m.content.slice(0, 2000) })) : []),
       { role: "user", content: message.slice(0, 2000) }
-    ];
-
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: "API key not configured" });
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages,
-        max_tokens: 450,
-        temperature: 0.85
-      })
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      console.error("OpenAI error:", data);
-      return res.status(500).json({ error: data.error?.message || "OpenAI error" });
-    }
-
-    const reply = data.choices?.[0]?.message?.content || "حاضر! قولي محتاج مساعدة في إيه بالظبط؟ 😊";
-    return res.status(200).json({ reply });
+    ], 450);
+    return res.status(200).json({ reply: result.reply, provider: result.provider });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
