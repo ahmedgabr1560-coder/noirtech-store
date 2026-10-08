@@ -112,6 +112,20 @@ function closeProfileModal() { profileOverlay.classList.remove("open"); profileM
 profileClose?.addEventListener("click",closeProfileModal);
 profileOverlay?.addEventListener("click",closeProfileModal);
 userBtn?.addEventListener("click",()=>{ if (currentUser) openProfileModal(); else openAuthModal("login"); });
+function startSocialLogin(provider) { window.location.href = `/api/auth/${provider}`; }
+document.getElementById("googleLoginBtn")?.addEventListener("click",()=>startSocialLogin("google"));
+document.getElementById("facebookLoginBtn")?.addEventListener("click",()=>startSocialLogin("facebook"));
+document.getElementById("googleRegisterBtn")?.addEventListener("click",()=>startSocialLogin("google"));
+document.getElementById("facebookRegisterBtn")?.addEventListener("click",()=>startSocialLogin("facebook"));
+async function hydrateSocialSession() {
+  try {
+    const r = await fetch("/api/auth/session", { credentials: "include" });
+    const data = await r.json();
+    if (data.authenticated && data.user) { currentUser = data.user; localStorage.setItem("noirtech_user", JSON.stringify(currentUser)); updateUserUI(); }
+    if (new URLSearchParams(location.search).get("social_login") === "success") { history.replaceState({}, "", location.pathname); showToast("تم تسجيل الدخول بنجاح ✅"); }
+  } catch (_) {}
+}
+hydrateSocialSession();
 avatarInput?.addEventListener("change",e=>{
   const f=e.target.files[0]; if (!f) return;
   if (f.size>2*1024*1024) { showToast("الصورة كبيرة جداً"); return; }
@@ -133,7 +147,8 @@ profileForm?.addEventListener("submit",e=>{
   updateUserUI(); closeProfileModal(); showToast("تم حفظ البروفايل ✅");
   sendTelegram(`👤 تحديث بروفايل\n\n👤 ${currentUser.name}\n📞 ${currentUser.phone}\n📧 ${currentUser.email}`);
 });
-document.getElementById("logoutBtn")?.addEventListener("click",()=>{
+document.getElementById("logoutBtn")?.addEventListener("click",async()=>{
+  try { await fetch("/api/auth/session", { method: "DELETE", credentials: "include" }); } catch (_) {}
   currentUser=null; localStorage.removeItem("noirtech_user"); updateUserUI(); closeProfileModal(); showToast("تم تسجيل الخروج");
 });
 function sendTelegram(msg) {
