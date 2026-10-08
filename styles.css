@@ -1,4 +1,4 @@
-/* NoirTech styles + AI chat */
+/* NoirTech styles */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
   --bg: #07070a; --bg-card: #0f0f14; --bg-elevated: #16161d;
@@ -7,10 +7,9 @@
   --border: rgba(240, 180, 41, 0.18); --radius: 18px;
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --glow-gold: 0 0 40px rgba(240, 180, 41, 0.15);
-  --glow-accent: 0 0 30px rgba(124, 92, 255, 0.2);
 }
 html { scroll-behavior: smooth; }
-body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: hidden; }
+body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: none; overflow-x: hidden; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 a { text-decoration: none; color: inherit; }
 .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(7,7,10,0.9); backdrop-filter: blur(24px); border-bottom: 1px solid var(--border); }
@@ -105,6 +104,9 @@ a { text-decoration: none; color: inherit; }
 .float-btn:hover { transform: scale(1.12); }
 .float-btn.whatsapp { background: linear-gradient(135deg,#25d366,#128c7e); }
 .float-btn.telegram { background: linear-gradient(135deg,#2AABEE,#229ED9); }
+.float-btn.ai { background: linear-gradient(135deg,#f0b429,#7c5cff); font-size: 1.4rem; color: #07070a; }
+.float-btn.ai:hover { box-shadow: 0 8px 28px rgba(240,180,41,0.45); }
+.ai-btn-icon { font-weight: 800; line-height: 1; }
 .auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; opacity: 0; visibility: hidden; transition: var(--transition); backdrop-filter: blur(6px); }
 .auth-overlay.open { opacity: 1; visibility: visible; }
 .auth-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0.9); background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 36px 32px; width: 90%; max-width: 420px; z-index: 3001; opacity: 0; visibility: hidden; transition: all 0.35s; }
