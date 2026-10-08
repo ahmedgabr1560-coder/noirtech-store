@@ -32,11 +32,9 @@ const products = [
   { id: 31, name: "Garmin Venu 3", category: "wearables", price: 15999, oldPrice: null, image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=600&h=600&fit=crop", badge: null },
   { id: 32, name: "Samsung Galaxy Ring", category: "wearables", price: 12999, oldPrice: null, image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&h=600&fit=crop", badge: "جديد" }
 ];
-
 let cart = JSON.parse(localStorage.getItem("noirtech_cart")) || [];
 let currentUser = JSON.parse(localStorage.getItem("noirtech_user")) || null;
 const usersDB = JSON.parse(localStorage.getItem("noirtech_users")) || [];
-
 const cartBtn = document.getElementById("cartBtn");
 const cartSidebar = document.getElementById("cartSidebar");
 const cartOverlay = document.getElementById("cartOverlay");
@@ -58,21 +56,24 @@ const profileModal = document.getElementById("profileModal");
 const profileClose = document.getElementById("profileClose");
 const profileForm = document.getElementById("profileForm");
 const avatarInput = document.getElementById("avatarInput");
-
+const aiChatBtn = document.getElementById("aiChatBtn");
+const aiPanel = document.getElementById("aiPanel");
+const aiOverlay = document.getElementById("aiOverlay");
+const aiClose = document.getElementById("aiClose");
+const aiMessages = document.getElementById("aiMessages");
+const aiInput = document.getElementById("aiInput");
+const aiSend = document.getElementById("aiSend");
 function formatPrice(p) { return p.toLocaleString("ar-EG") + " ج.م"; }
 function getInitials(n) { return n ? n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase() : "؟"; }
-
 function createProductCard(p) {
   return `<div class="product-card"><div class="product-img"><img src="${p.image}" alt="${p.name}" loading="lazy"/>${p.badge?`<span class="product-badge">${p.badge}</span>`:""}</div><div class="product-info"><h3 class="product-name">${p.name}</h3><div class="product-price"><div><span class="price">${formatPrice(p.price)}</span>${p.oldPrice?`<span class="old-price">${formatPrice(p.oldPrice)}</span>`:""}</div><button class="add-btn" onclick="addToCart(${p.id})">+</button></div></div></div>`;
 }
-
 function renderAllProducts() {
   ["phones","laptops","audio","wearables"].forEach(cat => {
     const g = document.getElementById(cat+"Grid");
     if (g) g.innerHTML = products.filter(p=>p.category===cat).map(createProductCard).join("");
   });
 }
-
 function saveCart() { localStorage.setItem("noirtech_cart", JSON.stringify(cart)); updateCartUI(); }
 function addToCart(id) {
   const p = products.find(x=>x.id===id); if (!p) return;
@@ -88,12 +89,10 @@ function updateCartUI() {
   cartItems.innerHTML = cart.map(i=>`<div class="cart-item"><img src="${i.image}" alt="${i.name}"/><div class="cart-item-info"><h4>${i.name}</h4><p class="item-price">${formatPrice(i.price)}</p><div class="cart-item-qty"><button class="qty-btn" onclick="updateQty(${i.id},-1)">−</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty(${i.id},1)">+</button></div><button class="remove-item" onclick="removeFromCart(${i.id})">حذف</button></div></div>`).join("");
 }
 function showToast(m) { toast.textContent=m; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"),2500); }
-
 cartBtn.addEventListener("click",()=>{ cartSidebar.classList.add("open"); cartOverlay.classList.add("open"); });
 closeCart.addEventListener("click",closeCartSidebar);
 cartOverlay.addEventListener("click",closeCartSidebar);
 function closeCartSidebar(){ cartSidebar.classList.remove("open"); cartOverlay.classList.remove("open"); }
-
 function updateUserUI() {
   if (currentUser) {
     userNameDisplay.textContent = currentUser.name.split(" ")[0];
@@ -114,7 +113,6 @@ function updateUserUI() {
     userBtn.classList.remove("has-avatar");
   }
 }
-
 function openAuthModal(tab="login") { authOverlay.classList.add("open"); authModal.classList.add("open"); switchAuthTab(tab); }
 function closeAuthModal() { authOverlay.classList.remove("open"); authModal.classList.remove("open"); }
 function switchAuthTab(tab) {
@@ -128,7 +126,6 @@ document.getElementById("switchToRegister")?.addEventListener("click",e=>{e.prev
 document.getElementById("switchToLogin")?.addEventListener("click",e=>{e.preventDefault();switchAuthTab("login");});
 authClose?.addEventListener("click",closeAuthModal);
 authOverlay?.addEventListener("click",closeAuthModal);
-
 function openProfileModal() {
   if (!currentUser) return;
   document.getElementById("profName").value = currentUser.name||"";
@@ -147,17 +144,14 @@ function openProfileModal() {
 function closeProfileModal() { profileOverlay.classList.remove("open"); profileModal.classList.remove("open"); }
 profileClose?.addEventListener("click",closeProfileModal);
 profileOverlay?.addEventListener("click",closeProfileModal);
-
 userBtn?.addEventListener("click",()=>{ if (currentUser) openProfileModal(); else openAuthModal("login"); });
-
 avatarInput?.addEventListener("change",e=>{
   const f=e.target.files[0]; if (!f) return;
-  if (f.size>2*1024*1024) { showToast("الصورة كبيرة جداً (حد أقصى 2 ميجا)"); return; }
+  if (f.size>2*1024*1024) { showToast("الصورة كبيرة جداً"); return; }
   const r=new FileReader();
   r.onload=()=>{ const img=document.getElementById("profileAvatarImg"); const ph=document.getElementById("profileAvatarPlaceholder"); img.src=r.result; img.style.display="block"; ph.style.display="none"; window._pendingAvatar=r.result; };
   r.readAsDataURL(f);
 });
-
 profileForm?.addEventListener("submit",e=>{
   e.preventDefault(); if (!currentUser) return;
   currentUser.name=document.getElementById("profName").value.trim();
@@ -169,21 +163,18 @@ profileForm?.addEventListener("submit",e=>{
   localStorage.setItem("noirtech_user",JSON.stringify(currentUser));
   const idx=usersDB.findIndex(u=>u.email===currentUser.email);
   if (idx>=0) { usersDB[idx]={...usersDB[idx],...currentUser}; localStorage.setItem("noirtech_users",JSON.stringify(usersDB)); }
-  updateUserUI(); closeProfileModal(); showToast("تم حفظ البروفايل بنجاح ✅");
-  sendTelegram(`👤 تحديث بروفايل\n\n👤 ${currentUser.name}\n📞 ${currentUser.phone}\n📧 ${currentUser.email}\n📍 ${currentUser.address||"—"}\n📝 ${currentUser.bio||"—"}`);
+  updateUserUI(); closeProfileModal(); showToast("تم حفظ البروفايل ✅");
+  sendTelegram(`👤 تحديث بروفايل\n\n👤 ${currentUser.name}\n📞 ${currentUser.phone}\n📧 ${currentUser.email}`);
 });
-
 document.getElementById("logoutBtn")?.addEventListener("click",()=>{
   currentUser=null; localStorage.removeItem("noirtech_user"); updateUserUI(); closeProfileModal(); showToast("تم تسجيل الخروج");
 });
-
 function sendTelegram(msg) {
   fetch("https://api.telegram.org/bot8737261045:AAGXsJDLKJAf0xsJzegLjWcBX3PUHZlzqow/sendMessage",{
     method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({chat_id:"6746972381", text:msg})
   }).catch(()=>{});
 }
-
 registerForm?.addEventListener("submit",e=>{
   e.preventDefault();
   const name=document.getElementById("regName").value.trim();
@@ -195,11 +186,10 @@ registerForm?.addEventListener("submit",e=>{
   localStorage.setItem("noirtech_users",JSON.stringify(usersDB));
   currentUser={name,phone,email,address:"",bio:"",avatar:null};
   localStorage.setItem("noirtech_user",JSON.stringify(currentUser));
-  updateUserUI(); closeAuthModal(); showToast(`مرحباً ${name}! تم إنشاء حسابك بنجاح`);
-  sendTelegram(`🆕 حساب جديد — تم القبول تلقائياً ✅\n\n👤 الاسم: ${name}\n📞 الهاتف: ${phone}\n📧 الإيميل: ${email}\n\n📌 الحالة: مقبول`);
+  updateUserUI(); closeAuthModal(); showToast(`مرحباً ${name}!`);
+  sendTelegram(`🆕 حساب جديد — تم القبول تلقائياً ✅\n\n👤 ${name}\n📞 ${phone}\n📧 ${email}\n📌 مقبول`);
   if (window._pendingCheckout) { window._pendingCheckout=false; processCheckout(); }
 });
-
 loginForm?.addEventListener("submit",e=>{
   e.preventDefault();
   const email=document.getElementById("loginEmail").value.trim().toLowerCase();
@@ -209,25 +199,64 @@ loginForm?.addEventListener("submit",e=>{
   currentUser={name:user.name,phone:user.phone,email:user.email,address:user.address||"",bio:user.bio||"",avatar:user.avatar||null};
   localStorage.setItem("noirtech_user",JSON.stringify(currentUser));
   updateUserUI(); closeAuthModal(); showToast(`مرحباً بعودتك ${user.name}!`);
-  sendTelegram(`🔐 تسجيل دخول\n\n👤 الاسم: ${user.name}\n📞 الهاتف: ${user.phone}\n📧 الإيميل: ${user.email}`);
+  sendTelegram(`🔐 تسجيل دخول\n\n👤 ${user.name}\n📞 ${user.phone}\n📧 ${user.email}`);
   if (window._pendingCheckout) { window._pendingCheckout=false; processCheckout(); }
 });
-
 function processCheckout() {
   if (!cart.length) { showToast("السلة فارغة!"); return; }
   const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const items=cart.map(i=>`• ${i.name} × ${i.qty} = ${(i.price*i.qty).toLocaleString("ar-EG")} ج.م`).join("\n");
-  const msg=`🛒 طلب جديد — تم القبول تلقائياً ✅\n\n👤 الاسم: ${currentUser.name}\n📞 الهاتف: ${currentUser.phone}\n📧 الإيميل: ${currentUser.email}\n📍 ${currentUser.address||"—"}\n\n📦 المنتجات:\n${items}\n\n💰 الإجمالي: ${total.toLocaleString("ar-EG")} ج.م\n\n📌 الحالة: مقبول — جاري التجهيز`;
+  const msg=`🛒 طلب جديد — تم القبول تلقائياً ✅\n\n👤 ${currentUser.name}\n📞 ${currentUser.phone}\n📧 ${currentUser.email}\n\n📦\n${items}\n\n💰 ${total.toLocaleString("ar-EG")} ج.م\n📌 مقبول — جاري التجهيز`;
   sendTelegram(msg);
-  showToast("تم قبول طلبك تلقائياً ✅ سنتواصل معك قريباً");
+  showToast("تم قبول طلبك تلقائياً ✅");
   window.open(`https://wa.me/201064519541?text=${encodeURIComponent(msg)}`,"_blank");
   cart=[]; saveCart(); closeCartSidebar();
 }
-
 checkoutBtn.addEventListener("click",()=>{
   if (!cart.length) { showToast("السلة فارغة!"); return; }
-  if (!currentUser) { window._pendingCheckout=true; closeCartSidebar(); openAuthModal("login"); showToast("يجب تسجيل الدخول أولاً لإتمام الطلب"); return; }
+  if (!currentUser) { window._pendingCheckout=true; closeCartSidebar(); openAuthModal("login"); showToast("يجب تسجيل الدخول أولاً"); return; }
   processCheckout();
 });
-
+function openAiChat() { aiPanel.classList.add("open"); aiOverlay.classList.add("open"); aiInput?.focus(); }
+function closeAiChat() { aiPanel.classList.remove("open"); aiOverlay.classList.remove("open"); }
+aiChatBtn?.addEventListener("click", openAiChat);
+aiClose?.addEventListener("click", closeAiChat);
+aiOverlay?.addEventListener("click", closeAiChat);
+function appendAiMsg(text, who) {
+  const div = document.createElement("div");
+  div.className = "ai-msg " + who;
+  div.innerHTML = `<div class="ai-bubble">${text}</div>`;
+  aiMessages.appendChild(div);
+  aiMessages.scrollTop = aiMessages.scrollHeight;
+}
+function getSmartReply(msg) {
+  const m = msg.trim().toLowerCase();
+  if (/سلام|مرحبا|اهلا|hi|hello|السلام/.test(m)) return "وعليكم السلام! 👋 كيف أقدر أساعدك؟ اسأل عن المنتجات أو الأسعار.";
+  if (/سعر|كام|تمن|price/.test(m)) return "الأسعار تحت كل منتج 💰<br>هواتف من 18,999<br>لابتوبات من 48,999<br>سماعات من 4,999<br>ساعات من 7,499";
+  if (/هاتف|موبايل|آيفون|ايفون|سامسونج|phone|iphone/.test(m)) return "أحدث الهواتف 📱<br>• iPhone 16 Pro Max<br>• Galaxy S25 Ultra<br>• Pixel 9 Pro<br>• Z Fold 6";
+  if (/لابتوب|ماك|macbook|laptop/.test(m)) return "اللابتوبات 💻<br>• MacBook Pro M3<br>• Dell XPS 15<br>• ASUS ROG<br>• ThinkPad X1";
+  if (/سماعة|ايربودز|airpods|صوت/.test(m)) return "الصوتيات 🎧<br>• AirPods Pro 2 / Max<br>• Sony XM5<br>• Bose Ultra<br>• JBL Charge 5";
+  if (/ساعة|watch|garmin/.test(m)) return "الساعات ⌚<br>• Apple Watch Ultra 2<br>• Galaxy Watch 7<br>• Garmin Fenix 8";
+  if (/طلب|شحن|توصيل/.test(m)) return "الشحن سريع داخل مصر 🚚 بعد الطلب هيتواصلوا معاك.";
+  if (/عنوان|فين|تواصل|رقم|واتس/.test(m)) return "📞 01064519541<br>📧 ahmedgabr1560@gmail.com<br>القاهرة، مصر";
+  if (/شكر|thanks/.test(m)) return "العفو! 😊 لو محتاج حاجة تانية أنا هنا.";
+  return "أقدر أساعدك في المنتجات والأسعار والشحن. اكتب سؤالك أو تصفح الأقسام فوق.";
+}
+function handleAiSend() {
+  const text = (aiInput?.value || "").trim();
+  if (!text) return;
+  appendAiMsg(text.replace(/</g,"&lt;"), "user");
+  aiInput.value = "";
+  const typing = document.createElement("div");
+  typing.className = "ai-msg bot"; typing.id = "aiTyping";
+  typing.innerHTML = `<div class="ai-bubble">يكتب...</div>`;
+  aiMessages.appendChild(typing);
+  aiMessages.scrollTop = aiMessages.scrollHeight;
+  setTimeout(() => {
+    document.getElementById("aiTyping")?.remove();
+    appendAiMsg(getSmartReply(text), "bot");
+  }, 600);
+}
+aiSend?.addEventListener("click", handleAiSend);
+aiInput?.addEventListener("keydown", e => { if (e.key === "Enter") handleAiSend(); });
 renderAllProducts(); updateCartUI(); updateUserUI();
