@@ -165,7 +165,7 @@ export default async function handler(req, res) {
       if (data === "menu_main") await reply(chatId, "🎛 <b>لوحة NoirTech</b>\nاختار القسم:", { reply_markup: MAIN_MENU });
       else if (data === "menu_products") await reply(chatId, "📦 <b>إدارة المنتجات</b>\nاختار العملية أو اكتبها بطريقتك:", { reply_markup: PRODUCT_MENU });
       else if (data === "menu_design") await reply(chatId, "🎨 <b>التصميم والثيمات</b>", { reply_markup: DESIGN_MENU });
-      else if (data === "menu_ai") await reply(chatId, "🤖 <b>نوير — مساعدك السريع</b> 😄\nاكتب طلبك بطريقتك، مثل:\n• اعمل وصف لمنتج جديد\n• رشحلي جهاز مناسب للتصميم\n• عايز أغير شكل الموقع\n• اعرضلي منتجات تحت 30000\n\nأنا أرتب لك الخطوة والأمر المناسب.", { reply_markup: keyboard([[{ text: "📦 تحليل المنتجات", callback_data: "ai_products" }], [{ text: "✍️ كتابة وصف", callback_data: "ai_copy" }, { text: "💡 فكرة للمتجر", callback_data: "ai_idea" }], [{ text: "⬅️ الرئيسية", callback_data: "menu_main" }]]) });
+      else if (data === "menu_ai") await reply(chatId, "🤖 <b>نوير — مساعدك السريع</b> 😄\nاكتب طلبك بطريقتك، مثل:\n• اعمل وصف لمنتج جديد\n• رشحلي جهاز مناسب للتصميم\n• عايز أغير شكل الموقع\n• اعرضلي منتجات تحت 30000\n\nأنا أفهم طلبك وأنفذه مباشرة.", { reply_markup: keyboard([[{ text: "📦 تحليل المنتجات", callback_data: "ai_products" }], [{ text: "✍️ كتابة وصف", callback_data: "ai_copy" }, { text: "💡 فكرة للمتجر", callback_data: "ai_idea" }], [{ text: "⬅️ الرئيسية", callback_data: "menu_main" }]]) });
       else if (data === "menu_content") await reply(chatId, "✍️ اكتب طلبك مباشرة، مثل: <i>غيّر عنوان الصفحة إلى أحدث الأجهزة</i> أو <i>اكتب وصفًا جديدًا للمتجر</i>.");
       else if (data === "menu_sections") await reply(chatId, "🧱 اكتب الترتيب بالكلام، مثل: <i>خلّي المنتجات قبل قسم عن المتجر، وأظهر التواصل في الآخر</i>.");
       else if (data === "menu_status") await reply(chatId, "✅ البوت متصل\n🌐 noirtech-store.vercel.app");
@@ -175,7 +175,7 @@ export default async function handler(req, res) {
         const list = f ? JSON.parse(f.content) : [];
         await reply(chatId, list.filter(p => !p.hidden).slice(0, 30).map(p => `#${p.id} ${p.name} — ${p.price}`).join("\n") || "لا منتجات");
       }
-      else if (data.startsWith("theme_")) { const theme = data.replace("theme_", ""); const plan = naturalIntent(`غيّر ثيم الموقع إلى ${theme}`); if (plan) { const fake = { ...msg, text: plan.command }; const original = body.message; body.message = fake; } await reply(chatId, `✨ تمام، اكتب فقط: <i>خلّي شكل الموقع ${theme === "gold" ? "ذهبي" : theme}</i> وأنا أنفذه مباشرة.`); }
+      else if (data.startsWith("theme_")) { const theme = data.replace("theme_", ""); await reply(chatId, `✨ اكتب فقط: <i>خلّي شكل الموقع ${theme === "gold" ? "ذهبي" : theme}</i> وأنا أنفذه مباشرة.`); }
       else if (data === "hint_add") await reply(chatId, "➕ اكتب مثلًا: <i>أضف iPhone 16 Pro Max بسعر 62999 مع صورة ووصف</i>.");
       else if (data === "hint_price") await reply(chatId, "💰 اكتب مثلًا: <i>غيّر سعر iPhone 16 إلى 59999</i>.");
       else if (data === "hint_visibility") await reply(chatId, "👁 اكتب مثلًا: <i>اخفِ منتج AirPods</i> أو <i>أظهره</i>.");
