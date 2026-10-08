@@ -18,8 +18,9 @@ async function reply(chatId, text, extra = {}) {
 function keyboard(rows) { return { inline_keyboard: rows }; }
 const MAIN_MENU = keyboard([
   [{ text: "📦 المنتجات", callback_data: "menu_products" }, { text: "🎨 التصميم", callback_data: "menu_design" }],
-  [{ text: "✍️ النصوص", callback_data: "menu_content" }, { text: "🧱 الأقسام", callback_data: "menu_sections" }],
-  [{ text: "📊 الحالة", callback_data: "menu_status" }, { text: "❓ المساعدة", callback_data: "menu_help" }]
+  [{ text: "🤖 مساعد AI", callback_data: "menu_ai" }, { text: "✍️ النصوص", callback_data: "menu_content" }],
+  [{ text: "🧱 الأقسام", callback_data: "menu_sections" }, { text: "📊 الحالة", callback_data: "menu_status" }],
+  [{ text: "❓ المساعدة", callback_data: "menu_help" }]
 ]);
 const PRODUCT_MENU = keyboard([
   [{ text: "📋 عرض المنتجات", callback_data: "cmd_products" }, { text: "➕ إضافة منتج", callback_data: "hint_add" }],
@@ -54,6 +55,16 @@ async function getFile(path) {
   const data = await r.json();
   return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
+async function askAi(question, catalog = []) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return "🤖 أنا موجود، لكن مفتاح AI غير مضاف في Production. استخدم /help أو أضف OPENAI_API_KEY في Vercel.";
+  const prompt = `أنت "نوير" مساعد إدارة NoirTech داخل تليجرام. رد بالمصرية البسيطة وبروح خفيفة ومفيدة. ساعد المدير في إدارة متجر الإلكترونيات واقترح أمرًا مناسبًا من الأوامر الموجودة عند الحاجة، لكن لا تدّعِ أنك نفذت شيئًا إلا إذا كان أمرًا معروفًا. اعرف فئات الأجهزة: هواتف، تابلت، لابتوبات، كمبيوتر وجيمنج، شاشات، كاميرات، شبكات، تخزين، صوتيات، تلفزيونات، ساعات، منزل ذكي وإكسسوارات. السؤال: ${question.slice(0, 1500)}\nالمنتجات الحالية: ${JSON.stringify(catalog.slice(0, 30) )}`;
+  try {
+    const r = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: "أنت مساعد متجر ذكي. كن مختصرًا، لطيفًا، واجعل الرد قابلًا للتنفيذ." }, { role: "user", content: prompt }], max_tokens: 350, temperature: 0.85 }) });
+    const data = await r.json(); return data.choices?.[0]?.message?.content || "🤖 اكتب طلبك براحتك، وأنا أرتبهولك خطوة خطوة.";
+  } catch { return "🤖 حصلت زحمة صغيرة في السيرفر 😅 جرّب تاني بعد لحظات."; }
+}
+
 async function putFile(path, content, message, sha) {
   if (!GH_TOKEN) return { ok: false, error: "⚠️ أضف GITHUB_TOKEN على Vercel أولاً" };
   const body = { message, content: Buffer.from(content, "utf8").toString("base64"), branch: "main" };
@@ -100,6 +111,7 @@ export default async function handler(req, res) {
       if (data === "menu_main") await reply(chatId, "🎛 <b>لوحة NoirTech</b>\nاختار القسم:", { reply_markup: MAIN_MENU });
       else if (data === "menu_products") await reply(chatId, "📦 <b>إدارة المنتجات</b>\nاختار العملية أو اكتبها بطريقتك:", { reply_markup: PRODUCT_MENU });
       else if (data === "menu_design") await reply(chatId, "🎨 <b>التصميم والثيمات</b>", { reply_markup: DESIGN_MENU });
+      else if (data === "menu_ai") await reply(chatId, "🤖 <b>نوير — مساعدك السريع</b> 😄\nاكتب طلبك بطريقتك، مثل:\n• اعمل وصف لمنتج جديد\n• رشحلي جهاز مناسب للتصميم\n• عايز أغير شكل الموقع\n• اعرضلي منتجات تحت 30000\n\nأنا أرتب لك الخطوة والأمر المناسب.", { reply_markup: keyboard([[{ text: "📦 تحليل المنتجات", callback_data: "ai_products" }], [{ text: "✍️ كتابة وصف", callback_data: "ai_copy" }, { text: "💡 فكرة للمتجر", callback_data: "ai_idea" }], [{ text: "⬅️ الرئيسية", callback_data: "menu_main" }]]) });
       else if (data === "menu_content") await reply(chatId, "✍️ اكتب مثلًا: <i>غيّر عنوان الصفحة إلى أحدث الأجهزة</i>\n\nالأوامر: /settitle أو /setabout أو /setfooter");
       else if (data === "menu_sections") await reply(chatId, "🧱 اكتب ترتيب الأقسام بفواصل، مثل:\n<code>/setorder hero,categories,phones,laptops,audio,wearables,about,contact</code>");
       else if (data === "menu_status") await reply(chatId, "✅ البوت متصل\n🌐 noirtech-store.vercel.app");
@@ -114,6 +126,9 @@ export default async function handler(req, res) {
       else if (data === "hint_price") await reply(chatId, "💰 مثال:\n<code>/setprice 1 59999</code>\nأو اكتب: غيّر سعر المنتج 1 إلى 59999");
       else if (data === "hint_visibility") await reply(chatId, "👁 مثال: اخفِ المنتج 1 أو أظهر المنتج 1");
       else if (data === "layout_hint") await reply(chatId, "🧱 اكتب: <code>/setlayout luxury</code> أو minimal أو neon");
+      else if (data === "ai_products") { const f = await getFile("products.json"); const list = f ? JSON.parse(f.content) : []; await reply(chatId, await askAi("حلل المنتجات الحالية واقترح تحسينات قصيرة", list), { reply_markup: MAIN_MENU }); }
+      else if (data === "ai_copy") await reply(chatId, "✍️ اكتب اسم المنتج ومميزاته، وأنا أكتب لك وصفًا جاهزًا للنشر.");
+      else if (data === "ai_idea") await reply(chatId, "💡 مثال: اكتب <i>اقترح حملة لمنتجات الجيمنج</i> وأنا أجهز لك فكرة ونسخة إعلان.");
       return res.status(200).json({ ok: true });
     }
     if (!msg?.text) return res.status(200).json({ ok: true });
@@ -121,7 +136,7 @@ export default async function handler(req, res) {
     if (!text.startsWith("/")) {
       const intent = naturalIntent(text);
       if (intent) text = intent.command;
-      else { await reply(chatId, "🤖 فهمت عليك. استخدم الأزرار أو اكتب طلبًا مثل: غيّر ثيم الموقع للذهبي، اعرض المنتجات، أو غيّر سعر المنتج 1 إلى 59999.", { reply_markup: MAIN_MENU }); return res.status(200).json({ ok: true }); }
+      else { const f = await getFile("products.json"); const list = f ? JSON.parse(f.content) : []; await reply(chatId, await askAi(text, list), { reply_markup: MAIN_MENU }); return res.status(200).json({ ok: true }); }
     }
     if (chatId !== ADMIN_CHAT) { await reply(chatId, "⛔ للإدارة فقط"); return res.status(200).json({ ok: true }); }
     const [cmd, ...args] = text.split(/\s+/);
