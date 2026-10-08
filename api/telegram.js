@@ -4,7 +4,7 @@ const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
-const GH_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
+const GH_TOKEN = process.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || "";
 
 async function tg(method, body) {
   if (!BOT_TOKEN) return { ok: false, description: "TELEGRAM_BOT_TOKEN غير مضبوط في Vercel" };

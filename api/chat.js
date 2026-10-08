@@ -2,7 +2,7 @@ import { openrouterSearchChat, resilientChat } from "./_ai.js";
 
 async function autoAddRequestedProduct(message, catalog) {
   const token = process.env.OPENROUTER_API_KEY;
-  const gh = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  const gh = process.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN;
   if (!token || !gh) return null;
   try {
     const prompt = `ابحث على الويب عن الجهاز الذي يطلبه العميل في النص التالي، وأرجع JSON فقط لمنتج واحد محدد، أو {"notFound":true} إذا لم تجد منتجًا واضحًا. الشكل: {"name":"","category":"phones|laptops|audio|wearables","price":0,"oldPrice":null,"image":"https://...","description":"","specs":{},"sourceUrl":"https://..."}. استخدم سعرًا تقريبيًا بالجنيه المصري، وصورة مباشرة قابلة للفتح، ورابط صفحة المصدر. لا تخترع بيانات أو روابط. طلب العميل: ${message.slice(0, 1000)}`;
