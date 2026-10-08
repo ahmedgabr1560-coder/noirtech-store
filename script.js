@@ -23,7 +23,7 @@ const products = [
   { id: 21, name: "AirPods Max", category: "audio", price: 22999, oldPrice: 24999, image: "https://images.unsplash.com/photo-1625883214690-c10a0b5f4f0b?w=600&h=600&fit=crop", badge: null },
   { id: 22, name: "Sony WF-1000XM5", category: "audio", price: 8999, oldPrice: 9999, image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&h=600&fit=crop", badge: "عرض" },
   { id: 23, name: "Marshall Emberton II", category: "audio", price: 6499, oldPrice: null, image: "https://images.unsplash.com/photo-1545454675-9c7b5f6b5e3e?w=600&h=600&fit=crop", badge: null },
-  { id: 24, name: "Sennheiser Momentum 4", category: "audio", price: 11999, oldPrice: 13999, image: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&h=600&fit=crop", badge: null },
+  { id: 24, name: "Sennheiser Momentum 4", category: "audio", price: 11999, oldPrice: 13999, image: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&h=600&fit=crop", badge: "عرض" },
   { id: 25, name: "Apple Watch Ultra 2", category: "wearables", price: 32999, oldPrice: 35999, image: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=600&h=600&fit=crop", badge: "جديد" },
   { id: 26, name: "Samsung Galaxy Watch 7", category: "wearables", price: 11999, oldPrice: 13999, image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=600&h=600&fit=crop", badge: "عرض" },
   { id: 27, name: "Garmin Fenix 8", category: "wearables", price: 27999, oldPrice: null, image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=600&h=600&fit=crop", badge: null },
@@ -171,10 +171,35 @@ function processCheckout() {
   if (cart.length === 0) { showToast("السلة فارغة!"); return; }
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const orderItems = cart.map(i => `• ${i.name} × ${i.qty} = ${(i.price * i.qty).toLocaleString("ar-EG")} ج.م`).join("\n");
-  const orderMsg = `طلب جديد من ${currentUser.name}\nالهاتف: ${currentUser.phone}\nالإيميل: ${currentUser.email}\n\nالمنتجات:\n${orderItems}\n\nالإجمالي: ${total.toLocaleString("ar-EG")} ج.م`;
-  showToast("تم استلام طلبك بنجاح! سنتواصل معك قريباً ✨");
+  const orderMsg = `🛒 طلب جديد من NoirTech\n\n👤 الاسم: ${currentUser.name}\n📞 الهاتف: ${currentUser.phone}\n📧 الإيميل: ${currentUser.email}\n\n📦 المنتجات:\n${orderItems}\n\n💰 الإجمالي: ${total.toLocaleString("ar-EG")} ج.م`;
+
+  // Send to Telegram Bot
+  const botToken = "8737261045:AAGXsJDLKJAf0xsJzegLjWcBX3PUHZlzqow";
+  const chatId = "6746972381";
+  fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: orderMsg,
+      parse_mode: "HTML"
+    })
+  }).then(r => r.json()).then(data => {
+    if (data.ok) {
+      showToast("تم استلام طلبك بنجاح! سنتواصل معك قريباً ✨");
+    } else {
+      showToast("تم تسجيل الطلب! سنتواصل معك قريباً");
+    }
+  }).catch(() => {
+    showToast("تم تسجيل الطلب! سنتواصل معك قريباً");
+  });
+
+  // Also open WhatsApp as backup
   window.open(`https://wa.me/201064519541?text=${encodeURIComponent(orderMsg)}`, "_blank");
-  cart = []; saveCart(); closeCartSidebar();
+
+  cart = [];
+  saveCart();
+  closeCartSidebar();
 }
 
 checkoutBtn.addEventListener("click", () => {
