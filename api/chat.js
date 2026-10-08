@@ -1,5 +1,32 @@
 import { openrouterSearchChat, resilientChat } from "./_ai.js";
 
+async function autoAddRequestedProduct(message, catalog) {
+  const token = process.env.OPENROUTER_API_KEY;
+  const gh = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  if (!token || !gh) return null;
+  try {
+    const prompt = `ابحث على الويب عن الجهاز الذي يطلبه العميل في النص التالي، وأرجع JSON فقط لمنتج واحد محدد، أو {"notFound":true} إذا لم تجد منتجًا واضحًا. الشكل: {"name":"","category":"phones|laptops|audio|wearables","price":0,"oldPrice":null,"image":"https://...","description":"","specs":{},"sourceUrl":"https://..."}. استخدم سعرًا تقريبيًا بالجنيه المصري، وصورة مباشرة قابلة للفتح، ورابط صفحة المصدر. لا تخترع بيانات أو روابط. طلب العميل: ${message.slice(0, 1000)}`;
+    const ai = await openrouterSearchChat("أنت باحث منتجات دقيق. أخرج JSON فقط.", [{ role: "user", content: prompt }], 900);
+    const raw = ai.text.match(/\{[\s\S]*\}/)?.[0];
+    if (!raw) return null;
+    const item = JSON.parse(raw);
+    const categories = new Set(["phones", "laptops", "audio", "wearables"]);
+    if (item.notFound || !item.name || !categories.has(item.category) || Number(item.price) <= 0 || !/^https?:\/\//i.test(String(item.image)) || !/^https?:\/\//i.test(String(item.sourceUrl))) return null;
+    const headers = { Accept: "application/vnd.github+json", Authorization: `Bearer ${gh}`, "User-Agent": "NoirTech-AutoCatalog" };
+    const fileResponse = await fetch("https://api.github.com/repos/ahmedgabr1560-coder/noirtech-store/contents/products.json", { headers });
+    if (!fileResponse.ok) return null;
+    const file = await fileResponse.json();
+    const products = JSON.parse(Buffer.from(file.content, "base64").toString("utf8"));
+    const normalized = String(item.name).toLowerCase();
+    if (products.some(p => String(p.name || "").toLowerCase() === normalized)) return { duplicate: true, name: item.name };
+    const id = Math.max(0, ...products.map(p => Number(p.id) || 0)) + 1;
+    const product = { id, name: String(item.name).slice(0, 120), category: item.category, price: Math.round(Number(item.price)), oldPrice: Number(item.oldPrice) > Number(item.price) ? Math.round(Number(item.oldPrice)) : null, image: String(item.image), badge: "طلب عميل", hidden: false, description: String(item.description || "").slice(0, 500), specs: item.specs && typeof item.specs === "object" ? item.specs : {}, sourceUrl: String(item.sourceUrl) };
+    const put = await fetch("https://api.github.com/repos/ahmedgabr1560-coder/noirtech-store/contents/products.json", { method: "PUT", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ message: `auto: add requested product ${product.name}`, content: Buffer.from(JSON.stringify([...products, product], null, 2), "utf8").toString("base64"), branch: "main", sha: file.sha }) });
+    if (!put.ok) return null;
+    return { added: true, name: product.name };
+  } catch (error) { console.error("auto product add failed", error.message); return null; }
+}
+
 async function notifyAdminProductRequest(message) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_ADMIN_CHAT;
@@ -63,7 +90,10 @@ ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
     const knownCatalog = Array.isArray(catalog) ? catalog.map(p => String(p?.name || "").toLowerCase()) : [];
     let requestNotice = "";
     if (asksForUnavailableProduct && !knownCatalog.some(name => name && message.toLowerCase().includes(name))) {
-      if (await notifyAdminProductRequest(message)) requestNotice = "\n\n📨 سجلت طلب توفير الجهاز عند فريق NoirTech، وهيتم مراجعته وإضافته لو مناسب.";
+      const auto = await autoAddRequestedProduct(message, catalog);
+      if (auto?.added) requestNotice = `\n\n✅ الجهاز مش موجود قبل كده، فبحثت عنه وضفته تلقائيًا للموقع: ${auto.name}.`;
+      else if (auto?.duplicate) requestNotice = `\n\n✅ الجهاز موجود بالفعل في الكتالوج: ${auto.name}.`;
+      else if (await notifyAdminProductRequest(message)) requestNotice = "\n\n📨 سجلت طلب توفير الجهاز عند فريق NoirTech، وهيتم مراجعته وإضافته لو مناسب.";
     }
     const chatMessages = [
       ...(Array.isArray(history) ? history.slice(-12).filter(m => m && ["user", "assistant"].includes(m.role) && typeof m.content === "string").map(m => ({ role: m.role, content: m.content.slice(0, 2000) })) : []),
