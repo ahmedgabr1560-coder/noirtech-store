@@ -12,8 +12,39 @@ async function tg(method, body) {
   });
   return r.json();
 }
-async function reply(chatId, text) {
-  return tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML" });
+async function reply(chatId, text, extra = {}) {
+  return tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML", ...extra });
+}
+function keyboard(rows) { return { inline_keyboard: rows }; }
+const MAIN_MENU = keyboard([
+  [{ text: "📦 المنتجات", callback_data: "menu_products" }, { text: "🎨 التصميم", callback_data: "menu_design" }],
+  [{ text: "✍️ النصوص", callback_data: "menu_content" }, { text: "🧱 الأقسام", callback_data: "menu_sections" }],
+  [{ text: "📊 الحالة", callback_data: "menu_status" }, { text: "❓ المساعدة", callback_data: "menu_help" }]
+]);
+const PRODUCT_MENU = keyboard([
+  [{ text: "📋 عرض المنتجات", callback_data: "cmd_products" }, { text: "➕ إضافة منتج", callback_data: "hint_add" }],
+  [{ text: "💰 تعديل سعر", callback_data: "hint_price" }, { text: "👁 إخفاء/إظهار", callback_data: "hint_visibility" }],
+  [{ text: "⬅️ القائمة الرئيسية", callback_data: "menu_main" }]
+]);
+const DESIGN_MENU = keyboard([
+  [{ text: "🌑 Luxury", callback_data: "theme_dark" }, { text: "✨ Gold", callback_data: "theme_gold" }],
+  [{ text: "💜 Purple", callback_data: "theme_purple" }, { text: "🔴 Red", callback_data: "theme_red" }],
+  [{ text: "🧱 شكل الصفحة", callback_data: "layout_hint" }, { text: "⬅️ الرئيسية", callback_data: "menu_main" }]
+]);
+function naturalIntent(text) {
+  const t = text.toLowerCase();
+  const id = (t.match(/(?:منتج|رقم|#)\s*(\d+)/) || [])[1];
+  const price = (t.match(/(?:سعر|بكام|بـ|الى|إلى)\s*(?:المنتج\s*)?(\d{3,})/) || [])[1];
+  if (/قائمة|الأوامر|المينيو|القائمه/.test(t)) return { command: "/menu" };
+  if (/اعرض|عرض|المنتجات|المنتج/.test(t) && !/سعر|اخف|اظهر|إظهر/.test(t)) return { command: "/products" };
+  if (/ذهبي|دهبي|gold/.test(t)) return { command: "/theme gold" };
+  if (/بنفسجي|purple/.test(t)) return { command: "/theme purple" };
+  if (/احمر|أحمر|red/.test(t)) return { command: "/theme red" };
+  if (/داكن|غامق|dark/.test(t)) return { command: "/theme dark" };
+  if (id && price && /سعر|بكام|غيّر|غير|تعديل/.test(t)) return { command: `/setprice ${id} ${price}` };
+  if (id && /اخف|إخف|اختف/.test(t)) return { command: `/hide ${id}` };
+  if (id && /اظهر|إظهر|إظهار/.test(t)) return { command: `/show ${id}` };
+  return null;
 }
 async function getFile(path) {
   const headers = { Accept: "application/vnd.github+json", "User-Agent": "NoirTech-Bot" };
@@ -53,14 +84,49 @@ export default async function handler(req, res) {
   if (req.method === "GET") return res.status(200).json({ ok: true });
   if (req.method !== "POST") return res.status(405).end();
   try {
-    const msg = (req.body || {}).message || (req.body || {}).edited_message;
+    const body = req.body || {};
+    const query = body.callback_query;
+    const msg = body.message || body.edited_message;
+    const chatId = String(query?.message?.chat?.id || msg?.chat?.id || "");
+    if (!chatId) return res.status(200).json({ ok: true });
+    if (chatId !== ADMIN_CHAT) {
+      if (query?.id) await tg("answerCallbackQuery", { callback_query_id: query.id, text: "للإدارة فقط", show_alert: true });
+      else await reply(chatId, "⛔ للإدارة فقط");
+      return res.status(200).json({ ok: true });
+    }
+    if (query) {
+      await tg("answerCallbackQuery", { callback_query_id: query.id });
+      const data = query.data || "";
+      if (data === "menu_main") await reply(chatId, "🎛 <b>لوحة NoirTech</b>\nاختار القسم:", { reply_markup: MAIN_MENU });
+      else if (data === "menu_products") await reply(chatId, "📦 <b>إدارة المنتجات</b>\nاختار العملية أو اكتبها بطريقتك:", { reply_markup: PRODUCT_MENU });
+      else if (data === "menu_design") await reply(chatId, "🎨 <b>التصميم والثيمات</b>", { reply_markup: DESIGN_MENU });
+      else if (data === "menu_content") await reply(chatId, "✍️ اكتب مثلًا: <i>غيّر عنوان الصفحة إلى أحدث الأجهزة</i>\n\nالأوامر: /settitle أو /setabout أو /setfooter");
+      else if (data === "menu_sections") await reply(chatId, "🧱 اكتب ترتيب الأقسام بفواصل، مثل:\n<code>/setorder hero,categories,phones,laptops,audio,wearables,about,contact</code>");
+      else if (data === "menu_status") await reply(chatId, "✅ البوت متصل\n🌐 noirtech-store.vercel.app");
+      else if (data === "menu_help") await reply(chatId, helpText(), { reply_markup: MAIN_MENU });
+      else if (data === "cmd_products") {
+        const f = await getFile("products.json");
+        const list = f ? JSON.parse(f.content) : [];
+        await reply(chatId, list.filter(p => !p.hidden).slice(0, 30).map(p => `#${p.id} ${p.name} — ${p.price}`).join("\n") || "لا منتجات");
+      }
+      else if (data.startsWith("theme_")) await reply(chatId, `اكتب: <code>/theme ${data.replace("theme_", "")}</code> ثم أرسلها، أو استخدم الأمر مباشرة.`);
+      else if (data === "hint_add") await reply(chatId, "➕ مثال:\n<code>/addproduct iPhone 16|phones|62999|https://image-url</code>");
+      else if (data === "hint_price") await reply(chatId, "💰 مثال:\n<code>/setprice 1 59999</code>\nأو اكتب: غيّر سعر المنتج 1 إلى 59999");
+      else if (data === "hint_visibility") await reply(chatId, "👁 مثال: اخفِ المنتج 1 أو أظهر المنتج 1");
+      else if (data === "layout_hint") await reply(chatId, "🧱 اكتب: <code>/setlayout luxury</code> أو minimal أو neon");
+      return res.status(200).json({ ok: true });
+    }
     if (!msg?.text) return res.status(200).json({ ok: true });
-    const chatId = String(msg.chat.id);
-    const text = msg.text.trim();
+    let text = msg.text.trim();
+    if (!text.startsWith("/")) {
+      const intent = naturalIntent(text);
+      if (intent) text = intent.command;
+      else { await reply(chatId, "🤖 فهمت عليك. استخدم الأزرار أو اكتب طلبًا مثل: غيّر ثيم الموقع للذهبي، اعرض المنتجات، أو غيّر سعر المنتج 1 إلى 59999.", { reply_markup: MAIN_MENU }); return res.status(200).json({ ok: true }); }
+    }
     if (chatId !== ADMIN_CHAT) { await reply(chatId, "⛔ للإدارة فقط"); return res.status(200).json({ ok: true }); }
     const [cmd, ...args] = text.split(/\s+/);
     const command = (cmd || "").toLowerCase().replace(/@\w+/, "");
-    if (command === "/start" || command === "/help") { await reply(chatId, helpText()); return res.status(200).json({ ok: true }); }
+    if (command === "/start" || command === "/help" || command === "/menu") { await reply(chatId, command === "/menu" ? "🎛 <b>لوحة NoirTech</b>\nاختار القسم:" : helpText(), { reply_markup: MAIN_MENU }); return res.status(200).json({ ok: true }); }
     if (command === "/status") {
       await reply(chatId, `✅ NoirTech\n🌐 https://noirtech-store.vercel.app\n🔑 GitHub: ${GH_TOKEN ? "مربوط ✅" : "❌ أضف GITHUB_TOKEN"}`);
       return res.status(200).json({ ok: true });
