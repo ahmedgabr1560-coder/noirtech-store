@@ -1,6 +1,6 @@
 // ===== Products Data =====
 const products = [
-  // هواتف
+  // ========== هواتف ذكية ==========
   {
     id: 1,
     name: "iPhone 16 Pro Max",
@@ -37,11 +37,47 @@ const products = [
     image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop",
     badge: "عرض"
   },
-
-  // لابتوبات وديسك توب
   {
     id: 5,
-    name: "MacBook Pro 16\" M3",
+    name: "OnePlus 13",
+    category: "phones",
+    price: 34999,
+    oldPrice: 37999,
+    image: "https://images.unsplash.com/photo-1592890288564-76628a30a657?w=600&h=600&fit=crop",
+    badge: null
+  },
+  {
+    id: 6,
+    name: "iPhone 15",
+    category: "phones",
+    price: 39999,
+    oldPrice: 44999,
+    image: "https://images.unsplash.com/photo-1678685888229-5fe1ec6f34b7?w=600&h=600&fit=crop",
+    badge: "عرض"
+  },
+  {
+    id: 7,
+    name: "Samsung Galaxy Z Fold 6",
+    category: "phones",
+    price: 72999,
+    oldPrice: null,
+    image: "https://images.unsplash.com/photo-1617040619263-41af7a7a0f0b?w=600&h=600&fit=crop",
+    badge: "قابل للطي"
+  },
+  {
+    id: 8,
+    name: "Nothing Phone (2a)",
+    category: "phones",
+    price: 18999,
+    oldPrice: 21999,
+    image: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&h=600&fit=crop",
+    badge: null
+  },
+
+  // ========== لابتوبات وديسك توب ==========
+  {
+    id: 9,
+    name: "MacBook Pro 16\" M3 Max",
     category: "laptops",
     price: 89999,
     oldPrice: 94999,
@@ -49,8 +85,8 @@ const products = [
     badge: "الأكثر مبيعاً"
   },
   {
-    id: 6,
-    name: "Dell XPS 15",
+    id: 10,
+    name: "Dell XPS 15 OLED",
     category: "laptops",
     price: 67999,
     oldPrice: null,
@@ -58,7 +94,7 @@ const products = [
     badge: null
   },
   {
-    id: 7,
+    id: 11,
     name: "ASUS ROG Strix G16",
     category: "laptops",
     price: 72999,
@@ -67,7 +103,7 @@ const products = [
     badge: "للألعاب"
   },
   {
-    id: 8,
+    id: 12,
     name: "Lenovo ThinkPad X1 Carbon",
     category: "laptops",
     price: 59999,
@@ -75,10 +111,46 @@ const products = [
     image: "https://images.unsplash.com/photo-1588872657578-7b1fe1f3f5b6?w=600&h=600&fit=crop",
     badge: null
   },
-
-  // صوتيات
   {
-    id: 9,
+    id: 13,
+    name: "MacBook Air 15\" M3",
+    category: "laptops",
+    price: 54999,
+    oldPrice: 58999,
+    image: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&h=600&fit=crop",
+    badge: "خفيف"
+  },
+  {
+    id: 14,
+    name: "HP Spectre x360",
+    category: "laptops",
+    price: 51999,
+    oldPrice: 55999,
+    image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&h=600&fit=crop",
+    badge: null
+  },
+  {
+    id: 15,
+    name: "MSI Stealth 16",
+    category: "laptops",
+    price: 79999,
+    oldPrice: 84999,
+    image: "https://images.unsplash.com/photo-1525547717933-aa4bba7bf5e5?w=600&h=600&fit=crop",
+    badge: "للألعاب"
+  },
+  {
+    id: 16,
+    name: "Microsoft Surface Laptop 6",
+    category: "laptops",
+    price: 48999,
+    oldPrice: null,
+    image: "https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?w=600&h=600&fit=crop",
+    badge: null
+  },
+
+  // ========== سماعات وصوتيات ==========
+  {
+    id: 17,
     name: "AirPods Pro 2",
     category: "audio",
     price: 9999,
@@ -87,7 +159,7 @@ const products = [
     badge: null
   },
   {
-    id: 10,
+    id: 18,
     name: "Sony WH-1000XM5",
     category: "audio",
     price: 12999,
@@ -96,7 +168,7 @@ const products = [
     badge: "عرض"
   },
   {
-    id: 11,
+    id: 19,
     name: "Bose QuietComfort Ultra",
     category: "audio",
     price: 14999,
@@ -105,7 +177,7 @@ const products = [
     badge: null
   },
   {
-    id: 12,
+    id: 20,
     name: "JBL Charge 5",
     category: "audio",
     price: 4999,
@@ -113,10 +185,46 @@ const products = [
     image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&h=600&fit=crop",
     badge: "عرض"
   },
-
-  // ساعات ذكية
   {
-    id: 13,
+    id: 21,
+    name: "AirPods Max",
+    category: "audio",
+    price: 22999,
+    oldPrice: 24999,
+    image: "https://images.unsplash.com/photo-1625883214690-c10a0b5f4f0b?w=600&h=600&fit=crop",
+    badge: null
+  },
+  {
+    id: 22,
+    name: "Sony WF-1000XM5",
+    category: "audio",
+    price: 8999,
+    oldPrice: 9999,
+    image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&h=600&fit=crop",
+    badge: "عرض"
+  },
+  {
+    id: 23,
+    name: "Marshall Emberton II",
+    category: "audio",
+    price: 6499,
+    oldPrice: null,
+    image: "https://images.unsplash.com/photo-1545454675-9c7b5f6b5e3e?w=600&h=600&fit=crop",
+    badge: null
+  },
+  {
+    id: 24,
+    name: "Sennheiser Momentum 4",
+    category: "audio",
+    price: 11999,
+    oldPrice: 13999,
+    image: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&h=600&fit=crop",
+    badge: null
+  },
+
+  // ========== ساعات ذكية ==========
+  {
+    id: 25,
     name: "Apple Watch Ultra 2",
     category: "wearables",
     price: 32999,
@@ -125,7 +233,7 @@ const products = [
     badge: "جديد"
   },
   {
-    id: 14,
+    id: 26,
     name: "Samsung Galaxy Watch 7",
     category: "wearables",
     price: 11999,
@@ -134,7 +242,7 @@ const products = [
     badge: "عرض"
   },
   {
-    id: 15,
+    id: 27,
     name: "Garmin Fenix 8",
     category: "wearables",
     price: 27999,
@@ -143,13 +251,49 @@ const products = [
     badge: null
   },
   {
-    id: 16,
+    id: 28,
     name: "Huawei Watch GT 5",
     category: "wearables",
     price: 8999,
     oldPrice: 9999,
     image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop",
     badge: null
+  },
+  {
+    id: 29,
+    name: "Apple Watch Series 10",
+    category: "wearables",
+    price: 18999,
+    oldPrice: 20999,
+    image: "https://images.unsplash.com/photo-1551816230-ef5deaed4a26?w=600&h=600&fit=crop",
+    badge: "جديد"
+  },
+  {
+    id: 30,
+    name: "Fitbit Sense 2",
+    category: "wearables",
+    price: 7499,
+    oldPrice: 8499,
+    image: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=600&h=600&fit=crop",
+    badge: "عرض"
+  },
+  {
+    id: 31,
+    name: "Garmin Venu 3",
+    category: "wearables",
+    price: 15999,
+    oldPrice: null,
+    image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=600&h=600&fit=crop",
+    badge: null
+  },
+  {
+    id: 32,
+    name: "Samsung Galaxy Ring",
+    category: "wearables",
+    price: 12999,
+    oldPrice: null,
+    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&h=600&fit=crop",
+    badge: "جديد"
   }
 ];
 
