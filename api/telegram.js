@@ -12,23 +12,21 @@ async function tg(method, body) {
   });
   return r.json();
 }
-
-async function reply(chatId, text, extra = {}) {
-  return tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML", ...extra });
+async function reply(chatId, text) {
+  return tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML" });
 }
-
-async function getFileFromGitHub(path) {
+async function getFile(path) {
   const headers = { Accept: "application/vnd.github+json", "User-Agent": "NoirTech-Bot" };
   if (GH_TOKEN) headers.Authorization = `Bearer ${GH_TOKEN}`;
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, { headers });
   if (!r.ok) return null;
   const data = await r.json();
-  const content = Buffer.from(data.content, "base64").toString("utf8");
-  return { content, sha: data.sha };
+  return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
-
-async function putFileToGitHub(path, content, message, sha) {
-  if (!GH_TOKEN) return { ok: false, error: "GITHUB_TOKEN غير مضبوط على Vercel" };
+async function putFile(path, content, message, sha) {
+  if (!GH_TOKEN) return { ok: false, error: "⚠️ أضف GITHUB_TOKEN على Vercel أولاً" };
+  const body = { message, content: Buffer.from(content, "utf8").toString("base64"), branch: "main" };
+  if (sha) body.sha = sha;
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
     method: "PUT",
     headers: {
@@ -37,150 +35,138 @@ async function putFileToGitHub(path, content, message, sha) {
       "Content-Type": "application/json",
       "User-Agent": "NoirTech-Bot"
     },
-    body: JSON.stringify({
-      message,
-      content: Buffer.from(content, "utf8").toString("base64"),
-      sha,
-      branch: "main"
-    })
+    body: JSON.stringify(body)
   });
   const data = await r.json();
   return { ok: r.ok, data };
 }
-
 function helpText() {
-  return `🎛 <b>لوحة تحكم NoirTech</b>\n\n📦 <b>المنتجات</b>\n/products — عرض المنتجات\n/product &lt;id&gt; — تفاصيل منتج\n/setprice &lt;id&gt; &lt;سعر&gt; — تغيير السعر\n/setold &lt;id&gt; &lt;سعر&gt; — سعر قديم (0 للحذف)\n/setbadge &lt;id&gt; &lt;نص&gt; — شارة (- للحذف)\n/hide &lt;id&gt; — إخفاء\n/show &lt;id&gt; — إظهار\n\n🛒 /orders — آخر الطلبات\nℹ️ /status — حالة المتجر\n/help — المساعدة`;
+  return `🎛 <b>تحكم كامل — NoirTech</b>\n\n📦 <b>المنتجات</b>\n/products | /product id\n/setprice id سعر\n/setbadge id نص\n/hide id | /show id\n\n🎨 <b>التصميم</b>\n/config\n/theme dark|gold|purple|red\n/setcolor gold #ffaa00\n\n✍️ <b>النصوص</b>\n/sethero نص\n/setdesc وصف\n/setbadgehero شارة\n/setbtn نص الزر\n/setname الاسم\n/setsite الاسم\n\n📞 /setphone | /setemail | /setaddress\n👁 /toggle about|contact|categories|whatsapp|telegram|ai\n🛒 /orders\nℹ️ /status /help`;
 }
-
+const THEMES = {
+  dark: { bg: "#07070a", bgCard: "#0f0f14", gold: "#f0b429", goldLight: "#ffd666", goldDark: "#d4920a", accent: "#7c5cff", text: "#f4f4f8", textMuted: "#9898a6" },
+  gold: { bg: "#0c0a06", bgCard: "#16120a", gold: "#ffc233", goldLight: "#ffe08a", goldDark: "#c49200", accent: "#d4a017", text: "#fff8e7", textMuted: "#b8a88a" },
+  purple: { bg: "#0a0712", bgCard: "#120e1c", gold: "#c4a0ff", goldLight: "#e0c8ff", goldDark: "#8b5cf6", accent: "#a78bfa", text: "#f3e8ff", textMuted: "#a89bb8" },
+  red: { bg: "#0c0707", bgCard: "#160e0e", gold: "#ff5c5c", goldLight: "#ff8a8a", goldDark: "#e11d48", accent: "#f43f5e", text: "#fff1f1", textMuted: "#b89a9a" }
+};
 export default async function handler(req, res) {
-  if (req.method === "GET") return res.status(200).json({ ok: true, service: "NoirTech Telegram Admin" });
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-
+  if (req.method === "GET") return res.status(200).json({ ok: true });
+  if (req.method !== "POST") return res.status(405).end();
   try {
-    const update = req.body || {};
-    const msg = update.message || update.edited_message;
-    if (!msg || !msg.text) return res.status(200).json({ ok: true });
-
+    const msg = (req.body || {}).message || (req.body || {}).edited_message;
+    if (!msg?.text) return res.status(200).json({ ok: true });
     const chatId = String(msg.chat.id);
-    const text = (msg.text || "").trim();
-
-    if (chatId !== ADMIN_CHAT) {
-      await reply(chatId, "⛔ هذا البوت مخصص لإدارة متجر NoirTech فقط.");
-      return res.status(200).json({ ok: true });
-    }
-
+    const text = msg.text.trim();
+    if (chatId !== ADMIN_CHAT) { await reply(chatId, "⛔ للإدارة فقط"); return res.status(200).json({ ok: true }); }
     const [cmd, ...args] = text.split(/\s+/);
     const command = (cmd || "").toLowerCase().replace(/@\w+/, "");
-
-    if (command === "/start" || command === "/help") {
-      await reply(chatId, helpText());
-      return res.status(200).json({ ok: true });
-    }
-
+    if (command === "/start" || command === "/help") { await reply(chatId, helpText()); return res.status(200).json({ ok: true }); }
     if (command === "/status") {
-      await reply(chatId, `✅ <b>NoirTech يعمل</b>\n🌐 https://noirtech-store.vercel.app\n🤖 البوت متصل\n🔑 GitHub: ${GH_TOKEN ? "مربوط ✅" : "غير مربوط — عدّل GITHUB_TOKEN على Vercel"}`);
+      await reply(chatId, `✅ NoirTech\n🌐 https://noirtech-store.vercel.app\n🔑 GitHub: ${GH_TOKEN ? "مربوط ✅" : "❌ أضف GITHUB_TOKEN"}`);
       return res.status(200).json({ ok: true });
     }
-
-    let products = null;
-    let sha = null;
-    const file = await getFileFromGitHub("products.json");
-    if (file) {
-      try { products = JSON.parse(file.content); sha = file.sha; } catch (e) { products = null; }
-    }
-
-    if (command === "/products") {
-      if (!products || !Array.isArray(products)) {
-        await reply(chatId, "⚠️ لا يوجد products.json");
-        return res.status(200).json({ ok: true });
-      }
-      const lines = products.filter(p => !p.hidden).slice(0, 40).map(
-        p => `#${p.id} ${p.name}\n   💰 ${Number(p.price).toLocaleString("ar-EG")} ج.م${p.badge ? " | " + p.badge : ""}`
-      );
-      await reply(chatId, `📦 <b>المنتجات (${products.filter(p => !p.hidden).length})</b>\n\n${lines.join("\n\n")}`);
-      return res.status(200).json({ ok: true });
-    }
-
-    if (command === "/product") {
-      const id = Number(args[0]);
-      if (!id || !products) { await reply(chatId, "استخدم: /product &lt;id&gt;"); return res.status(200).json({ ok: true }); }
-      const p = products.find(x => x.id === id);
-      if (!p) { await reply(chatId, "غير موجود"); return res.status(200).json({ ok: true }); }
-      await reply(chatId, `📱 <b>${p.name}</b>\nID: ${p.id}\nقسم: ${p.category}\nسعر: ${p.price}\nقديم: ${p.oldPrice || "—"}\nشارة: ${p.badge || "—"}\nمخفي: ${p.hidden ? "نعم" : "لا"}`);
-      return res.status(200).json({ ok: true });
-    }
-
-    async function saveProducts(newProducts, message) {
-      const content = JSON.stringify(newProducts, null, 2);
-      const result = await putFileToGitHub("products.json", content, message, sha);
-      if (!result.ok) {
-        await reply(chatId, `❌ فشل الحفظ: ${result.error || result.data?.message || "خطأ"}`);
-        return false;
-      }
+    const cfgFile = await getFile("site-config.json");
+    let config = null, cfgSha = null;
+    if (cfgFile) { try { config = JSON.parse(cfgFile.content); cfgSha = cfgFile.sha; } catch (e) {} }
+    async function saveConfig(c, message) {
+      const result = await putFile("site-config.json", JSON.stringify(c, null, 2), message, cfgSha);
+      if (!result.ok) { await reply(chatId, `❌ ${result.error || result.data?.message || "فشل"}`); return false; }
+      cfgSha = result.data?.content?.sha || cfgSha;
       return true;
     }
-
+    if (command === "/config") {
+      if (!config) { await reply(chatId, "لا يوجد config"); return res.status(200).json({ ok: true }); }
+      await reply(chatId, `⚙️ ${config.siteName}\n${config.ownerName}\n${config.heroHighlight}\n📞 ${config.phone}\ngold=${config.colors?.gold}\naccent=${config.colors?.accent}`);
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/theme") {
+      const name = (args[0] || "").toLowerCase();
+      if (!THEMES[name] || !config) { await reply(chatId, "/theme dark|gold|purple|red"); return res.status(200).json({ ok: true }); }
+      config.colors = { ...config.colors, ...THEMES[name] };
+      if (await saveConfig(config, `bot: theme ${name}`)) await reply(chatId, `✅ ثيم ${name}`);
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/setcolor") {
+      const key = (args[0] || "").toLowerCase(); const val = args[1];
+      const map = { gold: "gold", accent: "accent", bg: "bg", card: "bgCard", text: "text", muted: "textMuted", light: "goldLight", dark: "goldDark" };
+      if (!map[key] || !val || !config) { await reply(chatId, "مثال: /setcolor gold #ffaa00"); return res.status(200).json({ ok: true }); }
+      config.colors = config.colors || {}; config.colors[map[key]] = val;
+      if (await saveConfig(config, `bot: color ${key}`)) await reply(chatId, `✅ ${key}=${val}`);
+      return res.status(200).json({ ok: true });
+    }
+    const textCmds = {
+      "/sethero": "heroHighlight",
+      "/setdesc": "heroDesc",
+      "/setbadgehero": "heroBadge",
+      "/setbtn": "heroBtn",
+      "/setname": "ownerName",
+      "/setsite": "siteName",
+      "/setaddress": "address"
+    };
+    if (textCmds[command]) {
+      const v = args.join(" ");
+      if (!v || !config) { await reply(chatId, `استخدم: ${command} النص`); return res.status(200).json({ ok: true }); }
+      config[textCmds[command]] = v;
+      if (await saveConfig(config, `bot: ${command}`)) await reply(chatId, `✅ تم`);
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/setphone" || command === "/setemail") {
+      const v = args[0];
+      if (!v || !config) { await reply(chatId, `استخدم: ${command} القيمة`); return res.status(200).json({ ok: true }); }
+      config[command === "/setphone" ? "phone" : "email"] = v;
+      if (await saveConfig(config, `bot: ${command}`)) await reply(chatId, `✅ ${v}`);
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/toggle") {
+      const key = (args[0] || "").toLowerCase();
+      const map = { about: "showAbout", contact: "showContact", categories: "showCategories", whatsapp: "showFloatWhatsapp", telegram: "showFloatTelegram", ai: "showFloatAI" };
+      if (!map[key] || !config) { await reply(chatId, "/toggle about|contact|categories|whatsapp|telegram|ai"); return res.status(200).json({ ok: true }); }
+      config[map[key]] = !config[map[key]];
+      if (await saveConfig(config, `bot: toggle ${key}`)) await reply(chatId, `✅ ${key}: ${config[map[key]] ? "ظاهر" : "مخفي"}`);
+      return res.status(200).json({ ok: true });
+    }
+    const prodFile = await getFile("products.json");
+    let products = null, prodSha = null;
+    if (prodFile) { try { products = JSON.parse(prodFile.content); prodSha = prodFile.sha; } catch (e) {} }
+    async function saveProducts(list, message) {
+      const result = await putFile("products.json", JSON.stringify(list, null, 2), message, prodSha);
+      if (!result.ok) { await reply(chatId, `❌ ${result.error || result.data?.message || "فشل"}`); return false; }
+      return true;
+    }
+    if (command === "/products") {
+      if (!products) { await reply(chatId, "لا منتجات"); return res.status(200).json({ ok: true }); }
+      const lines = products.filter(p => !p.hidden).slice(0, 30).map(p => `#${p.id} ${p.name} — ${p.price}`);
+      await reply(chatId, lines.join("\n"));
+      return res.status(200).json({ ok: true });
+    }
     if (command === "/setprice") {
-      const id = Number(args[0]);
-      const price = Number(args[1]);
-      if (!id || !price || !products) { await reply(chatId, "مثال: /setprice 1 59999"); return res.status(200).json({ ok: true }); }
-      const p = products.find(x => x.id === id);
-      if (!p) { await reply(chatId, "غير موجود"); return res.status(200).json({ ok: true }); }
-      const old = p.price; p.price = price;
-      if (await saveProducts(products, `bot: price #${id} ${old}->${price}`))
-        await reply(chatId, `✅ ${p.name}\n${old} ← <b>${price}</b> ج.م`);
+      const id = Number(args[0]), price = Number(args[1]);
+      const p = products?.find(x => x.id === id);
+      if (!p || !price) { await reply(chatId, "/setprice 1 59999"); return res.status(200).json({ ok: true }); }
+      p.price = price;
+      if (await saveProducts(products, `bot: price #${id}`)) await reply(chatId, `✅ ${p.name} = ${price}`);
       return res.status(200).json({ ok: true });
     }
-
-    if (command === "/setold") {
-      const id = Number(args[0]);
-      const price = Number(args[1]);
-      if (!id || args[1] === undefined || !products) { await reply(chatId, "مثال: /setold 1 65000 أو 0"); return res.status(200).json({ ok: true }); }
-      const p = products.find(x => x.id === id);
-      if (!p) { await reply(chatId, "غير موجود"); return res.status(200).json({ ok: true }); }
-      p.oldPrice = price === 0 ? null : price;
-      if (await saveProducts(products, `bot: oldPrice #${id}`))
-        await reply(chatId, `✅ السعر القديم لـ ${p.name} تم تحديثه`);
-      return res.status(200).json({ ok: true });
-    }
-
     if (command === "/setbadge") {
-      const id = Number(args[0]);
-      const badge = args.slice(1).join(" ");
-      if (!id || !products) { await reply(chatId, "مثال: /setbadge 1 جديد"); return res.status(200).json({ ok: true }); }
-      const p = products.find(x => x.id === id);
-      if (!p) { await reply(chatId, "غير موجود"); return res.status(200).json({ ok: true }); }
+      const id = Number(args[0]); const badge = args.slice(1).join(" ");
+      const p = products?.find(x => x.id === id);
+      if (!p) { await reply(chatId, "/setbadge 1 جديد"); return res.status(200).json({ ok: true }); }
       p.badge = !badge || badge === "-" ? null : badge;
-      if (await saveProducts(products, `bot: badge #${id}`))
-        await reply(chatId, `✅ شارة ${p.name}: ${p.badge || "تم الحذف"}`);
+      if (await saveProducts(products, `bot: badge #${id}`)) await reply(chatId, `✅ تم`);
       return res.status(200).json({ ok: true });
     }
-
     if (command === "/hide" || command === "/show") {
-      const id = Number(args[0]);
-      if (!id || !products) { await reply(chatId, `استخدم: ${command} &lt;id&gt;`); return res.status(200).json({ ok: true }); }
-      const p = products.find(x => x.id === id);
-      if (!p) { await reply(chatId, "غير موجود"); return res.status(200).json({ ok: true }); }
+      const id = Number(args[0]); const p = products?.find(x => x.id === id);
+      if (!p) { await reply(chatId, `${command} 1`); return res.status(200).json({ ok: true }); }
       p.hidden = command === "/hide";
-      if (await saveProducts(products, `bot: ${command} #${id}`))
-        await reply(chatId, command === "/hide" ? `🙈 تم إخفاء ${p.name}` : `👁 تم إظهار ${p.name}`);
+      if (await saveProducts(products, `bot: ${command} #${id}`)) await reply(chatId, `✅ تم`);
       return res.status(200).json({ ok: true });
     }
-
     if (command === "/orders") {
-      const ordersFile = await getFileFromGitHub("orders.json");
-      if (!ordersFile) { await reply(chatId, "لا توجد طلبات محفوظة. الطلبات الجديدة توصلك كإشعار."); return res.status(200).json({ ok: true }); }
-      try {
-        const orders = JSON.parse(ordersFile.content);
-        const last = (Array.isArray(orders) ? orders : []).slice(-10).reverse();
-        if (!last.length) { await reply(chatId, "لا توجد طلبات."); return res.status(200).json({ ok: true }); }
-        const t = last.map((o, i) => `${i + 1}. ${o.name || "—"} | ${o.phone || "—"}\n   ${o.total || "—"} | ${o.date || ""}`).join("\n\n");
-        await reply(chatId, `🛒 <b>آخر الطلبات</b>\n\n${t}`);
-      } catch (e) { await reply(chatId, "تعذر قراءة الطلبات."); }
+      await reply(chatId, "الطلبات الجديدة بتجيلك كإشعار هنا تلقائي");
       return res.status(200).json({ ok: true });
     }
-
-    await reply(chatId, "أمر غير معروف. /help");
+    await reply(chatId, "غير معروف — /help");
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error(err);
