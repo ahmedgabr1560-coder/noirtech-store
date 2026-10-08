@@ -27,6 +27,22 @@ async function autoAddRequestedProduct(message, catalog) {
   } catch (error) { console.error("auto product add failed", error.message); return null; }
 }
 
+async function notifyAdminCustomerMessage(message) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_ADMIN_CHAT;
+  if (!token || !chatId) return false;
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: `💬 رسالة من عميل عبر شات NoirTech:
+
+${message.slice(0, 1800)}`, disable_web_page_preview: true })
+    });
+    const data = await r.json();
+    return Boolean(data.ok);
+  } catch { return false; }
+}
+
 async function notifyAdminProductRequest(message) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_ADMIN_CHAT;
@@ -80,15 +96,20 @@ export default async function handler(req, res) {
 - استخدم 2–6 جمل غالبًا، ويمكنك استخدام نقاط مرتبة للأسئلة الطويلة.
 - استخدم الإيموجي باعتدال.
 - اختم بسؤال متابعة ذكي فقط عندما يكون مفيدًا، وليس بشكل آلي في كل رد.
-- لا تنفذ أي تعديل إداري على الموقع من دردشة الزوار؛ وجّههم للدعم أو واتساب عند الحاجة.
+- لا تنفذ أي تعديل إداري على الموقع من دردشة الزوار. يمكنك فقط إرسال رسالة العميل للمسؤول عندما يطلب ذلك بوضوح، ولا تدّعي الإرسال إلا بعد نجاحه.
 - لو أرسل لك كتالوج المنتجات، استخدمه في الترشيح واذكر السعر الموجود فيه فقط، ولا تخمن منتجًا غير موجود.
 
 كتالوج المنتجات الحالي:
 ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
 
     const asksForUnavailableProduct = /(?:مش موجود|غير موجود|مش متوفر|غير متوفر|مش عندكم|مش لاقي|اطلبلي|وفرلي|عايز أطلب|عايزه يتوفر|عايزه عندكم)/i.test(message) && /(?:جهاز|موبايل|هاتف|آيفون|iphone|سامسونج|samsung|لابتوب|تابلت|سماعة|ساعة|playstation|بلايستيشن)/i.test(message);
+    const asksToContactAdmin = /(?:ابعت|ابعث|أرسل|ارسل|كلم|كلّم|تواصل).*(?:المسؤول|المسئول|الإدارة|الاداره|المدير|خدمة العملاء|الدعم)|(?:المسؤول|المسئول|الإدارة|الاداره|المدير).*(?:ابعت|ابعث|أرسل|ارسل|كلم|كلّم|تواصل)/i.test(message);
     const knownCatalog = Array.isArray(catalog) ? catalog.map(p => String(p?.name || "").toLowerCase()) : [];
     let requestNotice = "";
+    if (asksToContactAdmin) {
+      const sent = await notifyAdminCustomerMessage(message);
+      requestNotice = sent ? "\n\n✅ تمام، بعت رسالتك للمسؤول وهيكلمك قريب." : "\n\n⚠️ حاولت أبعت للمسؤول لكن الرسالة ما اتبعتتش دلوقتي. جرّب تاني بعد شوية.";
+    }
     if (asksForUnavailableProduct && !knownCatalog.some(name => name && message.toLowerCase().includes(name))) {
       const auto = await autoAddRequestedProduct(message, catalog);
       if (auto?.added) requestNotice = `\n\n✅ الجهاز مش موجود قبل كده، فبحثت عنه وضفته تلقائيًا للموقع: ${auto.name}.`;
@@ -105,6 +126,7 @@ ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
 
 وضع البحث المباشر عن الأسعار:
 - ابحث على الويب الآن عن أحدث أسعار المنتج الذي يسأل عنه المستخدم، وفضّل مصر والجنيه المصري إذا لم يحدد بلدًا.
+- ابدأ بالبحث في Amazon Egypt (amazon.eg) وNoon Egypt (noon.com/egypt-ar)، واذكر أيهما ظهر منه السعر. استخدم مصادر مصرية أخرى فقط إذا لم تجد نتيجة موثوقة هناك.
 - لا تخلط بين سعر مستعمل أو عرض قديم أو سعر استيراد؛ صنّف السعر بوضوح واذكر تاريخ البحث.
 - اذكر أن السعر تقريبي وقابل للتغيير، ولا تعتبره سعر NoirTech الرسمي إلا إذا كان موجودًا في الكتالوج.
 - اذكر اسم المتجر أو الموقع وموقعه كرابط إن أمكن، ولا تخترع مصادر أو أرقامًا.
