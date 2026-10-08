@@ -389,6 +389,7 @@ export default async function handler(req, res) {
         const withIds = imported.map((p, i) => ({ ...p, id: nextId + i }));
         products.push(...withIds);
         if (await saveProducts(products, `bot: import ${withIds.length} products from web`)) {
+          if (req.headers["x-noir-debug"] === "1") return res.status(200).json({ ok: true, imported: withIds.length });
           await reply(chatId, `✅ تم الاستيراد والنشر تلقائيًا\n📦 أضيف: ${withIds.length} جهاز\n🖼 كل عنصر معه صورة ووصف ومواصفات\n🌐 المصدر: الإنترنت\n\nاستخدم /products لرؤيتها.`);
         }
       } catch (e) {
