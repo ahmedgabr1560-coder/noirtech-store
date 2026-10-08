@@ -38,13 +38,41 @@ export async function claudeChat(system, messages, maxTokens = 450) {
   return text;
 }
 
+export async function openrouterChat(system, messages, maxTokens = 450) {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) throw new Error("OPENROUTER_API_KEY is not configured");
+  const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+      "HTTP-Referer": "https://noirtech-store.vercel.app",
+      "X-Title": "NoirTech Store"
+    },
+    body: JSON.stringify({
+      model: process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini",
+      messages: [{ role: "system", content: system }, ...messages],
+      max_tokens: maxTokens,
+      temperature: 0.85
+    })
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || "OpenRouter request failed");
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error("OpenRouter returned no text");
+  return text;
+}
+
 export async function resilientChat(system, messages, maxTokens = 450) {
   try { return { reply: await openaiChat(system, messages, maxTokens), provider: "openai" }; }
   catch (openaiError) {
     try { return { reply: await claudeChat(system, messages, maxTokens), provider: "claude" }; }
     catch (claudeError) {
-      console.error("AI providers failed", { openai: openaiError.message, claude: claudeError.message });
-      throw new Error("All AI providers failed");
+      try { return { reply: await openrouterChat(system, messages, maxTokens), provider: "openrouter" }; }
+      catch (openrouterError) {
+        console.error("AI providers failed", { openai: openaiError.message, claude: claudeError.message, openrouter: openrouterError.message });
+        throw new Error("All AI providers failed");
+      }
     }
   }
 }
