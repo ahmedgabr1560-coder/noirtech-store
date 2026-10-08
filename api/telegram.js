@@ -1,4 +1,4 @@
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8737261045:AAGXsJDLKJAf0xsJzegLjWcBX3PUHZlzqow";
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
@@ -79,6 +79,37 @@ export default async function handler(req, res) {
       await reply(chatId, `⚙️ ${config.siteName}\n${config.ownerName}\n${config.heroHighlight}\n📞 ${config.phone}\ngold=${config.colors?.gold}\naccent=${config.colors?.accent}`);
       return res.status(200).json({ ok: true });
     }
+    if (!BOT_TOKEN) { await reply(chatId, "❌ البوت غير مهيأ: أضف TELEGRAM_BOT_TOKEN في Vercel"); return res.status(200).json({ ok: true }); }
+    if (command === "/settitle" || command === "/setabout" || command === "/setfooter") {
+      const v = args.join(" ");
+      if (!v || !config) { await reply(chatId, `استخدم: ${command} النص`); return res.status(200).json({ ok: true }); }
+      const key = { "/settitle": "heroTitle", "/setabout": "aboutText", "/setfooter": "footerText" }[command];
+      config[key] = v;
+      if (await saveConfig(config, `bot: ${command}`)) await reply(chatId, "✅ تم تحديث النص ونشره");
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/setlayout") {
+      const layout = (args[0] || "").toLowerCase();
+      if (!config || !["luxury", "minimal", "neon"].includes(layout)) { await reply(chatId, "استخدم: /setlayout luxury|minimal|neon"); return res.status(200).json({ ok: true }); }
+      config.layout = layout;
+      if (await saveConfig(config, `bot: layout ${layout}`)) await reply(chatId, `✅ تم تغيير النمط إلى ${layout}`);
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/setorder") {
+      const allowed = ["hero", "categories", "phones", "laptops", "audio", "wearables", "about", "contact"];
+      const order = args.join(" ").split(",").map(x => x.trim()).filter(x => allowed.includes(x));
+      if (!config || order.length < 2) { await reply(chatId, "استخدم مفاتيح الأقسام مفصولة بفواصل"); return res.status(200).json({ ok: true }); }
+      config.sectionOrder = [...new Set(order)];
+      if (await saveConfig(config, "bot: section order")) await reply(chatId, "✅ تم تغيير ترتيب الأقسام");
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/setcategory") {
+      const key = (args[0] || "").toLowerCase(); const label = args.slice(1).join(" ");
+      if (!config || !["phones", "laptops", "audio", "wearables"].includes(key) || !label) { await reply(chatId, "مثال: /setcategory phones 📱 الهواتف الذكية"); return res.status(200).json({ ok: true }); }
+      config.categoryLabels = { ...(config.categoryLabels || {}), [key]: label };
+      if (await saveConfig(config, "bot: category label")) await reply(chatId, "✅ تم تحديث اسم القسم");
+      return res.status(200).json({ ok: true });
+    }
     if (command === "/theme") {
       const name = (args[0] || "").toLowerCase();
       if (!THEMES[name] || !config) { await reply(chatId, "/theme dark|gold|purple|red"); return res.status(200).json({ ok: true }); }
@@ -137,6 +168,33 @@ export default async function handler(req, res) {
       if (!products) { await reply(chatId, "لا منتجات"); return res.status(200).json({ ok: true }); }
       const lines = products.filter(p => !p.hidden).slice(0, 30).map(p => `#${p.id} ${p.name} — ${p.price}`);
       await reply(chatId, lines.join("\n"));
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/addproduct") {
+      const parts = args.join(" ").split("|").map(x => x.trim());
+      const [name, category, price, image] = parts;
+      const allowed = ["phones", "laptops", "audio", "wearables"];
+      if (!products || !name || !allowed.includes(category) || !Number(price) || !image) { await reply(chatId, "مثال: /addproduct iPhone 16|phones|62999|https://..."); return res.status(200).json({ ok: true }); }
+      const id = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
+      products.push({ id, name, category, price: Number(price), oldPrice: null, image, badge: null, hidden: false });
+      if (await saveProducts(products, `bot: add product #${id}`)) await reply(chatId, `✅ تمت إضافة #${id} — ${name}`);
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/editproduct") {
+      const id = Number(args[0]); const field = args[1]; const value = args.slice(2).join(" ");
+      const p = products?.find(x => x.id === id);
+      const fields = ["name", "price", "oldPrice", "category", "image", "badge"];
+      if (!p || !fields.includes(field) || !value) { await reply(chatId, "مثال: /editproduct 1 price 59999"); return res.status(200).json({ ok: true }); }
+      if (["price", "oldPrice"].includes(field) && !Number(value)) { await reply(chatId, "السعر يجب أن يكون رقمًا"); return res.status(200).json({ ok: true }); }
+      p[field] = ["price", "oldPrice"].includes(field) ? Number(value) : value;
+      if (await saveProducts(products, `bot: edit product #${id}`)) await reply(chatId, "✅ تم تعديل المنتج");
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/deleteproduct") {
+      const id = Number(args[0]);
+      if (!products?.some(x => x.id === id)) { await reply(chatId, "مثال: /deleteproduct 1"); return res.status(200).json({ ok: true }); }
+      products = products.filter(x => x.id !== id);
+      if (await saveProducts(products, `bot: delete product #${id}`)) await reply(chatId, "✅ تم حذف المنتج");
       return res.status(200).json({ ok: true });
     }
     if (command === "/setprice") {
