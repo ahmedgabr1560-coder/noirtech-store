@@ -151,7 +151,10 @@ registerForm?.addEventListener("submit", e => {
   localStorage.setItem("noirtech_users", JSON.stringify(usersDB));
   currentUser = { name, phone, email };
   localStorage.setItem("noirtech_user", JSON.stringify(currentUser));
-  updateUserUI(); closeAuthModal(); showToast(`مرحباً ${name}! تم إنشاء حسابك بنجاح`);
+  updateUserUI();
+  closeAuthModal();
+  showToast(`مرحباً ${name}! تم إنشاء حسابك بنجاح`);
+  sendTelegram(`🆕 حساب جديد\n\n👤 الاسم: ${name}\n📞 الهاتف: ${phone}\n📧 الإيميل: ${email}`);
   if (window._pendingCheckout) { window._pendingCheckout = false; processCheckout(); }
 });
 
@@ -163,40 +166,31 @@ loginForm?.addEventListener("submit", e => {
   if (!user) { showToast("بيانات الدخول غير صحيحة!"); return; }
   currentUser = { name: user.name, phone: user.phone, email: user.email };
   localStorage.setItem("noirtech_user", JSON.stringify(currentUser));
-  updateUserUI(); closeAuthModal(); showToast(`مرحباً بعودتك ${user.name}!`);
+  updateUserUI();
+  closeAuthModal();
+  showToast(`مرحباً بعودتك ${user.name}!`);
+  sendTelegram(`🔐 تسجيل دخول\n\n👤 الاسم: ${user.name}\n📞 الهاتف: ${user.phone}\n📧 الإيميل: ${user.email}`);
   if (window._pendingCheckout) { window._pendingCheckout = false; processCheckout(); }
 });
+
+function sendTelegram(msg) {
+  const botToken = "8737261045:AAGXsJDLKJAf0xsJzegLjWcBX3PUHZlzqow";
+  const chatId = "6746972381";
+  fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text: msg })
+  }).catch(() => {});
+}
 
 function processCheckout() {
   if (cart.length === 0) { showToast("السلة فارغة!"); return; }
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const orderItems = cart.map(i => `• ${i.name} × ${i.qty} = ${(i.price * i.qty).toLocaleString("ar-EG")} ج.م`).join("\n");
   const orderMsg = `🛒 طلب جديد من NoirTech\n\n👤 الاسم: ${currentUser.name}\n📞 الهاتف: ${currentUser.phone}\n📧 الإيميل: ${currentUser.email}\n\n📦 المنتجات:\n${orderItems}\n\n💰 الإجمالي: ${total.toLocaleString("ar-EG")} ج.م`;
-
-  // Send to Telegram Bot
-  const botToken = "8737261045:AAGXsJDLKJAf0xsJzegLjWcBX3PUHZlzqow";
-  const chatId = "6746972381";
-  fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: orderMsg,
-      parse_mode: "HTML"
-    })
-  }).then(r => r.json()).then(data => {
-    if (data.ok) {
-      showToast("تم استلام طلبك بنجاح! سنتواصل معك قريباً ✨");
-    } else {
-      showToast("تم تسجيل الطلب! سنتواصل معك قريباً");
-    }
-  }).catch(() => {
-    showToast("تم تسجيل الطلب! سنتواصل معك قريباً");
-  });
-
-  // Also open WhatsApp as backup
+  sendTelegram(orderMsg);
+  showToast("تم استلام طلبك بنجاح! سنتواصل معك قريباً ✨");
   window.open(`https://wa.me/201064519541?text=${encodeURIComponent(orderMsg)}`, "_blank");
-
   cart = [];
   saveCart();
   closeCartSidebar();
