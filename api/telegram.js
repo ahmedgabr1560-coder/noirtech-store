@@ -115,7 +115,13 @@ export default async function handler(req, res) {
       if (!BOT_TOKEN) return res.status(500).json({ ok: false, error: "TELEGRAM_BOT_TOKEN missing in Production" });
       const result = await tg("setWebhook", { url: "https://noirtech-store.vercel.app/api/telegram", allowed_updates: ["message", "edited_message", "callback_query"] });
       const info = await tg("getWebhookInfo", {});
-      return res.status(result.ok ? 200 : 502).json({ ok: Boolean(result.ok), description: result.description || "", webhook: info.result ? { url: info.result.url, pending_update_count: info.result.pending_update_count, last_error_message: info.result.last_error_message || "", last_error_date: info.result.last_error_date || null } : { error: info.description || "unknown" } });
+      const me = await tg("getMe", {});
+      let test = null;
+      if (req.query?.test === "1") {
+        const sent = await tg("sendMessage", { chat_id: ADMIN_CHAT, text: "✅ اختبار NoirTech: البوت متصل ويستقبل الأوامر." });
+        test = { ok: Boolean(sent.ok), description: sent.description || "" };
+      }
+      return res.status(result.ok ? 200 : 502).json({ ok: Boolean(result.ok), description: result.description || "", bot: me.result ? { id: me.result.id, username: me.result.username } : { error: me.description || "unknown" }, test, webhook: info.result ? { url: info.result.url, pending_update_count: info.result.pending_update_count, last_error_message: info.result.last_error_message || "", last_error_date: info.result.last_error_date || null } : { error: info.description || "unknown" } });
     }
     return res.status(200).json({ ok: true });
   }
