@@ -19,7 +19,10 @@
       </a>
       <ul class="nav-links">
         <li><a href="#home" class="active">الرئيسية</a></li>
-        <li><a href="#products">المنتجات</a></li>
+        <li><a href="#phones">هواتف</a></li>
+        <li><a href="#laptops">لابتوبات</a></li>
+        <li><a href="#audio">صوتيات</a></li>
+        <li><a href="#wearables">ساعات</a></li>
         <li><a href="#about">عن المتجر</a></li>
         <li><a href="#contact">تواصل</a></li>
       </ul>
@@ -41,44 +44,75 @@
       <p class="hero-badge">تشكيلة 2025</p>
       <h1>إلكترونيات<br><span>تليق بذوقك</span></h1>
       <p class="hero-desc">اكتشف أحدث الأجهزة والتقنيات الفاخرة بتصميم استثنائي وجودة لا تُضاهى</p>
-      <a href="#products" class="btn-primary">تسوق الآن</a>
+      <a href="#phones" class="btn-primary">تسوق الآن</a>
     </div>
   </section>
 
-  <!-- Categories -->
+  <!-- Categories Navigation -->
   <section class="categories">
     <div class="container">
       <div class="cat-grid">
-        <div class="cat-card" data-filter="phones">
+        <a href="#phones" class="cat-card">
           <div class="cat-icon">📱</div>
           <h3>هواتف ذكية</h3>
-        </div>
-        <div class="cat-card" data-filter="laptops">
+        </a>
+        <a href="#laptops" class="cat-card">
           <div class="cat-icon">💻</div>
-          <h3>لابتوبات</h3>
-        </div>
-        <div class="cat-card" data-filter="audio">
+          <h3>لابتوبات وديسك توب</h3>
+        </a>
+        <a href="#audio" class="cat-card">
           <div class="cat-icon">🎧</div>
-          <h3>صوتيات</h3>
-        </div>
-        <div class="cat-card" data-filter="wearables">
+          <h3>سماعات وصوتيات</h3>
+        </a>
+        <a href="#wearables" class="cat-card">
           <div class="cat-icon">⌚</div>
           <h3>ساعات ذكية</h3>
-        </div>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Products -->
-  <section class="products" id="products">
+  <!-- Phones Section -->
+  <section class="products category-section" id="phones">
     <div class="container">
       <div class="section-header">
-        <h2>منتجاتنا المميزة</h2>
-        <p>أفضل الأجهزة المختارة بعناية</p>
+        <h2>📱 الهواتف الذكية</h2>
+        <p>أحدث الهواتف من أشهر العلامات العالمية</p>
       </div>
-      <div class="products-grid" id="productsGrid">
-        <!-- Products injected by JS -->
+      <div class="products-grid" id="phonesGrid"></div>
+    </div>
+  </section>
+
+  <!-- Laptops Section -->
+  <section class="products category-section" id="laptops">
+    <div class="container">
+      <div class="section-header">
+        <h2>💻 اللابتوبات والديسك توب</h2>
+        <p>أجهزة قوية للعمل والإبداع والألعاب</p>
       </div>
+      <div class="products-grid" id="laptopsGrid"></div>
+    </div>
+  </section>
+
+  <!-- Audio Section -->
+  <section class="products category-section" id="audio">
+    <div class="container">
+      <div class="section-header">
+        <h2>🎧 السماعات والصوتيات</h2>
+        <p>تجربة صوتية استثنائية بجودة عالية</p>
+      </div>
+      <div class="products-grid" id="audioGrid"></div>
+    </div>
+  </section>
+
+  <!-- Wearables Section -->
+  <section class="products category-section" id="wearables">
+    <div class="container">
+      <div class="section-header">
+        <h2>⌚ الساعات الذكية</h2>
+        <p>تابع صحتك وأسلوب حياتك بأناقة</p>
+      </div>
+      <div class="products-grid" id="wearablesGrid"></div>
     </div>
   </section>
 
@@ -148,11 +182,11 @@
           <p>إلكترونيات فاخرة تليق بذوقك الرفيع</p>
         </div>
         <div class="footer-links">
-          <h4>روابط سريعة</h4>
-          <a href="#home">الرئيسية</a>
-          <a href="#products">المنتجات</a>
-          <a href="#about">عن المتجر</a>
-          <a href="#contact">تواصل</a>
+          <h4>الأقسام</h4>
+          <a href="#phones">هواتف ذكية</a>
+          <a href="#laptops">لابتوبات</a>
+          <a href="#audio">صوتيات</a>
+          <a href="#wearables">ساعات ذكية</a>
         </div>
         <div class="footer-links">
           <h4>الدعم</h4>
@@ -174,9 +208,7 @@
       <h3>سلة التسوق</h3>
       <button class="close-cart" id="closeCart">×</button>
     </div>
-    <div class="cart-items" id="cartItems">
-      <!-- Cart items injected -->
-    </div>
+    <div class="cart-items" id="cartItems"></div>
     <div class="cart-footer">
       <div class="cart-total">
         <span>الإجمالي</span>
