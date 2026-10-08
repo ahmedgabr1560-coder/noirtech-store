@@ -1,5 +1,19 @@
 import { openrouterSearchChat, resilientChat } from "./_ai.js";
 
+async function notifyAdminProductRequest(message) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_ADMIN_CHAT;
+  if (!token || !chatId) return false;
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: `📥 طلب عميل لتوفير جهاز غير موجود:\n\n${message.slice(0, 1200)}\n\nاكتب في البوت: «ضيف الجهاز ده» أو ابعت رابط المنتج لإضافته.`, disable_web_page_preview: true })
+    });
+    const data = await r.json();
+    return Boolean(data.ok);
+  } catch { return false; }
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -45,6 +59,12 @@ export default async function handler(req, res) {
 كتالوج المنتجات الحالي:
 ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
 
+    const asksForUnavailableProduct = /(?:مش موجود|غير موجود|مش متوفر|غير متوفر|مش عندكم|مش لاقي|اطلبلي|وفرلي|عايز أطلب|عايزه يتوفر|عايزه عندكم)/i.test(message) && /(?:جهاز|موبايل|هاتف|آيفون|iphone|سامسونج|samsung|لابتوب|تابلت|سماعة|ساعة|playstation|بلايستيشن)/i.test(message);
+    const knownCatalog = Array.isArray(catalog) ? catalog.map(p => String(p?.name || "").toLowerCase()) : [];
+    let requestNotice = "";
+    if (asksForUnavailableProduct && !knownCatalog.some(name => name && message.toLowerCase().includes(name))) {
+      if (await notifyAdminProductRequest(message)) requestNotice = "\n\n📨 سجلت طلب توفير الجهاز عند فريق NoirTech، وهيتم مراجعته وإضافته لو مناسب.";
+    }
     const chatMessages = [
       ...(Array.isArray(history) ? history.slice(-12).filter(m => m && ["user", "assistant"].includes(m.role) && typeof m.content === "string").map(m => ({ role: m.role, content: m.content.slice(0, 2000) })) : []),
       { role: "user", content: message.slice(0, 2000) }
@@ -62,13 +82,13 @@ ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
       try {
         const live = await openrouterSearchChat(livePrompt, chatMessages, 650);
         const sources = live.citations.length ? `\n\nمصادر البحث:\n${live.citations.map((url, i) => `${i + 1}. ${url}`).join("\n")}` : "";
-        return res.status(200).json({ reply: live.text + sources, provider: "openrouter-search" });
+        return res.status(200).json({ reply: live.text + sources + requestNotice, provider: "openrouter-search" });
       } catch (searchError) {
         console.error("Live price search failed", searchError.message);
       }
     }
     const result = await resilientChat(systemPrompt, chatMessages, 450);
-    return res.status(200).json({ reply: result.reply, provider: result.provider });
+    return res.status(200).json({ reply: result.reply + requestNotice, provider: result.provider });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
