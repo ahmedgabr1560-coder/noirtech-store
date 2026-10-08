@@ -7,12 +7,19 @@ const GH_REPO = "noirtech-store";
 const GH_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
 
 async function tg(method, body) {
-  const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  return r.json();
+  if (!BOT_TOKEN) return { ok: false, description: "TELEGRAM_BOT_TOKEN غير مضبوط في Vercel" };
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    return data;
+  } catch (error) {
+    console.error("Telegram API error", error.message);
+    return { ok: false, description: `تعذر الاتصال بتليجرام: ${error.message}` };
+  }
 }
 async function reply(chatId, text, extra = {}) {
   return tg("sendMessage", { chat_id: chatId, text, parse_mode: "HTML", ...extra });
