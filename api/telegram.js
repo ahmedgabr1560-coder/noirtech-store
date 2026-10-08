@@ -63,18 +63,18 @@ async function getFile(path) {
   return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
 async function askAi(question, catalog = []) {
-  const system = "أنت نوير، مساعد إدارة NoirTech داخل تليجرام. رد بالمصرية البسيطة وبروح خفيفة ومفيدة. ساعد المدير في إدارة متجر الإلكترونيات واقترح أمرًا مناسبًا من الأوامر الموجودة عند الحاجة، لكن لا تدّعِ أنك نفذت شيئًا إلا إذا كان أمرًا معروفًا. لديك معرفة بالهواتف والتابلت واللابتوبات والكمبيوتر والجيمنج والشاشات والكاميرات والشبكات والتخزين والصوتيات والتلفزيونات والساعات والمنزل الذكي والإكسسوارات. كن مختصرًا واجعل الرد قابلًا للتنفيذ.";
+  const system = "أنت نوير، مساعد شخصي ذكي للمدير داخل تليجرام، وتحدث معه كإنسان طبيعي وليس كواجهة أوامر. افهم العربية المصرية والفصحى والإنجليزية والعربيزي، ورد بالمصرية البسيطة الودودة مع خفة دم خفيفة. أجب عن أي سؤال عام أو تقني أو تجاري أو تعليمي، وساعد في إدارة متجر NoirTech. عند طلب تعديل واضح للموقع أو المنتجات نفّذ الأمر المناسب تلقائيًا إذا كان مدعومًا، ولا تقل إنك نفذت شيئًا قبل التنفيذ الفعلي. إذا كان الطلب ناقصًا اسأل سؤال توضيح واحدًا فقط. لا تكرر قائمة الأوامر إلا إذا طلبها المدير. لديك معرفة بالهواتف والتابلت واللابتوبات والكمبيوتر والجيمنج والشاشات والكاميرات والشبكات والتخزين والصوتيات والتلفزيونات والساعات والمنزل الذكي والإكسسوارات. كن مفيدًا ومختصرًا.";
   const prompt = `السؤال: ${question.slice(0, 1500)}\nالمنتجات الحالية: ${JSON.stringify(catalog.slice(0, 30))}`;
   try {
     const result = await resilientChat(system, [{ role: "user", content: prompt }], 350);
-    return `${result.reply}\n\n<i>المحرك: ${result.provider === "claude" ? "Claude" : "OpenAI"}</i>`;
+    return `${result.reply}\n\n<i>المحرك: ${result.provider === "claude" ? "Claude" : result.provider === "openrouter" ? "OpenRouter" : result.provider === "gemini" ? "Gemini" : "OpenAI"}</i>`;
   } catch {
     return "🤖 حصلت زحمة صغيرة في المحركات 😅 جرّب تاني بعد لحظات.";
   }
 }
 
 async function interpretAdminRequest(text, catalog = []) {
-  const system = `أنت مخطط أوامر آمن لمتجر NoirTech. حوّل طلب المدير باللهجة الطبيعية إلى أمر واحد فقط من القائمة المسموحة، أو اترك command فارغًا إذا كان الطلب سؤالًا لا يحتاج تنفيذًا.
+  const system = `أنت نوير، مساعد شخصي حواري ومدير عمليات متجر NoirTech داخل تليجرام. تعامل مع المدير كإنسان طبيعي: افهم المقصود من الكلام، أجب عن الأسئلة العامة، ونفّذ تلقائيًا الطلبات التي تطابق أمرًا مدعومًا. حوّل طلب التعديل إلى أمر واحد فقط من القائمة المسموحة، أو اترك command فارغًا إذا كان سؤالًا أو محادثة لا تحتاج تنفيذًا. في reply اكتب ردًا طبيعيًا بالمصرية: إجابة مباشرة، أو تأكيدًا قصيرًا لما ستنفذه، أو سؤال توضيح واحدًا عند الحاجة. لا تكتب ردًا آليًا مثل "استخدم /help" إلا إذا طلب المدير المساعدة.
 الأوامر المسموحة فقط:
 /menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم, /importproducts عدد [فئة].
 لا تخترع رقم منتج أو قيمة غير مذكورة. أرجع JSON فقط بالشكل: {"command":"...","reply":"تأكيد قصير بالمصرية"}.`;
@@ -85,7 +85,7 @@ async function interpretAdminRequest(text, catalog = []) {
     const allowed = /^(\/(?:menu|help|status|config|products|settitle|setabout|setfooter|sethero|setdesc|setbadgehero|setbtn|setname|setsite|setaddress|setphone|setemail|theme|setlayout|setorder|setcategory|setcolor|toggle|setprice|hide|show|importproducts))(?:\s|$)/;
     if (!plan.command || !allowed.test(plan.command)) return { command: "", reply: plan.reply || result.reply };
     return { command: plan.command.trim(), reply: plan.reply || "✅ حاضر، نفذت طلبك." };
-  } catch { return { command: "", reply: "🤖 فهمت إنك عايز مساعدة، بس محتاج توضيح صغير أو استخدم زر المينيو 😄" }; }
+  } catch { return { command: "", reply: "🤖 حصلت لخبطة بسيطة وأنا بفهم الطلب 😅 اكتبلي المطلوب بطريقتك، وأنا هحاول أساعدك أو أسألك عن الجزء الناقص." }; }
 }
 
 async function putFile(path, content, message, sha) {
