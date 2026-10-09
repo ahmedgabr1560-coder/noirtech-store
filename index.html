@@ -226,39 +226,57 @@
   </div>
 
   <!-- Auth modal -->
-  <div class="modal-overlay" id="authOverlay"></div>
+    <div class="modal-overlay" id="authOverlay"></div>
   <div class="modal auth-modal" id="authModal" role="dialog" aria-modal="true">
     <button type="button" class="icon-close modal-close" id="closeAuth">×</button>
+    <div class="auth-brand">
+      <div class="auth-brand-mark">TZ</div>
+      <h2>TECHZONE</h2>
+      <p>سجّل دخولك أو أنشئ حسابًا جديدًا</p>
+    </div>
     <div class="auth-tabs">
       <button type="button" class="auth-tab active" data-tab="login">دخول</button>
       <button type="button" class="auth-tab" data-tab="register">حساب جديد</button>
     </div>
     <form id="loginForm" class="auth-form">
       <h3>مرحبًا بعودتك</h3>
-      <p class="muted">سجّل الدخول لإتمام الطلب (تجريبي محلي)</p>
-      <label>البريد<input type="email" id="loginEmail" required autocomplete="email" /></label>
-      <label>كلمة المرور<input type="password" id="loginPassword" required minlength="4" autocomplete="current-password" /></label>
-      <button type="submit" class="btn btn-primary btn-block">دخول</button>
+      <p class="muted">أدخل بياناتك للمتابعة</p>
+      <label>البريد الإلكتروني
+        <input type="email" id="loginEmail" required autocomplete="email" placeholder="name@example.com" />
+      </label>
+      <label>كلمة المرور
+        <input type="password" id="loginPassword" required minlength="4" autocomplete="current-password" placeholder="••••••••" />
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">تسجيل الدخول</button>
     </form>
     <form id="registerForm" class="auth-form" hidden>
       <div class="reg-avatar">
         <div class="reg-avatar-circle">
           <img id="regAvatarPreview" alt="" hidden />
           <span id="regAvatarPlaceholder">+</span>
-          <label class="reg-avatar-add"><input type="file" id="regAvatarInput" accept="image/*" hidden />📷</label>
+          <label class="reg-avatar-add" title="إضافة صورة"><input type="file" id="regAvatarInput" accept="image/*" hidden />📷</label>
         </div>
-        <small class="muted">صورة بروفايل دائرية (اختياري)</small>
+        <small class="muted">صورة شخصية دائرية (اختياري)</small>
       </div>
       <h3>إنشاء حساب</h3>
-      <label>الاسم<input type="text" id="regName" required /></label>
-      <label>الهاتف<input type="tel" id="regPhone" required /></label>
-      <label>البريد<input type="email" id="regEmail" required autocomplete="email" /></label>
-      <label>كلمة المرور<input type="password" id="regPassword" required minlength="4" autocomplete="new-password" /></label>
+      <p class="muted">بيانات بسيطة وسريعة</p>
+      <label>الاسم بالكامل
+        <input type="text" id="regName" required placeholder="أحمد محمد" autocomplete="name" />
+      </label>
+      <label>رقم الهاتف
+        <input type="tel" id="regPhone" required placeholder="01xxxxxxxxx" autocomplete="tel" />
+      </label>
+      <label>البريد الإلكتروني
+        <input type="email" id="regEmail" required autocomplete="email" placeholder="name@example.com" />
+      </label>
+      <label>كلمة المرور
+        <input type="password" id="regPassword" required minlength="4" autocomplete="new-password" placeholder="٤ أحرف على الأقل" />
+      </label>
       <button type="submit" class="btn btn-primary btn-block">إنشاء الحساب</button>
     </form>
   </div>
 
-  <!-- Profile modal -->
+<!-- Profile modal -->
   <div class="modal-overlay" id="profileOverlay"></div>
   <div class="modal profile-modal" id="profileModal" role="dialog" aria-modal="true">
     <button type="button" class="icon-close modal-close" id="closeProfile">×</button>
