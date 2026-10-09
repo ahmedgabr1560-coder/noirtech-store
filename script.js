@@ -197,10 +197,11 @@ function closeAuth() {
   $("#authOverlay").classList.remove("open");
   $("#authModal").classList.remove("open");
 }
-function switchAuth(tab) {
-  $$(".auth-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
-  $("#loginForm").hidden = tab !== "login";
-  $("#registerForm").hidden = tab !== "register";
+function switchAuth(tab = "login") {
+  const loginPanel = document.getElementById("loginPanel");
+  const registerPanel = document.getElementById("registerPanel");
+  if (loginPanel) loginPanel.hidden = tab !== "login";
+  if (registerPanel) registerPanel.hidden = tab !== "register";
 }
 
 function updateUserUI() {
@@ -274,7 +275,8 @@ $("#accountBtn").addEventListener("click", () => {
   else openAuth("login");
 });
 
-$$(".auth-tab").forEach(t => t.addEventListener("click", () => switchAuth(t.dataset.tab)));
+document.getElementById("goToRegister")?.addEventListener("click", () => switchAuth("register"));
+document.getElementById("goToLogin")?.addEventListener("click", () => switchAuth("login"));
 
 $("#menuToggle").addEventListener("click", () => {
   $("#catNav").classList.toggle("open");
