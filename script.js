@@ -326,6 +326,16 @@ $("#registerForm").addEventListener("submit", (e) => {
   const phone = $("#regPhone").value.trim();
   const email = $("#regEmail").value.trim().toLowerCase();
   const password = $("#regPassword").value;
+  if (!regAvatar) {
+    toast("صورة البروفايل مطلوبة");
+    document.querySelector(".reg-avatar-circle")?.classList.add("required-pulse");
+    setTimeout(() => document.querySelector(".reg-avatar-circle")?.classList.remove("required-pulse"), 1200);
+    return;
+  }
+  if (!name) return toast("اكتب الاسم");
+  if (!phone) return toast("اكتب رقم الهاتف");
+  if (!email) return toast("اكتب البريد الإلكتروني");
+  if (!password || password.length < 4) return toast("كلمة المرور قصيرة");
   usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
   if (usersDB.some(u => u.email === email)) return toast("هذا البريد مسجّل بالفعل");
   const user = { name, phone, email, password, address: "", avatar: regAvatar };
@@ -337,7 +347,7 @@ $("#registerForm").addEventListener("submit", (e) => {
   updateUserUI();
   closeAuth();
   toast("تم إنشاء الحساب بنجاح");
-  notifyAdmin("register", `👤 ${name}\n📞 ${phone}\n📧 ${email}\n✅ حساب جديد على NEXORA`);
+  notifyAdmin("register", "👤 " + name + "\n📞 " + phone + "\n📧 " + email + "\n🖼 صورة بروفايل: نعم\n✅ حساب جديد على NEXORA");
   openProfile();
 });
 
