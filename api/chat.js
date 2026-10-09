@@ -112,9 +112,9 @@ ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
     }
     if (asksForUnavailableProduct && !knownCatalog.some(name => name && message.toLowerCase().includes(name))) {
       const auto = await autoAddRequestedProduct(message, catalog);
-      if (auto?.added) requestNotice = `\n\n✅ الجهاز مش موجود قبل كده، فبحثت عنه وضفته تلقائيًا للموقع: ${auto.name}.`;
-      else if (auto?.duplicate) requestNotice = `\n\n✅ الجهاز موجود بالفعل في الكتالوج: ${auto.name}.`;
-      else if (await notifyAdminProductRequest(message)) requestNotice = "\n\n📨 سجلت طلب توفير الجهاز عند فريق NoirTech، وهيتم مراجعته وإضافته لو مناسب.";
+      if (auto?.added) requestNotice += `\n\n✅ الجهاز مش موجود قبل كده، فبحثت عنه وضفته تلقائيًا للموقع: ${auto.name}.`;
+      else if (auto?.duplicate) requestNotice += `\n\n✅ الجهاز موجود بالفعل في الكتالوج: ${auto.name}.`;
+      else if (await notifyAdminProductRequest(message)) requestNotice += "\n\n📨 سجلت طلب توفير الجهاز عند فريق NoirTech، وهيتم مراجعته وإضافته لو مناسب.";
     }
     const chatMessages = [
       ...(Array.isArray(history) ? history.slice(-12).filter(m => m && ["user", "assistant"].includes(m.role) && typeof m.content === "string").map(m => ({ role: m.role, content: m.content.slice(0, 2000) })) : []),
@@ -142,7 +142,7 @@ ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
     const result = await resilientChat(systemPrompt, chatMessages, 450);
     return res.status(200).json({ reply: result.reply + requestNotice, provider: result.provider });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    console.error("chat request failed", err);
+    return res.status(200).json({ reply: "حصلت مشكلة بسيطة وأنا بحاول أجاوبك. جرّب تبعت السؤال تاني بعد لحظات، ولو استمرت ابعت للمسؤول وأنا أوصلهاله.", error: "تعذر تشغيل مساعد الذكاء الاصطناعي" });
   }
 }
