@@ -143,7 +143,6 @@ ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
     return res.status(200).json({ reply: result.reply + requestNotice, provider: result.provider });
   } catch (err) {
     console.error("chat request failed", err);
-    if (req.headers["x-noir-debug"] === "1") return res.status(200).json({ reply: "debug", error: String(err?.message || err).slice(0, 500) });
     return res.status(200).json({ reply: "حصلت مشكلة بسيطة وأنا بحاول أجاوبك. جرّب تبعت السؤال تاني بعد لحظات، ولو استمرت ابعت للمسؤول وأنا أوصلهاله.", error: "تعذر تشغيل مساعد الذكاء الاصطناعي" });
   }
 }
