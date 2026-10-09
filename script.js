@@ -34,6 +34,17 @@ function toast(msg) {
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 2600);
 }
+async function notifyAdmin(type, message) {
+  try {
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, message })
+    });
+  } catch (e) {
+    console.warn("notify failed", e);
+  }
+}
 function saveCart() {
   localStorage.setItem("nx_cart", JSON.stringify(cart));
   updateCartUI();
@@ -310,6 +321,7 @@ $("#registerForm").addEventListener("submit", (e) => {
   updateUserUI();
   closeAuth();
   toast("تم إنشاء الحساب بنجاح");
+  notifyAdmin("register", `👤 ${name}\n📞 ${phone}\n📧 ${email}\n✅ حساب جديد على NEXORA`);
   openProfile();
 });
 
@@ -328,6 +340,7 @@ $("#loginForm").addEventListener("submit", (e) => {
   updateUserUI();
   closeAuth();
   toast(`مرحبًا ${user.name}`);
+  notifyAdmin("login", `👤 ${user.name}\n📞 ${user.phone || "-"}\n📧 ${user.email}`);
 });
 
 $("#profileForm").addEventListener("submit", (e) => {
@@ -348,6 +361,7 @@ $("#profileForm").addEventListener("submit", (e) => {
   updateUserUI();
   closeProfile();
   toast("تم حفظ الملف الشخصي");
+  notifyAdmin("profile", `👤 ${currentUser.name}\n📞 ${currentUser.phone}\n📧 ${currentUser.email}\n📍 ${currentUser.address || "-"}`);
 });
 
 $("#logoutBtn").addEventListener("click", () => {
@@ -358,22 +372,41 @@ $("#logoutBtn").addEventListener("click", () => {
   toast("تم تسجيل الخروج");
 });
 
-$("#checkoutBtn").addEventListener("click", () => {
+$("#checkoutBtn").addEventListener("click", async () => {
   if (!cart.length) return toast("السلة فارغة");
   if (!currentUser) {
     closeCart();
     openAuth("login");
     return toast("سجّل الدخول لإتمام الطلب");
   }
-  toast("طلب تجريبي تم تسجيله محليًا — لا يوجد دفع حقيقي");
+  const lines = cart.map(i => {
+    const p = PRODUCTS.find(x => x.id === i.id);
+    if (!p) return null;
+    return `• ${p.name} × ${i.qty} = ${(p.price * i.qty).toLocaleString("ar-EG")} ج.م`;
+  }).filter(Boolean);
+  const total = cart.reduce((s, i) => {
+    const p = PRODUCTS.find(x => x.id === i.id);
+    return s + (p ? p.price * i.qty : 0);
+  }, 0);
+  const orderMsg =
+    `👤 ${currentUser.name}\n📞 ${currentUser.phone}\n📧 ${currentUser.email}\n` +
+    (currentUser.address ? `📍 ${currentUser.address}\n` : "") +
+    `\n📦 المنتجات:\n${lines.join("\n")}\n\n💰 الإجمالي: ${total.toLocaleString("ar-EG")} ج.م\n✅ تم استلام الطلب — جاري التواصل مع العميل`;
+  await notifyAdmin("order", orderMsg);
+  const waText = encodeURIComponent(`طلب جديد من NEXORA\n${orderMsg}`);
+  window.open(`https://wa.me/201064519541?text=${waText}`, "_blank");
   cart = [];
   saveCart();
   closeCart();
+  toast("تم إرسال طلبك بنجاح ✅ هنتواصل معاك");
 });
 
-$("#contactForm").addEventListener("submit", (e) => {
+$("#contactForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  toast("تم إرسال رسالتك (تجريبي)");
+  const inputs = e.target.querySelectorAll("input, textarea");
+  const vals = [...inputs].map(i => i.value.trim()).filter(Boolean);
+  await notifyAdmin("contact", vals.join("\n") || "رسالة فارغة");
+  toast("تم إرسال رسالتك ✅");
   e.target.reset();
 });
 
