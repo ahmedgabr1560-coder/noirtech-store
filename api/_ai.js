@@ -2,6 +2,9 @@ function providerKey(prefix) {
   const matches = Object.entries(process.env)
     .filter(([name, value]) => value && new RegExp(`^${prefix}\\d*$`, "i").test(name))
     .sort(([a], [b]) => {
+      const aNumbered = new RegExp(`^${prefix}\\d+$`, "i").test(a);
+      const bNumbered = new RegExp(`^${prefix}\\d+$`, "i").test(b);
+      if (aNumbered !== bNumbered) return aNumbered ? 1 : -1;
       const n = name => Number(name.slice(prefix.length) || 0);
       return n(b) - n(a);
     });
