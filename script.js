@@ -34,12 +34,16 @@ function toast(msg) {
   el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 2600);
 }
-async function notifyAdmin(type, message) {
+async function notifyAdmin(type, message, extra) {
   try {
+    const payload = { type: type, message: message || "" };
+    if (extra && typeof extra === "object") {
+      if (extra.order) payload.order = extra.order;
+    }
     await fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, message })
+      body: JSON.stringify(payload)
     });
   } catch (e) {
     console.warn("notify failed", e);
@@ -461,7 +465,33 @@ $("#checkoutBtn").addEventListener("click", async () => {
   const btn = $("#checkoutBtn");
   if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
 
-  try { await notifyAdmin("order", orderMsg); } catch (e) {}
+  
+  const richItems = cart.map(i => {
+    const p = PRODUCTS.find(x => x.id === i.id);
+    if (!p) return null;
+    return {
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      qty: i.qty,
+      image: p.image,
+      category: p.category,
+      description: p.description || p.desc || "",
+      specs: p.specs || {}
+    };
+  }).filter(Boolean);
+
+  const orderPayload = {
+    id: orderId,
+    total: total,
+    customer: { name: name, phone: phone, email: currentUser.email, address: address, note: note },
+    items: richItems
+  };
+
+  try {
+    await notifyAdmin("order", orderMsg, { order: orderPayload });
+  } catch (e) {}
+
 
   const waText = encodeURIComponent("طلب NEXORA " + orderId + "\n\n" + orderMsg);
   window.open("https://wa.me/201064519541?text=" + waText, "_blank");
