@@ -1,49 +1,65 @@
 import { resilientChat } from "./_ai.js";
 
-const SYSTEM = `أنت "نوير"، المساعد الذكي لمتجر NoirTech للإلكترونيات الفاخرة في مصر.
+const SYSTEM = `أنت مساعد NEXORA الذكي لمتجر إلكترونيات في مصر.
 
 شخصيتك:
-- خفيف دم، بتضحك وتهزر بلطف.
-- عامية مصرية مريحة.
-- تساعد بوضوح بعد الهزار.
+- ودود، خفيف دم باعتدال، عامية مصرية.
+- تساعد العميل يختار منتج بسرعة ووضوح.
 
 أسلوب الرد:
-1) هزار/ابتسامة خفيفة.
-2) إجابة مفيدة.
-3) سؤال متابعة واحد (ميزانية؟ استخدام؟).
-4) لو متردد: خيارين مع سبب.
-5) وجّه للسلة أو واتساب/تليجرام.
+1) رد قصير ومفيد.
+2) اسأل عن الميزانية أو الاستخدام لو ناقص.
+3) اقترح فئة أو منتج مناسب.
+4) عند الطلب وجّه للسلة أو واتساب: 01064519541
 
-المتجر: هواتف، لابتوبات، سماعات، ساعات.
-شحن داخل مصر، ضمان أصلي، إرجاع 14 يوم.
-تواصل: 01064519541 | ahmedgabr1560@gmail.com
+المنتجات: موبايلات، لابتوبات، شاشات، أجهزة منزلية، إكسسوارات.
+شحن داخل مصر، تواصل: 01064519541 | ahmedgabr1560@gmail.com
 
-قواعد: عربي 2–6 جمل، إيموجي باعتدال.`;
+قواعد: عربي، 2–5 جمل، بدون اختراع أسعار دقيقة لو مش متاحة.`;
 
-function localSmartReply(message) {
+function localSmartReply(message, catalog) {
   const t = String(message || "").toLowerCase();
-  if (/هاتف|موبايل|ايفون|آيفون|سامسونج|phone|iphone|galaxy/.test(t)) {
-    return "يا وحش 😄 في قسم الهواتف عندنا تشكيلة حلوة من آيفون وسامسونج وشياومي.\nقولي ميزانيتك كام تقريبًا؟ وأنا أرشّحلك أنسب اختيار.";
+  const list = Array.isArray(catalog) ? catalog : [];
+
+  function pick(cat, limit = 3) {
+    return list
+      .filter(p => (p.category || "").includes(cat) || (p.name || "").toLowerCase().match(new RegExp(cat, "i")))
+      .slice(0, limit)
+      .map(p => p.name + (p.price ? ` (~${Number(p.price).toLocaleString("ar-EG")} ج.م)` : ""))
+      .join(" · ");
+  }
+
+  if (/هاتف|موبايل|ايفون|آيفون|سامسونج|phone|iphone|galaxy|pixel/.test(t)) {
+    const s = pick("phone") || pick("phones");
+    return s
+      ? `تمام 📱 من الموبايلات عندنا مثلاً:\n${s}\nقولي ميزانيتك وأرشّح الأدق.`
+      : "في قسم الموبايلات تشكيلة كبيرة 📱 قولي ميزانيتك؟";
   }
   if (/لابتوب|لاب|ماك|macbook|laptop|جهاز/.test(t)) {
-    return "اللابتوبات عندنا جاهزة للشغل والألعاب 💻\nتحب جهاز خفيف للشغل، ولا قوي للألعاب؟";
+    const s = pick("laptop");
+    return s
+      ? `اللابتوبات متاحة 💻 مثل:\n${s}\nشغل ولا ألعاب؟`
+      : "اللابتوبات جاهزة 💻 تحب خفيف للشغل ولا قوي للألعاب؟";
   }
-  if (/سماع|ايربود|airpods|هيدفون|صوت|jbl|sony/.test(t)) {
-    return "الصوتيات دي حكاية 🎧\nعايز سماعة رأس بعزل ضوضاء، ولا سماعة أذن صغيرة؟";
+  if (/سماع|ايربود|airpods|هيدفون|صوت|jbl|sony|buds/.test(t)) {
+    return "الصوتيات عندنا سماعات رأس وأذن 🎧 تحب عزل ضوضاء ولا سماعة صغيرة؟";
   }
-  if (/ساع|watch|ساعة|garmin|fitbit/.test(t)) {
-    return "الساعات الذكية عندنا شيك وعملية ⌚\nرياضة وتدريب، ولا شكل أنيق يومي؟";
+  if (/ساع|watch|ساعة|garmin|fitbit|band/.test(t)) {
+    return "الساعات الذكية موجودة ⌚ رياضة ولا استخدام يومي؟";
+  }
+  if (/شاشة|monitor|عرض/.test(t) && !/عرض/.test(t)) {
+    return "الشاشات متوفرة للشغل والألعاب 🖥️ قولي المقاس التقريبي؟";
   }
   if (/عرض|خصم|رخيص|سعر|بكام/.test(t)) {
-    return "العروض بتتحرك حسب المنتج 🔥\nقولي فئة إيه (هاتف/لابتوب/سماعة/ساعة) وميزانيتك، وأظبطلك أنسب صفقة.";
+    return "العروض تتغير حسب المنتج 🔥 قولي الفئة (موبايل/لابتوب/سماعة) وميزانيتك.";
   }
-  if (/شحن|توصيل|ضمان|ارجاع|إرجاع/.test(t)) {
-    return "شحن داخل مصر ✅ ضمان أصلي ✅ وإرجاع خلال 14 يوم.\nتحب أساعدك تختار منتج دلوقتي؟";
+  if (/شحن|توصيل|ضمان|ارجاع|إرجاع|طلب/.test(t)) {
+    return "الشحن داخل مصر ✅ والطلب من السلة بعد تسجيل الدخول.\nواتساب: 01064519541";
   }
-  if (/مرحبا|اهلا|أهلًا|السلام|hello|hi|هاي/.test(t)) {
-    return "أهلاً بيك في NoirTech 👋 أنا نوير.\nتحب نبدأ بهاتف، لابتوب، سماعة، ولا ساعة؟";
+  if (/مرحبا|اهلا|أهل|السلام|hello|hi|هاي|ازيك|إزيك/.test(t)) {
+    return "أهلاً بيك في NEXORA 👋 أنا مساعدك.\nتحب موبايل، لابتوب، شاشة، ولا إكسسوار؟";
   }
-  return "تمام 😄 قولي عايز مساعدة في إيه بالظبط: هاتف، لابتوب، سماعة، ولا ساعة؟\nولو عندك ميزانية قولي عليها وأنا أرشّح بسرعة.";
+  return "حاضر 😄 قولي عايز مساعدة في إيه: موبايل، لابتوب، شاشة، ولا إكسسوار؟ ولو عندك ميزانية اكتبها.";
 }
 
 export default async function handler(req, res) {
@@ -54,7 +70,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { message, history } = req.body || {};
+    const { message, history, catalog } = req.body || {};
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "Message required" });
     }
@@ -64,19 +80,26 @@ export default async function handler(req, res) {
       { role: "user", content: message.slice(0, 2000) }
     ];
 
+    // Enrich system with a few catalog samples when available
+    let system = SYSTEM;
+    if (Array.isArray(catalog) && catalog.length) {
+      const sample = catalog.slice(0, 25).map(p => `${p.name} | ${p.category} | ${p.price}`).join("\n");
+      system += `\n\nعينة من كتالوج المتجر:\n${sample}`;
+    }
+
     try {
-      const result = await resilientChat(SYSTEM, messages, 500);
+      const result = await resilientChat(system, messages, 500);
       return res.status(200).json({ reply: result.reply, provider: result.provider });
     } catch (aiError) {
-      console.error("AI providers failed, using local smart reply:", aiError.message);
+      console.error("AI providers failed:", aiError.message);
       return res.status(200).json({
-        reply: localSmartReply(message),
+        reply: localSmartReply(message, catalog),
         provider: "local",
         note: "fallback"
       });
     }
   } catch (err) {
     console.error(err);
-    return res.status(200).json({ reply: localSmartReply("") });
+    return res.status(200).json({ reply: localSmartReply("", []) });
   }
 }
