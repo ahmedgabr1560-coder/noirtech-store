@@ -398,3 +398,105 @@ $("#contactForm").addEventListener("submit", (e) => {
 renderAll();
 updateCartUI();
 updateUserUI();
+
+
+/* —— AI Chat (same behavior as before) —— */
+window._aiHistory = JSON.parse(localStorage.getItem("tz_ai_history") || "[]");
+window._aiBusy = false;
+
+function openAiChat() {
+  document.getElementById("aiPanel")?.classList.add("open");
+  document.getElementById("aiOverlay")?.classList.add("open");
+  document.getElementById("aiInput")?.focus();
+}
+function closeAiChat() {
+  document.getElementById("aiPanel")?.classList.remove("open");
+  document.getElementById("aiOverlay")?.classList.remove("open");
+}
+function escapeAiText(t) {
+  return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function formatAiReply(t) {
+  return escapeAiText(t).replace(/\n/g, "<br>");
+}
+function appendAiMsg(html, who) {
+  const box = document.getElementById("aiMessages");
+  if (!box) return;
+  const div = document.createElement("div");
+  div.className = "ai-msg " + who;
+  div.innerHTML = `<div class="ai-bubble">${html}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+function addAiTyping() {
+  const box = document.getElementById("aiMessages");
+  if (!box) return;
+  const typing = document.createElement("div");
+  typing.className = "ai-msg bot";
+  typing.id = "aiTyping";
+  typing.innerHTML = `<div class="ai-bubble ai-typing"><i></i><i></i><i></i></div>`;
+  box.appendChild(typing);
+  box.scrollTop = box.scrollHeight;
+}
+function localAiReply(msg) {
+  const m = msg.toLowerCase();
+  if (/موبايل|هاتف|phone|ايفون|آيفون/.test(m)) return "عندنا قسم موبايلات تجريبي كامل 📱 قول ميزانيتك وأرشّحلك من القائمة.";
+  if (/لابتوب|لاب|laptop|ماك/.test(m)) return "اللابتوبات في TECHZONE جاهزة للتصفح 💻 تحب جهاز للشغل ولا للألعاب؟";
+  if (/سماعة|اكسسوار|إكسسوار|سماعة/.test(m)) return "الإكسسوارات والعروض تحت قسم العروض 🎧";
+  if (/عرض|خصم|رخيص/.test(m)) return "شوف قسم العروض في الصفحة — فيه خصومات تجريبية مميزة 🔥";
+  if (/مرحبا|اهلا|السلام|hi|hello/.test(m)) return "أهلاً بيك في TECHZONE 👋 تحب مساعدة في موبايل، لابتوب، ولا إكسسوار؟";
+  return "تمام 😄 قولي عايز إيه بالظبط: موبايل، لابتوب، شاشة، ولا إكسسوار؟";
+}
+async function handleAiSend() {
+  if (window._aiBusy) return;
+  const input = document.getElementById("aiInput");
+  const sendBtn = document.getElementById("aiSend");
+  const text = (input?.value || "").trim();
+  if (!text) return;
+  window._aiBusy = true;
+  appendAiMsg(escapeAiText(text), "user");
+  if (input) input.value = "";
+  if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = "…"; }
+  addAiTyping();
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: text,
+        history: window._aiHistory.slice(-12),
+        catalog: PRODUCTS.slice(0, 40).map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price }))
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    document.getElementById("aiTyping")?.remove();
+    const reply = (res.ok && data.reply) ? data.reply : localAiReply(text);
+    appendAiMsg(formatAiReply(reply), "bot");
+    window._aiHistory.push({ role: "user", content: text }, { role: "assistant", content: reply });
+    window._aiHistory = window._aiHistory.slice(-20);
+    localStorage.setItem("tz_ai_history", JSON.stringify(window._aiHistory));
+  } catch {
+    document.getElementById("aiTyping")?.remove();
+    const reply = localAiReply(text);
+    appendAiMsg(formatAiReply(reply), "bot");
+  } finally {
+    window._aiBusy = false;
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = "➤"; }
+    input?.focus();
+  }
+}
+
+document.getElementById("aiChatBtn")?.addEventListener("click", openAiChat);
+document.getElementById("aiClose")?.addEventListener("click", closeAiChat);
+document.getElementById("aiOverlay")?.addEventListener("click", closeAiChat);
+document.getElementById("aiSend")?.addEventListener("click", handleAiSend);
+document.getElementById("aiInput")?.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleAiSend(); }
+});
+document.getElementById("aiSuggestions")?.addEventListener("click", e => {
+  const chip = e.target.closest(".ai-chip");
+  if (!chip) return;
+  const q = chip.getAttribute("data-q");
+  const input = document.getElementById("aiInput");
+  if (input && q) { input.value = q; handleAiSend(); }
+});
