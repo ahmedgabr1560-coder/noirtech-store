@@ -523,3 +523,66 @@ button, input, textarea { font: inherit; color: inherit; }
 .order-success h3 { margin-bottom: 8px; }
 .order-success .muted { margin-bottom: 8px; }
 .order-success strong { color: var(--neon); }
+
+
+/* Auth panels — separate login / register */
+.auth-modal {
+  width: min(400px, 94vw) !important;
+  padding: 28px 24px 22px !important;
+  max-height: 92vh;
+}
+.auth-panel { animation: authIn .25s ease; }
+@keyframes authIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.auth-brand { text-align: center; margin-bottom: 22px; }
+.auth-brand-mark {
+  width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), var(--neon));
+  display: grid; place-items: center; color: #0a0a0f; font-weight: 900; font-size: .95rem;
+}
+.auth-brand h2 {
+  font-size: 1.35rem; margin-bottom: 6px; font-weight: 800;
+}
+.auth-brand p { font-size: .88rem; color: var(--muted); margin: 0; }
+.auth-form { display: grid; gap: 14px; }
+.auth-form .field { display: grid; gap: 6px; }
+.auth-form .field label {
+  font-size: .82rem; font-weight: 600; color: var(--muted);
+}
+.auth-form .field input {
+  border: 1px solid var(--border); border-radius: 12px; padding: 13px 14px;
+  color: var(--text); background: var(--bg-soft); transition: .2s; width: 100%;
+}
+.auth-form .field input:focus {
+  outline: none; border-color: rgba(139,92,246,.55);
+  box-shadow: 0 0 0 3px rgba(139,92,246,.12);
+}
+.auth-form .field input::placeholder { color: #64748b; }
+.auth-footer-link {
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border);
+  text-align: center; font-size: .88rem; color: var(--muted);
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+}
+.link-btn {
+  background: none; border: none; color: var(--neon); font-weight: 700;
+  cursor: pointer; font-size: .92rem; font-family: inherit; padding: 4px 8px;
+}
+.link-btn:hover { text-decoration: underline; }
+.reg-avatar { text-align: center; margin-bottom: 4px; }
+.reg-avatar-circle {
+  width: 88px; height: 88px; margin: 0 auto 8px; position: relative;
+}
+.reg-avatar-circle img,
+.reg-avatar-circle span {
+  width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
+  border: 2px solid rgba(139,92,246,.45);
+  display: grid; place-items: center;
+  background: var(--bg-soft); color: var(--muted); font-size: 1.5rem;
+}
+.reg-avatar-add {
+  position: absolute; bottom: 0; left: 0; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primary); color: #fff; display: grid; place-items: center;
+  font-size: .75rem; cursor: pointer; border: 2px solid var(--card);
+}
