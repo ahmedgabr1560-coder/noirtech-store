@@ -1,7 +1,7 @@
 import { openrouterSearchChat, resilientChat } from "./_ai.js";
 
 async function autoAddRequestedProduct(message, catalog) {
-  const token = process.env.OPENROUTER_API_KEY;
+  const token = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY2;
   const gh = process.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN;
   if (!token || !gh) return null;
   try {
@@ -121,7 +121,7 @@ ${JSON.stringify(Array.isArray(catalog) ? catalog.slice(0, 40) : [])}`;
       { role: "user", content: message.slice(0, 2000) }
     ];
     const wantsLivePrice = /(سعر|اسعار|أسعار|بكام|بكم|تكلف|كام|price|prices|cost|how much|latest price|current price)/i.test(message);
-    if (wantsLivePrice && process.env.OPENROUTER_API_KEY) {
+    if (wantsLivePrice &&  (process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY2)) {
       const livePrompt = `${systemPrompt}
 
 وضع البحث المباشر عن الأسعار:
