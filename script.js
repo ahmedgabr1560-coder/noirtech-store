@@ -101,10 +101,20 @@ function updateCartUI() {
   const count = cart.reduce((s, i) => s + i.qty, 0);
   $("#cartCount").textContent = count;
   const box = $("#cartItems");
+  const fields = $("#checkoutFields");
   if (!cart.length) {
-    box.innerHTML = `<div class="empty-cart">السلة فارغة<br><small>أضف منتجات تجريبية للتجربة</small></div>`;
+    box.innerHTML = `<div class="empty-cart">السلة فارغة<br><small>أضف منتجات ثم أتمم الطلب</small></div>`;
     $("#cartTotal").textContent = money(0);
+    if (fields) fields.hidden = true;
     return;
+  }
+  if (fields) {
+    fields.hidden = false;
+    if (currentUser) {
+      if ($("#orderName") && !$("#orderName").value) $("#orderName").value = currentUser.name || "";
+      if ($("#orderPhone") && !$("#orderPhone").value) $("#orderPhone").value = currentUser.phone || "";
+      if ($("#orderAddress") && !$("#orderAddress").value) $("#orderAddress").value = currentUser.address || "";
+    }
   }
   box.innerHTML = cart.map(i => {
     const p = PRODUCTS.find(x => x.id === i.id);
@@ -372,34 +382,99 @@ $("#logoutBtn").addEventListener("click", () => {
   toast("تم تسجيل الخروج");
 });
 
+
+function showOrderSuccess(orderId) {
+  const idEl = document.getElementById("orderSuccessId");
+  if (idEl) idEl.textContent = orderId;
+  document.getElementById("orderSuccessOverlay")?.classList.add("open");
+  document.getElementById("orderSuccessModal")?.classList.add("open");
+}
+function closeOrderSuccess() {
+  document.getElementById("orderSuccessOverlay")?.classList.remove("open");
+  document.getElementById("orderSuccessModal")?.classList.remove("open");
+}
+document.getElementById("orderSuccessClose")?.addEventListener("click", closeOrderSuccess);
+document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeOrderSuccess);
+
 $("#checkoutBtn").addEventListener("click", async () => {
   if (!cart.length) return toast("السلة فارغة");
   if (!currentUser) {
     closeCart();
     openAuth("login");
-    return toast("سجّل الدخول لإتمام الطلب");
+    return toast("سجّل الدخول أولاً لإتمام الطلب");
   }
+
+  const name = ($("#orderName")?.value || currentUser.name || "").trim();
+  const phone = ($("#orderPhone")?.value || currentUser.phone || "").trim();
+  const address = ($("#orderAddress")?.value || currentUser.address || "").trim();
+  const note = ($("#orderNote")?.value || "").trim();
+
+  if (!name) return toast("اكتب اسم المستلم");
+  if (!phone || phone.length < 10) return toast("اكتب رقم هاتف صحيح");
+  if (!address) return toast("اكتب عنوان التوصيل");
+
+  currentUser.name = name;
+  currentUser.phone = phone;
+  currentUser.address = address;
+  localStorage.setItem("nx_user", JSON.stringify(currentUser));
+  let db = JSON.parse(localStorage.getItem("nx_users") || "[]");
+  const ui = db.findIndex(u => u.email === currentUser.email);
+  if (ui >= 0) {
+    db[ui] = { ...db[ui], ...currentUser };
+    localStorage.setItem("nx_users", JSON.stringify(db));
+  }
+  updateUserUI();
+
+  const orderId = "NX-" + Date.now().toString().slice(-8);
   const lines = cart.map(i => {
     const p = PRODUCTS.find(x => x.id === i.id);
     if (!p) return null;
-    return `• ${p.name} × ${i.qty} = ${(p.price * i.qty).toLocaleString("ar-EG")} ج.م`;
+    return "• " + p.name + " × " + i.qty + " = " + (p.price * i.qty).toLocaleString("ar-EG") + " ج.م";
   }).filter(Boolean);
   const total = cart.reduce((s, i) => {
     const p = PRODUCTS.find(x => x.id === i.id);
     return s + (p ? p.price * i.qty : 0);
   }, 0);
-  const orderMsg =
-    `👤 ${currentUser.name}\n📞 ${currentUser.phone}\n📧 ${currentUser.email}\n` +
-    (currentUser.address ? `📍 ${currentUser.address}\n` : "") +
-    `\n📦 المنتجات:\n${lines.join("\n")}\n\n💰 الإجمالي: ${total.toLocaleString("ar-EG")} ج.م\n✅ تم استلام الطلب — جاري التواصل مع العميل`;
-  await notifyAdmin("order", orderMsg);
-  const waText = encodeURIComponent(`طلب جديد من NEXORA\n${orderMsg}`);
-  window.open(`https://wa.me/201064519541?text=${waText}`, "_blank");
+
+  const orderRecord = {
+    id: orderId,
+    at: new Date().toISOString(),
+    customer: { name: name, phone: phone, email: currentUser.email, address: address, note: note },
+    items: cart.map(i => {
+      const p = PRODUCTS.find(x => x.id === i.id);
+      return p ? { id: p.id, name: p.name, price: p.price, qty: i.qty } : null;
+    }).filter(Boolean),
+    total: total,
+    status: "new"
+  };
+  const orders = JSON.parse(localStorage.getItem("nx_orders") || "[]");
+  orders.unshift(orderRecord);
+  localStorage.setItem("nx_orders", JSON.stringify(orders.slice(0, 50)));
+
+  let orderMsg = "🆔 " + orderId + "\n";
+  orderMsg += "👤 " + name + "\n📞 " + phone + "\n📧 " + currentUser.email + "\n📍 " + address + "\n";
+  if (note) orderMsg += "📝 " + note + "\n";
+  orderMsg += "\n📦 المنتجات:\n" + lines.join("\n");
+  orderMsg += "\n\n💰 الإجمالي: " + total.toLocaleString("ar-EG") + " ج.م";
+  orderMsg += "\n✅ طلب مؤكد — تواصل مع العميل";
+
+  const btn = $("#checkoutBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
+
+  try { await notifyAdmin("order", orderMsg); } catch (e) {}
+
+  const waText = encodeURIComponent("طلب NEXORA " + orderId + "\n\n" + orderMsg);
+  window.open("https://wa.me/201064519541?text=" + waText, "_blank");
+
   cart = [];
   saveCart();
   closeCart();
-  toast("تم إرسال طلبك بنجاح ✅ هنتواصل معاك");
+  if ($("#orderNote")) $("#orderNote").value = "";
+  showOrderSuccess(orderId);
+  toast("تم تأكيد طلبك بنجاح");
+  if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
 });
+
 
 $("#contactForm").addEventListener("submit", async (e) => {
   e.preventDefault();
