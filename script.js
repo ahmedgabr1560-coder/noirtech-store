@@ -61,9 +61,10 @@ closeCart.addEventListener("click",closeCartSidebar);
 cartOverlay.addEventListener("click",closeCartSidebar);
 function closeCartSidebar(){ cartSidebar.classList.remove("open"); cartOverlay.classList.remove("open"); }
 function updateUserUI() {
-  if (currentUser) {
-    userNameDisplay.textContent = currentUser.name.split(" ")[0];
-    userBtn.title = currentUser.name;
+  if (currentUser && currentUser.email) {
+    const displayName = (currentUser.name || currentUser.email || "مستخدم").toString();
+    if (userNameDisplay) userNameDisplay.textContent = displayName.split(" ")[0];
+    if (userBtn) userBtn.title = displayName;
     let navAv = userBtn.querySelector(".nav-avatar");
     const svg = userBtn.querySelector("svg");
     if (currentUser.avatar) {
@@ -178,7 +179,9 @@ registerForm?.addEventListener("submit",e=>{
   const password=document.getElementById("regPassword").value;
   if (!name || !phone || !email || !password) { showToast("املأ كل الحقول"); return; }
   if (password.length < 4) { showToast("كلمة المرور قصيرة"); return; }
-  if (usersDB.find(u=>u.email===email)) { showToast("هذا البريد مسجل بالفعل!"); return; }
+  const latestDB = JSON.parse(localStorage.getItem("noirtech_users") || "[]");
+  usersDB.length = 0; latestDB.forEach(u => usersDB.push(u));
+  if (usersDB.find(u => (u.email || "").toLowerCase() === email)) { showToast("هذا البريد مسجل بالفعل!"); return; }
   const avatar = window._regAvatar || null;
   const joined = new Date().toLocaleDateString("ar-EG");
   const user = {name,phone,email,password,address:"",bio:"",avatar,joined,orders:0};
@@ -194,16 +197,47 @@ registerForm?.addEventListener("submit",e=>{
 });
 loginForm?.addEventListener("submit",e=>{
   e.preventDefault();
-  const email=document.getElementById("loginEmail").value.trim().toLowerCase();
-  const password=document.getElementById("loginPassword").value;
-  const user=usersDB.find(u=>u.email===email&&u.password===password);
-  if (!user) { showToast("بيانات الدخول غير صحيحة!"); return; }
-  currentUser={name:user.name,phone:user.phone,email:user.email,address:user.address||"",bio:user.bio||"",avatar:user.avatar||null,joined:user.joined||"—",orders:user.orders||0};
-  localStorage.setItem("noirtech_user",JSON.stringify(currentUser));
-  updateUserUI(); closeAuthModal(); showToast(`مرحباً بعودتك ${user.name}!`);
-  sendTelegram(`🔐 تسجيل دخول\n\n👤 ${user.name}\n📞 ${user.phone}\n📧 ${user.email}`);
-  if (window._pendingCheckout) { window._pendingCheckout=false; processCheckout(); }
+  try {
+    const emailEl = document.getElementById("loginEmail");
+    const passEl = document.getElementById("loginPassword");
+    const email = (emailEl?.value || "").trim().toLowerCase();
+    const password = passEl?.value || "";
+    if (!email || !password) { showToast("اكتب الإيميل وكلمة المرور"); return; }
+    const db = JSON.parse(localStorage.getItem("noirtech_users") || "[]");
+    // sync memory
+    usersDB.length = 0; db.forEach(u => usersDB.push(u));
+    const user = usersDB.find(u => (u.email || "").toLowerCase() === email && String(u.password) === String(password));
+    if (!user) {
+      const exists = usersDB.some(u => (u.email || "").toLowerCase() === email);
+      showToast(exists ? "كلمة المرور غير صحيحة" : "لا يوجد حساب بهذا الإيميل — أنشئ حسابًا");
+      return;
+    }
+    currentUser = {
+      name: user.name || "",
+      phone: user.phone || "",
+      email: user.email,
+      address: user.address || "",
+      bio: user.bio || "",
+      avatar: user.avatar || null,
+      joined: user.joined || "—",
+      orders: user.orders || 0
+    };
+    localStorage.setItem("noirtech_user", JSON.stringify(currentUser));
+    updateUserUI();
+    closeAuthModal();
+    showToast(`مرحباً بعودتك ${currentUser.name || ""}! ✅`);
+    sendTelegram(`🔐 تسجيل دخول
+
+👤 ${currentUser.name}
+📞 ${currentUser.phone}
+📧 ${currentUser.email}`);
+    if (window._pendingCheckout) { window._pendingCheckout = false; processCheckout(); }
+  } catch (err) {
+    console.error(err);
+    showToast("حصل خطأ في تسجيل الدخول، حاول تاني");
+  }
 });
+
 function processCheckout() {
   if (!cart.length) { showToast("السلة فارغة!"); return; }
   const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
