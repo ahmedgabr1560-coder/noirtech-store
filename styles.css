@@ -503,3 +503,23 @@ button, input, textarea { font: inherit; color: inherit; }
 @media (max-width: 400px) {
   .products-grid { grid-template-columns: 1fr; }
 }
+
+/* Checkout practical */
+.checkout-fields { display: grid; gap: 8px; margin: 10px 0 12px; }
+.checkout-fields label { display: grid; gap: 4px; font-size: .78rem; font-weight: 600; color: var(--muted); }
+.checkout-fields input {
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  background: var(--bg-soft); color: var(--text);
+}
+.checkout-fields input:focus { outline: none; border-color: rgba(139,92,246,.5); }
+.checkout-hint { font-size: .75rem; color: var(--muted); text-align: center; margin-top: 8px; }
+.order-success-modal { width: min(380px, 92vw); text-align: center; }
+.order-success { padding: 12px 6px; }
+.order-success-icon {
+  width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%;
+  background: rgba(52,211,153,.15); color: var(--success);
+  display: grid; place-items: center; font-size: 1.8rem; font-weight: 800;
+}
+.order-success h3 { margin-bottom: 8px; }
+.order-success .muted { margin-bottom: 8px; }
+.order-success strong { color: var(--neon); }
