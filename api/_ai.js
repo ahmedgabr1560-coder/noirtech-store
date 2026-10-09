@@ -110,18 +110,18 @@ export async function geminiChat(system, messages, maxTokens = 450) {
 }
 
 export async function resilientChat(system, messages, maxTokens = 450) {
-  try { return { reply: await openaiChat(system, messages, maxTokens), provider: "openai" }; }
-  catch (openaiError) {
-    try { return { reply: await claudeChat(system, messages, maxTokens), provider: "claude" }; }
-    catch (claudeError) {
-      try { return { reply: await openrouterChat(system, messages, maxTokens), provider: "openrouter" }; }
-      catch (openrouterError) {
-        try { return { reply: await geminiChat(system, messages, maxTokens), provider: "gemini" }; }
-        catch (geminiError) {
-          console.error("AI providers failed", { openai: openaiError.message, claude: claudeError.message, openrouter: openrouterError.message, gemini: geminiError.message });
-          throw new Error("All AI providers failed");
-        }
-      }
-    }
+  // ابدأ بالمحركات المتاحة عادةً للمتجر، حتى لا نضيع وقت الطلب في مفتاح OpenAI منتهي.
+  const providers = [
+    ["openrouter", openrouterChat],
+    ["gemini", geminiChat],
+    ["openai", openaiChat],
+    ["claude", claudeChat]
+  ].filter(([name]) => ({ openrouter: process.env.OPENROUTER_API_KEY, gemini: process.env.GEMINI_API_KEY, openai: process.env.OPENAI_API_KEY, claude: process.env.ANTHROPIC_API_KEY }[name]));
+  const errors = {};
+  for (const [provider, fn] of providers) {
+    try { return { reply: await fn(system, messages, maxTokens), provider }; }
+    catch (error) { errors[provider] = error.message; }
   }
+  console.error("AI providers failed", errors);
+  throw new Error("لم يعمل أي محرك ذكاء اصطناعي: " + Object.values(errors).join(" | "));
 }
