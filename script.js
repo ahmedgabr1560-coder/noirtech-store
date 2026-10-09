@@ -9,25 +9,8 @@ const CATEGORIES = [
   { id: "accessories", name: "إكسسوارات", icon: "🎧", href: "#accessories" }
 ];
 
-/** Demo catalog — not real commercial claims */
-const PRODUCTS = [
-  { id: 1, name: "هاتف ذكي Demo X1", category: "phones", price: 12499, oldPrice: 14999, rating: 4.5, reviews: 128, image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop", badge: "عرض", best: true, newest: true, desc: "هاتف تجريبي للعرض في الواجهة مع شاشة وسعة تخزين وهمية." },
-  { id: 2, name: "هاتف Demo Nova 12", category: "phones", price: 8999, oldPrice: null, rating: 4.2, reviews: 86, image: "https://images.unsplash.com/photo-1592890288564-76628a30a657?w=600&h=600&fit=crop", badge: null, best: true, newest: false, desc: "بيانات تجريبية — مواصفات غير حقيقية." },
-  { id: 3, name: "هاتف Demo Pixel Lite", category: "phones", price: 10999, oldPrice: 11999, rating: 4.6, reviews: 54, image: "https://images.unsplash.com/photo-1598327105666-5b89351aff32?w=600&h=600&fit=crop", badge: "جديد", best: false, newest: true, desc: "منتج تجريبي لتجربة صفحة التفاصيل والسلة." },
-  { id: 4, name: "لابتوب Demo Book 15", category: "laptops", price: 18999, oldPrice: 20999, rating: 4.4, reviews: 73, image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&h=600&fit=crop", badge: "عرض", best: true, newest: false, desc: "لابتوب تجريبي للواجهة فقط." },
-  { id: 5, name: "لابتوب Demo Pro 14", category: "laptops", price: 24999, oldPrice: null, rating: 4.7, reviews: 41, image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&h=600&fit=crop", badge: "جديد", best: true, newest: true, desc: "مواصفات وأسعار تجريبية." },
-  { id: 6, name: "لابتوب Demo Gaming 16", category: "laptops", price: 27999, oldPrice: 29999, rating: 4.3, reviews: 39, image: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&h=600&fit=crop", badge: null, best: false, newest: true, desc: "للعرض في قسم الألعاب التجريبي." },
-  { id: 7, name: "شاشة Demo 27\" FHD", category: "monitors", price: 4599, oldPrice: 5299, rating: 4.1, reviews: 22, image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&h=600&fit=crop", badge: "عرض", best: true, newest: false, desc: "شاشة تجريبية." },
-  { id: 8, name: "شاشة Demo 32\" QHD", category: "monitors", price: 7999, oldPrice: null, rating: 4.5, reviews: 18, image: "https://images.unsplash.com/photo-1585790050230-4dd237bdfed0?w=600&h=600&fit=crop", badge: "جديد", best: false, newest: true, desc: "بيانات تجريبية." },
-  { id: 9, name: "مكنسة روبوت Demo Clean", category: "home", price: 6999, oldPrice: 8499, rating: 4.0, reviews: 31, image: "https://images.unsplash.com/photo-1558317374-d189689ff5f2?w=600&h=600&fit=crop", badge: "عرض", best: true, newest: false, desc: "جهاز منزلي تجريبي." },
-  { id: 10, name: "خلاط Demo Mix Pro", category: "home", price: 1299, oldPrice: null, rating: 3.9, reviews: 14, image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=600&h=600&fit=crop", badge: null, best: false, newest: true, desc: "منتج تجريبي." },
-  { id: 11, name: "سماعة Demo Buds Air", category: "accessories", price: 899, oldPrice: 1199, rating: 4.3, reviews: 210, image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&h=600&fit=crop", badge: "عرض", best: true, newest: true, desc: "إكسسوار تجريبي." },
-  { id: 12, name: "ساعة Demo Fit 3", category: "accessories", price: 1499, oldPrice: 1799, rating: 4.2, reviews: 67, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop", badge: "جديد", best: true, newest: true, desc: "بيانات تقييم تجريبية." },
-  { id: 13, name: "شاحن سريع Demo 65W", category: "accessories", price: 349, oldPrice: 449, rating: 4.0, reviews: 95, image: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&h=600&fit=crop", badge: "عرض", best: false, newest: false, desc: "إكسسوار تجريبي." },
-  { id: 14, name: "كيبورد Demo Mech", category: "accessories", price: 999, oldPrice: null, rating: 4.4, reviews: 28, image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&h=600&fit=crop", badge: null, best: false, newest: true, desc: "للعرض فقط." },
-  { id: 15, name: "هاتف Demo Ultra S", category: "phones", price: 16499, oldPrice: 17999, rating: 4.8, reviews: 33, image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&h=600&fit=crop", badge: "الأكثر مبيعًا", best: true, newest: false, desc: "هاتف تجريبي فاخر للواجهة." },
-  { id: 16, name: "شاشة Demo Curved 34", category: "monitors", price: 11999, oldPrice: 12999, rating: 4.6, reviews: 12, image: "https://images.unsplash.com/photo-1616763355548-1b606f383a9a?w=600&h=600&fit=crop", badge: "عرض", best: true, newest: true, desc: "شاشة عريضة تجريبية." }
-];
+/** Products loaded from products.json (bot-managed) */
+let PRODUCTS = [];
 
 let cart = JSON.parse(localStorage.getItem("tz_cart") || "[]");
 let currentUser = JSON.parse(localStorage.getItem("tz_user") || "null");
@@ -394,9 +377,31 @@ $("#contactForm").addEventListener("submit", (e) => {
   e.target.reset();
 });
 
-// Init
-renderAll();
-updateCartUI();
+// Init — load products from JSON (Telegram bot can update them)
+async function loadProducts() {
+  try {
+    const r = await fetch("/products.json?t=" + Date.now());
+    if (!r.ok) throw new Error("fail");
+    const data = await r.json();
+    PRODUCTS = (Array.isArray(data) ? data : []).filter(p => !p.hidden).map(p => ({
+      ...p,
+      rating: p.rating || 4.2,
+      reviews: p.reviews || 20,
+      best: p.best ?? (p.id % 3 === 0),
+      newest: p.newest ?? (p.id % 4 === 0),
+      desc: p.description || p.desc || (p.name + " — متوفر في TECHZONE"),
+      // map legacy categories
+      category: p.category === "audio" || p.category === "wearables" ? "accessories" : p.category
+    }));
+  } catch (e) {
+    console.error(e);
+    PRODUCTS = [];
+  }
+  renderAll();
+  updateCartUI();
+}
+
+loadProducts();
 updateUserUI();
 
 
