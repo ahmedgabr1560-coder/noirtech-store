@@ -221,13 +221,17 @@ function openProfile() {
   $("#profAddress").value = currentUser.address || "";
   $("#profileName").textContent = currentUser.name || "الملف الشخصي";
   $("#profileEmail").textContent = currentUser.email || "";
-  const img = $("#profileAvatar");
-  const fb = $("#profileFallback");
+  const img = document.getElementById("profileAvatar");
+  const fb = document.getElementById("profileFallback");
   if (currentUser.avatar) {
-    img.src = currentUser.avatar; img.hidden = false; fb.style.display = "none";
+    if (img) { img.src = currentUser.avatar; img.classList.add("is-on"); }
+    if (fb) fb.classList.add("is-off");
   } else {
-    img.hidden = true; fb.style.display = "grid";
-    fb.textContent = (currentUser.name || "?").trim().charAt(0).toUpperCase();
+    if (img) { img.removeAttribute("src"); img.classList.remove("is-on"); }
+    if (fb) {
+      fb.classList.remove("is-off");
+      fb.textContent = (currentUser.name || "?").trim().charAt(0).toUpperCase();
+    }
   }
   $("#profileOverlay").classList.add("open");
   $("#profileModal").classList.add("open");
@@ -299,9 +303,10 @@ $("#regAvatarInput")?.addEventListener("change", (e) => {
   const r = new FileReader();
   r.onload = () => {
     regAvatar = r.result;
-    const img = $("#regAvatarPreview");
-    img.src = regAvatar; img.hidden = false;
-    $("#regAvatarPlaceholder").style.display = "none";
+    const img = document.getElementById("regAvatarPreview");
+    const ph = document.getElementById("regAvatarPlaceholder");
+    if (img) { img.src = regAvatar; img.classList.add("is-on"); }
+    if (ph) ph.classList.add("is-off");
   };
   r.readAsDataURL(f);
 });
@@ -313,9 +318,10 @@ $("#profileAvatarInput")?.addEventListener("change", (e) => {
   const r = new FileReader();
   r.onload = () => {
     pendingAvatar = r.result;
-    const img = $("#profileAvatar");
-    img.src = pendingAvatar; img.hidden = false;
-    $("#profileFallback").style.display = "none";
+    const img = document.getElementById("profileAvatar");
+    const fb = document.getElementById("profileFallback");
+    if (img) { img.src = pendingAvatar; img.classList.add("is-on"); }
+    if (fb) fb.classList.add("is-off");
   };
   r.readAsDataURL(f);
 });
@@ -328,8 +334,8 @@ $("#registerForm").addEventListener("submit", (e) => {
   const password = $("#regPassword").value;
   if (!regAvatar) {
     toast("صورة البروفايل مطلوبة");
-    document.querySelector(".reg-avatar-circle")?.classList.add("required-pulse");
-    setTimeout(() => document.querySelector(".reg-avatar-circle")?.classList.remove("required-pulse"), 1200);
+    document.querySelector(".avatar-ring")?.classList.add("required-pulse");
+    setTimeout(() => document.querySelector(".avatar-ring")?.classList.remove("required-pulse"), 1200);
     return;
   }
   if (!name) return toast("اكتب الاسم");
