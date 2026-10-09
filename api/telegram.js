@@ -45,7 +45,14 @@ function naturalIntent(text) {
   const t = text.toLowerCase();
   const normalized = t.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
   const url = (text.match(/https?:\/\/[^\s<>]+/i) || [])[0];
-  if (url && /(?:ضيف|أضف|اضف|استورد|استيراد|منتج|product)/.test(t)) return { command: `/importurl ${url.replace(/[)\]،,.]+$/, "")}` };
+  if (url) return { command: `/importurl ${url.replace(/[)\]،,.]+$/, "")}` };
+  // إضافة يدوية: ضيف اسم | سعر | قسم | رابط صورة
+  if (/(?:ضيف|أضف|اضف)\s+/.test(t) && /\|/.test(text)) {
+    return { command: `/add ${text.replace(/^(?:ضيف|أضف|اضف)\s+/i, "").trim()}` };
+  }
+  if (/(?:ضيف|أضف|اضف)\s+.+/.test(t) && /\d{3,}/.test(t) && !url) {
+    return { command: `/addquick ${text}` };
+  }
   const importCount = (normalized.match(/(?:\d+)\s*(?:جهاز|منتج|موبايل|هاتف)/) || [])[1];
   if (/(?:ضيف|أضف|اضف|استورد|استيراد|import)/.test(t) && /(?:من الإنترنت|من الانترنت|من النت|online|internet|web|الويب|جهاز|منتج)/.test(t)) {
     return { command: `/importproducts ${Math.min(100, Math.max(1, Number(importCount || 100)))}` };
@@ -101,7 +108,7 @@ async function askAi(question, catalog = []) {
 async function interpretAdminRequest(text, catalog = []) {
   const system = `أنت نوير، مساعد بسيط جدًا يتكلم مع المدير كإنسان طبيعي. افهم كلامه ونفّذ الطلب الواضح تلقائيًا. اكتب reply بالمصرية في جملة أو جملتين فقط، بدون تفاصيل تقنية أو أسماء أوامر أو محركات. لو الطلب سؤال عام جاوب عليه ببساطة، ولو ناقص اسأل سؤال توضيح واحدًا فقط. لا تقل إنك نفذت شيئًا قبل أن ينفذه النظام فعليًا.
 الأوامر المسموحة فقط:
-/menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم, /importproducts عدد [فئة], /importurl رابط المنتج.
+/menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم, /importproducts عدد [فئة], /importurl رابط, /add اسم | سعر | قسم | صورة. أو ابعت رابط فقط أو صورة+تعليق.
 لا تخترع رقم منتج أو قيمة غير مذكورة. أرجع JSON فقط بالشكل: {"command":"...","reply":"تأكيد قصير بالمصرية"}.`;
   try {
     const result = await resilientChat(system, [{ role: "user", content: `طلب المدير: ${text.slice(0, 1200)}\nالمنتجات: ${JSON.stringify(catalog.slice(0, 30))}` }], 260);
@@ -162,7 +169,7 @@ async function importProductsFromWeb(count, categoryHint = "") {
   if (!raw) throw new Error("لم يرجع محرك البحث قائمة JSON صالحة");
   let list;
   try { list = JSON.parse(raw); } catch { throw new Error("تعذر قراءة بيانات المنتجات القادمة من الويب"); }
-  const allowed = new Set(["phones", "laptops", "audio", "wearables"]);
+  const allowed = new Set(["phones", "laptops", "audio", "wearables", "monitors", "home", "accessories"]);
   return list.filter(p => p && typeof p.name === "string" && p.name.trim() && allowed.has(p.category) && Number(p.price) > 0 && /^https?:\/\//i.test(String(p.image)) && typeof p.description === "string").slice(0, count).map(p => ({
     name: p.name.trim().slice(0, 120), category: p.category, price: Math.round(Number(p.price)), oldPrice: Number(p.oldPrice) > Number(p.price) ? Math.round(Number(p.oldPrice)) : null,
     image: String(p.image), badge: typeof p.badge === "string" ? p.badge.slice(0, 30) : "مستورد", hidden: false,
@@ -192,7 +199,7 @@ async function importProductFromUrl(url) {
   const raw = ai.match(/\{[\s\S]*\}/)?.[0];
   if (!raw) throw new Error("لم أستطع استخراج بيانات المنتج");
   const item = JSON.parse(raw);
-  const categories = new Set(["phones", "laptops", "audio", "wearables"]);
+  const categories = new Set(["phones", "laptops", "audio", "wearables", "monitors", "home", "accessories"]);
   const finalImage = absoluteUrl(item.image || image, url);
   if (!item.name || !categories.has(item.category) || Number(item.price) <= 0 || !/^https?:\/\//i.test(finalImage)) throw new Error("الرابط لا يحتوي اسمًا وسعرًا وصورة صالحة لمنتج إلكتروني");
   return { name: String(item.name).slice(0, 120), category: item.category, price: Math.round(Number(item.price)), oldPrice: Number(item.oldPrice) > Number(item.price) ? Math.round(Number(item.oldPrice)) : null, image: finalImage, badge: item.badge ? String(item.badge).slice(0, 30) : "مستورد", hidden: false, description: String(item.description || description || "").slice(0, 500), specs: item.specs && typeof item.specs === "object" ? item.specs : {}, sourceUrl: url };
@@ -238,7 +245,64 @@ export default async function handler(req, res) {
       else if (data === "ai_idea") await reply(chatId, "💡 مثال: اكتب <i>اقترح حملة لمنتجات الجيمنج</i> وأنا أجهز لك فكرة ونسخة إعلان.");
       return res.status(200).json({ ok: true });
     }
-    if (!msg?.text) return res.status(200).json({ ok: true });
+    // استقبال صورة منتج + تعليق
+    if (msg?.photo && !msg?.text) {
+      const photos = msg.photo || [];
+      const fileId = photos[photos.length - 1]?.file_id;
+      const caption = (msg.caption || "").trim();
+      if (!fileId) return res.status(200).json({ ok: true });
+      await reply(chatId, "📷 استلمت الصورة... بجيب الرابط وأضيف المنتج");
+      try {
+        const fileRes = await tg("getFile", { file_id: fileId });
+        const filePath = fileRes?.result?.file_path;
+        if (!filePath) throw new Error("تعذر جلب ملف الصورة");
+        const imageUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
+        const prodFile = await getFile("products.json");
+        let products = prodFile ? JSON.parse(prodFile.content) : [];
+        const prodSha = prodFile?.sha;
+        const id = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
+        // parse caption: اسم | سعر | قسم
+        let name = caption || `منتج ${id}`;
+        let price = 0;
+        let category = "accessories";
+        if (caption.includes("|")) {
+          const parts = caption.split("|").map(s => s.trim());
+          name = parts[0] || name;
+          price = Number(String(parts[1] || "").replace(/[^0-9]/g, "")) || 0;
+          const catRaw = (parts[2] || "").toLowerCase();
+          if (/phone|موبايل|هاتف/.test(catRaw)) category = "phones";
+          else if (/laptop|لابتوب/.test(catRaw)) category = "laptops";
+          else if (/monitor|شاشة/.test(catRaw)) category = "monitors";
+          else if (/home|منزل/.test(catRaw)) category = "home";
+          else category = "accessories";
+        } else if (caption) {
+          const priceMatch = caption.match(/(\d{3,})/);
+          if (priceMatch) price = Number(priceMatch[1]);
+          name = caption.replace(/\d{3,}/, "").replace(/ج\.?م|جنيه|سعر/gi, "").trim() || name;
+        }
+        if (!price) {
+          await reply(chatId, "اكتب مع الصورة التعليق بهذا الشكل:\nالاسم | السعر | القسم\nمثال: iPhone 16 | 45000 | phones");
+          return res.status(200).json({ ok: true });
+        }
+        products.push({
+          id, name, category, price, oldPrice: null, image: imageUrl,
+          badge: "جديد", hidden: false,
+          description: name + " — متوفر لدى NEXORA",
+          specs: {}, rating: 4.3, reviews: 10, best: false, newest: true
+        });
+        const putRes = await putFile("products.json", JSON.stringify(products, null, 2), `bot: add product from photo ${name}`, prodSha);
+        if (putRes.ok) await reply(chatId, `✅ تم إضافة المنتج من الصورة\n#${id} ${name}\n💰 ${price} ج.م`);
+        else await reply(chatId, `❌ فشل الحفظ: ${putRes.error || putRes.data?.message || ""}`);
+      } catch (e) {
+        await reply(chatId, "❌ " + String(e.message || e).slice(0, 200));
+      }
+      return res.status(200).json({ ok: true });
+    }
+    if (!msg?.text && !msg?.caption) return res.status(200).json({ ok: true });
+    if (!msg?.text && msg?.caption) {
+      // treat caption-only with photo already handled; caption without photo ignored
+      return res.status(200).json({ ok: true });
+    }
     let text = msg.text.trim();
     if (/^(ايه حصل|إيه حصل|اي حصل|إيه المشكلة|ايه المشكلة|ما المشكلة|الأخطاء|الاخطاء|آخر مشكلة|اخر مشكلة)\s*[؟?!.]*$/i.test(text)) {
       await reply(chatId, errorText(await getLastBotError()));
@@ -361,6 +425,86 @@ export default async function handler(req, res) {
       if (!result.ok) { await reply(chatId, `❌ ${result.error || result.data?.message || "فشل"}`); return false; }
       return true;
     }
+
+    if (command === "/add") {
+      // format: name | price | category | imageUrl
+      const raw = args.join(" ");
+      const parts = raw.split("|").map(s => s.trim()).filter(Boolean);
+      if (parts.length < 2) {
+        await reply(chatId, "صيغة الإضافة:\n/add الاسم | السعر | القسم | رابط الصورة\n\nالأقسام: phones laptops monitors home accessories\n\nأو ابعت رابط منتج مباشرة\nأو صورة + تعليق: الاسم | السعر | القسم");
+        return res.status(200).json({ ok: true });
+      }
+      if (!products) { await reply(chatId, "❌ ملف المنتجات غير متاح"); return res.status(200).json({ ok: true }); }
+      const name = parts[0];
+      const price = Number(String(parts[1]).replace(/[^0-9]/g, ""));
+      let category = (parts[2] || "accessories").toLowerCase();
+      if (/موبايل|هاتف|phone/.test(category)) category = "phones";
+      else if (/لابتوب|laptop/.test(category)) category = "laptops";
+      else if (/شاشة|monitor/.test(category)) category = "monitors";
+      else if (/منزل|home/.test(category)) category = "home";
+      else if (/سماع|ساع|audio|wear/.test(category)) category = "accessories";
+      const allowed = new Set(["phones","laptops","monitors","home","accessories","audio","wearables"]);
+      if (!allowed.has(category)) category = "accessories";
+      let image = parts[3] || "";
+      if (!image || !/^https?:\/\//i.test(image)) {
+        image = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80";
+      }
+      if (!name || !price) {
+        await reply(chatId, "الاسم والسعر مطلوبين");
+        return res.status(200).json({ ok: true });
+      }
+      const id = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
+      products.push({
+        id, name: name.slice(0, 120), category, price: Math.round(price), oldPrice: null,
+        image, badge: "جديد", hidden: false,
+        description: name + " — متوفر لدى NEXORA",
+        specs: {}, rating: 4.2, reviews: 8, best: false, newest: true
+      });
+      if (await saveProducts(products, `bot: add ${name}`)) {
+        await reply(chatId, `✅ تم إضافة المنتج\n#${id} ${name}\n📂 ${category}\n💰 ${price} ج.م`);
+      }
+      return res.status(200).json({ ok: true });
+    }
+    if (command === "/addquick") {
+      // natural: ضيف iPhone 16 بسعر 45000
+      if (!products) { await reply(chatId, "❌ ملف المنتجات غير متاح"); return res.status(200).json({ ok: true }); }
+      const raw = args.join(" ");
+      const priceMatch = raw.match(/(\d{3,})/);
+      const price = priceMatch ? Number(priceMatch[1]) : 0;
+      let name = raw
+        .replace(/^(?:ضيف|أضف|اضف)\s+/i, "")
+        .replace(/ب?سعر\s*\d+/gi, "")
+        .replace(/\d{3,}/g, "")
+        .replace(/ج\.?م|جنيه/gi, "")
+        .trim();
+      if (!name || !price) {
+        await reply(chatId, "مثال: ضيف iPhone 16 Pro بسعر 45000");
+        return res.status(200).json({ ok: true });
+      }
+      let category = "phones";
+      const nl = name.toLowerCase();
+      if (/macbook|laptop|لابتوب|thinkpad|dell|hp |asus/.test(nl)) category = "laptops";
+      else if (/monitor|شاشة|ultragear|odyssey/.test(nl)) category = "monitors";
+      else if (/watch|سماعة|airpods|buds|band|headset/.test(nl)) category = "accessories";
+      else if (/مكنسة|خلاط|ثلاجة|home/.test(nl)) category = "home";
+      const id = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
+      const image = category === "laptops"
+        ? "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=800&fit=crop&q=80"
+        : category === "monitors"
+        ? "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&h=800&fit=crop&q=80"
+        : "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80";
+      products.push({
+        id, name: name.slice(0, 120), category, price: Math.round(price), oldPrice: null,
+        image, badge: "جديد", hidden: false,
+        description: name + " — متوفر لدى NEXORA",
+        specs: {}, rating: 4.2, reviews: 5, best: false, newest: true
+      });
+      if (await saveProducts(products, `bot: addquick ${name}`)) {
+        await reply(chatId, `✅ تم إضافة\n#${id} ${name}\n💰 ${price} ج.م\n(تقدر تبعت صورة لاحقًا وتعدل)`);
+      }
+      return res.status(200).json({ ok: true });
+    }
+
     if (command === "/importurl") {
       const url = args[0];
       if (!url || !/^https?:\/\//i.test(url)) { await reply(chatId, "ابعت رابط المنتج مع كلمة: ضيفه"); return res.status(200).json({ ok: true }); }
