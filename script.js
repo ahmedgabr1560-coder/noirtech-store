@@ -1,4 +1,4 @@
-/* TECHZONE — frontend demo store (localStorage only) */
+/* NEXORA — frontend demo store (localStorage only) */
 const DEMO = true;
 
 const CATEGORIES = [
@@ -12,9 +12,9 @@ const CATEGORIES = [
 /** Products loaded from products.json (bot-managed) */
 let PRODUCTS = [];
 
-let cart = JSON.parse(localStorage.getItem("tz_cart") || "[]");
-let currentUser = JSON.parse(localStorage.getItem("tz_user") || "null");
-let usersDB = JSON.parse(localStorage.getItem("tz_users") || "[]");
+let cart = JSON.parse(localStorage.getItem("nx_cart") || "[]");
+let currentUser = JSON.parse(localStorage.getItem("nx_user") || "null");
+let usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
 let regAvatar = null;
 let pendingAvatar = null;
 
@@ -35,7 +35,7 @@ function toast(msg) {
   setTimeout(() => el.classList.remove("show"), 2600);
 }
 function saveCart() {
-  localStorage.setItem("tz_cart", JSON.stringify(cart));
+  localStorage.setItem("nx_cart", JSON.stringify(cart));
   updateCartUI();
 }
 function discountPct(p) {
@@ -299,13 +299,13 @@ $("#registerForm").addEventListener("submit", (e) => {
   const phone = $("#regPhone").value.trim();
   const email = $("#regEmail").value.trim().toLowerCase();
   const password = $("#regPassword").value;
-  usersDB = JSON.parse(localStorage.getItem("tz_users") || "[]");
+  usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
   if (usersDB.some(u => u.email === email)) return toast("هذا البريد مسجّل بالفعل");
   const user = { name, phone, email, password, address: "", avatar: regAvatar };
   usersDB.push(user);
-  localStorage.setItem("tz_users", JSON.stringify(usersDB));
+  localStorage.setItem("nx_users", JSON.stringify(usersDB));
   currentUser = { name, phone, email, address: "", avatar: regAvatar };
-  localStorage.setItem("tz_user", JSON.stringify(currentUser));
+  localStorage.setItem("nx_user", JSON.stringify(currentUser));
   regAvatar = null;
   updateUserUI();
   closeAuth();
@@ -317,14 +317,14 @@ $("#loginForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const email = $("#loginEmail").value.trim().toLowerCase();
   const password = $("#loginPassword").value;
-  usersDB = JSON.parse(localStorage.getItem("tz_users") || "[]");
+  usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
   const user = usersDB.find(u => u.email === email && String(u.password) === String(password));
   if (!user) {
     const exists = usersDB.some(u => u.email === email);
     return toast(exists ? "كلمة المرور غير صحيحة" : "لا يوجد حساب بهذا البريد");
   }
   currentUser = { name: user.name, phone: user.phone, email: user.email, address: user.address || "", avatar: user.avatar || null };
-  localStorage.setItem("tz_user", JSON.stringify(currentUser));
+  localStorage.setItem("nx_user", JSON.stringify(currentUser));
   updateUserUI();
   closeAuth();
   toast(`مرحبًا ${user.name}`);
@@ -338,12 +338,12 @@ $("#profileForm").addEventListener("submit", (e) => {
   currentUser.email = $("#profEmail").value.trim().toLowerCase();
   currentUser.address = $("#profAddress").value.trim();
   if (pendingAvatar) { currentUser.avatar = pendingAvatar; pendingAvatar = null; }
-  localStorage.setItem("tz_user", JSON.stringify(currentUser));
-  usersDB = JSON.parse(localStorage.getItem("tz_users") || "[]");
+  localStorage.setItem("nx_user", JSON.stringify(currentUser));
+  usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
   const i = usersDB.findIndex(u => u.email === currentUser.email);
   if (i >= 0) {
     usersDB[i] = { ...usersDB[i], ...currentUser };
-    localStorage.setItem("tz_users", JSON.stringify(usersDB));
+    localStorage.setItem("nx_users", JSON.stringify(usersDB));
   }
   updateUserUI();
   closeProfile();
@@ -352,7 +352,7 @@ $("#profileForm").addEventListener("submit", (e) => {
 
 $("#logoutBtn").addEventListener("click", () => {
   currentUser = null;
-  localStorage.removeItem("tz_user");
+  localStorage.removeItem("nx_user");
   updateUserUI();
   closeProfile();
   toast("تم تسجيل الخروج");
@@ -389,7 +389,7 @@ async function loadProducts() {
       reviews: p.reviews || 20,
       best: p.best ?? (p.id % 3 === 0),
       newest: p.newest ?? (p.id % 4 === 0),
-      desc: p.description || p.desc || (p.name + " — متوفر في TECHZONE"),
+      desc: p.description || p.desc || (p.name + " — متوفر في NEXORA"),
       // map legacy categories
       category: p.category === "audio" || p.category === "wearables" ? "accessories" : p.category
     }));
@@ -406,7 +406,7 @@ updateUserUI();
 
 
 /* —— AI Chat (same behavior as before) —— */
-window._aiHistory = JSON.parse(localStorage.getItem("tz_ai_history") || "[]");
+window._aiHistory = JSON.parse(localStorage.getItem("nx_ai_history") || "[]");
 window._aiBusy = false;
 
 function openAiChat() {
@@ -446,10 +446,10 @@ function addAiTyping() {
 function localAiReply(msg) {
   const m = msg.toLowerCase();
   if (/موبايل|هاتف|phone|ايفون|آيفون/.test(m)) return "عندنا قسم موبايلات تجريبي كامل 📱 قول ميزانيتك وأرشّحلك من القائمة.";
-  if (/لابتوب|لاب|laptop|ماك/.test(m)) return "اللابتوبات في TECHZONE جاهزة للتصفح 💻 تحب جهاز للشغل ولا للألعاب؟";
+  if (/لابتوب|لاب|laptop|ماك/.test(m)) return "اللابتوبات في NEXORA جاهزة للتصفح 💻 تحب جهاز للشغل ولا للألعاب؟";
   if (/سماعة|اكسسوار|إكسسوار|سماعة/.test(m)) return "الإكسسوارات والعروض تحت قسم العروض 🎧";
   if (/عرض|خصم|رخيص/.test(m)) return "شوف قسم العروض في الصفحة — فيه خصومات تجريبية مميزة 🔥";
-  if (/مرحبا|اهلا|السلام|hi|hello/.test(m)) return "أهلاً بيك في TECHZONE 👋 تحب مساعدة في موبايل، لابتوب، ولا إكسسوار؟";
+  if (/مرحبا|اهلا|السلام|hi|hello/.test(m)) return "أهلاً بيك في NEXORA 👋 تحب مساعدة في موبايل، لابتوب، ولا إكسسوار؟";
   return "تمام 😄 قولي عايز إيه بالظبط: موبايل، لابتوب، شاشة، ولا إكسسوار؟";
 }
 async function handleAiSend() {
@@ -479,7 +479,7 @@ async function handleAiSend() {
     appendAiMsg(formatAiReply(reply), "bot");
     window._aiHistory.push({ role: "user", content: text }, { role: "assistant", content: reply });
     window._aiHistory = window._aiHistory.slice(-20);
-    localStorage.setItem("tz_ai_history", JSON.stringify(window._aiHistory));
+    localStorage.setItem("nx_ai_history", JSON.stringify(window._aiHistory));
   } catch {
     document.getElementById("aiTyping")?.remove();
     const reply = localAiReply(text);
