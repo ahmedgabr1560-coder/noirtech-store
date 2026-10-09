@@ -102,6 +102,8 @@ function openProfileModal() {
   document.getElementById("profBio").value = currentUser.bio||"";
   document.getElementById("profileDisplayName").textContent = currentUser.name||"الملف الشخصي";
   document.getElementById("profileDisplayEmail").textContent = currentUser.email||"";
+  const so=document.getElementById("profStatOrders"); if(so) so.textContent=String(currentUser.orders||0);
+  const sj=document.getElementById("profStatJoined"); if(sj) sj.textContent=currentUser.joined||"—";
   const img = document.getElementById("profileAvatarImg");
   const ph = document.getElementById("profileAvatarPlaceholder");
   if (currentUser.avatar) { img.src=currentUser.avatar; img.style.display="block"; ph.style.display="none"; }
@@ -155,19 +157,39 @@ function sendTelegram(msg) {
   // لا تُرسل أسرار البوت إلى المتصفح.
   return Promise.resolve(false);
 }
+document.getElementById("regAvatarInput")?.addEventListener("change", e => {
+  const f = e.target.files?.[0]; if (!f) return;
+  if (f.size > 2*1024*1024) { showToast("الصورة كبيرة (حد أقصى 2 ميجا)"); return; }
+  const r = new FileReader();
+  r.onload = () => {
+    window._regAvatar = r.result;
+    const img = document.getElementById("regAvatarImg");
+    const ph = document.getElementById("regAvatarPlaceholder");
+    if (img) { img.src = r.result; img.style.display = "block"; }
+    if (ph) ph.style.display = "none";
+  };
+  r.readAsDataURL(f);
+});
 registerForm?.addEventListener("submit",e=>{
   e.preventDefault();
   const name=document.getElementById("regName").value.trim();
   const phone=document.getElementById("regPhone").value.trim();
   const email=document.getElementById("regEmail").value.trim().toLowerCase();
   const password=document.getElementById("regPassword").value;
+  if (!name || !phone || !email || !password) { showToast("املأ كل الحقول"); return; }
+  if (password.length < 4) { showToast("كلمة المرور قصيرة"); return; }
   if (usersDB.find(u=>u.email===email)) { showToast("هذا البريد مسجل بالفعل!"); return; }
-  usersDB.push({name,phone,email,password,address:"",bio:"",avatar:null});
+  const avatar = window._regAvatar || null;
+  const joined = new Date().toLocaleDateString("ar-EG");
+  const user = {name,phone,email,password,address:"",bio:"",avatar,joined,orders:0};
+  usersDB.push(user);
   localStorage.setItem("noirtech_users",JSON.stringify(usersDB));
-  currentUser={name,phone,email,address:"",bio:"",avatar:null};
+  currentUser={name,phone,email,address:"",bio:"",avatar,joined,orders:0};
   localStorage.setItem("noirtech_user",JSON.stringify(currentUser));
-  updateUserUI(); closeAuthModal(); showToast(`مرحباً ${name}!`);
-  sendTelegram(`🆕 حساب جديد — تم القبول تلقائياً ✅\n\n👤 ${name}\n📞 ${phone}\n📧 ${email}\n📌 مقبول`);
+  window._regAvatar = null;
+  updateUserUI(); closeAuthModal(); showToast(`مرحباً ${name}! تم إنشاء حسابك ✅`);
+  setTimeout(()=>openProfileModal(), 350);
+  sendTelegram(`🆕 حساب جديد — تم القبول تلقائياً ✅\n\n👤 ${name}\n📞 ${phone}\n📧 ${email}\n🖼 صورة: ${avatar?"نعم":"لا"}\n📌 مقبول`);
   if (window._pendingCheckout) { window._pendingCheckout=false; processCheckout(); }
 });
 loginForm?.addEventListener("submit",e=>{
@@ -176,7 +198,7 @@ loginForm?.addEventListener("submit",e=>{
   const password=document.getElementById("loginPassword").value;
   const user=usersDB.find(u=>u.email===email&&u.password===password);
   if (!user) { showToast("بيانات الدخول غير صحيحة!"); return; }
-  currentUser={name:user.name,phone:user.phone,email:user.email,address:user.address||"",bio:user.bio||"",avatar:user.avatar||null};
+  currentUser={name:user.name,phone:user.phone,email:user.email,address:user.address||"",bio:user.bio||"",avatar:user.avatar||null,joined:user.joined||"—",orders:user.orders||0};
   localStorage.setItem("noirtech_user",JSON.stringify(currentUser));
   updateUserUI(); closeAuthModal(); showToast(`مرحباً بعودتك ${user.name}!`);
   sendTelegram(`🔐 تسجيل دخول\n\n👤 ${user.name}\n📞 ${user.phone}\n📧 ${user.email}`);
