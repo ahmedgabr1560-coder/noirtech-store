@@ -33,7 +33,7 @@ const aiSend = document.getElementById("aiSend");
 function formatPrice(p) { return p.toLocaleString("ar-EG") + " ج.م"; }
 function getInitials(n) { return n ? n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase() : "؟"; }
 function createProductCard(p) {
-  return `<div class="product-card"><div class="product-img"><img src="${p.image}" alt="${p.name}" loading="lazy"/>${p.badge?`<span class="product-badge">${p.badge}</span>`:""}</div><div class="product-info"><h3 class="product-name">${p.name}</h3><div class="product-price"><div><span class="price">${formatPrice(p.price)}</span>${p.oldPrice?`<span class="old-price">${formatPrice(p.oldPrice)}</span>`:""}</div><button class="add-btn" onclick="addToCart(${p.id})">+</button></div></div></div>`;
+  return `<div class="product-card"><div class="product-img"><img src="${p.image}" alt="${p.name.replace(/"/g,"")}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'"/>${p.badge?`<span class="product-badge">${p.badge}</span>`:""}</div><div class="product-info"><h3 class="product-name">${p.name}</h3><div class="product-price"><div><span class="price">${formatPrice(p.price)}</span>${p.oldPrice?`<span class="old-price">${formatPrice(p.oldPrice)}</span>`:""}</div><button class="add-btn" onclick="addToCart(${p.id})">+</button></div></div></div>`;
 }
 function renderAllProducts() {
   ["phones","laptops","audio","wearables"].forEach(cat => {
