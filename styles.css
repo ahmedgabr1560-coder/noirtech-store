@@ -598,3 +598,13 @@ button, input, textarea { font: inherit; color: inherit; }
 .reg-avatar-circle img {
   border-color: rgba(139,92,246,.65) !important;
 }
+
+.float-btn.ai {
+  box-shadow: 0 0 0 0 rgba(139,92,246,.45), 0 8px 24px rgba(0,0,0,.3);
+  animation: aiPulse 2.4s infinite;
+}
+@keyframes aiPulse {
+  0% { box-shadow: 0 0 0 0 rgba(139,92,246,.45), 0 8px 24px rgba(0,0,0,.3); }
+  70% { box-shadow: 0 0 0 12px rgba(139,92,246,0), 0 8px 24px rgba(0,0,0,.3); }
+  100% { box-shadow: 0 0 0 0 rgba(139,92,246,0), 0 8px 24px rgba(0,0,0,.3); }
+}
