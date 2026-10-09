@@ -6,7 +6,20 @@
   <title>NoirTech | إلكترونيات فاخرة</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
-  <style>.ai-suggestions{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 10px}.ai-chip{background:#16161d;border:1px solid rgba(240,180,41,.18);color:#f4f4f8;border-radius:50px;padding:8px 12px;font-size:.8rem;font-family:Cairo,sans-serif;cursor:pointer}</style>
+  <style>
+    .ai-suggestions{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 10px}
+    .ai-chip{background:#16161d;border:1px solid rgba(240,180,41,.18);color:#f4f4f8;border-radius:50px;padding:8px 12px;font-size:.8rem;font-family:Cairo,sans-serif;cursor:pointer}
+    .profile-modal,.auth-modal#profileModal{max-width:460px}
+    #profileModal{padding:28px 22px;background:linear-gradient(180deg,#12121a 0%,#0f0f14 45%);border:1px solid rgba(240,180,41,.3);box-shadow:0 25px 60px rgba(0,0,0,.55),0 0 40px rgba(240,180,41,.08)}
+    #profileModal .profile-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(240,180,41,.18)}
+    .profile-avatar-wrap{position:relative;width:100px;height:100px;margin:0 auto 12px}
+    .profile-avatar-wrap img,.profile-avatar-placeholder{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #f0b429;box-shadow:0 0 24px rgba(240,180,41,.25)}
+    .profile-avatar-placeholder{background:linear-gradient(135deg,#ffd666,#d4920a);color:#07070a;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800}
+    .avatar-upload-btn{position:absolute;bottom:2px;left:2px;width:34px;height:34px;background:#16161d;border:2px solid #f0b429;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    #profileDisplayName{font-size:1.25rem;font-weight:800;margin:0 0 4px;color:#ffd666}
+    .profile-badge-row{display:flex;justify-content:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .profile-badge-row span{background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.3);color:#ffd666;font-size:.72rem;padding:4px 10px;border-radius:50px}
+  </style>
 </head>
 <body>
   <nav class="navbar"><div class="container nav-content">
@@ -33,12 +46,58 @@
     <button type="button" class="float-btn ai" id="aiChatBtn" title="AI"><span class="ai-btn-icon">✦</span></button>
   </div>
   <div class="ai-overlay" id="aiOverlay"></div>
-  <div class="ai-panel" id="aiPanel"><div class="ai-header"><div class="ai-header-info"><div class="ai-avatar">🤖</div><div><h4>نوير</h4><span class="ai-status">متصل</span></div></div><button class="ai-close" id="aiClose">×</button></div><div class="ai-messages" id="aiMessages"><div class="ai-msg bot"><div class="ai-bubble">أهلاً بيك 👋 أنا نوير مساعدك</div></div></div><div class="ai-suggestions" id="aiSuggestions"><button type="button" class="ai-chip" data-q="عايز هاتف في حدود 40 ألف">📱 هاتف</button><button type="button" class="ai-chip" data-q="أنصحني بلابتوب">💻 لابتوب</button><button type="button" class="ai-chip" data-q="فيه عروض؟">🔥 عروض</button></div><div class="ai-input-area"><input type="text" id="aiInput" placeholder="رسالتك..." /><button id="aiSend" class="ai-send-btn">➤</button></div></div>
+  <div class="ai-panel" id="aiPanel"><div class="ai-header"><div class="ai-header-info"><div class="ai-avatar">🤖</div><div><h4>نوير</h4><span class="ai-status">متصل</span></div></div><button class="ai-close" id="aiClose">×</button></div><div class="ai-messages" id="aiMessages"><div class="ai-msg bot"><div class="ai-bubble">أهلاً بيك 👋 أنا نوير مساعدك الذكي... وصديقك الخفيف الدم 😄 تحب نبدأ بهاتف ولا لابتوب؟</div></div></div><div class="ai-suggestions" id="aiSuggestions"><button type="button" class="ai-chip" data-q="عايز هاتف في حدود 40 ألف">📱 هاتف</button><button type="button" class="ai-chip" data-q="أنصحني بلابتوب">💻 لابتوب</button><button type="button" class="ai-chip" data-q="فيه عروض؟">🔥 عروض</button></div><div class="ai-input-area"><input type="text" id="aiInput" placeholder="رسالتك..." /><button id="aiSend" class="ai-send-btn">➤</button></div></div>
   <div class="auth-overlay" id="profileOverlay"></div>
-  <div class="auth-modal" id="profileModal"><button class="auth-close" id="profileClose">×</button><div class="profile-header"><div class="profile-avatar-wrap"><img id="profileAvatarImg" style="display:none"/><div class="profile-avatar-placeholder" id="profileAvatarPlaceholder">؟</div><label class="avatar-upload-btn">📷<input type="file" id="avatarInput" accept="image/*" hidden/></label></div><h3 id="profileDisplayName">الملف</h3><p class="auth-desc" id="profileDisplayEmail"></p></div><form id="profileForm" class="auth-form"><div class="form-group"><label>الاسم</label><input id="profName" required/></div><div class="form-group"><label>الهاتف</label><input id="profPhone" required/></div><div class="form-group"><label>الإيميل</label><input id="profEmail" type="email" required/></div><div class="form-group"><label>العنوان</label><input id="profAddress"/></div><div class="form-group"><label>نبذة</label><textarea id="profBio" rows="2" style="width:100%;background:#16161d;border:1px solid rgba(240,180,41,.18);border-radius:12px;padding:12px;color:#fff;font-family:Cairo"></textarea></div><button type="submit" class="btn-auth">حفظ</button><button type="button" class="btn-logout" id="logoutBtn">خروج</button></form></div>
+  <div class="auth-modal profile-modal" id="profileModal">
+    <button class="auth-close" id="profileClose">×</button>
+    <div class="profile-header">
+      <div class="profile-avatar-wrap">
+        <img id="profileAvatarImg" style="display:none" alt=""/>
+        <div class="profile-avatar-placeholder" id="profileAvatarPlaceholder">؟</div>
+        <label class="avatar-upload-btn">📷<input type="file" id="avatarInput" accept="image/*" hidden/></label>
+      </div>
+      <h3 id="profileDisplayName">الملف الشخصي</h3>
+      <p class="auth-desc" id="profileDisplayEmail"></p>
+      <div class="profile-badge-row"><span>⭐ عضو NoirTech</span><span>🔒 حساب آمن</span></div>
+    </div>
+    <form id="profileForm" class="auth-form">
+      <div class="form-group"><label>الاسم</label><input id="profName" required/></div>
+      <div class="form-group"><label>الهاتف</label><input id="profPhone" required/></div>
+      <div class="form-group"><label>الإيميل</label><input id="profEmail" type="email" required/></div>
+      <div class="form-group"><label>العنوان</label><input id="profAddress" placeholder="المدينة / المنطقة"/></div>
+      <div class="form-group"><label>نبذة</label><textarea id="profBio" rows="2" style="width:100%;background:#16161d;border:1px solid rgba(240,180,41,.18);border-radius:12px;padding:12px;color:#fff;font-family:Cairo;font-size:16px"></textarea></div>
+      <button type="submit" class="btn-auth">حفظ التعديلات</button>
+      <button type="button" class="btn-logout" id="logoutBtn">تسجيل الخروج</button>
+    </form>
+  </div>
   <div class="auth-overlay" id="authOverlay"></div>
-  <div class="auth-modal" id="authModal"><button class="auth-close" id="authClose" aria-label="إغلاق">×</button><div class="auth-brand"><div class="auth-brand-mark">◆</div><h2>Noir<span>Tech</span></h2><p>دخولك لعالم التقنية يبدأ من هنا</p></div><div class="auth-tabs"><button class="auth-tab active" data-tab="login">دخول</button><button class="auth-tab" data-tab="register">حساب</button></div><form id="loginForm" class="auth-form"><h3>دخول</h3><div class="form-group"><label>إيميل</label><input type="email" id="loginEmail" placeholder="name@example.com" autocomplete="email" required/></div><div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required/></div><button type="submit" class="btn-auth">دخول</button><div class="social-login"><button type="button" class="social-btn google" id="googleLoginBtn"><b>G</b> الدخول باستخدام Google</button><button type="button" class="social-btn facebook" id="facebookLoginBtn"><b>f</b> الدخول باستخدام Facebook</button></div><p class="auth-switch"><a href="#" id="switchToRegister">حساب جديد</a></p></form><form id="registerForm" class="auth-form" style="display:none"><h3>حساب جديد</h3><div class="form-group"><label>الاسم</label><input id="regName" required/></div><div class="form-group"><label>هاتف</label><input id="regPhone" required/></div><div class="form-group"><label>إيميل</label><input type="email" id="regEmail" required/></div><div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" required/></div><button type="submit" class="btn-auth">إنشاء</button><div class="social-login"><button type="button" class="social-btn google" id="googleRegisterBtn"><b>G</b> التسجيل باستخدام Google</button><button type="button" class="social-btn facebook" id="facebookRegisterBtn"><b>f</b> التسجيل باستخدام Facebook</button></div><p class="auth-switch"><a href="#" id="switchToLogin">دخول</a></p></form></div>
+  <div class="auth-modal" id="authModal">
+    <button class="auth-close" id="authClose">×</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">دخول</button>
+      <button class="auth-tab" data-tab="register">حساب جديد</button>
+    </div>
+    <form id="loginForm" class="auth-form">
+      <h3>مرحباً بعودتك</h3>
+      <p class="auth-desc">سجّل دخولك لإتمام الطلب</p>
+      <div class="form-group"><label>الإيميل</label><input type="email" id="loginEmail" required/></div>
+      <div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPassword" required/></div>
+      <button type="submit" class="btn-auth">دخول</button>
+      <p class="auth-switch"><a href="#" id="switchToRegister">إنشاء حساب</a></p>
+    </form>
+    <form id="registerForm" class="auth-form" style="display:none">
+      <h3>حساب جديد</h3>
+      <p class="auth-desc">سجّل الآن في ثوانٍ</p>
+      <div class="form-group"><label>الاسم</label><input id="regName" required/></div>
+      <div class="form-group"><label>الهاتف</label><input id="regPhone" required/></div>
+      <div class="form-group"><label>الإيميل</label><input type="email" id="regEmail" required/></div>
+      <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" required minlength="4"/></div>
+      <button type="submit" class="btn-auth">إنشاء الحساب</button>
+      <p class="auth-switch"><a href="#" id="switchToLogin">لدي حساب</a></p>
+    </form>
+  </div>
   <script src="script.js"></script>
   <script src="config-loader.js"></script>
+  <script src="go-home-patch.js"></script>
   <script>document.getElementById("aiSuggestions")?.addEventListener("click",function(e){var c=e.target.closest(".ai-chip");if(!c)return;var q=c.getAttribute("data-q");var i=document.getElementById("aiInput");if(i&&typeof handleAiSend==="function"){i.value=q;handleAiSend();}});</script>
 </body></html>
