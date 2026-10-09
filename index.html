@@ -59,6 +59,10 @@
       <h3 id="profileDisplayName">الملف الشخصي</h3>
       <p class="auth-desc" id="profileDisplayEmail"></p>
       <div class="profile-badge-row"><span>⭐ عضو NoirTech</span><span>🔒 حساب آمن</span></div>
+      <div class="profile-stats" id="profileStats">
+        <div><strong id="profStatOrders">0</strong><span>طلبات</span></div>
+        <div><strong id="profStatJoined">—</strong><span>انضم</span></div>
+      </div>
     </div>
     <form id="profileForm" class="auth-form">
       <div class="form-group"><label>الاسم</label><input id="profName" required/></div>
@@ -86,12 +90,22 @@
       <p class="auth-switch"><a href="#" id="switchToRegister">إنشاء حساب</a></p>
     </form>
     <form id="registerForm" class="auth-form" style="display:none">
+      <div class="reg-avatar-box">
+        <div class="reg-avatar-wrap">
+          <img id="regAvatarImg" alt="" style="display:none"/>
+          <div class="reg-avatar-placeholder" id="regAvatarPlaceholder">📷</div>
+          <label class="reg-avatar-btn" title="أضف صورة">+
+            <input type="file" id="regAvatarInput" accept="image/*" hidden/>
+          </label>
+        </div>
+        <p class="reg-avatar-hint">صورة البروفايل (اختياري)</p>
+      </div>
       <h3>حساب جديد</h3>
       <p class="auth-desc">سجّل الآن في ثوانٍ</p>
-      <div class="form-group"><label>الاسم</label><input id="regName" required/></div>
-      <div class="form-group"><label>الهاتف</label><input id="regPhone" required/></div>
-      <div class="form-group"><label>الإيميل</label><input type="email" id="regEmail" required/></div>
-      <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" required minlength="4"/></div>
+      <div class="form-group"><label>الاسم</label><input id="regName" required placeholder="الاسم بالكامل"/></div>
+      <div class="form-group"><label>الهاتف</label><input id="regPhone" required placeholder="01xxxxxxxxx"/></div>
+      <div class="form-group"><label>الإيميل</label><input type="email" id="regEmail" required placeholder="name@example.com"/></div>
+      <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" required minlength="4" placeholder="٤ أحرف على الأقل"/></div>
       <button type="submit" class="btn-auth">إنشاء الحساب</button>
       <p class="auth-switch"><a href="#" id="switchToLogin">لدي حساب</a></p>
     </form>
