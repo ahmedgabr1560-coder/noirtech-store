@@ -88,7 +88,7 @@ export async function openrouterSearchChat(system, messages, maxTokens = 650) {
 export async function geminiChat(system, messages, maxTokens = 450) {
   const key = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY2;
   if (!key) throw new Error("GEMINI_API_KEY is not configured");
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const contents = messages.map(message => ({
     role: message.role === "assistant" ? "model" : "user",
     parts: [{ text: String(message.content || "") }]
