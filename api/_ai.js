@@ -1,3 +1,13 @@
+function providerKey(prefix) {
+  const matches = Object.entries(process.env)
+    .filter(([name, value]) => value && new RegExp(`^${prefix}\\d*$`).test(name))
+    .sort(([a], [b]) => {
+      const n = name => Number(name.slice(prefix.length) || 0);
+      return n(b) - n(a);
+    });
+  return matches[0]?.[1] || "";
+}
+
 export async function openaiChat(system, messages, maxTokens = 450) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) throw new Error("OPENAI_API_KEY is not configured");
@@ -39,7 +49,7 @@ export async function claudeChat(system, messages, maxTokens = 450) {
 }
 
 export async function openrouterChat(system, messages, maxTokens = 450) {
-  const key = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY2;
+  const key = providerKey("OPENROUTER_API_KEY");
   if (!key) throw new Error("OPENROUTER_API_KEY is not configured");
   const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -64,7 +74,7 @@ export async function openrouterChat(system, messages, maxTokens = 450) {
 }
 
 export async function openrouterSearchChat(system, messages, maxTokens = 650) {
-  const key = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY2;
+  const key = providerKey("OPENROUTER_API_KEY");
   if (!key) throw new Error("OPENROUTER_API_KEY is not configured");
   const model = process.env.OPENROUTER_SEARCH_MODEL || "perplexity/sonar";
   const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -86,7 +96,7 @@ export async function openrouterSearchChat(system, messages, maxTokens = 650) {
 }
 
 export async function geminiChat(system, messages, maxTokens = 450) {
-  const key = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY2;
+  const key = providerKey("GEMINI_API_KEY");
   if (!key) throw new Error("GEMINI_API_KEY is not configured");
   const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const contents = messages.map(message => ({
@@ -116,7 +126,7 @@ export async function resilientChat(system, messages, maxTokens = 450) {
     ["gemini", geminiChat],
     ["openai", openaiChat],
     ["claude", claudeChat]
-  ].filter(([name]) => ({ openrouter: process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY2, gemini: process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY2, openai: process.env.OPENAI_API_KEY, claude: process.env.ANTHROPIC_API_KEY }[name]));
+  ].filter(([name]) => ({ openrouter: providerKey("OPENROUTER_API_KEY"), gemini: providerKey("GEMINI_API_KEY"), openai: process.env.OPENAI_API_KEY, claude: process.env.ANTHROPIC_API_KEY }[name]));
   const errors = {};
   for (const [provider, fn] of providers) {
     try { return { reply: await fn(system, messages, maxTokens), provider }; }

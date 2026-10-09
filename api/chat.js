@@ -1,7 +1,7 @@
 import { openrouterSearchChat, resilientChat } from "./_ai.js";
 
 async function autoAddRequestedProduct(message, catalog) {
-  const token = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY2;
+  const token = Object.entries(process.env).find(([k, v]) => /^OPENROUTER_API_KEY\d*$/.test(k) && v)?.[1];
   const gh = process.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN;
   if (!token || !gh) return null;
   try {
