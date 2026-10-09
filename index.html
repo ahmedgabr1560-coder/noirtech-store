@@ -215,8 +215,14 @@
     <div class="drawer-body" id="cartItems"></div>
     <div class="drawer-foot">
       <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
-      <p class="demo-note">أسعار تجريبية · لا يوجد دفع حقيقي</p>
-      <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب</button>
+      <div id="checkoutFields" class="checkout-fields" hidden>
+        <label>الاسم<input type="text" id="orderName" placeholder="اسم المستلم" /></label>
+        <label>الهاتف<input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" /></label>
+        <label>العنوان<input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - تفاصيل" /></label>
+        <label>ملاحظات (اختياري)<input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" /></label>
+      </div>
+      <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب الآن</button>
+      <p class="checkout-hint">بعد الطلب هنتواصل معاك لتأكيد التوصيل والدفع</p>
     </div>
   </aside>
 
@@ -300,6 +306,18 @@
       <button type="submit" class="btn btn-primary btn-block">حفظ</button>
       <button type="button" class="btn btn-ghost btn-block" id="logoutBtn">تسجيل الخروج</button>
     </form>
+  </div>
+
+  <!-- Order success -->
+  <div class="modal-overlay" id="orderSuccessOverlay"></div>
+  <div class="modal order-success-modal" id="orderSuccessModal" role="dialog">
+    <div class="order-success">
+      <div class="order-success-icon">✓</div>
+      <h3>تم استلام طلبك</h3>
+      <p class="muted">رقم الطلب: <strong id="orderSuccessId">—</strong></p>
+      <p class="muted" id="orderSuccessMsg">هنتواصل معاك خلال دقايق لتأكيد الطلب والتوصيل.</p>
+      <button type="button" class="btn btn-primary btn-block" id="orderSuccessClose">حسنًا</button>
+    </div>
   </div>
 
   <!-- Toast -->
