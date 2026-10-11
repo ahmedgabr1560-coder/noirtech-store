@@ -26,8 +26,8 @@ async function reply(chatId, text, extra = {}) {
 }
 function keyboard(rows) { return { inline_keyboard: rows }; }
 const MAIN_MENU = keyboard([
-  [{ text: "📦 المنتجات", callback_data: "menu_products" }, { text: "🎨 التصميم", callback_data: "menu_design" }],
-  [{ text: "🤖 مساعد AI", callback_data: "menu_ai" }, { text: "✍️ النصوص", callback_data: "menu_content" }],
+  [{ text: "📦 المنتجات", callback_data: "menu_products" }, { text: "➕ إضافة منتج", callback_data: "hint_add" }],
+  [{ text: "🎨 التصميم", callback_data: "menu_design" }, { text: "🤖 مساعد AI", callback_data: "menu_ai" }],
   [{ text: "🧱 الأقسام", callback_data: "menu_sections" }, { text: "📊 الحالة", callback_data: "menu_status" }],
   [{ text: "❓ المساعدة", callback_data: "menu_help" }]
 ]);
@@ -71,7 +71,7 @@ function naturalIntent(text) {
   return null;
 }
 async function getFile(path) {
-  const headers = { Accept: "application/vnd.github+json", "User-Agent": "NoirTech-Bot" };
+  const headers = { Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Bot" };
   if (GH_TOKEN) headers.Authorization = `Bearer ${GH_TOKEN}`;
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, { headers });
   if (!r.ok) return null;
@@ -130,7 +130,7 @@ async function putFile(path, content, message, sha) {
       Authorization: `Bearer ${GH_TOKEN}`,
       Accept: "application/vnd.github+json",
       "Content-Type": "application/json",
-      "User-Agent": "NoirTech-Bot"
+      "User-Agent": "NEXORA-Bot"
     },
     body: JSON.stringify(body)
   });
@@ -138,19 +138,23 @@ async function putFile(path, content, message, sha) {
   return { ok: r.ok, data };
 }
 function helpText() {
-  return `🎛 <b>مساعد NoirTech جاهز</b>
+  return `🛍 <b>لوحة تحكم NEXORA</b>
 
-اكتب طلبك بطريقتك العادية، من غير أوامر، مثل:
+<b>📦 المنتجات</b>
+• /products — عرض المنتجات
+• /add الاسم | السعر | القسم | رابط الصورة
+• /setprice رقم_المنتج السعر
+• /hide رقم · /show رقم
+• ابعت <b>رابط منتج</b> أو <b>صورة + تعليق</b>
 
-📦 «اعرض المنتجات»
-💰 «غيّر سعر الآيفون إلى 60000»
-🎨 «خلّي الموقع باللون الذهبي»
-✍️ «غيّر عنوان الصفحة إلى أحدث الأجهزة»
-🌐 «ضيف 100 جهاز من الإنترنت مع الصور والوصف»
-🤖 «رشحلي لابتوب للجرافيك»
-💬 «اشرحلي الفرق بين OLED وLCD»
+<b>📊 النظام</b>
+• /status — حالة البوت
+• /menu — القائمة بالأيقونات
+• /help — هذه الرسالة
 
-هفهم طلبك وأنفذه مباشرة أو أسألك عن المعلومة الناقصة فقط.`;
+<b>🌐 الموقع</b>
+https://nexoraegypt.vercel.app
+https://nexoraegypt.vercel.app/admin.html`;
 }
 const THEMES = {
   dark: { bg: "#07070a", bgCard: "#0f0f14", gold: "#f0b429", goldLight: "#ffd666", goldDark: "#d4920a", accent: "#7c5cff", text: "#f4f4f8", textMuted: "#9898a6" },
@@ -187,7 +191,7 @@ function absoluteUrl(value, base) {
   try { return new URL(value, base).toString(); } catch { return ""; }
 }
 async function importProductFromUrl(url) {
-  const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 NoirTech Product Importer" } });
+  const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 NEXORA Product Importer" } });
   if (!r.ok) throw new Error(`تعذر فتح الرابط (${r.status})`);
   const html = (await r.text()).slice(0, 140000);
   const title = htmlMeta(html, "og:title") || html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/<[^>]+>/g, " ").trim() || "";
@@ -222,7 +226,7 @@ export default async function handler(req, res) {
     if (query) {
       await tg("answerCallbackQuery", { callback_query_id: query.id });
       const data = query.data || "";
-      if (data === "menu_main") await reply(chatId, "🎛 <b>لوحة NoirTech</b>\nاختار القسم:", { reply_markup: MAIN_MENU });
+      if (data === "menu_main") await reply(chatId, "🎛 <b>لوحة NEXORA</b>\nاختار القسم:", { reply_markup: MAIN_MENU });
       else if (data === "menu_products") await reply(chatId, "📦 <b>إدارة المنتجات</b>\nاختار العملية أو اكتبها بطريقتك:", { reply_markup: PRODUCT_MENU });
       else if (data === "menu_design") await reply(chatId, "🎨 <b>التصميم والثيمات</b>", { reply_markup: DESIGN_MENU });
       else if (data === "menu_ai") await reply(chatId, "🤖 <b>نوير — مساعدك السريع</b> 😄\nاكتب طلبك بطريقتك، مثل:\n• اعمل وصف لمنتج جديد\n• رشحلي جهاز مناسب للتصميم\n• عايز أغير شكل الموقع\n• اعرضلي منتجات تحت 30000\n\nأنا أفهم طلبك وأنفذه مباشرة.", { reply_markup: keyboard([[{ text: "📦 تحليل المنتجات", callback_data: "ai_products" }], [{ text: "✍️ كتابة وصف", callback_data: "ai_copy" }, { text: "💡 فكرة للمتجر", callback_data: "ai_idea" }], [{ text: "⬅️ الرئيسية", callback_data: "menu_main" }]]) });
@@ -321,9 +325,23 @@ export default async function handler(req, res) {
     if (chatId !== ADMIN_CHAT) { await reply(chatId, "⛔ للإدارة فقط"); return res.status(200).json({ ok: true }); }
     const [cmd, ...args] = text.split(/\s+/);
     const command = (cmd || "").toLowerCase().replace(/@\w+/, "");
-    if (command === "/start" || command === "/help" || command === "/menu") { await reply(chatId, command === "/menu" ? "🎛 <b>لوحة NoirTech</b>\nاختار القسم:" : helpText(), { reply_markup: MAIN_MENU }); return res.status(200).json({ ok: true }); }
+    if (command === "/start" || command === "/help" || command === "/menu") {
+      try {
+        await tg("setMyCommands", { commands: [
+          { command: "start", description: "🏠 القائمة الرئيسية" },
+          { command: "menu", description: "🎛 لوحة التحكم" },
+          { command: "products", description: "📦 عرض المنتجات" },
+          { command: "add", description: "➕ إضافة منتج" },
+          { command: "status", description: "📊 حالة البوت" },
+          { command: "help", description: "❓ المساعدة" }
+        ]});
+      } catch (_) {}
+      await reply(chatId, command === "/menu" ? "🎛 <b>لوحة NEXORA</b>
+اختار القسم:" : helpText(), { reply_markup: MAIN_MENU });
+      return res.status(200).json({ ok: true });
+    }
     if (command === "/status") {
-      await reply(chatId, `✅ NoirTech\n🌐 https://noirtech-store.vercel.app\n🔑 GitHub: ${GH_TOKEN ? "مربوط ✅" : "❌ أضف GITHUB_TOKEN"}\n\n${errorText(await getLastBotError())}`);
+      await reply(chatId, `✅ NEXORA\n🌐 https://nexoraegypt.vercel.app\n🔑 GitHub: ${GH_TOKEN ? "مربوط ✅" : "❌ أضف GITHUB_TOKEN"}\n\n${errorText(await getLastBotError())}`);
       return res.status(200).json({ ok: true });
     }
     const cfgFile = await getFile("site-config.json");
