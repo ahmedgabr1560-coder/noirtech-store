@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXORA | الملف الشخصي</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#000; --card:rgba(18,18,22,.85); --border:rgba(255,255,255,.1);
+      --text:#f5f5f7; --muted:#9a9aa3; --accent:#a78bfa;
+      --font:"Cairo",system-ui,sans-serif;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:var(--font); background:#000; color:var(--text);
+      min-height:100vh; direction:rtl;
+      background-image:
+        radial-gradient(ellipse 70% 45% at 80% 10%, rgba(180,180,220,.12), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 10% 90%, rgba(167,139,250,.08), transparent 50%);
+    }
+    .top {
+      position:sticky; top:0; z-index:20;
+      backdrop-filter:blur(18px); background:rgba(0,0,0,.55);
+      border-bottom:1px solid var(--border);
+    }
+    .top-inner {
+      width:min(720px,92%); margin:0 auto;
+      display:flex; align-items:center; justify-content:space-between;
+      min-height:64px; gap:12px;
+    }
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff; font-weight:800; }
+    .mark {
+      width:34px; height:34px; border-radius:10px; background:#fff; color:#000;
+      display:grid; place-items:center; font-size:.7rem; font-weight:900;
+    }
+    .back {
+      color:var(--muted); text-decoration:none; font-size:.9rem; font-weight:600;
+      padding:8px 14px; border-radius:999px; border:1px solid var(--border);
+    }
+    .back:hover { color:#fff; border-color:rgba(255,255,255,.25); }
+    .wrap { width:min(720px,92%); margin:28px auto 48px; }
+    .hero-card {
+      background:var(--card); border:1px solid var(--border); border-radius:24px;
+      padding:28px 22px; text-align:center; margin-bottom:16px;
+      backdrop-filter:blur(14px);
+    }
+    .avatar-wrap { position:relative; width:110px; height:110px; margin:0 auto 14px; }
+    .avatar-wrap img, .avatar-ph {
+      width:110px; height:110px; border-radius:50%; object-fit:cover;
+      border:3px solid rgba(167,139,250,.45);
+    }
+    .avatar-ph {
+      display:grid; place-items:center; background:rgba(255,255,255,.05);
+      font-size:2rem; color:var(--muted);
+    }
+    .avatar-wrap img { display:none; position:absolute; inset:0; }
+    .avatar-wrap img.on { display:block; }
+    .avatar-ph.off { display:none; }
+    .cam {
+      position:absolute; bottom:2px; left:2px; width:32px; height:32px; border-radius:50%;
+      background:#fff; color:#000; display:grid; place-items:center; font-size:.8rem;
+      border:2px solid #000; cursor:pointer;
+    }
+    h1 { font-size:1.4rem; margin-bottom:4px; }
+    .email { color:var(--muted); font-size:.9rem; margin-bottom:12px; }
+    .pills { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+    .pills span {
+      padding:6px 12px; border-radius:999px; font-size:.75rem; font-weight:700;
+      background:rgba(167,139,250,.12); border:1px solid rgba(167,139,250,.28); color:#c4b5fd;
+    }
+    .card {
+      background:var(--card); border:1px solid var(--border); border-radius:20px;
+      padding:20px; margin-bottom:14px; backdrop-filter:blur(14px);
+    }
+    .card h2 { font-size:1rem; margin-bottom:14px; font-weight:800; }
+    label { display:grid; gap:6px; margin-bottom:12px; font-size:.82rem; color:var(--muted); font-weight:600; }
+    input {
+      width:100%; padding:13px 14px; border-radius:12px; border:1px solid var(--border);
+      background:rgba(255,255,255,.04); color:var(--text); font-family:inherit; outline:none;
+    }
+    input:focus { border-color:rgba(167,139,250,.5); }
+    .btn {
+      width:100%; padding:13px; border:0; border-radius:999px; font-weight:800;
+      font-family:inherit; cursor:pointer; font-size:.92rem;
+    }
+    .btn-primary { background:#fff; color:#000; margin-top:4px; }
+    .btn-ghost {
+      background:transparent; color:#fff; border:1px solid var(--border); margin-top:10px;
+    }
+    .orders { display:grid; gap:10px; }
+    .order {
+      padding:12px 14px; border-radius:14px; border:1px solid var(--border);
+      background:rgba(255,255,255,.03); font-size:.88rem;
+    }
+    .order b { display:block; margin-bottom:4px; }
+    .muted { color:var(--muted); }
+    .empty { text-align:center; color:var(--muted); padding:18px; }
+    .toast {
+      position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(80px);
+      background:rgba(20,20,28,.95); border:1px solid var(--border); padding:12px 18px;
+      border-radius:999px; opacity:0; transition:.3s; z-index:50; font-size:.9rem;
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .guest { text-align:center; padding:40px 16px; }
+    .guest h2 { margin-bottom:10px; }
+    .guest p { color:var(--muted); margin-bottom:18px; }
+    .guest a {
+      display:inline-flex; padding:12px 22px; border-radius:999px; background:#fff; color:#000;
+      font-weight:800; text-decoration:none;
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <a class="logo" href="/"><span class="mark">NX</span><span>NEXORA</span></a>
+      <a class="back" href="/">← المتجر</a>
+    </div>
+  </header>
+
+  <main class="wrap" id="app">
+    <div class="guest" id="guestView">
+      <h2>الملف الشخصي</h2>
+      <p>سجّل الدخول عشان تشوف بروفايلك وطلباتك</p>
+      <a href="/#account">تسجيل الدخول</a>
+    </div>
+
+    <div id="profileView" hidden>
+      <section class="hero-card">
+        <div class="avatar-wrap">
+          <div class="avatar-ph" id="avatarPh">?</div>
+          <img id="avatarImg" alt="صورة البروفايل" />
+          <label class="cam" for="avatarInput">📷</label>
+          <input type="file" id="avatarInput" accept="image/*" hidden />
+        </div>
+        <h1 id="dispName">—</h1>
+        <p class="email" id="dispEmail">—</p>
+        <div class="pills">
+          <span>عميل NEXORA</span>
+          <span id="dispPhone">—</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>البيانات الشخصية</h2>
+        <form id="profForm">
+          <label>الاسم
+            <input id="fName" required autocomplete="name" />
+          </label>
+          <label>الهاتف
+            <input id="fPhone" required autocomplete="tel" />
+          </label>
+          <label>البريد
+            <input id="fEmail" type="email" required autocomplete="email" />
+          </label>
+          <label>العنوان
+            <input id="fAddress" placeholder="المحافظة - المنطقة - تفاصيل" autocomplete="street-address" />
+          </label>
+          <button class="btn btn-primary" type="submit">حفظ التعديلات</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>آخر الطلبات</h2>
+        <div class="orders" id="ordersBox">
+          <p class="empty">لا توجد طلبات بعد</p>
+        </div>
+      </section>
+
+      <button class="btn btn-ghost" type="button" id="logoutBtn">تسجيل الخروج</button>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const toastEl = document.getElementById("toast");
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      setTimeout(() => toastEl.classList.remove("show"), 2400);
+    }
+
+    function getUser() {
+      try { return JSON.parse(localStorage.getItem("nx_user") || "null"); } catch { return null; }
+    }
+    function getUsers() {
+      try { return JSON.parse(localStorage.getItem("nx_users") || "[]"); } catch { return []; }
+    }
+    function getOrders() {
+      try { return JSON.parse(localStorage.getItem("nx_orders") || "[]"); } catch { return []; }
+    }
+
+    let pendingAvatar = null;
+    let user = getUser();
+
+    function render() {
+      user = getUser();
+      const guest = document.getElementById("guestView");
+      const view = document.getElementById("profileView");
+      if (!user) {
+        guest.hidden = false;
+        view.hidden = true;
+        return;
+      }
+      guest.hidden = true;
+      view.hidden = false;
+
+      document.getElementById("dispName").textContent = user.name || "عميل";
+      document.getElementById("dispEmail").textContent = user.email || "";
+      document.getElementById("dispPhone").textContent = user.phone || "بدون هاتف";
+      document.getElementById("fName").value = user.name || "";
+      document.getElementById("fPhone").value = user.phone || "";
+      document.getElementById("fEmail").value = user.email || "";
+      document.getElementById("fAddress").value = user.address || "";
+
+      const img = document.getElementById("avatarImg");
+      const ph = document.getElementById("avatarPh");
+      if (user.avatar) {
+        img.src = user.avatar;
+        img.classList.add("on");
+        ph.classList.add("off");
+      } else {
+        img.classList.remove("on");
+        ph.classList.remove("off");
+        ph.textContent = (user.name || "?").trim().charAt(0).toUpperCase() || "?";
+      }
+
+      const orders = getOrders().filter(o => !o.email || o.email === user.email).slice(-8).reverse();
+      const box = document.getElementById("ordersBox");
+      if (!orders.length) {
+        box.innerHTML = '<p class="empty">لا توجد طلبات بعد — تسوّق من المتجر</p>';
+      } else {
+        box.innerHTML = orders.map(o => {
+          const id = o.id || o.orderId || "—";
+          const total = o.total != null ? Number(o.total).toLocaleString("ar-EG") + " ج.م" : "—";
+          const date = o.date || o.createdAt || "";
+          const items = Array.isArray(o.items) ? o.items.length + " منتج" : "";
+          return `<div class="order"><b>طلب ${id}</b><span class="muted">${total}${items ? " · " + items : ""}${date ? " · " + date : ""}</span></div>`;
+        }).join("");
+      }
+    }
+
+    document.getElementById("avatarInput").addEventListener("change", (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      if (f.size > 2e6) return toast("الصورة كبيرة (حد أقصى 2MB)");
+      const r = new FileReader();
+      r.onload = () => {
+        pendingAvatar = r.result;
+        const img = document.getElementById("avatarImg");
+        const ph = document.getElementById("avatarPh");
+        img.src = pendingAvatar;
+        img.classList.add("on");
+        ph.classList.add("off");
+      };
+      r.readAsDataURL(f);
+    });
+
+    document.getElementById("profForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      user = getUser();
+      if (!user) return;
+      const name = document.getElementById("fName").value.trim();
+      const phone = document.getElementById("fPhone").value.trim();
+      const email = document.getElementById("fEmail").value.trim().toLowerCase();
+      const address = document.getElementById("fAddress").value.trim();
+      if (!name || !phone || !email) return toast("أكمل البيانات");
+
+      const avatar = pendingAvatar || user.avatar || null;
+      const updated = { ...user, name, phone, email, address, avatar };
+      localStorage.setItem("nx_user", JSON.stringify(updated));
+
+      let users = getUsers();
+      const idx = users.findIndex(u => (u.email || "").toLowerCase() === (user.email || "").toLowerCase());
+      if (idx >= 0) {
+        users[idx] = { ...users[idx], name, phone, email, address, avatar };
+      }
+      localStorage.setItem("nx_users", JSON.stringify(users));
+      pendingAvatar = null;
+      toast("تم حفظ البروفايل ✅");
+      render();
+
+      // notify admin (best effort)
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "profile",
+          message: "تحديث بروفايل\\nالاسم: " + name + "\\nالهاتف: " + phone + "\\nالبريد: " + email
+        })
+      }).catch(() => {});
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("nx_user");
+      toast("تم تسجيل الخروج");
+      setTimeout(() => location.href = "/", 700);
+    });
+
+    render();
+  </script>
+</body>
+</html>
