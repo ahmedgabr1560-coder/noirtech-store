@@ -11,11 +11,16 @@ async function ghGet(path) {
   });
   if (!r.ok) return null;
   const data = await r.json();
-  const content = Buffer.from(data.content, "base64").toString("utf8");
-  return { content, sha: data.sha };
+  return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha, raw: data };
 }
 
-async function ghPut(path, content, message, sha) {
+async function ghPut(path, content, message, sha, binaryBase64) {
+  const body = {
+    message,
+    content: binaryBase64 != null ? binaryBase64 : Buffer.from(content, "utf8").toString("base64"),
+    branch: "main"
+  };
+  if (sha) body.sha = sha;
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
     method: "PUT",
     headers: {
@@ -24,12 +29,7 @@ async function ghPut(path, content, message, sha) {
       "Content-Type": "application/json",
       "User-Agent": "NEXORA"
     },
-    body: JSON.stringify({
-      message,
-      content: Buffer.from(content, "utf8").toString("base64"),
-      branch: "main",
-      sha
-    })
+    body: JSON.stringify(body)
   });
   const data = await r.json();
   return { ok: r.ok, data };
@@ -46,16 +46,20 @@ async function notifyTelegram(text) {
   } catch (_) {}
 }
 
+function parseDataUrl(dataUrl) {
+  const m = String(dataUrl || "").match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!m) return null;
+  return { mime: m[1], b64: m[2] };
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-secret");
   if (req.method === "OPTIONS") return res.status(200).end();
-
   if (req.method === "GET") {
     return res.status(200).json({ ok: true, message: "NEXORA product API", categories: ["phones","laptops","monitors","home","accessories"] });
   }
-
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Method not allowed" });
   if (!GH_TOKEN) return res.status(500).json({ ok: false, error: "GITHUB_TOKEN missing" });
 
@@ -69,9 +73,10 @@ export default async function handler(req, res) {
     const name = String(body.name || "").trim();
     const price = Number(String(body.price || "").replace(/[^0-9.]/g, ""));
     let category = String(body.category || "phones").toLowerCase();
-    const image = String(body.image || "").trim();
+    let image = String(body.image || "").trim();
     const description = String(body.description || "").trim();
     const badge = String(body.badge || "جديد").trim() || "جديد";
+    const imageBase64 = body.imageBase64 || body.imageData || null;
 
     const allowed = new Set(["phones","laptops","monitors","home","accessories"]);
     if (!allowed.has(category)) category = "phones";
@@ -83,6 +88,20 @@ export default async function handler(req, res) {
     try { products = JSON.parse(file.content); } catch { return res.status(500).json({ ok: false, error: "ملف منتجات تالف" }); }
 
     const id = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
+
+    // Upload phone/gallery image to GitHub if provided
+    if (imageBase64) {
+      const parsed = parseDataUrl(imageBase64);
+      if (parsed) {
+        const ext = parsed.mime.includes("png") ? "png" : "jpg";
+        const imgPath = `product-images/${id}.${ext}`;
+        const up = await ghPut(imgPath, null, `admin: product image ${id}`, null, parsed.b64);
+        if (up.ok) {
+          image = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}`;
+        }
+      }
+    }
+
     const fallbackImages = {
       phones: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80",
       laptops: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=800&fit=crop&q=80",
@@ -90,13 +109,15 @@ export default async function handler(req, res) {
       home: "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&h=800&fit=crop&q=80",
       accessories: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800&h=800&fit=crop&q=80"
     };
+    if (!image || !/^https?:\/\//i.test(image)) image = fallbackImages[category];
+
     const product = {
       id,
       name: name.slice(0, 140),
       category,
       price: Math.round(price),
       oldPrice: body.oldPrice ? Math.round(Number(body.oldPrice)) : null,
-      image: /^https?:\/\//i.test(image) ? image : fallbackImages[category],
+      image,
       badge,
       hidden: false,
       description: description || `${name} — متوفر لدى NEXORA`,
@@ -112,7 +133,7 @@ export default async function handler(req, res) {
     if (!put.ok) return res.status(500).json({ ok: false, error: put.data?.message || "فشل الحفظ على GitHub" });
 
     await notifyTelegram(
-      `🆕 <b>منتج جديد من لوحة الإدارة</b>\n\n📦 ${product.name}\n💰 ${product.price} ج.م\n📂 ${product.category}\n🆔 #${product.id}\n\n🌐 https://nexoraegypt.vercel.app`
+      `🆕 <b>منتج جديد</b>\n\n📦 ${product.name}\n💰 ${product.price} ج.م\n📂 ${product.category}\n🆔 #${product.id}`
     );
 
     return res.status(200).json({ ok: true, product, total: products.length });
