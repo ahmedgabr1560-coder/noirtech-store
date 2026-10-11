@@ -36,17 +36,17 @@ function toast(msg) {
 }
 async function notifyAdmin(type, message, extra) {
   try {
-    const payload = { type: type, message: message || "" };
-    if (extra && typeof extra === "object") {
-      if (extra.order) payload.order = extra.order;
-    }
-    await fetch("/api/notify", {
+    const payload = { type: type || "info", message: message || "" };
+    if (extra && typeof extra === "object" && extra.order) payload.order = extra.order;
+    const r = await fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+    return r.ok;
   } catch (e) {
     console.warn("notify failed", e);
+    return false;
   }
 }
 function saveCart() {
@@ -344,69 +344,98 @@ $("#profileAvatarInput")?.addEventListener("change", (e) => {
   r.readAsDataURL(f);
 });
 
-$("#registerForm").addEventListener("submit", (e) => {
+$("#registerForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const name = $("#regName").value.trim();
-  const phone = $("#regPhone").value.trim();
-  const email = $("#regEmail").value.trim().toLowerCase();
-  const password = $("#regPassword").value;
+  const name = ($("#regName")?.value || "").trim();
+  const phone = ($("#regPhone")?.value || "").trim();
+  const email = ($("#regEmail")?.value || "").trim().toLowerCase();
+  const password = $("#regPassword")?.value || "";
   if (!name) return toast("اكتب الاسم");
-  if (!phone) return toast("اكتب رقم الهاتف");
-  if (!email) return toast("اكتب البريد الإلكتروني");
-  if (!password || password.length < 4) return toast("كلمة المرور قصيرة");
+  if (!phone || phone.length < 10) return toast("اكتب رقم هاتف صحيح");
+  if (!email || !email.includes("@")) return toast("اكتب بريد إلكتروني صحيح");
+  if (!password || password.length < 4) return toast("كلمة المرور ٤ أحرف على الأقل");
   usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
-  if (usersDB.some(u => u.email === email)) return toast("هذا البريد مسجّل بالفعل");
-  const user = { name, phone, email, password, address: "", avatar: regAvatar };
+  if (usersDB.some(u => (u.email || "").toLowerCase() === email)) return toast("هذا البريد مسجّل بالفعل");
+  const avatar = regAvatar || null;
+  const user = { name: name, phone: phone, email: email, password: password, address: "", avatar: avatar, createdAt: new Date().toISOString() };
   usersDB.push(user);
   localStorage.setItem("nx_users", JSON.stringify(usersDB));
-  currentUser = { name, phone, email, address: "", avatar: regAvatar };
+  currentUser = { name: name, phone: phone, email: email, address: "", avatar: avatar };
   localStorage.setItem("nx_user", JSON.stringify(currentUser));
   regAvatar = null;
   updateUserUI();
   closeAuth();
   toast("تم إنشاء الحساب بنجاح");
-  notifyAdmin("register", "👤 " + name + "\n📞 " + phone + "\n📧 " + email + "\n🖼 صورة بروفايل: نعم\n✅ حساب جديد على NEXORA");
-  openProfile();
+  const nl = String.fromCharCode(10);
+  const msg = "حساب جديد على NEXORA" + nl + nl + "الاسم: " + name + nl + "الهاتف: " + phone + nl + "البريد: " + email + nl + "صورة: " + (avatar ? "نعم" : "لا") + nl + "الوقت: " + new Date().toLocaleString("ar-EG") + nl + "تم إنشاء الحساب";
+  try { await notifyAdmin("register", msg); } catch (_) {}
+  setTimeout(function(){ openProfile(); }, 150);
 });
 
-$("#loginForm").addEventListener("submit", (e) => {
+
+
+
+$("#loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const email = $("#loginEmail").value.trim().toLowerCase();
-  const password = $("#loginPassword").value;
+  const email = ($("#loginEmail")?.value || "").trim().toLowerCase();
+  const password = $("#loginPassword")?.value || "";
+  if (!email) return toast("اكتب البريد الإلكتروني");
+  if (!password) return toast("اكتب كلمة المرور");
   usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
-  const user = usersDB.find(u => u.email === email && String(u.password) === String(password));
+  const user = usersDB.find(u => (u.email || "").toLowerCase() === email && String(u.password) === String(password));
   if (!user) {
-    const exists = usersDB.some(u => u.email === email);
-    return toast(exists ? "كلمة المرور غير صحيحة" : "لا يوجد حساب بهذا البريد");
+    const exists = usersDB.some(u => (u.email || "").toLowerCase() === email);
+    return toast(exists ? "كلمة المرور غير صحيحة" : "لا يوجد حساب بهذا البريد — أنشئ حسابًا جديدًا");
   }
-  currentUser = { name: user.name, phone: user.phone, email: user.email, address: user.address || "", avatar: user.avatar || null };
+  currentUser = { name: user.name, phone: user.phone || "", email: user.email, address: user.address || "", avatar: user.avatar || null };
   localStorage.setItem("nx_user", JSON.stringify(currentUser));
   updateUserUI();
   closeAuth();
-  toast(`مرحبًا ${user.name}`);
-  notifyAdmin("login", `👤 ${user.name}\n📞 ${user.phone || "-"}\n📧 ${user.email}`);
+  toast("مرحبًا " + (user.name || ""));
+  const nl = String.fromCharCode(10);
+  const msg = "تسجيل دخول NEXORA" + nl + nl + "الاسم: " + (user.name || "-") + nl + "الهاتف: " + (user.phone || "-") + nl + "البريد: " + (user.email || "-") + nl + "الوقت: " + new Date().toLocaleString("ar-EG");
+  try { await notifyAdmin("login", msg); } catch (_) {}
 });
 
-$("#profileForm").addEventListener("submit", (e) => {
+
+
+
+$("#profileForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  if (!currentUser) return;
-  currentUser.name = $("#profName").value.trim();
-  currentUser.phone = $("#profPhone").value.trim();
-  currentUser.email = $("#profEmail").value.trim().toLowerCase();
-  currentUser.address = $("#profAddress").value.trim();
+  if (!currentUser) return toast("سجّل الدخول أولاً");
+  const name = ($("#profName")?.value || "").trim();
+  const phone = ($("#profPhone")?.value || "").trim();
+  const email = ($("#profEmail")?.value || "").trim().toLowerCase();
+  const address = ($("#profAddress")?.value || "").trim();
+  if (!name) return toast("اكتب الاسم");
+  if (!phone) return toast("اكتب رقم الهاتف");
+  if (!email) return toast("اكتب البريد");
+  const oldEmail = currentUser.email;
+  currentUser.name = name;
+  currentUser.phone = phone;
+  currentUser.email = email;
+  currentUser.address = address;
   if (pendingAvatar) { currentUser.avatar = pendingAvatar; pendingAvatar = null; }
   localStorage.setItem("nx_user", JSON.stringify(currentUser));
   usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
-  const i = usersDB.findIndex(u => u.email === currentUser.email);
+  let i = usersDB.findIndex(u => (u.email || "").toLowerCase() === (oldEmail || "").toLowerCase());
+  if (i < 0) i = usersDB.findIndex(u => (u.email || "").toLowerCase() === email);
   if (i >= 0) {
-    usersDB[i] = { ...usersDB[i], ...currentUser };
-    localStorage.setItem("nx_users", JSON.stringify(usersDB));
+    usersDB[i] = Object.assign({}, usersDB[i], { name: name, phone: phone, email: email, address: address, avatar: currentUser.avatar || usersDB[i].avatar || null });
+  } else {
+    usersDB.push({ name: name, phone: phone, email: email, password: "", address: address, avatar: currentUser.avatar || null });
   }
+  localStorage.setItem("nx_users", JSON.stringify(usersDB));
   updateUserUI();
   closeProfile();
   toast("تم حفظ الملف الشخصي");
-  notifyAdmin("profile", `👤 ${currentUser.name}\n📞 ${currentUser.phone}\n📧 ${currentUser.email}\n📍 ${currentUser.address || "-"}`);
+  const nl = String.fromCharCode(10);
+  const msg = "تحديث بروفايل NEXORA" + nl + nl + "الاسم: " + name + nl + "الهاتف: " + phone + nl + "البريد: " + email + nl + "العنوان: " + (address || "-");
+  try { await notifyAdmin("profile", msg); } catch (_) {}
 });
+
+
+
 
 $("#logoutBtn").addEventListener("click", () => {
   currentUser = null;
