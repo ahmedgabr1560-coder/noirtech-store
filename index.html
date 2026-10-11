@@ -305,13 +305,14 @@
   </div>
 
 <!-- Profile modal -->
-  <div class="modal-overlay" id="profileOverlay"></div>
-  <div class="modal profile-modal" id="profileModal" role="dialog" aria-modal="true">
-    <button type="button" class="icon-close modal-close" id="closeProfile">×</button>
+    <div class="modal-overlay" id="profileOverlay"></div>
+  <div class="modal profile-modal" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileName">
+    <button type="button" class="icon-close modal-close" id="closeProfile" aria-label="إغلاق">×</button>
+
     <div class="profile-head">
       <div class="avatar-upload profile-avatar-box">
         <div class="avatar-ring">
-          <img id="profileAvatar" class="avatar-img" alt="البروفايل" />
+          <img id="profileAvatar" class="avatar-img" alt="صورة البروفايل" />
           <div id="profileFallback" class="avatar-placeholder">?</div>
           <label class="avatar-cam" for="profileAvatarInput" title="تغيير الصورة">📷</label>
           <input type="file" id="profileAvatarInput" accept="image/*" hidden />
@@ -319,19 +320,46 @@
       </div>
       <h3 id="profileName">الملف الشخصي</h3>
       <p class="muted" id="profileEmail"></p>
-      <div class="profile-pills"><span>عضو NEXORA</span><span>عميل مسجّل</span></div>
+      <div class="profile-pills">
+        <span>عضو NEXORA</span>
+        <span id="profilePhonePill">—</span>
+      </div>
     </div>
-    <form id="profileForm" class="auth-form">
-      <label>الاسم<input type="text" id="profName" required /></label>
-      <label>الهاتف<input type="tel" id="profPhone" required /></label>
-      <label>البريد<input type="email" id="profEmail" required /></label>
-      <label>العنوان<input type="text" id="profAddress" /></label>
-      <button type="submit" class="btn btn-primary btn-block">حفظ</button>
-      <button type="button" class="btn btn-ghost btn-block" id="logoutBtn">تسجيل الخروج</button>
-    </form>
+
+    <div class="profile-section">
+      <h4 class="profile-section-title">البيانات الشخصية</h4>
+      <form id="profileForm" class="profile-form">
+        <div class="profile-field">
+          <label for="profName">الاسم بالكامل</label>
+          <input type="text" id="profName" required placeholder="اسمك" autocomplete="name" />
+        </div>
+        <div class="profile-field">
+          <label for="profPhone">رقم الهاتف</label>
+          <input type="tel" id="profPhone" required placeholder="01xxxxxxxxx" autocomplete="tel" />
+        </div>
+        <div class="profile-field">
+          <label for="profEmail">البريد الإلكتروني</label>
+          <input type="email" id="profEmail" required placeholder="name@example.com" autocomplete="email" />
+        </div>
+        <div class="profile-field">
+          <label for="profAddress">عنوان التوصيل</label>
+          <input type="text" id="profAddress" placeholder="المحافظة - المنطقة - تفاصيل" autocomplete="street-address" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">حفظ التعديلات</button>
+      </form>
+    </div>
+
+    <div class="profile-section">
+      <h4 class="profile-section-title">آخر الطلبات</h4>
+      <div id="profileOrders" class="profile-orders">
+        <p class="muted profile-orders-empty">لا توجد طلبات بعد</p>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-ghost btn-block profile-logout" id="logoutBtn">تسجيل الخروج</button>
   </div>
 
-  <!-- Order success -->
+<!-- Order success -->
   <div class="modal-overlay" id="orderSuccessOverlay"></div>
   <div class="modal order-success-modal" id="orderSuccessModal" role="dialog">
     <div class="order-success">
