@@ -695,3 +695,119 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 
 .badge-demo{display:none!important}
+
+/* ===== Professional Profile Page ===== */
+.profile-modal {
+  width: min(440px, 94vw) !important;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 24px 20px 18px !important;
+}
+.profile-head {
+  text-align: center;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.profile-head h3 {
+  margin: 8px 0 4px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.profile-head .muted {
+  font-size: .88rem;
+  margin: 0 0 8px;
+}
+.profile-pills {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.profile-pills span {
+  background: rgba(139,92,246,.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(139,92,246,.25);
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.profile-section {
+  margin-bottom: 16px;
+}
+.profile-section-title {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 10px;
+  letter-spacing: .02em;
+}
+.profile-form {
+  display: grid;
+  gap: 12px;
+}
+.profile-field {
+  display: grid;
+  gap: 6px;
+}
+.profile-field label {
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.profile-field input {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--bg-soft, #111118);
+  color: var(--text);
+  width: 100%;
+  transition: .2s;
+}
+.profile-field input:focus {
+  outline: none;
+  border-color: rgba(139,92,246,.55);
+  box-shadow: 0 0 0 3px rgba(139,92,246,.12);
+}
+.profile-orders {
+  display: grid;
+  gap: 8px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.profile-order-item {
+  background: var(--bg-soft, #111118);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: .84rem;
+}
+.profile-order-item strong {
+  color: var(--neon, #22d3ee);
+  display: block;
+  margin-bottom: 4px;
+}
+.profile-order-item span {
+  color: var(--muted);
+  font-size: .78rem;
+}
+.profile-orders-empty {
+  text-align: center;
+  padding: 12px;
+  margin: 0;
+  font-size: .85rem;
+}
+.profile-logout {
+  margin-top: 4px;
+}
+.profile-avatar-box .avatar-ring {
+  width: 100px;
+  height: 100px;
+}
+.profile-avatar-box .avatar-img,
+.profile-avatar-box .avatar-placeholder {
+  width: 100px !important;
+  height: 100px !important;
+}
