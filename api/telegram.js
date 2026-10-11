@@ -1,4 +1,7 @@
-import { openrouterChat, openrouterSearchChat, resilientChat } from "./_ai.js";
+// dynamic AI import to avoid cold-start crash
+async function loadAi() {
+  try { return await import("./_ai.js"); } catch (e) { console.error("AI module load failed", e); return null; }
+}
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
@@ -95,27 +98,19 @@ function errorText(status) {
 }
 
 async function askAi(question, catalog = []) {
-  const system = `أنت «نورا» مساعدة NEXORA الذكية لتليجرام (متجر إلكترونيات في مصر).
-شخصية: مصرية، خفيفة دم باعتدال، عملية وسريعة.
-أسلوب: عامية مصرية، 2–6 جمل، إيموجي باعتدال.
-ساعد في ترشيح منتجات، مقارنة بسيطة، صياغة أوصاف، واقتراحات تشغيل المتجر.
-لو فيه كتالوج استخدمه. متختراعش أسعار دقيقة لو مش موجودة.
-التواصل: 01064519541`;
-  const sample = (catalog || []).slice(0, 30).map(p => `${p.name}|${p.category}|${p.price}`).join("
-");
-  const prompt = (sample ? ("كتالوج:
-" + sample + "
-
-") : "") + "سؤال: " + String(question || "").slice(0, 1500);
+  const system = 'انت نورا مساعدة NEXORA. عامية مصرية قصيرة.';
+  const sample = (catalog || []).slice(0, 30).map(function(p){ return (p.name||'') + '|' + (p.category||'') + '|' + (p.price||''); }).join(String.fromCharCode(10));
+  const prompt = (sample ? ('كتالوج:' + String.fromCharCode(10) + sample + String.fromCharCode(10,10)) : '') + 'سؤال: ' + String(question || '').slice(0, 1500);
   try {
-    const result = await resilientChat(system, [{ role: "user", content: prompt }], 500);
-    return result.reply || result.text || "حاضر 😄 وضّحلي أكتر وأساعدك.";
+    const ai = await loadAi();
+    if (!ai || !ai.resilientChat) throw new Error('no ai');
+    const result = await ai.resilientChat(system, [{ role: 'user', content: prompt }], 500);
+    return result.reply || result.text || 'حاضر وضحلني اكتر';
   } catch (e) {
-    const t = String(question || "").toLowerCase();
-    if (/موبايل|هاتف|iphone|سامسونج/.test(t)) return "تمام 📱 قولي ميزانيتك (مثلًا 15 ألف) واستخدامك (يومي/ألعاب/تصوير) وأرشّحلك من المتجر.";
-    if (/لابتوب|laptop|ماك/.test(t)) return "اللابتوبات 💻 قولي: شغل مكتبي ولا ألعاب/مونتاج؟ والميزانية كام؟";
-    if (/سماع|سماعة|airpods/.test(t)) return "الصوتيات 🎧 تحب عزل ضوضاء ولا سماعة خفيفة للرياضة؟";
-    return "أنا نورا 🤖 مساعدة NEXORA. قولي عايز ترشيح منتج، تعديل سعر، ولا وصف تسويقي؟";
+    const t = String(question || '').toLowerCase();
+    if (/موبايل|هاتف|iphone/.test(t)) return 'تمام قولي ميزانيتك وهرشحك';
+    if (/لابتوب|laptop/.test(t)) return 'اللابتوبات: شغل ولا العاب؟';
+    return 'انا نورا مساعدة NEXORA. قولي محتاج ايه؟';
   }
 }
 
@@ -125,7 +120,9 @@ async function interpretAdminRequest(text, catalog = []) {
 /menu, /help, /status, /config, /products, /settitle نص, /setabout نص, /setfooter نص, /sethero نص, /setdesc نص, /setbadgehero نص, /setbtn نص, /setname نص, /setsite نص, /setaddress نص, /setphone قيمة, /setemail قيمة, /theme dark|gold|purple|red, /setlayout luxury|minimal|neon, /setorder hero,categories,phones,laptops,audio,wearables,about,contact, /setcategory phones|laptops|audio|wearables اسم, /setcolor gold|accent|bg|card|text|muted|light|dark #hex, /toggle about|contact|categories|whatsapp|telegram|ai, /setprice رقم سعر, /hide رقم, /show رقم, /importproducts عدد [فئة], /importurl رابط, /add اسم | سعر | قسم | صورة. أو ابعت رابط فقط أو صورة+تعليق.
 لا تخترع رقم منتج أو قيمة غير مذكورة. أرجع JSON فقط بالشكل: {"command":"...","reply":"تأكيد قصير بالمصرية"}.`;
   try {
-    const result = await resilientChat(system, [{ role: "user", content: `طلب المدير: ${text.slice(0, 1200)}\nالمنتجات: ${JSON.stringify(catalog.slice(0, 30))}` }], 260);
+    const ai = await loadAi();
+    if (!ai?.resilientChat) throw new Error("no ai");
+    const result = await ai.resilientChat(system, [{ role: "user", content: `طلب المدير: ${text.slice(0, 1200)}\nالمنتجات: ${JSON.stringify(catalog.slice(0, 30))}` }], 260);
     const raw = result.reply.match(/\{[\s\S]*\}/)?.[0];
     const plan = raw ? JSON.parse(raw) : {};
     const allowed = /^(\/(?:menu|help|status|config|products|settitle|setabout|setfooter|sethero|setdesc|setbadgehero|setbtn|setname|setsite|setaddress|setphone|setemail|theme|setlayout|setorder|setcategory|setcolor|toggle|setprice|hide|show|importproducts|importurl))(?:\s|$)/;
@@ -182,7 +179,7 @@ async function importProductsFromWeb(count, categoryHint = "") {
 كل عنصر يجب أن يحتوي بالضبط على: name (اسم المنتج والموديل)، category (واحدة من phones أو laptops أو audio أو wearables)، price (رقم صحيح تقريبي بالجنيه المصري)، oldPrice (رقم أو null)، image (رابط صورة مباشر https قابل للفتح)، description (وصف عربي قصير)، specs (كائن من 3 إلى 6 مواصفات قصيرة)، badge (نص قصير أو null)، sourceUrl (رابط صفحة المصدر).
 
 الشروط: اختر أجهزة إلكترونية فقط، لا تخترع روابط صور؛ استخدم روابط صور مباشرة من صفحات الشركات أو المتاجر أو مواقع الصور العامة. لا تكرر نفس الموديل. الأسعار تقريبية للسوق المصري واعتبرها قابلة للتغيير. ${categoryHint ? `ركز على فئة ${categoryHint}.` : "وزع النتائج بين الفئات الأربع."}`;
-  const result = await openrouterSearchChat(system, [{ role: "user", content: `استورد ${count} جهازًا إلكترونيًا من الإنترنت مع الصور والوصف والمواصفات. أعد JSON صالحًا فقط.` }], Math.min(7500, Math.max(1800, count * 75)));
+  const result = await (await loadAi()).openrouterSearchChat(system, [{ role: "user", content: `استورد ${count} جهازًا إلكترونيًا من الإنترنت مع الصور والوصف والمواصفات. أعد JSON صالحًا فقط.` }], Math.min(7500, Math.max(1800, count * 75)));
   const raw = result.text.match(/\[[\s\S]*\]/)?.[0];
   if (!raw) throw new Error("لم يرجع محرك البحث قائمة JSON صالحة");
   let list;
@@ -213,7 +210,7 @@ async function importProductFromUrl(url) {
   const description = htmlMeta(html, "og:description") || htmlMeta(html, "description");
   const visible = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>/gi, " ").replace(/\s+/g, " ").slice(0, 18000);
   const prompt = `استخرج بيانات منتج إلكتروني من صفحة الويب التالية. أرجع JSON فقط بهذا الشكل: {"name":"","category":"phones|laptops|audio|wearables","price":0,"oldPrice":null,"image":"","description":"","specs":{},"badge":null}. السعر رقم تقريبي بالجنيه المصري إن وجد، ولا تخترع سعرًا؛ إذا لم يوجد استخدم 0. استخدم الصورة المرفقة إن كانت صالحة.\nالعنوان: ${title}\nالصورة: ${image}\nالوصف: ${description}\nمحتوى الصفحة: ${visible}`;
-  const ai = await openrouterChat("أنت مستخرج بيانات منتجات دقيق. لا تضف شرحًا خارج JSON.", [{ role: "user", content: prompt }], 700);
+  const ai = await (await loadAi()).openrouterChat("أنت مستخرج بيانات منتجات دقيق. لا تضف شرحًا خارج JSON.", [{ role: "user", content: prompt }], 700);
   const raw = ai.match(/\{[\s\S]*\}/)?.[0];
   if (!raw) throw new Error("لم أستطع استخراج بيانات المنتج");
   const item = JSON.parse(raw);
@@ -224,6 +221,7 @@ async function importProductFromUrl(url) {
 }
 
 export default async function handler(req, res) {
+  try {
   if (req.method === "GET") return res.status(200).json({ ok: true });
   if (req.method !== "POST") return res.status(405).end();
   try {
@@ -654,5 +652,14 @@ export default async function handler(req, res) {
     console.error(err);
     await rememberBotError("تنفيذ طلب البوت", err);
     return res.status(200).json({ ok: true });
+  }
+  } catch (e) {
+    console.error("telegram handler crash", e);
+    try {
+      if (req?.body?.message?.chat?.id) {
+        await reply(String(req.body.message.chat.id), "⚠️ حصل خطأ مؤقت في البوت. جرّب /start");
+      }
+    } catch (_) {}
+    return res.status(200).json({ ok: false, error: String(e.message || e) });
   }
 }
