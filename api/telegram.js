@@ -95,13 +95,27 @@ function errorText(status) {
 }
 
 async function askAi(question, catalog = []) {
-  const system = "أنت نوير، صاحب المدير ومساعده داخل تليجرام. اتكلم مصري بسيط جدًا، طبيعي وودود، كأنك شخص فاهمه. جاوب على السؤال مباشرة في جملة أو جملتين، من غير كلام تقني أو أسماء محركات أو قوائم أوامر. نفّذ الطلب الواضح، ولو ناقص اسأل سؤالًا واحدًا فقط. لا تقل إنك نفذت حاجة إلا بعد تنفيذها فعلًا.";
-  const prompt = `السؤال: ${question.slice(0, 1500)}\nالمنتجات الحالية: ${JSON.stringify(catalog.slice(0, 30))}`;
+  const system = `أنت «نورا» مساعدة NEXORA الذكية لتليجرام (متجر إلكترونيات في مصر).
+شخصية: مصرية، خفيفة دم باعتدال، عملية وسريعة.
+أسلوب: عامية مصرية، 2–6 جمل، إيموجي باعتدال.
+ساعد في ترشيح منتجات، مقارنة بسيطة، صياغة أوصاف، واقتراحات تشغيل المتجر.
+لو فيه كتالوج استخدمه. متختراعش أسعار دقيقة لو مش موجودة.
+التواصل: 01064519541`;
+  const sample = (catalog || []).slice(0, 30).map(p => `${p.name}|${p.category}|${p.price}`).join("
+");
+  const prompt = `${sample ? "كتالوج:
+" + sample + "
+
+" : ""}سؤال: ${String(question || "").slice(0, 1500)}`;
   try {
-    const result = await resilientChat(system, [{ role: "user", content: prompt }], 350);
-    return result.reply;
-  } catch {
-    return "حصلت لخبطة بسيطة 😅 جرّب تاني وأنا معاك.";
+    const result = await resilientChat(system, [{ role: "user", content: prompt }], 500);
+    return result.reply || result.text || "حاضر 😄 وضّحلي أكتر وأساعدك.";
+  } catch (e) {
+    const t = String(question || "").toLowerCase();
+    if (/موبايل|هاتف|iphone|سامسونج/.test(t)) return "تمام 📱 قولي ميزانيتك (مثلًا 15 ألف) واستخدامك (يومي/ألعاب/تصوير) وأرشّحلك من المتجر.";
+    if (/لابتوب|laptop|ماك/.test(t)) return "اللابتوبات 💻 قولي: شغل مكتبي ولا ألعاب/مونتاج؟ والميزانية كام؟";
+    if (/سماع|سماعة|airpods/.test(t)) return "الصوتيات 🎧 تحب عزل ضوضاء ولا سماعة خفيفة للرياضة؟";
+    return "أنا نورا 🤖 مساعدة NEXORA. قولي عايز ترشيح منتج، تعديل سعر، ولا وصف تسويقي؟";
   }
 }
 
@@ -229,7 +243,7 @@ export default async function handler(req, res) {
       if (data === "menu_main") await reply(chatId, "🎛 <b>لوحة NEXORA</b>\nاختار القسم:", { reply_markup: MAIN_MENU });
       else if (data === "menu_products") await reply(chatId, "📦 <b>إدارة المنتجات</b>\nاختار العملية أو اكتبها بطريقتك:", { reply_markup: PRODUCT_MENU });
       else if (data === "menu_design") await reply(chatId, "🎨 <b>التصميم والثيمات</b>", { reply_markup: DESIGN_MENU });
-      else if (data === "menu_ai") await reply(chatId, "🤖 <b>نوير — مساعدك السريع</b> 😄\nاكتب طلبك بطريقتك، مثل:\n• اعمل وصف لمنتج جديد\n• رشحلي جهاز مناسب للتصميم\n• عايز أغير شكل الموقع\n• اعرضلي منتجات تحت 30000\n\nأنا أفهم طلبك وأنفذه مباشرة.", { reply_markup: keyboard([[{ text: "📦 تحليل المنتجات", callback_data: "ai_products" }], [{ text: "✍️ كتابة وصف", callback_data: "ai_copy" }, { text: "💡 فكرة للمتجر", callback_data: "ai_idea" }], [{ text: "⬅️ الرئيسية", callback_data: "menu_main" }]]) });
+      else if (data === "menu_ai") await reply(chatId, "🤖 <b>نورا — مساعدة NEXORA</b> 😄\nاكتب أي حاجة بالعامية:\n• رشّحلي موبايل بـ 15000\n• وصف تسويقي لسماعات\n• فرق بين لابتوبين\n• منتجات تحت 30000\n\nهرد بذكاء وأنفّذ أوامر الإدارة لما تطلب.", { reply_markup: keyboard([[{ text: "📦 تحليل المنتجات", callback_data: "ai_products" }], [{ text: "✍️ كتابة وصف", callback_data: "ai_copy" }, { text: "💡 فكرة للمتجر", callback_data: "ai_idea" }], [{ text: "⬅️ الرئيسية", callback_data: "menu_main" }]]) });
       else if (data === "menu_content") await reply(chatId, "✍️ اكتب طلبك مباشرة، مثل: <i>غيّر عنوان الصفحة إلى أحدث الأجهزة</i> أو <i>اكتب وصفًا جديدًا للمتجر</i>.");
       else if (data === "menu_sections") await reply(chatId, "🧱 اكتب الترتيب بالكلام، مثل: <i>خلّي المنتجات قبل قسم عن المتجر، وأظهر التواصل في الآخر</i>.");
       else if (data === "menu_status") await reply(chatId, "✅ البوت متصل\n🌐 noirtech-store.vercel.app");
@@ -325,6 +339,19 @@ export default async function handler(req, res) {
     if (chatId !== ADMIN_CHAT) { await reply(chatId, "⛔ للإدارة فقط"); return res.status(200).json({ ok: true }); }
     const [cmd, ...args] = text.split(/\s+/);
     const command = (cmd || "").toLowerCase().replace(/@\w+/, "");
+    if (command === "/ai") {
+      const q = args.join(" ").trim();
+      if (!q) {
+        await reply(chatId, "🤖 <b>نورا AI</b>\nاكتب بعد الأمر سؤالك، مثال:\n<code>/ai رشحلي موبايل بميزانية 12000</code>", { reply_markup: MAIN_MENU });
+        return res.status(200).json({ ok: true });
+      }
+      const f = await getFile("products.json");
+      const list = f ? JSON.parse(f.content) : [];
+      await reply(chatId, "⏳ ثانية...");
+      const ans = await askAi(q, list);
+      await reply(chatId, ans, { reply_markup: MAIN_MENU });
+      return res.status(200).json({ ok: true });
+    }
     if (command === "/start" || command === "/help" || command === "/menu") {
       try {
         await tg("setMyCommands", { commands: [
@@ -333,6 +360,7 @@ export default async function handler(req, res) {
           { command: "products", description: "📦 عرض المنتجات" },
           { command: "add", description: "➕ إضافة منتج" },
           { command: "status", description: "📊 حالة البوت" },
+          { command: "ai", description: "🤖 اسأل نورا" },
           { command: "help", description: "❓ المساعدة" }
         ]});
       } catch (_) {}
