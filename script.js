@@ -1,5 +1,5 @@
 /* NEXORA — frontend demo store (localStorage only) */
-const DEMO = true;
+const DEMO = false;
 
 const CATEGORIES = [
   { id: "phones", name: "الموبايلات", icon: "📱", href: "#phones" },
@@ -64,11 +64,11 @@ function productCard(p) {
     <div class="product-media" data-open="${p.id}">
       <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />
       ${off ? `<span class="badge-off">-${off}%</span>` : ""}
-      <span class="badge-demo">تجريبي</span>
+      
     </div>
     <div class="product-body">
       <h3 class="product-name" data-open="${p.id}">${p.name}</h3>
-      <div class="rating" title="تقييم تجريبي">${stars(p.rating)} <span>(${p.reviews})</span></div>
+      <div class="rating" title="تقييم">${stars(p.rating)} <span>(${p.reviews} تقييم)</span></div>
       <div class="price-row">
         <span class="price">${money(p.price)}</span>
         ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
@@ -169,9 +169,9 @@ function openProduct(id) {
   $("#productDetail").innerHTML = `
     <div><img src="${p.image}" alt="${p.name}" /></div>
     <div>
-      <span class="detail-badge">بيانات تجريبية</span>
+      <span class="detail-badge">متوفر الآن</span>
       <h2 style="margin-bottom:8px">${p.name}</h2>
-      <div class="rating" style="margin-bottom:10px">${stars(p.rating)} <span>(${p.reviews} تقييم تجريبي)</span></div>
+      <div class="rating" style="margin-bottom:10px">${stars(p.rating)} <span>(${p.reviews} تقييم)</span></div>
       <div class="price-row" style="margin-bottom:12px">
         <span class="price" style="font-size:1.35rem">${money(p.price)}</span>
         ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
@@ -601,10 +601,10 @@ function addAiTyping() {
 }
 function localAiReply(msg) {
   const m = msg.toLowerCase();
-  if (/موبايل|هاتف|phone|ايفون|آيفون/.test(m)) return "عندنا قسم موبايلات تجريبي كامل 📱 قول ميزانيتك وأرشّحلك من القائمة.";
+  if (/موبايل|هاتف|phone|ايفون|آيفون/.test(m)) return "عندنا تشكيلة موبايلات مميزة 📱 قول ميزانيتك وأرشّحلك الأنسب.";
   if (/لابتوب|لاب|laptop|ماك/.test(m)) return "اللابتوبات في NEXORA جاهزة للتصفح 💻 تحب جهاز للشغل ولا للألعاب؟";
   if (/سماعة|اكسسوار|إكسسوار|سماعة/.test(m)) return "الإكسسوارات والعروض تحت قسم العروض 🎧";
-  if (/عرض|خصم|رخيص/.test(m)) return "شوف قسم العروض في الصفحة — فيه خصومات تجريبية مميزة 🔥";
+  if (/عرض|خصم|رخيص/.test(m)) return "شوف قسم العروض في الصفحة — فيه خصومات مميزة 🔥";
   if (/مرحبا|اهلا|السلام|hi|hello/.test(m)) return "أهلاً بيك في NEXORA 👋 تحب مساعدة في موبايل، لابتوب، ولا إكسسوار؟";
   return "تمام 😄 قولي عايز إيه بالظبط: موبايل، لابتوب، شاشة، ولا إكسسوار؟";
 }
