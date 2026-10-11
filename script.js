@@ -221,6 +221,8 @@ function openProfile() {
   $("#profAddress").value = currentUser.address || "";
   $("#profileName").textContent = currentUser.name || "الملف الشخصي";
   $("#profileEmail").textContent = currentUser.email || "";
+  const phonePill = document.getElementById("profilePhonePill");
+  if (phonePill) phonePill.textContent = currentUser.phone || "بدون رقم";
   const img = document.getElementById("profileAvatar");
   const fb = document.getElementById("profileFallback");
   if (currentUser.avatar) {
@@ -231,6 +233,22 @@ function openProfile() {
     if (fb) {
       fb.classList.remove("is-off");
       fb.textContent = (currentUser.name || "?").trim().charAt(0).toUpperCase();
+    }
+  }
+  // orders
+  const box = document.getElementById("profileOrders");
+  if (box) {
+    const orders = JSON.parse(localStorage.getItem("nx_orders") || "[]")
+      .filter(o => !o.customer || o.customer.email === currentUser.email || o.customer.phone === currentUser.phone)
+      .slice(0, 5);
+    if (!orders.length) {
+      box.innerHTML = '<p class="muted profile-orders-empty">لا توجد طلبات بعد</p>';
+    } else {
+      box.innerHTML = orders.map(o => {
+        const total = (o.total || 0).toLocaleString("ar-EG");
+        const n = (o.items || []).length;
+        return '<div class="profile-order-item"><strong>' + (o.id || "طلب") + '</strong><span>' + n + ' منتج · ' + total + ' ج.م · ' + (o.status || "جديد") + '</span></div>';
+      }).join("");
     }
   }
   $("#profileOverlay").classList.add("open");
