@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXORA | إضافة منتج</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#050505; --card:#121218; --border:rgba(255,255,255,.1); --text:#f5f5f7; --muted:#9a9aa3; --accent:#a78bfa; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Cairo",system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:24px 16px 48px; }
+    .wrap { width:min(560px,100%); margin:0 auto; }
+    .brand { display:flex; align-items:center; gap:10px; margin-bottom:24px; }
+    .mark { width:40px; height:40px; border-radius:12px; background:#fff; color:#000; display:grid; place-items:center; font-weight:900; font-size:.75rem; }
+    h1 { font-size:1.35rem; font-weight:800; }
+    .sub { color:var(--muted); font-size:.88rem; margin-top:4px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:22px; margin-bottom:16px; }
+    label { display:grid; gap:6px; margin-bottom:14px; font-size:.84rem; font-weight:600; color:var(--muted); }
+    input, select, textarea {
+      width:100%; padding:13px 14px; border-radius:12px; border:1px solid var(--border);
+      background:rgba(255,255,255,.04); color:var(--text); font-family:inherit; font-size:.95rem; outline:none;
+    }
+    input:focus, select:focus, textarea:focus { border-color:rgba(167,139,250,.5); }
+    textarea { min-height:90px; resize:vertical; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .btn {
+      width:100%; padding:14px; border:0; border-radius:999px; font-weight:800; font-size:.95rem;
+      cursor:pointer; font-family:inherit; background:#fff; color:#000; margin-top:6px;
+    }
+    .btn:disabled { opacity:.55; cursor:wait; }
+    .btn-ghost { background:transparent; border:1px solid var(--border); color:#fff; margin-top:10px; }
+    .msg { margin-top:14px; padding:12px 14px; border-radius:12px; font-size:.9rem; display:none; }
+    .msg.ok { display:block; background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3); color:#86efac; }
+    .msg.err { display:block; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
+    .preview { width:100%; max-height:200px; object-fit:contain; border-radius:12px; background:rgba(255,255,255,.03); margin-top:8px; display:none; }
+    .links { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+    .links a { color:var(--accent); font-size:.88rem; font-weight:600; text-decoration:none; }
+    .lock { text-align:center; padding:32px 16px; }
+    .lock h2 { margin-bottom:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark">NX</div>
+      <div>
+        <h1>إضافة منتج</h1>
+        <p class="sub">لوحة إدارة NEXORA</p>
+      </div>
+    </div>
+
+    <div class="card" id="lockCard">
+      <div class="lock">
+        <h2>🔐 دخول الإدارة</h2>
+        <p class="sub" style="margin-bottom:16px">اكتب كلمة سر الإدارة للمتابعة</p>
+        <label>كلمة السر
+          <input type="password" id="secretInput" placeholder="••••••••" />
+        </label>
+        <button class="btn" type="button" id="unlockBtn">دخول</button>
+        <div class="msg" id="lockMsg"></div>
+      </div>
+    </div>
+
+    <form class="card" id="productForm" style="display:none">
+      <label>اسم المنتج *
+        <input type="text" id="name" required placeholder="مثال: Samsung Galaxy S25 Ultra" />
+      </label>
+      <div class="row">
+        <label>السعر (ج.م) *
+          <input type="number" id="price" required min="1" placeholder="25000" />
+        </label>
+        <label>السعر قبل الخصم
+          <input type="number" id="oldPrice" min="1" placeholder="اختياري" />
+        </label>
+      </div>
+      <div class="row">
+        <label>القسم *
+          <select id="category">
+            <option value="phones">📱 موبايلات</option>
+            <option value="laptops">💻 لابتوبات</option>
+            <option value="monitors">🖥️ شاشات</option>
+            <option value="home">🏠 منزلية</option>
+            <option value="accessories">🎧 إكسسوارات</option>
+          </select>
+        </label>
+        <label>شارة
+          <input type="text" id="badge" value="جديد" placeholder="جديد / عرض" />
+        </label>
+      </div>
+      <label>رابط صورة المنتج
+        <input type="url" id="image" placeholder="https://..." />
+      </label>
+      <img class="preview" id="imgPreview" alt="معاينة" />
+      <label>الوصف
+        <textarea id="description" placeholder="وصف قصير للمنتج..."></textarea>
+      </label>
+      <button class="btn" type="submit" id="submitBtn">➕ إضافة المنتج ونشره</button>
+      <button class="btn btn-ghost" type="button" id="logoutBtn">تسجيل الخروج</button>
+      <div class="msg" id="formMsg"></div>
+      <div class="links">
+        <a href="/" target="_blank">🌐 فتح المتجر</a>
+        <a href="https://t.me/tacnoahmrd55_bot" target="_blank">🤖 بوت تليجرام</a>
+      </div>
+    </form>
+  </div>
+  <script>
+    const SECRET_KEY = "nx_admin_secret";
+    const form = document.getElementById("productForm");
+    const lockCard = document.getElementById("lockCard");
+    const formMsg = document.getElementById("formMsg");
+    const lockMsg = document.getElementById("lockMsg");
+    const imgPreview = document.getElementById("imgPreview");
+
+    function showForm() {
+      lockCard.style.display = "none";
+      form.style.display = "block";
+    }
+    if (localStorage.getItem(SECRET_KEY)) showForm();
+
+    document.getElementById("unlockBtn").onclick = () => {
+      const s = document.getElementById("secretInput").value.trim();
+      if (!s) {
+        lockMsg.className = "msg err";
+        lockMsg.textContent = "اكتب كلمة السر";
+        return;
+      }
+      localStorage.setItem(SECRET_KEY, s);
+      showForm();
+    };
+
+    document.getElementById("logoutBtn").onclick = () => {
+      localStorage.removeItem(SECRET_KEY);
+      location.reload();
+    };
+
+    document.getElementById("image").addEventListener("input", (e) => {
+      const v = e.target.value.trim();
+      if (/^https?:\/\//i.test(v)) {
+        imgPreview.src = v;
+        imgPreview.style.display = "block";
+      } else {
+        imgPreview.style.display = "none";
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("submitBtn");
+      formMsg.className = "msg";
+      formMsg.textContent = "";
+      btn.disabled = true;
+      btn.textContent = "جاري النشر...";
+      try {
+        const payload = {
+          secret: localStorage.getItem(SECRET_KEY),
+          name: document.getElementById("name").value.trim(),
+          price: document.getElementById("price").value,
+          oldPrice: document.getElementById("oldPrice").value || null,
+          category: document.getElementById("category").value,
+          badge: document.getElementById("badge").value.trim() || "جديد",
+          image: document.getElementById("image").value.trim(),
+          description: document.getElementById("description").value.trim()
+        };
+        const r = await fetch("/api/product", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await r.json();
+        if (!r.ok || !data.ok) {
+          if (r.status === 401) localStorage.removeItem(SECRET_KEY);
+          throw new Error(data.error || "فشل الإضافة");
+        }
+        formMsg.className = "msg ok";
+        formMsg.textContent = "✅ تم إضافة المنتج #" + data.product.id + " — " + data.product.name + " (الإجمالي: " + data.total + ")";
+        form.reset();
+        document.getElementById("badge").value = "جديد";
+        imgPreview.style.display = "none";
+      } catch (err) {
+        formMsg.className = "msg err";
+        formMsg.textContent = "❌ " + (err.message || "حصل خطأ");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "➕ إضافة المنتج ونشره";
+      }
+    });
+  </script>
+</body>
+</html>
