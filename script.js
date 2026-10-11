@@ -332,12 +332,6 @@ $("#registerForm").addEventListener("submit", (e) => {
   const phone = $("#regPhone").value.trim();
   const email = $("#regEmail").value.trim().toLowerCase();
   const password = $("#regPassword").value;
-  if (!regAvatar) {
-    toast("صورة البروفايل مطلوبة");
-    document.querySelector(".avatar-ring")?.classList.add("required-pulse");
-    setTimeout(() => document.querySelector(".avatar-ring")?.classList.remove("required-pulse"), 1200);
-    return;
-  }
   if (!name) return toast("اكتب الاسم");
   if (!phone) return toast("اكتب رقم الهاتف");
   if (!email) return toast("اكتب البريد الإلكتروني");
