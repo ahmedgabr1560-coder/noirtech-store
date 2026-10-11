@@ -62,7 +62,7 @@ function productCard(p) {
   const off = discountPct(p);
   return `<article class="product-card" data-id="${p.id}">
     <div class="product-media" data-open="${p.id}">
-      <img src="${p.image}" alt="${p.name}" loading="lazy" />
+      <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />
       ${off ? `<span class="badge-off">-${off}%</span>` : ""}
       <span class="badge-demo">تجريبي</span>
     </div>
