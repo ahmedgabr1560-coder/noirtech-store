@@ -103,10 +103,10 @@ async function askAi(question, catalog = []) {
 التواصل: 01064519541`;
   const sample = (catalog || []).slice(0, 30).map(p => `${p.name}|${p.category}|${p.price}`).join("
 ");
-  const prompt = `${sample ? "كتالوج:
+  const prompt = (sample ? ("كتالوج:
 " + sample + "
 
-" : ""}سؤال: ${String(question || "").slice(0, 1500)}`;
+") : "") + "سؤال: " + String(question || "").slice(0, 1500);
   try {
     const result = await resilientChat(system, [{ role: "user", content: prompt }], 500);
     return result.reply || result.text || "حاضر 😄 وضّحلي أكتر وأساعدك.";
