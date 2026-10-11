@@ -1,14 +1,16 @@
 
-// Wipe all site accounts (one-time auth reset)
-(function wipeAllAccounts() {
+// One-time: clear ONLY legacy accounts, then never again (new accounts stay)
+(function () {
   try {
-    const FLAG = "nx_accounts_wiped_v1";
-    if (localStorage.getItem(FLAG) === "1") return;
-    const keys = ["nx_user", "nx_users", "nx_orders", "nx_cart", "noirtech_user", "noirtech_users", "noirtech_cart"];
-    keys.forEach(k => localStorage.removeItem(k));
-    localStorage.setItem(FLAG, "1");
+    if (localStorage.getItem("nx_auth_clean_v2") === "1") return;
+    localStorage.removeItem("nx_user");
+    localStorage.removeItem("nx_users");
+    localStorage.removeItem("noirtech_user");
+    localStorage.removeItem("noirtech_users");
+    localStorage.setItem("nx_auth_clean_v2", "1");
   } catch (e) {}
 })();
+
 
 /* NEXORA — frontend demo store (localStorage only) */
 const DEMO = false;
