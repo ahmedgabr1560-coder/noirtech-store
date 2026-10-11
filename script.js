@@ -655,13 +655,25 @@ function addAiTyping() {
   box.scrollTop = box.scrollHeight;
 }
 function localAiReply(msg) {
-  const m = msg.toLowerCase();
-  if (/موبايل|هاتف|phone|ايفون|آيفون/.test(m)) return "عندنا تشكيلة موبايلات مميزة 📱 قول ميزانيتك وأرشّحلك الأنسب.";
-  if (/لابتوب|لاب|laptop|ماك/.test(m)) return "اللابتوبات في NEXORA جاهزة للتصفح 💻 تحب جهاز للشغل ولا للألعاب؟";
-  if (/سماعة|اكسسوار|إكسسوار|سماعة/.test(m)) return "الإكسسوارات والعروض تحت قسم العروض 🎧";
-  if (/عرض|خصم|رخيص/.test(m)) return "شوف قسم العروض في الصفحة — فيه خصومات مميزة 🔥";
-  if (/مرحبا|اهلا|السلام|hi|hello/.test(m)) return "أهلاً بيك في NEXORA 👋 تحب مساعدة في موبايل، لابتوب، ولا إكسسوار؟";
-  return "تمام 😄 قولي عايز إيه بالظبط: موبايل، لابتوب، شاشة، ولا إكسسوار؟";
+  const m = (msg || "").toLowerCase();
+  const list = Array.isArray(PRODUCTS) ? PRODUCTS : [];
+  const money = (n) => Number(n).toLocaleString("ar-EG") + " ج.م";
+  const pick = (cat, n = 4) => list.filter(p => (p.category || "") === cat).slice(0, n);
+  const fmt = (arr) => arr.map((p, i) => (i + 1) + ") " + p.name + (p.price ? " — " + money(p.price) : "")).join("\n");
+  if (/مرحبا|اهلا|السلام|hi|hello|ازيك/.test(m)) return "أهلاً بيك في NEXORA 👋 أنا نورا.\nتحب موبايل، لابتوب، شاشة، ولا إكسسوار؟";
+  if (/موبايل|هاتف|ايفون|سامسونج|phone|iphone/.test(m)) {
+    const s = fmt(pick("phones"));
+    return s ? ("تمام 📱 من الموبايلات:\n" + s + "\nقولي ميزانيتك؟") : "قسم الموبايلات متاح 📱 قولي ميزانيتك؟";
+  }
+  if (/لابتوب|لاب|macbook|laptop/.test(m)) {
+    const s = fmt(pick("laptops"));
+    return s ? ("اللابتوبات 💻:\n" + s + "\nشغل ولا ألعاب؟") : "اللابتوبات جاهزة 💻 شغل ولا ألعاب؟";
+  }
+  if (/سماع|ايربود|سماعة|buds|jbl/.test(m)) return "الصوتيات عندنا 🎧 عزل ضوضاء ولا سماعة خفيفة؟";
+  if (/شاشة|monitor/.test(m)) return "الشاشات متوفرة 🖥️ قولي المقاس (٢٤/٢٧/٣٢)؟";
+  if (/شحن|توصيل|ضمان|طلب/.test(m)) return "الشحن داخل مصر ✅ اطلب من السلة بعد تسجيل الدخول.\nواتساب: 01064519541";
+  if (/عرض|خصم/.test(m)) return "العروض تتغير 🔥 قولي الفئة وميزانيتك وأرشّحلك.";
+  return "تمام 😄 قولي عايز إيه: موبايل، لابتوب، شاشة، ولا إكسسوار؟ ولو عندك ميزانية اكتبها.";
 }
 async function handleAiSend() {
   if (window._aiBusy) return;
