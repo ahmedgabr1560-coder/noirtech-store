@@ -2,114 +2,388 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
-  <title>NEXORA | إلكترونيات عصرية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NEXORA | متجر الإلكترونيات</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <meta name="description" content="NEXORA — متجر إلكترونيات عصري: موبايلات، لابتوبات، شاشات، أجهزة منزلية وإكسسوارات" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    .ai-suggestions{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 10px}
-    .ai-chip{background:#16161d;border:1px solid rgba(139,92,246,.18);color:#f4f4f8;border-radius:50px;padding:8px 12px;font-size:.8rem;font-family:Cairo,sans-serif;cursor:pointer}
-    .profile-modal,.auth-modal#profileModal{max-width:460px}
-    #profileModal{padding:28px 22px;background:linear-gradient(180deg,#12121a 0%,#0f0f14 45%);border:1px solid rgba(139,92,246,.3);box-shadow:0 25px 60px rgba(0,0,0,.55),0 0 40px rgba(139,92,246,.08)}
-    #profileModal .profile-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(139,92,246,.18)}
-    .profile-avatar-wrap{position:relative;width:100px;height:100px;margin:0 auto 12px}
-    .profile-avatar-wrap img,.profile-avatar-placeholder{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #8b5cf6;box-shadow:0 0 24px rgba(139,92,246,.25)}
-    .profile-avatar-placeholder{background:linear-gradient(135deg,#a78bfa,#6d28d9);color:#07070a;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800}
-    .avatar-upload-btn{position:absolute;bottom:2px;left:2px;width:34px;height:34px;background:#16161d;border:2px solid #8b5cf6;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
-    #profileDisplayName{font-size:1.25rem;font-weight:800;margin:0 0 4px;color:#a78bfa}
-    .profile-badge-row{display:flex;justify-content:center;gap:8px;margin-top:10px;flex-wrap:wrap}
-    .profile-badge-row span{background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:#a78bfa;font-size:.72rem;padding:4px 10px;border-radius:50px}
-  </style>
 </head>
 <body>
-  <nav class="navbar"><div class="container nav-content">
-    <div class="logo-area"><a href="#" class="logo"><span class="logo-icon">◆</span>NEX<span>ORA</span></a><span class="owner-name">Ahmed Hamdy Gabr</span></div>
-    <ul class="nav-links"><li><a href="#home" class="active">الرئيسية</a></li><li><a href="#phones">هواتف</a></li><li><a href="#laptops">لابتوبات</a></li><li><a href="#audio">صوتيات</a></li><li><a href="#wearables">ساعات</a></li><li><a href="#about">عن المتجر</a></li><li><a href="#contact">تواصل</a></li></ul>
-    <button class="user-btn" id="userBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span class="user-name" id="userNameDisplay"></span></button>
-    <button class="cart-btn" id="cartBtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg><span class="cart-count" id="cartCount">0</span></button>
-  </div></nav>
-  <section class="hero" id="home"><div class="container hero-content"><p class="hero-badge">تشكيلة 2025</p><h1>إلكترونيات<br><span>تليق بذوقك</span></h1><p class="hero-desc">اكتشف أحدث الأجهزة والتقنيات الفاخرة</p><a href="#phones" class="btn-primary">تسوق الآن</a></div></section>
-  <section class="categories"><div class="container"><div class="cat-grid"><a href="#phones" class="cat-card"><div class="cat-icon">📱</div><h3>هواتف ذكية</h3></a><a href="#laptops" class="cat-card"><div class="cat-icon">💻</div><h3>لابتوبات</h3></a><a href="#audio" class="cat-card"><div class="cat-icon">🎧</div><h3>سماعات</h3></a><a href="#wearables" class="cat-card"><div class="cat-icon">⌚</div><h3>ساعات</h3></a></div></div></section>
-  <section class="products category-section" id="phones"><div class="container"><div class="section-header"><h2>📱 الهواتف</h2></div><div class="products-grid" id="phonesGrid"></div></div></section>
-  <section class="products category-section" id="laptops"><div class="container"><div class="section-header"><h2>💻 اللابتوبات</h2></div><div class="products-grid" id="laptopsGrid"></div></div></section>
-  <section class="products category-section" id="audio"><div class="container"><div class="section-header"><h2>🎧 السماعات</h2></div><div class="products-grid" id="audioGrid"></div></div></section>
-  <section class="products category-section" id="wearables"><div class="container"><div class="section-header"><h2>⌚ الساعات</h2></div><div class="products-grid" id="wearablesGrid"></div></div></section>
-  <section class="about" id="about"><div class="container about-content"><div class="about-text"><h2>لماذا <span>NEXORA</span>؟</h2><p>متجر إلكترونيات عصرية.</p><ul class="features"><li>✓ شحن سريع</li><li>✓ ضمان أصلي</li><li>✓ دعم فني</li><li>✓ إرجاع 14 يوم</li></ul></div><div class="about-stats"><div class="stat"><h3>+5000</h3><p>عميل</p></div><div class="stat"><h3>+200</h3><p>منتج</p></div><div class="stat"><h3>4.9</h3><p>تقييم</p></div></div></div></section>
-  <section class="contact" id="contact"><div class="container"><div class="section-header"><h2>تواصل معنا</h2></div><div class="contact-grid"><div class="contact-card"><div class="contact-icon">📍</div><h3>العنوان</h3><p>القاهرة، مصر</p></div><div class="contact-card"><div class="contact-icon">📞</div><h3>الهاتف</h3><p>01064519541</p></div><div class="contact-card"><div class="contact-icon">✉️</div><h3>البريد</h3><p>ahmedgabr1560@gmail.com</p></div></div></div></section>
-  <footer class="footer"><div class="container"><div class="footer-content"><div class="footer-brand"><a href="#" class="logo">NEX<span>ORA</span></a></div></div><div class="footer-bottom"><p>© 2025 NEXORA</p></div></div></footer>
-  <div class="cart-overlay" id="cartOverlay"></div>
-  <div class="cart-sidebar" id="cartSidebar"><div class="cart-header"><h3>سلة التسوق</h3><button class="close-cart" id="closeCart">×</button></div><div class="cart-items" id="cartItems"></div><div class="cart-footer"><div class="cart-total"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div><button class="btn-checkout" id="checkoutBtn">إتمام الطلب</button></div></div>
-  <div class="toast" id="toast"></div>
-  <div class="float-buttons">
-    <a href="https://wa.me/201064519541" target="_blank" class="float-btn whatsapp" title="واتساب"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
-    <a href="https://t.me/tacnoahmrd55_bot" target="_blank" class="float-btn telegram" title="تليجرام"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.15 1.568-.769 5.36-1.087 7.11-.134.788-.428 1.051-.695 1.077-.585.057-1.03-.385-1.597-.756-.89-.583-1.393-.94-2.257-1.506-1.008-.66-.355-1.022.22-1.614.15-.155 2.747-2.52 2.8-2.736.006-.027.014-.125-.047-.177s-.146-.032-.208-.019c-.089.021-1.505.954-4.25 2.807-.402.276-.766.411-1.091.4-.36-.01-1.05-.203-1.563-.37-.63-.206-1.13-.315-1.086-.665.023-.182.34-.37.935-.562 3.662-1.596 6.107-2.648 7.333-3.16 3.5-1.46 4.224-1.713 4.697-1.721z"/></svg></a>
-    <button type="button" class="float-btn ai" id="aiChatBtn" title="AI"><span class="ai-btn-icon">✦</span></button>
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <span>شحن سريع داخل مصر · بيانات تجريبية للتطوير</span>
+      <span class="top-bar-links">
+        <a href="#contact">الدعم</a>
+        <a href="#offers">العروض</a>
+      </span>
+    </div>
   </div>
-  <div class="ai-overlay" id="aiOverlay"></div>
-  <div class="ai-panel" id="aiPanel"><div class="ai-header"><div class="ai-header-info"><div class="ai-avatar">🤖</div><div><h4>مساعد NEXORA</h4><span class="ai-status">متصل</span></div></div><button class="ai-close" id="aiClose">×</button></div><div class="ai-messages" id="aiMessages"><div class="ai-msg bot"><div class="ai-bubble">أهلاً بيك 👋 أنا مساعد NEXORA مساعدك الذكي... وصديقك الخفيف الدم 😄 تحب نبدأ بهاتف ولا لابتوب؟</div></div></div><div class="ai-suggestions" id="aiSuggestions"><button type="button" class="ai-chip" data-q="عايز هاتف في حدود 40 ألف">📱 هاتف</button><button type="button" class="ai-chip" data-q="أنصحني بلابتوب">💻 لابتوب</button><button type="button" class="ai-chip" data-q="فيه عروض؟">🔥 عروض</button></div><div class="ai-input-area"><input type="text" id="aiInput" placeholder="رسالتك..." /><button id="aiSend" class="ai-send-btn">➤</button></div></div>
-  <div class="auth-overlay" id="profileOverlay"></div>
-  <div class="auth-modal profile-modal" id="profileModal">
-    <button class="auth-close" id="profileClose">×</button>
-    <div class="profile-header">
-      <div class="profile-avatar-wrap">
-        <img id="profileAvatarImg" style="display:none" alt=""/>
-        <div class="profile-avatar-placeholder" id="profileAvatarPlaceholder">؟</div>
-        <label class="avatar-upload-btn">📷<input type="file" id="avatarInput" accept="image/*" hidden/></label>
+
+  <!-- Header -->
+  <header class="site-header" id="header">
+    <div class="container header-row">
+      <a href="#home" class="logo" aria-label="NEXORA">
+        <span class="logo-mark">NX</span>
+        <span class="logo-text">NEX<span>ORA</span></span>
+      </a>
+
+      <form class="search-box" id="searchForm" role="search">
+        <input type="search" id="searchInput" placeholder="ابحث عن موبايل، لابتوب، سماعة..." autocomplete="off" />
+        <button type="submit" aria-label="بحث">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </button>
+      </form>
+
+      <div class="header-actions">
+        <button type="button" class="icon-btn" id="accountBtn" title="حسابي">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="action-label" id="accountLabel">حسابي</span>
+        </button>
+        <button type="button" class="icon-btn cart-trigger" id="cartBtn" title="السلة">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span class="action-label">السلة</span>
+          <span class="badge-count" id="cartCount">0</span>
+        </button>
+        <button type="button" class="icon-btn menu-toggle" id="menuToggle" aria-label="القائمة">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
       </div>
-      <h3 id="profileDisplayName">الملف الشخصي</h3>
-      <p class="auth-desc" id="profileDisplayEmail"></p>
-      <div class="profile-badge-row"><span>⭐ عضو NEXORA</span><span>🔒 حساب آمن</span></div>
+    </div>
+
+    <nav class="cat-nav" id="catNav">
+      <div class="container cat-nav-inner">
+        <a href="#phones" data-cat="phones">الموبايلات</a>
+        <a href="#laptops" data-cat="laptops">اللابتوبات</a>
+        <a href="#monitors" data-cat="monitors">الشاشات</a>
+        <a href="#home-app" data-cat="home">الأجهزة المنزلية</a>
+        <a href="#accessories" data-cat="accessories">الإكسسوارات</a>
+        <a href="#offers">العروض</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="hero-eyebrow">عروض الموسم · بيانات تجريبية</p>
+          <h1>كل اللي تحتاجه من الإلكترونيات في مكان واحد</h1>
+          <p class="hero-desc">موبايلات، لابتوبات، شاشات وأكثر — بتجربة تسوق سريعة وتصميم عصري يناسبك.</p>
+          <div class="hero-cta">
+            <a href="#best" class="btn btn-primary">تسوق الآن</a>
+            <a href="#offers" class="btn btn-ghost">شاهد العروض</a>
+          </div>
+          <ul class="hero-points">
+            <li>شحن سريع</li>
+            <li>دفع آمن</li>
+            <li>دعم فني</li>
+          </ul>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="hero-card">
+            <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=640&h=480&fit=crop" alt="" />
+            <div class="hero-chip">خصم حتى 25%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="section cats-section">
+      <div class="container">
+        <div class="section-head">
+          <h2>تسوق حسب القسم</h2>
+          <p>اختر الفئة المناسبة لك</p>
+        </div>
+        <div class="cats-grid" id="catsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Best sellers -->
+    <section class="section" id="best">
+      <div class="container">
+        <div class="section-head row">
+          <div>
+            <h2>الأكثر مبيعًا</h2>
+            <p>اختيارات شائعة (بيانات تجريبية)</p>
+          </div>
+          <a href="#phones" class="link-more">عرض الكل</a>
+        </div>
+        <div class="products-grid" id="bestGrid">
+          <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Offers banner -->
+    <section class="section" id="offers">
+      <div class="container">
+        <div class="promo-banner">
+          <div>
+            <p class="promo-label">عرض محدود</p>
+            <h2>وفر أكثر على الإكسسوارات والسماعات</h2>
+            <p>أسعار تجريبية للتطوير — جرّب إضافة المنتجات للسلة</p>
+            <a href="#accessories" class="btn btn-light">تصفح العروض</a>
+          </div>
+          <div class="promo-badge">DEMO</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- New arrivals -->
+    <section class="section" id="new">
+      <div class="container">
+        <div class="section-head row">
+          <div>
+            <h2>أحدث المنتجات</h2>
+            <p>وصل حديثًا للمتجر</p>
+          </div>
+        </div>
+        <div class="products-grid" id="newGrid"></div>
+      </div>
+    </section>
+
+    <!-- Category sections -->
+    <section class="section" id="phones"><div class="container"><div class="section-head"><h2>الموبايلات</h2></div><div class="products-grid" id="phonesGrid"></div></div></section>
+    <section class="section alt" id="laptops"><div class="container"><div class="section-head"><h2>اللابتوبات</h2></div><div class="products-grid" id="laptopsGrid"></div></div></section>
+    <section class="section" id="monitors"><div class="container"><div class="section-head"><h2>الشاشات</h2></div><div class="products-grid" id="monitorsGrid"></div></div></section>
+    <section class="section alt" id="home-app"><div class="container"><div class="section-head"><h2>الأجهزة المنزلية</h2></div><div class="products-grid" id="homeGrid"></div></div></section>
+    <section class="section" id="accessories"><div class="container"><div class="section-head"><h2>الإكسسوارات</h2></div><div class="products-grid" id="accessoriesGrid"></div></div></section>
+
+    <!-- Empty / error states host -->
+    <div id="stateHost" class="container" hidden></div>
+
+    <!-- Contact -->
+    <section class="section contact" id="contact">
+      <div class="container contact-grid">
+        <div>
+          <h2>تواصل معنا</h2>
+          <p class="muted">للاستفسارات والدعم (واجهة تجريبية)</p>
+          <ul class="contact-list">
+            <li>📍 القاهرة، مصر</li>
+            <li>📞 01000000000</li>
+            <li>✉️ support@nexora.demo</li>
+          </ul>
+        </div>
+        <form class="contact-form" id="contactForm">
+          <input type="text" placeholder="الاسم" required />
+          <input type="email" placeholder="البريد" required />
+          <textarea rows="3" placeholder="رسالتك" required></textarea>
+          <button type="submit" class="btn btn-primary">إرسال</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a href="#home" class="logo footer-logo"><span class="logo-mark">NX</span><span class="logo-text">NEX<span>ORA</span></span></a>
+        <p class="muted">متجر إلكترونيات عصري — واجهة تجريبية قابلة للربط بقاعدة بيانات لاحقًا.</p>
+      </div>
+      <div>
+        <h4>الأقسام</h4>
+        <a href="#phones">موبايلات</a>
+        <a href="#laptops">لابتوبات</a>
+        <a href="#accessories">إكسسوارات</a>
+      </div>
+      <div>
+        <h4>خدمة العملاء</h4>
+        <a href="#contact">تواصل</a>
+        <a href="#">الشحن</a>
+        <a href="#">الإرجاع</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">© 2026 NEXORA · Demo UI</div>
+    </div>
+  </footer>
+
+  <!-- Cart drawer -->
+  <div class="drawer-overlay" id="cartOverlay"></div>
+  <aside class="drawer" id="cartDrawer" aria-label="سلة التسوق">
+    <div class="drawer-head">
+      <h3>سلة التسوق</h3>
+      <button type="button" class="icon-close" id="closeCart">×</button>
+    </div>
+    <div class="drawer-body" id="cartItems"></div>
+    <div class="drawer-foot">
+      <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
+      <div id="checkoutFields" class="checkout-fields" hidden>
+        <label>الاسم<input type="text" id="orderName" placeholder="اسم المستلم" /></label>
+        <label>الهاتف<input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" /></label>
+        <label>العنوان<input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - تفاصيل" /></label>
+        <label>ملاحظات (اختياري)<input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" /></label>
+      </div>
+      <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب الآن</button>
+      <p class="checkout-hint">بعد الطلب هنتواصل معاك لتأكيد التوصيل والدفع</p>
+    </div>
+  </aside>
+
+  <!-- Product detail modal -->
+  <div class="modal-overlay" id="productOverlay"></div>
+  <div class="modal" id="productModal" role="dialog" aria-modal="true">
+    <button type="button" class="icon-close modal-close" id="closeProduct">×</button>
+    <div class="product-detail" id="productDetail"></div>
+  </div>
+
+  <!-- Auth modal -->
+      <div class="modal-overlay" id="authOverlay"></div>
+  <div class="modal auth-modal" id="authModal" role="dialog" aria-modal="true">
+    <button type="button" class="icon-close modal-close" id="closeAuth" aria-label="إغلاق">×</button>
+
+    <!-- LOGIN ONLY -->
+    <div id="loginPanel" class="auth-panel">
+      <div class="auth-brand">
+        <div class="auth-brand-mark">NX</div>
+        <h2>تسجيل الدخول</h2>
+        <p>مرحباً بعودتك إلى NEXORA</p>
+      </div>
+      <form id="loginForm" class="auth-form">
+        <div class="field">
+          <label for="loginEmail">البريد الإلكتروني</label>
+          <input type="email" id="loginEmail" required autocomplete="email" placeholder="name@example.com" />
+        </div>
+        <div class="field">
+          <label for="loginPassword">كلمة المرور</label>
+          <input type="password" id="loginPassword" required minlength="4" autocomplete="current-password" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">دخول</button>
+      </form>
+      <div class="auth-footer-link">
+        <span>ليس لديك حساب؟</span>
+        <button type="button" class="link-btn" id="goToRegister">إنشاء حساب جديد</button>
+      </div>
+    </div>
+
+    <!-- REGISTER ONLY -->
+    <div id="registerPanel" class="auth-panel" hidden>
+      <div class="auth-brand">
+        <div class="auth-brand-mark">NX</div>
+        <h2>إنشاء حساب جديد</h2>
+        <p>سجّل ببياناتك للطلب والمتابعة</p>
+      </div>
+      <form id="registerForm" class="auth-form">
+        <div class="avatar-upload">
+          <div class="avatar-ring">
+            <img id="regAvatarPreview" class="avatar-img" alt="صورة البروفايل" />
+            <div id="regAvatarPlaceholder" class="avatar-placeholder">+</div>
+            <label class="avatar-cam" for="regAvatarInput" title="اختر صورة">📷</label>
+            <input type="file" id="regAvatarInput" accept="image/*" hidden />
+          </div>
+          <p class="avatar-hint">صورة البروفايل <span>مطلوبة</span></p>
+        </div>
+        <div class="field">
+          <label for="regName">الاسم بالكامل</label>
+          <input type="text" id="regName" required placeholder="أحمد محمد" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="regPhone">رقم الهاتف</label>
+          <input type="tel" id="regPhone" required placeholder="01xxxxxxxxx" autocomplete="tel" />
+        </div>
+        <div class="field">
+          <label for="regEmail">بريد إلكتروني جديد</label>
+          <input type="email" id="regEmail" required autocomplete="email" placeholder="name@example.com" />
+        </div>
+        <div class="field">
+          <label for="regPassword">كلمة المرور</label>
+          <input type="password" id="regPassword" required minlength="4" autocomplete="new-password" placeholder="٤ أحرف على الأقل" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">إنشاء الحساب</button>
+      </form>
+      <div class="auth-footer-link">
+        <span>لديك حساب بالفعل؟</span>
+        <button type="button" class="link-btn" id="goToLogin">تسجيل الدخول</button>
+      </div>
+    </div>
+  </div>
+
+<!-- Profile modal -->
+  <div class="modal-overlay" id="profileOverlay"></div>
+  <div class="modal profile-modal" id="profileModal" role="dialog" aria-modal="true">
+    <button type="button" class="icon-close modal-close" id="closeProfile">×</button>
+    <div class="profile-head">
+      <div class="avatar-upload profile-avatar-box">
+        <div class="avatar-ring">
+          <img id="profileAvatar" class="avatar-img" alt="البروفايل" />
+          <div id="profileFallback" class="avatar-placeholder">?</div>
+          <label class="avatar-cam" for="profileAvatarInput" title="تغيير الصورة">📷</label>
+          <input type="file" id="profileAvatarInput" accept="image/*" hidden />
+        </div>
+      </div>
+      <h3 id="profileName">الملف الشخصي</h3>
+      <p class="muted" id="profileEmail"></p>
+      <div class="profile-pills"><span>عضو NEXORA</span><span>حساب تجريبي</span></div>
     </div>
     <form id="profileForm" class="auth-form">
-      <div class="form-group"><label>الاسم</label><input id="profName" required/></div>
-      <div class="form-group"><label>الهاتف</label><input id="profPhone" required/></div>
-      <div class="form-group"><label>الإيميل</label><input id="profEmail" type="email" required/></div>
-      <div class="form-group"><label>العنوان</label><input id="profAddress" placeholder="المدينة / المنطقة"/></div>
-      <div class="form-group"><label>نبذة</label><textarea id="profBio" rows="2" style="width:100%;background:#16161d;border:1px solid rgba(139,92,246,.18);border-radius:12px;padding:12px;color:#fff;font-family:Cairo;font-size:16px"></textarea></div>
-      <button type="submit" class="btn-auth">حفظ التعديلات</button>
-      <button type="button" class="btn-logout" id="logoutBtn">تسجيل الخروج</button>
+      <label>الاسم<input type="text" id="profName" required /></label>
+      <label>الهاتف<input type="tel" id="profPhone" required /></label>
+      <label>البريد<input type="email" id="profEmail" required /></label>
+      <label>العنوان<input type="text" id="profAddress" /></label>
+      <button type="submit" class="btn btn-primary btn-block">حفظ</button>
+      <button type="button" class="btn btn-ghost btn-block" id="logoutBtn">تسجيل الخروج</button>
     </form>
   </div>
-  <div class="auth-overlay" id="authOverlay"></div>
-  <div class="auth-modal" id="authModal">
-    <button class="auth-close" id="authClose">×</button>
-    <div class="auth-tabs">
-      <button class="auth-tab active" data-tab="login">دخول</button>
-      <button class="auth-tab" data-tab="register">حساب جديد</button>
-    </div>
-    <form id="loginForm" class="auth-form">
-      <h3>مرحباً بعودتك</h3>
-      <p class="auth-desc">سجّل دخولك لإتمام الطلب</p>
-      <div class="form-group"><label>الإيميل</label><input type="email" id="loginEmail" required/></div>
-      <div class="form-group"><label>كلمة المرور</label><input type="password" id="loginPassword" required/></div>
-      <button type="submit" class="btn-auth">دخول</button>
-      <p class="auth-switch"><a href="#" id="switchToRegister">إنشاء حساب</a></p>
-    </form>
-    <!-- reg -->
-    <form id="registerForm" class="auth-form" style="display:none">
-      <div class="avatar-upload" style="text-align:center;margin-bottom:14px">
-        <div class="avatar-ring" style="position:relative;width:96px;height:96px;margin:0 auto 8px;border-radius:50%">
-          <img id="regAvatarPreview" class="avatar-img" alt="" style="display:none;width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #8b5cf6" />
-          <div id="regAvatarPlaceholder" class="avatar-placeholder" style="width:96px;height:96px;border-radius:50%;border:3px solid #8b5cf6;display:flex;align-items:center;justify-content:center;background:#16161d;color:#a78bfa;font-size:1.8rem">+</div>
-          <label for="regAvatarInput" style="position:absolute;bottom:0;left:0;width:30px;height:30px;border-radius:50%;background:#8b5cf6;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #0f0f14;font-size:.8rem">📷</label>
-          <input type="file" id="regAvatarInput" accept="image/*" hidden />
-        </div>
-        <p style="font-size:.8rem;color:#9898a6;margin:0">صورة البروفايل <span style="color:#22d3ee;font-weight:700">مطلوبة</span></p>
-      </div>
 
-      <h3>حساب جديد</h3>
-      <p class="auth-desc">سجّل الآن في ثوانٍ</p>
-      <div class="form-group"><label>الاسم</label><input id="regName" required/></div>
-      <div class="form-group"><label>الهاتف</label><input id="regPhone" required/></div>
-      <div class="form-group"><label>الإيميل</label><input type="email" id="regEmail" required/></div>
-      <div class="form-group"><label>كلمة المرور</label><input type="password" id="regPassword" required minlength="4"/></div>
-      <button type="submit" class="btn-auth">إنشاء الحساب</button>
-      <p class="auth-switch"><a href="#" id="switchToLogin">لدي حساب</a></p>
-    </form>
+  <!-- Order success -->
+  <div class="modal-overlay" id="orderSuccessOverlay"></div>
+  <div class="modal order-success-modal" id="orderSuccessModal" role="dialog">
+    <div class="order-success">
+      <div class="order-success-icon">✓</div>
+      <h3>تم استلام طلبك</h3>
+      <p class="muted">رقم الطلب: <strong id="orderSuccessId">—</strong></p>
+      <p class="muted" id="orderSuccessMsg">هنتواصل معاك خلال دقايق لتأكيد الطلب والتوصيل.</p>
+      <button type="button" class="btn btn-primary btn-block" id="orderSuccessClose">حسنًا</button>
+    </div>
   </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status"></div>
+
+  
+  <!-- Floating actions -->
+  <div class="float-buttons" id="floatButtons">
+    <a class="float-btn whatsapp" href="https://wa.me/201064519541" target="_blank" rel="noopener" title="واتساب" aria-label="واتساب">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+    <button type="button" class="float-btn ai" id="aiChatBtn" title="مساعد AI" aria-label="شات الذكاء الاصطناعي">
+      <span class="ai-float-icon">✦</span>
+    </button>
+  </div>
+
+  <!-- AI Chat Panel -->
+  <div class="ai-overlay" id="aiOverlay"></div>
+  <div class="ai-panel" id="aiPanel" role="dialog" aria-label="شات المساعد">
+    <div class="ai-header">
+      <div class="ai-header-info">
+        <div class="ai-avatar">✦</div>
+        <div>
+          <h4>مساعد NEXORA</h4>
+          <span class="ai-status">متصل</span>
+        </div>
+      </div>
+      <button type="button" class="ai-close" id="aiClose" aria-label="إغلاق">×</button>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-msg bot"><div class="ai-bubble">أهلاً بيك في NEXORA 👋 أنا المساعد الذكي. اسألني عن أي منتج أو ميزانية.</div></div>
+    </div>
+    <div class="ai-suggestions" id="aiSuggestions">
+      <button type="button" class="ai-chip" data-q="عايز موبايل كويس">📱 موبايل</button>
+      <button type="button" class="ai-chip" data-q="أنصحني بلابتوب">💻 لابتوب</button>
+      <button type="button" class="ai-chip" data-q="فيه عروض؟">🔥 عروض</button>
+    </div>
+    <div class="ai-input-area">
+      <input type="text" id="aiInput" placeholder="اكتب رسالتك..." autocomplete="off" />
+      <button type="button" id="aiSend" class="ai-send-btn" aria-label="إرسال">➤</button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
-  <script src="config-loader.js"></script>
-  <script src="go-home-patch.js"></script>
-  <script>document.getElementById("aiSuggestions")?.addEventListener("click",function(e){var c=e.target.closest(".ai-chip");if(!c)return;var q=c.getAttribute("data-q");var i=document.getElementById("aiInput");if(i&&typeof handleAiSend==="function"){i.value=q;handleAiSend();}});</script>
-</body></html>
+</body>
+</html>
