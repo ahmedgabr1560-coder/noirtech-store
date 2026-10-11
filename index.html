@@ -13,6 +13,15 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="bg-stage" aria-hidden="true">
+    <div class="trail t1"></div>
+    <div class="trail t2"></div>
+    <div class="trail t3"></div>
+    <div class="trail t4"></div>
+    <div class="ribbon"></div>
+    <div class="ribbon ribbon2"></div>
+  </div>
+
   <!-- Top bar -->
   <div class="top-bar">
     <div class="container top-bar-inner">
@@ -32,7 +41,15 @@
         <span class="logo-text">NEX<span>ORA</span></span>
       </a>
 
-      <form class="search-box" id="searchForm" role="search">
+      
+      <nav class="main-nav" aria-label="القائمة">
+        <a href="#home" class="active">الرئيسية</a>
+        <a href="#best">تسوق</a>
+        <a href="#cats">الأقسام</a>
+        <a href="#offers">العروض</a>
+        <a href="#contact">تواصل</a>
+      </nav>
+<form class="search-box" id="searchForm" role="search">
         <input type="search" id="searchInput" placeholder="ابحث عن موبايل، لابتوب، سماعة..." autocomplete="off" />
         <button type="submit" aria-label="بحث">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -80,29 +97,34 @@
             <a href="#cats" class="btn btn-ghost">استكشف الأقسام</a>
           </div>
           <div class="hero-points">
-            <span>🚚 <b>شحن سريع</b> داخل مصر</span>
-            <span>🔒 <b>دفع آمن</b> عند الاستلام</span>
-            <span>💬 <b>دعم</b> على واتساب</span>
+            <span>🚚 <b>شحن مجاني</b> للطلبات الكبيرة</span>
+            <span>🔒 <b>دفع آمن</b> 100%</span>
+            <span>💬 <b>دعم</b> على مدار الساعة</span>
           </div>
         </div>
         <div class="hero-visual">
           <div class="hero-glow"></div>
-          <div class="hero-card">
-            <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80" alt="NEXORA Featured" />
-            <div class="hero-chip">
-              <div>
-                <strong>أجهزة مميزة</strong>
-                <span>أحدث الإصدارات</span>
-              </div>
-              <span>←</span>
+          <div class="phones-stack">
+            <div class="phone p1">
+              <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=1000&fit=crop&q=85" alt="هاتف 1" />
             </div>
+            <div class="phone p2">
+              <img src="https://images.unsplash.com/photo-1592890288564-76628a30a657?w=600&h=1000&fit=crop&q=85" alt="هاتف 2" />
+            </div>
+          </div>
+          <div class="hero-chip">
+            <div>
+              <strong>iPhone 16 Pro</strong>
+              <span>من 45,000 ج.م</span>
+            </div>
+            <span>←</span>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Categories -->
-    <section class="section cats-section">
+    <section class="section cats-section" id="cats">
       <div class="container">
         <div class="section-head">
           <h2>تسوق حسب القسم</h2>
@@ -117,7 +139,7 @@
       <div class="container">
         <div class="section-head row">
           <div>
-            <h2>الأكثر مبيعًا</h2>
+            <h2>منتجات مميزة</h2>
             <p>اختيارات شائعة يحبها العملاء</p>
           </div>
           <a href="#phones" class="link-more">عرض الكل</a>
