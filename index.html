@@ -13,13 +13,31 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="bg-stage" aria-hidden="true">
-    <div class="trail t1"></div>
-    <div class="trail t2"></div>
-    <div class="trail t3"></div>
-    <div class="trail t4"></div>
-    <div class="ribbon"></div>
-    <div class="ribbon ribbon2"></div>
+    <div class="bg-stage" aria-hidden="true">
+    <div class="bg-black"></div>
+    <svg class="light-svg" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+          <stop offset="40%" stop-color="#ffffff" stop-opacity="0.55"/>
+          <stop offset="70%" stop-color="#d4d4e8" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+          <stop offset="50%" stop-color="#c8c8e0" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="blurSoft"><feGaussianBlur stdDeviation="18"/></filter>
+        <filter id="blurHard"><feGaussianBlur stdDeviation="40"/></filter>
+      </defs>
+      <ellipse cx="980" cy="220" rx="340" ry="260" fill="url(#g1)" filter="url(#blurHard)" opacity="0.7"/>
+      <ellipse cx="1100" cy="380" rx="280" ry="200" fill="url(#g2)" filter="url(#blurSoft)" opacity="0.5"/>
+      <path d="M400,100 C600,180 750,40 1000,160 C1200,260 1300,120 1500,200" stroke="url(#g1)" stroke-width="90" fill="none" filter="url(#blurSoft)" opacity="0.35"/>
+      <path d="M500,300 C700,220 900,400 1150,280 C1300,220 1400,360 1600,300" stroke="#fff" stroke-width="50" fill="none" filter="url(#blurSoft)" opacity="0.12"/>
+      <ellipse cx="300" cy="700" rx="260" ry="180" fill="#a78bfa" filter="url(#blurHard)" opacity="0.08"/>
+    </svg>
+    <div class="fog"></div>
   </div>
 
   <!-- Top bar -->
@@ -89,36 +107,45 @@
     <section class="hero" id="home">
       <div class="container hero-grid">
         <div class="hero-copy">
-          <p class="hero-eyebrow">✦ مجموعة جديدة</p>
+          <p class="hero-eyebrow"><span class="dot"></span> مجموعة جديدة</p>
           <h1>منتجات أفضل.<br><span class="grad">تجربة أذكى.</span></h1>
-          <p class="hero-desc">اكتشف أحدث التقنيات والإكسسوارات العصرية — في مكان واحد. جودة أصلية، توصيل سريع، وتجربة مصممة لك.</p>
+          <p class="hero-desc">اكتشف أحدث التقنيات والإكسسوارات الأنيقة — كل شيء في مكان واحد. منتجات أصلية، توصيل سريع، وتجربة مصممة لك.</p>
           <div class="hero-cta">
-            <a href="#best" class="btn btn-primary">تسوق الآن ←</a>
+            <a href="#best" class="btn btn-primary">تسوق الآن <span class="arrow">←</span></a>
             <a href="#cats" class="btn btn-ghost">استكشف الأقسام</a>
           </div>
-          <div class="hero-points">
-            <span>🚚 <b>شحن مجاني</b> للطلبات الكبيرة</span>
-            <span>🔒 <b>دفع آمن</b> 100%</span>
-            <span>💬 <b>دعم</b> على مدار الساعة</span>
+          <div class="hero-trust">
+            <div class="trust-item">
+              <span class="ti">🚚</span>
+              <div><b>شحن مجاني</b><small>للطلبات الكبيرة</small></div>
+            </div>
+            <div class="trust-item">
+              <span class="ti">🔒</span>
+              <div><b>دفع آمن</b><small>حماية 100%</small></div>
+            </div>
+            <div class="trust-item">
+              <span class="ti">💬</span>
+              <div><b>دعم 24/7</b><small>نحن هنا لمساعدتك</small></div>
+            </div>
           </div>
         </div>
         <div class="hero-visual">
-          <div class="hero-glow"></div>
+          <div class="hero-light"></div>
           <div class="phones-stack">
             <div class="phone p1">
-              <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=1000&fit=crop&q=85" alt="هاتف 1" />
+              <img src="https://images.unsplash.com/photo-1695048133142-1a204bbd4bc0?w=700&h=1200&fit=crop&q=90" alt="iPhone back" onerror="this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=700&h=1200&fit=crop&q=90'" />
             </div>
             <div class="phone p2">
-              <img src="https://images.unsplash.com/photo-1592890288564-76628a30a657?w=600&h=1000&fit=crop&q=85" alt="هاتف 2" />
+              <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=700&h=1200&fit=crop&q=90" alt="iPhone front" />
             </div>
           </div>
-          <div class="hero-chip">
+          <a class="hero-chip" href="#phones">
             <div>
               <strong>iPhone 16 Pro</strong>
               <span>من 45,000 ج.م</span>
             </div>
-            <span>←</span>
-          </div>
+            <span class="chip-go">←</span>
+          </a>
         </div>
       </div>
     </section>
@@ -127,8 +154,11 @@
     <section class="section cats-section" id="cats">
       <div class="container">
         <div class="section-head">
-          <h2>تسوق حسب القسم</h2>
-          <p>اختر الفئة المناسبة لك</p>
+          <div>
+            <h2>تسوق حسب القسم</h2>
+            <p>اعثر على ما تحتاجه بسرعة</p>
+          </div>
+          <a href="#phones" class="link-more">عرض الكل ←</a>
         </div>
         <div class="cats-grid" id="catsGrid"></div>
       </div>
@@ -140,9 +170,9 @@
         <div class="section-head row">
           <div>
             <h2>منتجات مميزة</h2>
-            <p>اختيارات شائعة يحبها العملاء</p>
+            <p>الأكثر شعبية بين عملائنا</p>
           </div>
-          <a href="#phones" class="link-more">عرض الكل</a>
+          <a href="#phones" class="link-more">عرض الكل ←</a>
         </div>
         <div class="products-grid" id="bestGrid">
           <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
