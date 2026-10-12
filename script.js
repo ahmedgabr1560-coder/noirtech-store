@@ -639,8 +639,7 @@ function openAiChat() {
   if (box && !box.dataset.welcome) {
     box.dataset.welcome = "1";
     if (!box.querySelector(".ai-msg")) {
-      appendAiMsg(formatAiReply("أهلاً بيك 👋 أنا نورا مساعدة NEXORA
-اسألني عن موبايل أو لابتوب أو أي منتج."), "bot");
+      appendAiMsg(formatAiReply("أهلاً بيك 👋 أنا نورا مساعدة NEXORA. اسألني عن أي منتج."), "bot");
     }
   }
   setTimeout(function () { document.getElementById("aiInput")?.focus(); }, 200);
