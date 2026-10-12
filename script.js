@@ -15,13 +15,13 @@
 /* NEXORA — frontend demo store (localStorage only) */
 const DEMO = false;
 
-const CATEGORIES = [
-  { id: "phones", name: "الموبايلات", icon: "📱", href: "#phones" },
-  { id: "laptops", name: "اللابتوبات", icon: "💻", href: "#laptops" },
-  { id: "monitors", name: "الشاشات", icon: "🖥️", href: "#monitors" },
-  { id: "home", name: "منزلية", icon: "🏠", href: "#home-app" },
-  { id: "accessories", name: "إكسسوارات", icon: "🎧", href: "#accessories" }
-];
+let CATEGORIES = [];
+let BRANDS = [];
+let activeCategory = "";
+let activeSubcategory = "";
+let activeBrand = "";
+let activeSort = "newest";
+
 
 /** Products loaded from products.json (bot-managed) */
 let PRODUCTS = [];
@@ -112,17 +112,22 @@ function renderGrid(el, list) {
 }
 
 function renderAll() {
-  $("#catsGrid").innerHTML = CATEGORIES.map(c =>
-    `<a class="cat-card" href="${c.href}"><div class="ico">${c.icon}</div><h3>${c.name}</h3></a>`
-  ).join("");
-
+  const catsGrid = $("#catsGrid");
+  if (catsGrid) {
+    catsGrid.innerHTML = CATEGORIES.map(c =>
+      `<button type="button" class="cat-card" data-cat="${c.id}">
+        <div class="ico">${c.icon || "📦"}</div>
+        <h3>${c.name_ar}</h3>
+        <small>${(c.subs || []).length} قسم فرعي</small>
+      </button>`
+    ).join("");
+  }
+  renderMegaMenu();
+  renderCatNav();
+  renderCatsDirectory();
   renderGrid($("#bestGrid"), PRODUCTS.filter(p => p.best).slice(0, 8));
   renderGrid($("#newGrid"), PRODUCTS.filter(p => p.newest).slice(0, 8));
-  renderGrid($("#phonesGrid"), PRODUCTS.filter(p => p.category === "phones"));
-  renderGrid($("#laptopsGrid"), PRODUCTS.filter(p => p.category === "laptops"));
-  renderGrid($("#monitorsGrid"), PRODUCTS.filter(p => p.category === "monitors"));
-  renderGrid($("#homeGrid"), PRODUCTS.filter(p => p.category === "home"));
-  renderGrid($("#accessoriesGrid"), PRODUCTS.filter(p => p.category === "accessories"));
+  renderShop();
 }
 
 function updateCartUI() {
@@ -329,7 +334,21 @@ $("#searchForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const q = $("#searchInput").value.trim().toLowerCase();
   if (!q) return;
-  const found = PRODUCTS.filter(p => p.name.toLowerCase().includes(q) || p.category.includes(q));
+  const found = PRODUCTS.filter(p => {
+      const blob = (p.name + " " + (p.brand||"") + " " + (p.category||"") + " " + (p.subcategory||"") + " " + (p.description||"")).toLowerCase();
+      return blob.includes(q);
+    });
+    if (found.length) {
+      activeCategory = "";
+      activeSubcategory = "";
+      activeBrand = "";
+      const grid = document.getElementById("shopGrid");
+      if (grid) renderGrid(grid, found.slice(0, 48));
+      document.getElementById("shop")?.scrollIntoView({ behavior: "smooth" });
+      const title = document.getElementById("shopTitle");
+      if (title) title.textContent = "نتائج البحث";
+      return;
+    }
   renderGrid($("#bestGrid"), found.length ? found : []);
   toast(found.length ? `نتائج البحث: ${found.length}` : "لا توجد نتائج");
   document.getElementById("best").scrollIntoView({ behavior: "smooth" });
@@ -616,6 +635,171 @@ $("#contactForm").addEventListener("submit", async (e) => {
 });
 
 // Init — load products from JSON (Telegram bot can update them)
+
+async function loadCatalog() {
+  const urls = [
+    "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/categories.json?t=" + Date.now(),
+    "/categories.json?t=" + Date.now()
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      const data = await r.json();
+      CATEGORIES = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
+      BRANDS = Array.isArray(data.brands) ? data.brands : [];
+      if (CATEGORIES.length) break;
+    } catch (e) {}
+  }
+}
+
+function getCat(id) {
+  return CATEGORIES.find(c => c.id === id) || null;
+}
+function getSub(catId, subId) {
+  const c = getCat(catId);
+  return c ? (c.subs || []).find(s => s.id === subId) : null;
+}
+function productMatches(p) {
+  if (activeCategory && p.category !== activeCategory) return false;
+  if (activeSubcategory && p.subcategory !== activeSubcategory) {
+    // phone accessories also under mobiles
+    if (!(activeSubcategory === "mobiles" && (p.tags || []).includes("phone-accessory"))) return false;
+  }
+  if (activeBrand && (p.brand || "") !== activeBrand) return false;
+  return true;
+}
+function sortedProducts(list) {
+  const arr = list.slice();
+  if (activeSort === "price-asc") arr.sort((a,b) => a.price - b.price);
+  else if (activeSort === "price-desc") arr.sort((a,b) => b.price - a.price);
+  else if (activeSort === "rating") arr.sort((a,b) => (b.rating||0) - (a.rating||0));
+  else arr.sort((a,b) => Number(b.id) - Number(a.id));
+  return arr;
+}
+function setShopFilter(cat, sub) {
+  activeCategory = cat || "";
+  activeSubcategory = sub || "";
+  const c = getCat(activeCategory);
+  const s = getSub(activeCategory, activeSubcategory);
+  const title = document.getElementById("shopTitle");
+  const subEl = document.getElementById("shopSubtitle");
+  if (title) title.textContent = s ? s.name_ar : (c ? c.name_ar : "تسوق");
+  if (subEl) subEl.textContent = s ? ((c ? c.name_ar + " / " : "") + s.name_ar) : (c ? c.name_ar : "كل المنتجات");
+  renderSubcatsBar();
+  renderShop();
+  const shop = document.getElementById("shop");
+  if (shop) shop.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function renderMegaMenu() {
+  const menu = document.getElementById("megaMenu");
+  if (!menu) return;
+  menu.innerHTML = CATEGORIES.map(c => {
+    const subs = (c.subs || []).slice(0, 8).map(s =>
+      `<button type="button" class="mega-sub" data-cat="${c.id}" data-sub="${s.id}">${s.name_ar}</button>`
+    ).join("");
+    return `<div class="mega-col">
+      <button type="button" class="mega-main" data-cat="${c.id}">${c.icon || ""} ${c.name_ar}</button>
+      <div class="mega-subs">${subs}</div>
+    </div>`;
+  }).join("");
+}
+function renderCatNav() {
+  const el = document.getElementById("catNavInner");
+  if (!el) return;
+  el.innerHTML = CATEGORIES.map(c =>
+    `<button type="button" class="cat-pill" data-cat="${c.id}">${c.icon || ""} ${c.name_ar}</button>`
+  ).join("") + `<button type="button" class="cat-pill" data-cat="">الكل</button>`;
+}
+function renderCatsDirectory() {
+  const el = document.getElementById("catsDirectory");
+  if (!el) return;
+  el.innerHTML = CATEGORIES.map(c => {
+    const subs = (c.subs || []).slice(0, 6).map(s =>
+      `<button type="button" class="dir-sub" data-cat="${c.id}" data-sub="${s.id}">${s.name_ar}</button>`
+    ).join("");
+    return `<article class="dir-card">
+      <button type="button" class="dir-main" data-cat="${c.id}">
+        <img src="${c.image || ""}" alt="" loading="lazy" onerror="this.style.display='none'" />
+        <div><span class="dir-ico">${c.icon || ""}</span><h3>${c.name_ar}</h3><small>${c.name_en || ""}</small></div>
+      </button>
+      <div class="dir-subs">${subs}</div>
+    </article>`;
+  }).join("");
+}
+function renderSubcatsBar() {
+  const bar = document.getElementById("subcatsBar");
+  if (!bar) return;
+  if (!activeCategory) {
+    bar.innerHTML = "";
+    return;
+  }
+  const c = getCat(activeCategory);
+  if (!c) { bar.innerHTML = ""; return; }
+  const allBtn = `<button type="button" class="sub-chip ${!activeSubcategory ? "active" : ""}" data-cat="${c.id}" data-sub="">الكل</button>`;
+  const chips = (c.subs || []).map(s =>
+    `<button type="button" class="sub-chip ${activeSubcategory === s.id ? "active" : ""}" data-cat="${c.id}" data-sub="${s.id}">${s.name_ar}</button>`
+  ).join("");
+  bar.innerHTML = allBtn + chips;
+}
+function renderShop() {
+  let list = PRODUCTS.filter(productMatches);
+  list = sortedProducts(list);
+  const grid = document.getElementById("shopGrid");
+  const empty = document.getElementById("shopEmpty");
+  if (grid) {
+    if (!list.length) {
+      grid.innerHTML = "";
+      if (empty) empty.hidden = false;
+    } else {
+      if (empty) empty.hidden = true;
+      renderGrid(grid, list);
+    }
+  }
+  // brands dropdown from visible catalog
+  const brandSel = document.getElementById("filterBrand");
+  if (brandSel) {
+    const cur = activeBrand;
+    const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
+    brandSel.innerHTML = `<option value="">كل الماركات</option>` + brands.map(b =>
+      `<option value="${b}" ${b === cur ? "selected" : ""}>${b}</option>`
+    ).join("");
+  }
+}
+function bindCategoryUI() {
+  document.getElementById("catsMenuBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const menu = document.getElementById("megaMenu");
+    if (!menu) return;
+    menu.hidden = !menu.hidden;
+  });
+  document.addEventListener("click", (e) => {
+    const menu = document.getElementById("megaMenu");
+    if (!menu || menu.hidden) return;
+    if (!e.target.closest(".nav-drop")) menu.hidden = true;
+  });
+  document.body.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-cat]");
+    if (!t) return;
+    if (t.closest("#filterBrand")) return;
+    const cat = t.getAttribute("data-cat") || "";
+    const sub = t.getAttribute("data-sub") || "";
+    if (t.closest("#megaMenu") || t.closest("#catNav") || t.closest("#catsDirectory") || t.closest("#subcatsBar") || t.closest("#catsGrid")) {
+      const menu = document.getElementById("megaMenu");
+      if (menu) menu.hidden = true;
+      setShopFilter(cat, sub);
+    }
+  });
+  document.getElementById("filterBrand")?.addEventListener("change", (e) => {
+    activeBrand = e.target.value || "";
+    renderShop();
+  });
+  document.getElementById("filterSort")?.addEventListener("change", (e) => {
+    activeSort = e.target.value || "newest";
+    renderShop();
+  });
+}
+
 async function loadProducts() {
   const urls = [
     "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json?t=" + Date.now(),
@@ -631,18 +815,31 @@ async function loadProducts() {
     } catch (e) {}
   }
   try {
-    PRODUCTS = (Array.isArray(data) ? data : []).filter(p => !p.hidden).map(p => ({
-      ...p,
-      id: Number(p.id),
-      price: Number(p.price) || 0,
-      oldPrice: p.oldPrice != null ? Number(p.oldPrice) : null,
-      rating: p.rating || 4.2,
-      reviews: p.reviews || 20,
-      best: p.best ?? (Number(p.id) % 3 === 0),
-      newest: p.newest ?? true,
-      desc: p.description || p.desc || (p.name + " — متوفر في NEXORA"),
-      category: p.category === "audio" || p.category === "wearables" ? "accessories" : p.category
-    }));
+    PRODUCTS = (Array.isArray(data) ? data : []).filter(p => !p.hidden).map(p => {
+      let category = p.category || "electronics";
+      let subcategory = p.subcategory || "";
+      // legacy map
+      if (["phones","laptops","monitors","home","accessories"].includes(category)) {
+        const legacy = { phones: ["electronics","mobiles"], laptops: ["electronics","laptops"], monitors: ["electronics","computer-accessories"], home: ["home-appliances","tv-entertainment"], accessories: ["electronics","mobiles"] };
+        const m = legacy[category];
+        if (m) { category = m[0]; subcategory = subcategory || m[1]; }
+      }
+      return {
+        ...p,
+        id: Number(p.id),
+        price: Number(p.price) || 0,
+        oldPrice: p.oldPrice != null ? Number(p.oldPrice) : null,
+        rating: p.rating || 4.2,
+        reviews: p.reviews || 20,
+        best: p.best ?? (Number(p.id) % 3 === 0),
+        newest: p.newest ?? true,
+        desc: p.description || p.desc || (p.name + " — متوفر في NEXORA"),
+        category,
+        subcategory,
+        brand: p.brand || "",
+        tags: p.tags || []
+      };
+    });
   } catch (e) {
     console.error(e);
     PRODUCTS = [];
@@ -651,8 +848,12 @@ async function loadProducts() {
   updateCartUI();
 }
 
-loadProducts();
-updateUserUI();
+(async function initStore() {
+  await loadCatalog();
+  await loadProducts();
+  bindCategoryUI();
+  updateUserUI();
+})();
 
 
 /* —— AI Chat (WhatsApp style) —— */
