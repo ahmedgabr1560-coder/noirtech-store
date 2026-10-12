@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>NEXORA | متجر الإلكترونيات</title>
+  <title>NEXORA | متجر إلكتروني شامل</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
-  <meta name="description" content="NEXORA — متجر إلكترونيات عصري: موبايلات، لابتوبات، شاشات، أجهزة منزلية وإكسسوارات" />
+  <meta name="description" content="NEXORA — متجر إلكتروني شامل: إلكترونيات، موضة، منزل، أطفال، رياضة والمزيد" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -62,9 +62,13 @@
       
       <nav class="main-nav" aria-label="القائمة">
         <a href="#home" class="active">الرئيسية</a>
-        <a href="#best">تسوق</a>
-        <a href="#cats">الأقسام</a>
-        <a href="#offers">العروض</a>
+        <div class="nav-drop">
+          <button type="button" class="nav-drop-btn" id="catsMenuBtn">الأقسام ▾</button>
+          <div class="mega-menu" id="megaMenu" hidden></div>
+        </div>
+        <a href="#shop">تسوق</a>
+        <a href="#best">الأكثر مبيعًا</a>
+        <a href="#categories">كل الأقسام</a>
         <a href="#contact">تواصل</a>
       </nav>
 <form class="search-box" id="searchForm" role="search">
@@ -91,14 +95,7 @@
     </div>
 
     <nav class="cat-nav" id="catNav">
-      <div class="container cat-nav-inner">
-        <a href="#phones" data-cat="phones">الموبايلات</a>
-        <a href="#laptops" data-cat="laptops">اللابتوبات</a>
-        <a href="#monitors" data-cat="monitors">الشاشات</a>
-        <a href="#home-app" data-cat="home">الأجهزة المنزلية</a>
-        <a href="#accessories" data-cat="accessories">الإكسسوارات</a>
-        <a href="#offers">العروض</a>
-      </div>
+      <div class="container cat-nav-inner" id="catNavInner"></div>
     </nav>
   </header>
 
@@ -211,12 +208,42 @@
       </div>
     </section>
 
-    <!-- Category sections -->
-    <section class="section" id="phones"><div class="container"><div class="section-head"><h2>الموبايلات</h2></div><div class="products-grid" id="phonesGrid"></div></div></section>
-    <section class="section alt" id="laptops"><div class="container"><div class="section-head"><h2>اللابتوبات</h2></div><div class="products-grid" id="laptopsGrid"></div></div></section>
-    <section class="section" id="monitors"><div class="container"><div class="section-head"><h2>الشاشات</h2></div><div class="products-grid" id="monitorsGrid"></div></div></section>
-    <section class="section alt" id="home-app"><div class="container"><div class="section-head"><h2>الأجهزة المنزلية</h2></div><div class="products-grid" id="homeGrid"></div></div></section>
-    <section class="section" id="accessories"><div class="container"><div class="section-head"><h2>الإكسسوارات</h2></div><div class="products-grid" id="accessoriesGrid"></div></div></section>
+    <!-- All categories directory -->
+    <section class="section" id="categories">
+      <div class="container">
+        <div class="section-head">
+          <h2>جميع الأقسام</h2>
+          <p>تسوق من أكثر من 18 قسمًا رئيسيًا</p>
+        </div>
+        <div class="cats-directory" id="catsDirectory"></div>
+      </div>
+    </section>
+
+    <!-- Dynamic shop with filters -->
+    <section class="section alt" id="shop">
+      <div class="container">
+        <div class="section-head row">
+          <div>
+            <h2 id="shopTitle">تسوق</h2>
+            <p id="shopSubtitle">كل المنتجات</p>
+          </div>
+          <div class="shop-filters">
+            <select id="filterBrand" class="filter-select">
+              <option value="">كل الماركات</option>
+            </select>
+            <select id="filterSort" class="filter-select">
+              <option value="newest">الأحدث</option>
+              <option value="price-asc">السعر: الأقل</option>
+              <option value="price-desc">السعر: الأعلى</option>
+              <option value="rating">الأعلى تقييمًا</option>
+            </select>
+          </div>
+        </div>
+        <div class="subcats-bar" id="subcatsBar"></div>
+        <div class="products-grid" id="shopGrid"></div>
+        <div class="empty-state" id="shopEmpty" hidden>لا توجد منتجات في هذا التصنيف حاليًا.</div>
+      </div>
+    </section>
 
     <!-- Empty / error states host -->
     <div id="stateHost" class="container" hidden></div>
