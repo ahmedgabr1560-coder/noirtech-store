@@ -1,0 +1,901 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "electronics",
+      "name_ar": "الإلكترونيات",
+      "name_en": "Electronics",
+      "icon": "📱",
+      "image": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "mobiles",
+          "name_ar": "الهواتف وإكسسواراتها",
+          "name_en": "Mobiles & Accessories"
+        },
+        {
+          "id": "tablets",
+          "name_ar": "الأجهزة اللوحية",
+          "name_en": "Tablets"
+        },
+        {
+          "id": "laptops",
+          "name_ar": "اللابتوبات والكمبيوتر",
+          "name_en": "Laptops & Computers"
+        },
+        {
+          "id": "computer-accessories",
+          "name_ar": "ملحقات الكمبيوتر",
+          "name_en": "Computer Accessories"
+        },
+        {
+          "id": "tvs",
+          "name_ar": "التلفزيونات والترفيه",
+          "name_en": "TVs & Home Entertainment"
+        },
+        {
+          "id": "audio",
+          "name_ar": "السماعات",
+          "name_en": "Headphones & Speakers"
+        },
+        {
+          "id": "cameras",
+          "name_ar": "الكاميرات والتصوير",
+          "name_en": "Cameras, Photo & Video"
+        },
+        {
+          "id": "gaming",
+          "name_ar": "الألعاب وملحقاتها",
+          "name_en": "Gaming"
+        },
+        {
+          "id": "wearables",
+          "name_ar": "الساعات والأجهزة القابلة للارتداء",
+          "name_en": "Smartwatches & Wearables"
+        },
+        {
+          "id": "networking",
+          "name_ar": "الشبكات والتخزين",
+          "name_en": "Networking & Storage"
+        }
+      ]
+    },
+    {
+      "id": "fashion",
+      "name_ar": "الموضة والأزياء",
+      "name_en": "Fashion",
+      "icon": "👗",
+      "image": "https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "men-fashion",
+          "name_ar": "ملابس رجالي",
+          "name_en": "Men's Fashion"
+        },
+        {
+          "id": "women-fashion",
+          "name_ar": "ملابس حريمي",
+          "name_en": "Women's Fashion"
+        },
+        {
+          "id": "kids-fashion",
+          "name_ar": "ملابس أطفال",
+          "name_en": "Kids' Fashion"
+        },
+        {
+          "id": "shoes",
+          "name_ar": "الأحذية",
+          "name_en": "Shoes"
+        },
+        {
+          "id": "bags",
+          "name_ar": "الشنط وحقائب السفر",
+          "name_en": "Bags & Luggage"
+        },
+        {
+          "id": "watches-fashion",
+          "name_ar": "الساعات",
+          "name_en": "Watches"
+        },
+        {
+          "id": "eyewear",
+          "name_ar": "النظارات",
+          "name_en": "Eyewear"
+        },
+        {
+          "id": "fashion-accessories",
+          "name_ar": "إكسسوارات الموضة",
+          "name_en": "Fashion Accessories"
+        }
+      ]
+    },
+    {
+      "id": "home-appliances",
+      "name_ar": "الأجهزة المنزلية",
+      "name_en": "Home Appliances",
+      "icon": "🧊",
+      "image": "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "refrigerators",
+          "name_ar": "الثلاجات والفريزرات",
+          "name_en": "Refrigerators & Freezers"
+        },
+        {
+          "id": "washing",
+          "name_ar": "الغسالات والمجففات",
+          "name_en": "Washing Machines & Dryers"
+        },
+        {
+          "id": "ac",
+          "name_ar": "التكييفات",
+          "name_en": "Air Conditioners"
+        },
+        {
+          "id": "fans-heaters",
+          "name_ar": "المراوح والدفايات",
+          "name_en": "Fans & Heaters"
+        },
+        {
+          "id": "tv-entertainment",
+          "name_ar": "التلفزيونات والترفيه",
+          "name_en": "TVs & Entertainment"
+        },
+        {
+          "id": "kitchen-appliances",
+          "name_ar": "أجهزة المطبخ",
+          "name_en": "Kitchen Appliances"
+        },
+        {
+          "id": "blenders",
+          "name_ar": "الخلاطات ومحضرات الطعام",
+          "name_en": "Blenders & Food Processors"
+        },
+        {
+          "id": "vacuums",
+          "name_ar": "المكانس الكهربائية",
+          "name_en": "Vacuum Cleaners"
+        },
+        {
+          "id": "irons",
+          "name_ar": "المكاوي وأجهزة البخار",
+          "name_en": "Irons & Steamers"
+        },
+        {
+          "id": "water",
+          "name_ar": "السخانات وفلاتر المياه",
+          "name_en": "Water Heaters & Purifiers"
+        }
+      ]
+    },
+    {
+      "id": "home-kitchen",
+      "name_ar": "المنزل والمطبخ",
+      "name_en": "Home & Kitchen",
+      "icon": "🏠",
+      "image": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "kitchen-dining",
+          "name_ar": "أدوات المطبخ والطعام",
+          "name_en": "Kitchen & Dining"
+        },
+        {
+          "id": "cookware",
+          "name_ar": "الحلل وأدوات الطهي",
+          "name_en": "Cookware"
+        },
+        {
+          "id": "bedding",
+          "name_ar": "المفروشات",
+          "name_en": "Bedding"
+        },
+        {
+          "id": "bath",
+          "name_ar": "مستلزمات الحمام",
+          "name_en": "Bath"
+        },
+        {
+          "id": "home-decor",
+          "name_ar": "ديكورات المنزل",
+          "name_en": "Home Decor"
+        },
+        {
+          "id": "furniture",
+          "name_ar": "الأثاث",
+          "name_en": "Furniture"
+        },
+        {
+          "id": "storage",
+          "name_ar": "التخزين والتنظيم",
+          "name_en": "Home Storage"
+        },
+        {
+          "id": "cleaning",
+          "name_ar": "أدوات التنظيف",
+          "name_en": "Cleaning Supplies"
+        },
+        {
+          "id": "lighting",
+          "name_ar": "الإضاءة",
+          "name_en": "Lighting"
+        },
+        {
+          "id": "garden",
+          "name_ar": "الحديقة والشرفات",
+          "name_en": "Patio & Garden"
+        },
+        {
+          "id": "tools-home",
+          "name_ar": "الأدوات وتحسين المنزل",
+          "name_en": "Tools & Home Improvement"
+        }
+      ]
+    },
+    {
+      "id": "beauty",
+      "name_ar": "الجمال والعناية",
+      "name_en": "Beauty & Personal Care",
+      "icon": "💄",
+      "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "women-fragrance",
+          "name_ar": "عطور حريمي",
+          "name_en": "Women's Fragrance"
+        },
+        {
+          "id": "men-fragrance",
+          "name_ar": "عطور رجالي",
+          "name_en": "Men's Fragrance"
+        },
+        {
+          "id": "makeup",
+          "name_ar": "المكياج",
+          "name_en": "Makeup"
+        },
+        {
+          "id": "skincare",
+          "name_ar": "العناية بالبشرة",
+          "name_en": "Skincare"
+        },
+        {
+          "id": "haircare",
+          "name_ar": "العناية بالشعر",
+          "name_en": "Haircare"
+        },
+        {
+          "id": "personal-care",
+          "name_ar": "العناية الشخصية",
+          "name_en": "Personal Care"
+        },
+        {
+          "id": "grooming",
+          "name_ar": "الحلاقة والعناية الرجالية",
+          "name_en": "Grooming"
+        },
+        {
+          "id": "beauty-tools",
+          "name_ar": "أدوات التجميل",
+          "name_en": "Beauty Tools"
+        }
+      ]
+    },
+    {
+      "id": "baby",
+      "name_ar": "مستلزمات الأطفال",
+      "name_en": "Baby",
+      "icon": "👶",
+      "image": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "strollers",
+          "name_ar": "عربات الأطفال",
+          "name_en": "Strollers & Prams"
+        },
+        {
+          "id": "car-seats",
+          "name_ar": "مقاعد السيارات",
+          "name_en": "Car Seats"
+        },
+        {
+          "id": "baby-clothing",
+          "name_ar": "ملابس الأطفال",
+          "name_en": "Baby Clothing"
+        },
+        {
+          "id": "feeding",
+          "name_ar": "الرضاعة والطعام",
+          "name_en": "Feeding"
+        },
+        {
+          "id": "diapers",
+          "name_ar": "الحفاضات والمناديل",
+          "name_en": "Diapers & Wipes"
+        },
+        {
+          "id": "baby-bath",
+          "name_ar": "استحمام وعناية",
+          "name_en": "Baby Bath & Skincare"
+        },
+        {
+          "id": "nursery",
+          "name_ar": "أثاث ومفروشات",
+          "name_en": "Nursery & Bedding"
+        },
+        {
+          "id": "baby-travel",
+          "name_ar": "مستلزمات التنقل",
+          "name_en": "Baby Travel"
+        }
+      ]
+    },
+    {
+      "id": "toys",
+      "name_ar": "الألعاب",
+      "name_en": "Toys & Games",
+      "icon": "🧸",
+      "image": "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "toys-kids",
+          "name_ar": "ألعاب الأولاد والبنات",
+          "name_en": "Toys for Boys & Girls"
+        },
+        {
+          "id": "toddler-toys",
+          "name_ar": "ألعاب الرضع",
+          "name_en": "Baby & Toddler Toys"
+        },
+        {
+          "id": "educational-toys",
+          "name_ar": "الألعاب التعليمية",
+          "name_en": "Educational Toys"
+        },
+        {
+          "id": "building-toys",
+          "name_ar": "ألعاب التركيب",
+          "name_en": "Building Toys"
+        },
+        {
+          "id": "dolls",
+          "name_ar": "الدمى",
+          "name_en": "Dolls & Accessories"
+        },
+        {
+          "id": "puzzles",
+          "name_ar": "الألغاز والألعاب اللوحية",
+          "name_en": "Puzzles & Board Games"
+        },
+        {
+          "id": "rc-toys",
+          "name_ar": "ألعاب التحكم عن بعد",
+          "name_en": "Remote Control Toys"
+        },
+        {
+          "id": "outdoor-play",
+          "name_ar": "ألعاب خارجية",
+          "name_en": "Outdoor Play"
+        },
+        {
+          "id": "arts-crafts",
+          "name_ar": "الرسم والأشغال",
+          "name_en": "Arts & Crafts"
+        }
+      ]
+    },
+    {
+      "id": "supermarket",
+      "name_ar": "السوبر ماركت",
+      "name_en": "Supermarket & Grocery",
+      "icon": "🛒",
+      "image": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "food-cupboard",
+          "name_ar": "مواد غذائية أساسية",
+          "name_en": "Food Cupboard"
+        },
+        {
+          "id": "grains",
+          "name_ar": "أرز ومكرونة وحبوب",
+          "name_en": "Rice, Pasta & Grains"
+        },
+        {
+          "id": "oils-spices",
+          "name_ar": "زيوت وتوابل",
+          "name_en": "Oils, Sauces & Spices"
+        },
+        {
+          "id": "snacks",
+          "name_ar": "وجبات خفيفة وحلويات",
+          "name_en": "Snacks & Sweets"
+        },
+        {
+          "id": "beverages",
+          "name_ar": "شاي وقهوة ومشروبات",
+          "name_en": "Tea, Coffee & Beverages"
+        },
+        {
+          "id": "dairy",
+          "name_ar": "ألبان وإفطار",
+          "name_en": "Dairy & Breakfast"
+        },
+        {
+          "id": "frozen",
+          "name_ar": "أغذية مجمدة",
+          "name_en": "Frozen Food"
+        },
+        {
+          "id": "home-care",
+          "name_ar": "تنظيف منزلي",
+          "name_en": "Home Care & Cleaning"
+        },
+        {
+          "id": "laundry",
+          "name_ar": "مستلزمات الغسيل",
+          "name_en": "Laundry Care"
+        },
+        {
+          "id": "paper",
+          "name_ar": "منتجات ورقية",
+          "name_en": "Paper Products"
+        }
+      ]
+    },
+    {
+      "id": "sports",
+      "name_ar": "الرياضة واللياقة",
+      "name_en": "Sports & Fitness",
+      "icon": "🏋️",
+      "image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "fitness",
+          "name_ar": "أجهزة اللياقة",
+          "name_en": "Fitness Equipment"
+        },
+        {
+          "id": "weights",
+          "name_ar": "أوزان ومقاومة",
+          "name_en": "Weights & Resistance"
+        },
+        {
+          "id": "sportswear",
+          "name_ar": "ملابس وأحذية رياضية",
+          "name_en": "Sportswear & Shoes"
+        },
+        {
+          "id": "team-sports",
+          "name_ar": "رياضات جماعية",
+          "name_en": "Team Sports"
+        },
+        {
+          "id": "cycling",
+          "name_ar": "دراجات",
+          "name_en": "Cycling"
+        },
+        {
+          "id": "swimming",
+          "name_ar": "سباحة",
+          "name_en": "Swimming"
+        },
+        {
+          "id": "camping",
+          "name_ar": "تخييم وأنشطة خارجية",
+          "name_en": "Camping & Outdoors"
+        },
+        {
+          "id": "yoga",
+          "name_ar": "يوجا وتدريب",
+          "name_en": "Yoga & Training"
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "name_ar": "الصحة والتغذية",
+      "name_en": "Health & Nutrition",
+      "icon": "💊",
+      "image": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "health-devices",
+          "name_ar": "أجهزة قياس الصحة",
+          "name_en": "Personal Health Devices"
+        },
+        {
+          "id": "first-aid",
+          "name_ar": "إسعافات أولية",
+          "name_en": "First Aid"
+        },
+        {
+          "id": "mobility",
+          "name_ar": "مستلزمات الحركة",
+          "name_en": "Mobility & Support"
+        },
+        {
+          "id": "health-accessories",
+          "name_ar": "مستلزمات رعاية صحية",
+          "name_en": "Health Care Accessories"
+        },
+        {
+          "id": "nutrition",
+          "name_ar": "منتجات تغذية",
+          "name_en": "Nutrition Products"
+        }
+      ]
+    },
+    {
+      "id": "automotive",
+      "name_ar": "السيارات",
+      "name_en": "Automotive",
+      "icon": "🚗",
+      "image": "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "car-accessories",
+          "name_ar": "إكسسوارات سيارات",
+          "name_en": "Car Accessories"
+        },
+        {
+          "id": "car-electronics",
+          "name_ar": "إلكترونيات سيارات",
+          "name_en": "Car Electronics"
+        },
+        {
+          "id": "car-chargers",
+          "name_ar": "شواحن وحوامل",
+          "name_en": "Car Chargers & Holders"
+        },
+        {
+          "id": "car-cleaning",
+          "name_ar": "تنظيف سيارات",
+          "name_en": "Car Cleaning"
+        },
+        {
+          "id": "maintenance",
+          "name_ar": "أدوات صيانة",
+          "name_en": "Maintenance Tools"
+        },
+        {
+          "id": "parts",
+          "name_ar": "قطع غيار",
+          "name_en": "Replacement Parts"
+        },
+        {
+          "id": "motorcycle",
+          "name_ar": "إكسسوارات دراجات نارية",
+          "name_en": "Motorcycle Accessories"
+        }
+      ]
+    },
+    {
+      "id": "books",
+      "name_ar": "الكتب والقرطاسية",
+      "name_en": "Books & Stationery",
+      "icon": "📚",
+      "image": "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "novels",
+          "name_ar": "كتب وروايات",
+          "name_en": "Books & Novels"
+        },
+        {
+          "id": "edu-books",
+          "name_ar": "كتب تعليمية",
+          "name_en": "Educational Books"
+        },
+        {
+          "id": "school",
+          "name_ar": "مستلزمات مدارس",
+          "name_en": "School Supplies"
+        },
+        {
+          "id": "pens",
+          "name_ar": "أقلام وكتابة",
+          "name_en": "Pens & Writing"
+        },
+        {
+          "id": "office-supplies",
+          "name_ar": "مستلزمات مكتبية",
+          "name_en": "Office Supplies"
+        },
+        {
+          "id": "paper-print",
+          "name_ar": "ورق وطباعة",
+          "name_en": "Paper & Printing"
+        },
+        {
+          "id": "art-supplies",
+          "name_ar": "أدوات رسم وفنون",
+          "name_en": "Art Supplies"
+        }
+      ]
+    },
+    {
+      "id": "tools-diy",
+      "name_ar": "الأدوات والمعدات",
+      "name_en": "Tools & DIY",
+      "icon": "🔧",
+      "image": "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "hand-tools",
+          "name_ar": "عدد يدوية",
+          "name_en": "Hand Tools"
+        },
+        {
+          "id": "power-tools",
+          "name_ar": "عدد كهربائية",
+          "name_en": "Power Tools"
+        },
+        {
+          "id": "electrical-tools",
+          "name_ar": "أدوات كهربائية",
+          "name_en": "Electrical Tools"
+        },
+        {
+          "id": "plumbing",
+          "name_ar": "مستلزمات سباكة",
+          "name_en": "Plumbing Supplies"
+        },
+        {
+          "id": "workshop",
+          "name_ar": "معدات ورش",
+          "name_en": "Workshop Equipment"
+        },
+        {
+          "id": "safety",
+          "name_ar": "معدات سلامة",
+          "name_en": "Safety Equipment"
+        },
+        {
+          "id": "home-repair",
+          "name_ar": "إصلاح وصيانة",
+          "name_en": "Home Repair"
+        }
+      ]
+    },
+    {
+      "id": "pets",
+      "name_ar": "مستلزمات الحيوانات",
+      "name_en": "Pet Supplies",
+      "icon": "🐾",
+      "image": "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "cats",
+          "name_ar": "مستلزمات قطط",
+          "name_en": "Cat Supplies"
+        },
+        {
+          "id": "dogs",
+          "name_ar": "مستلزمات كلاب",
+          "name_en": "Dog Supplies"
+        },
+        {
+          "id": "birds",
+          "name_ar": "مستلزمات طيور",
+          "name_en": "Bird Supplies"
+        },
+        {
+          "id": "fish",
+          "name_ar": "أسماك وأحواض",
+          "name_en": "Fish & Aquariums"
+        },
+        {
+          "id": "pet-food",
+          "name_ar": "أغذية حيوانات",
+          "name_en": "Pet Food"
+        },
+        {
+          "id": "pet-toys",
+          "name_ar": "ألعاب وإكسسوارات",
+          "name_en": "Pet Toys & Accessories"
+        },
+        {
+          "id": "pet-grooming",
+          "name_ar": "عناية وتنظيف",
+          "name_en": "Grooming & Care"
+        }
+      ]
+    },
+    {
+      "id": "office",
+      "name_ar": "المكاتب والأعمال",
+      "name_en": "Office & Business",
+      "icon": "💼",
+      "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "office-furniture",
+          "name_ar": "أثاث مكتبي",
+          "name_en": "Office Furniture"
+        },
+        {
+          "id": "desks-chairs",
+          "name_ar": "مكاتب وكراسي",
+          "name_en": "Desks & Chairs"
+        },
+        {
+          "id": "printers",
+          "name_ar": "طابعات وماسحات",
+          "name_en": "Printers & Scanners"
+        },
+        {
+          "id": "conference",
+          "name_ar": "معدات اجتماعات",
+          "name_en": "Conference Equipment"
+        },
+        {
+          "id": "content-creation",
+          "name_ar": "معدات صناعة محتوى",
+          "name_en": "Content Creation"
+        },
+        {
+          "id": "office-org",
+          "name_ar": "تنظيم مكاتب",
+          "name_en": "Office Organization"
+        }
+      ]
+    },
+    {
+      "id": "travel",
+      "name_ar": "السفر والحقائب",
+      "name_en": "Travel & Luggage",
+      "icon": "✈️",
+      "image": "https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "suitcases",
+          "name_ar": "حقائب سفر",
+          "name_en": "Suitcases"
+        },
+        {
+          "id": "backpacks",
+          "name_ar": "حقائب ظهر",
+          "name_en": "Backpacks"
+        },
+        {
+          "id": "travel-accessories",
+          "name_ar": "إكسسوارات سفر",
+          "name_en": "Travel Accessories"
+        },
+        {
+          "id": "travel-org",
+          "name_ar": "منظمات حقائب",
+          "name_en": "Travel Organizers"
+        },
+        {
+          "id": "travel-comfort",
+          "name_ar": "راحة أثناء السفر",
+          "name_en": "Travel Comfort"
+        }
+      ]
+    },
+    {
+      "id": "gifts",
+      "name_ar": "الهدايا والموسميات",
+      "name_en": "Gifts & Seasonal",
+      "icon": "🎁",
+      "image": "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "gifts-men",
+          "name_ar": "هدايا رجالي",
+          "name_en": "Gifts for Men"
+        },
+        {
+          "id": "gifts-women",
+          "name_ar": "هدايا حريمي",
+          "name_en": "Gifts for Women"
+        },
+        {
+          "id": "gifts-kids",
+          "name_ar": "هدايا أطفال",
+          "name_en": "Gifts for Kids"
+        },
+        {
+          "id": "birthday",
+          "name_ar": "هدايا أعياد ميلاد",
+          "name_en": "Birthday Gifts"
+        },
+        {
+          "id": "seasonal",
+          "name_ar": "منتجات موسمية",
+          "name_en": "Seasonal Products"
+        },
+        {
+          "id": "holiday",
+          "name_ar": "مستلزمات مناسبات",
+          "name_en": "Holiday Essentials"
+        }
+      ]
+    },
+    {
+      "id": "digital",
+      "name_ar": "منتجات رقمية",
+      "name_en": "Digital Products",
+      "icon": "💾",
+      "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&h=400&fit=crop&q=80",
+      "subs": [
+        {
+          "id": "ebooks",
+          "name_ar": "كتب إلكترونية",
+          "name_en": "E-books"
+        },
+        {
+          "id": "software",
+          "name_ar": "برامج وتراخيص",
+          "name_en": "Software & Licenses"
+        },
+        {
+          "id": "gift-cards",
+          "name_ar": "بطاقات هدايا",
+          "name_en": "Gift Cards"
+        },
+        {
+          "id": "downloads",
+          "name_ar": "تحميلات رقمية",
+          "name_en": "Digital Downloads"
+        }
+      ]
+    }
+  ],
+  "brands": [
+    "ASUS",
+    "Acer",
+    "Adidas",
+    "Anker",
+    "Apple",
+    "Baseus",
+    "Bosch",
+    "Bosch Tools",
+    "Casio",
+    "Decathlon",
+    "Dell",
+    "Dyson",
+    "H&M",
+    "HP",
+    "Honor",
+    "Huawei",
+    "IKEA",
+    "Infinix",
+    "JBL",
+    "Kenwood",
+    "Kingston",
+    "Kraft",
+    "L'Oreal",
+    "LG",
+    "Lego",
+    "Lenovo",
+    "Logitech",
+    "MSI",
+    "Maybelline",
+    "Microsoft",
+    "Nestle",
+    "Nike",
+    "Nivea",
+    "Nokia",
+    "OPPO",
+    "Pampers",
+    "Philips",
+    "Puma",
+    "Purina",
+    "Ray-Ban",
+    "Realme",
+    "Samsung",
+    "SanDisk",
+    "Sony",
+    "Spigen",
+    "TP-Link",
+    "Tecno",
+    "Tefal",
+    "Toshiba",
+    "Xiaomi",
+    "Zara",
+    "vivo"
+  ]
+}
