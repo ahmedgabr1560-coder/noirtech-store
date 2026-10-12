@@ -529,12 +529,12 @@ $("#checkoutBtn").addEventListener("click", async () => {
     } catch (e) {
       toast("تعذر فتح الدفع بالبطاقة");
     }
-  } else if (payMethod === "transfer") {
+  } else {
     try {
       await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ method: "transfer", order: orderRecord })
+        body: JSON.stringify({ method: payMethod || "cod", order: orderRecord })
       });
     } catch (e) {}
   }
@@ -628,20 +628,13 @@ loadProducts();
 updateUserUI();
 
 
-/* —— AI Chat (same behavior as before) —— */
+/* —— AI Chat (WhatsApp style) —— */
 window._aiHistory = JSON.parse(localStorage.getItem("nx_ai_history") || "[]");
 window._aiBusy = false;
 
 function openAiChat() {
   document.getElementById("aiOverlay")?.classList.add("open");
   document.getElementById("aiPanel")?.classList.add("open");
-  const box = document.getElementById("aiMessages");
-  if (box && !box.dataset.welcome) {
-    box.dataset.welcome = "1";
-    if (!box.querySelector(".ai-msg")) {
-      appendAiMsg(formatAiReply("أهلاً بيك 👋 أنا نورا مساعدة NEXORA. اسألني عن أي منتج."), "bot");
-    }
-  }
   setTimeout(function () { document.getElementById("aiInput")?.focus(); }, 200);
 }
 function closeAiChat() {
@@ -649,7 +642,11 @@ function closeAiChat() {
   document.getElementById("aiPanel")?.classList.remove("open");
 }
 function escapeAiText(t) {
-  return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return String(t || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 function formatAiReply(t) {
   return escapeAiText(String(t || "")).replace(/\n/g, "<br>");
@@ -657,10 +654,8 @@ function formatAiReply(t) {
 function appendAiMsg(html, who) {
   const box = document.getElementById("aiMessages");
   if (!box) return;
-  const time = (function () {
-    try { return new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }); }
-    catch (e) { return ""; }
-  })();
+  let time = "";
+  try { time = new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }); } catch (e) {}
   const row = document.createElement("div");
   row.className = "ai-msg " + (who === "user" ? "user" : "bot");
   row.innerHTML = '<div class="ai-bubble">' + html + '<span class="ai-time">' + time + "</span></div>";
@@ -678,77 +673,68 @@ function addAiTyping() {
   box.appendChild(row);
   box.scrollTop = box.scrollHeight;
 }
-function localAiReply(msg) {
-  const m = (msg || "").toLowerCase();
-  const list = Array.isArray(PRODUCTS) ? PRODUCTS : [];
-  const money = (n) => Number(n).toLocaleString("ar-EG") + " ج.م";
-  const pick = (cat, n = 4) => list.filter(p => (p.category || "") === cat).slice(0, n);
-  const fmt = (arr) => arr.map((p, i) => (i + 1) + ") " + p.name + (p.price ? " — " + money(p.price) : "")).join("\n");
-  if (/مرحبا|اهلا|السلام|hi|hello|ازيك/.test(m)) return "أهلاً بيك في NEXORA 👋 أنا نورا.\nتحب موبايل، لابتوب، شاشة، ولا إكسسوار؟";
-  if (/موبايل|هاتف|ايفون|سامسونج|phone|iphone/.test(m)) {
-    const s = fmt(pick("phones"));
-    return s ? ("تمام 📱 من الموبايلات:\n" + s + "\nقولي ميزانيتك؟") : "قسم الموبايلات متاح 📱 قولي ميزانيتك؟";
+function localSmartReply(q) {
+  const m = String(q || "").toLowerCase();
+  const phones = PRODUCTS.filter(p => p.category === "phones").slice(0, 4);
+  const laptops = PRODUCTS.filter(p => p.category === "laptops").slice(0, 3);
+  if (/مرحبا|اهلا|السلام|hi|hello|ازيك/.test(m)) {
+    return "أهلاً بيك في NEXORA 👋 أنا نورا. تحب موبايل، لابتوب، شاشة، ولا إكسسوار؟";
   }
-  if (/لابتوب|لاب|macbook|laptop/.test(m)) {
-    const s = fmt(pick("laptops"));
-    return s ? ("اللابتوبات 💻:\n" + s + "\nشغل ولا ألعاب؟") : "اللابتوبات جاهزة 💻 شغل ولا ألعاب؟";
+  if (/موبايل|هاتف|iphone|سامسونج|galaxy/.test(m)) {
+    if (!phones.length) return "قولي ميزانيتك وأرشحلك موبايل مناسب.";
+    return "موبايلات مميزة:\n" + phones.map(p => "• " + p.name + " — " + p.price + " ج.م").join("\n");
   }
-  if (/سماع|ايربود|سماعة|buds|jbl/.test(m)) return "الصوتيات عندنا 🎧 عزل ضوضاء ولا سماعة خفيفة؟";
-  if (/شاشة|monitor/.test(m)) return "الشاشات متوفرة 🖥️ قولي المقاس (٢٤/٢٧/٣٢)؟";
-  if (/شحن|توصيل|ضمان|طلب/.test(m)) return "الشحن داخل مصر ✅ اطلب من السلة بعد تسجيل الدخول.\nواتساب: 01064519541";
-  if (/عرض|خصم/.test(m)) return "العروض تتغير 🔥 قولي الفئة وميزانيتك وأرشّحلك.";
-  return "تمام 😄 قولي عايز إيه: موبايل، لابتوب، شاشة، ولا إكسسوار؟ ولو عندك ميزانية اكتبها.";
+  if (/لابتوب|laptop|ماك/.test(m)) {
+    if (!laptops.length) return "قولي استخدامك (شغل / ألعاب) والميزانية.";
+    return "لابتوبات مقترحة:\n" + laptops.map(p => "• " + p.name + " — " + p.price + " ج.م").join("\n");
+  }
+  if (/عرض|خصم|رخيص/.test(m)) {
+    const deals = PRODUCTS.filter(p => p.oldPrice && p.oldPrice > p.price).slice(0, 5);
+    if (deals.length) return "عروض حالية:\n" + deals.map(p => "• " + p.name + " — " + p.price + " ج.م").join("\n");
+    return "فيه عروض كتير في الأقسام — قول الفئة اللي تهمك.";
+  }
+  if (/سعر|كام|تمن/.test(m)) return "ابحث باسم المنتج من فوق أو قولي الفئة والميزانية.";
+  return "تمام! قولي: موبايل / لابتوب / شاشة / إكسسوار + ميزانيتك وأرشحلك فوراً.";
 }
 async function handleAiSend() {
-  if (window._aiBusy) return;
   const input = document.getElementById("aiInput");
-  const sendBtn = document.getElementById("aiSend");
-  const text = (input?.value || "").trim();
+  if (!input || window._aiBusy) return;
+  const text = input.value.trim();
   if (!text) return;
   window._aiBusy = true;
+  input.value = "";
   appendAiMsg(escapeAiText(text), "user");
-  if (input) input.value = "";
-  if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = "…"; }
   addAiTyping();
+  let reply = "";
   try {
-    const res = await fetch("/api/chat", {
+    const r = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: text,
-        history: window._aiHistory.slice(-12),
-        catalog: PRODUCTS.slice(0, 40).map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price }))
-      })
+      body: JSON.stringify({ message: text, history: window._aiHistory.slice(-8) })
     });
-    const data = await res.json().catch(() => ({}));
-    document.getElementById("aiTyping")?.remove();
-    const reply = (res.ok && data.reply) ? data.reply : localAiReply(text);
-    appendAiMsg(formatAiReply(reply), "bot");
-    window._aiHistory.push({ role: "user", content: text }, { role: "assistant", content: reply });
-    window._aiHistory = window._aiHistory.slice(-20);
-    localStorage.setItem("nx_ai_history", JSON.stringify(window._aiHistory));
-  } catch {
-    document.getElementById("aiTyping")?.remove();
-    const reply = localAiReply(text);
-    appendAiMsg(formatAiReply(reply), "bot");
-  } finally {
-    window._aiBusy = false;
-    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = "➤"; }
-    input?.focus();
+    const data = await r.json().catch(function () { return {}; });
+    reply = (data && data.reply) ? data.reply : localSmartReply(text);
+  } catch (e) {
+    reply = localSmartReply(text);
   }
+  document.getElementById("aiTyping")?.remove();
+  appendAiMsg(formatAiReply(reply), "bot");
+  window._aiHistory.push({ role: "user", content: text }, { role: "assistant", content: reply });
+  try { localStorage.setItem("nx_ai_history", JSON.stringify(window._aiHistory.slice(-20))); } catch (e) {}
+  window._aiBusy = false;
 }
 
 document.getElementById("aiChatBtn")?.addEventListener("click", openAiChat);
 document.getElementById("aiClose")?.addEventListener("click", closeAiChat);
 document.getElementById("aiOverlay")?.addEventListener("click", closeAiChat);
 document.getElementById("aiSend")?.addEventListener("click", handleAiSend);
-document.getElementById("aiInput")?.addEventListener("keydown", e => {
+document.getElementById("aiInput")?.addEventListener("keydown", function (e) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleAiSend(); }
 });
-document.getElementById("aiSuggestions")?.addEventListener("click", e => {
+document.getElementById("aiSuggestions")?.addEventListener("click", function (e) {
   const chip = e.target.closest(".ai-chip");
   if (!chip) return;
-  const q = chip.getAttribute("data-q");
+  const q = chip.getAttribute("data-q") || chip.textContent || "";
   const input = document.getElementById("aiInput");
   if (input && q) { input.value = q; handleAiSend(); }
 });
@@ -759,7 +745,7 @@ document.getElementById("aiSuggestions")?.addEventListener("click", e => {
     const q = new URLSearchParams(location.search);
     if (q.get("paid") === "1") {
       const oid = q.get("order") || "";
-      toast("تم الدفع بنجاح ✅" + (oid ? " — طلب " + oid : ""));
+      toast("تم الدفع بنجاح" + (oid ? " — طلب " + oid : ""));
       history.replaceState({}, "", location.pathname);
     } else if (q.get("paid") === "0") {
       toast("تم إلغاء الدفع");
@@ -769,9 +755,9 @@ document.getElementById("aiSuggestions")?.addEventListener("click", e => {
 })();
 
 // Hide card option if Stripe not configured
-fetch("/api/checkout").then(r => r.json()).then(d => {
+fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d) {
   if (!d.stripeEnabled) {
     const el = document.getElementById("payCardOption");
     if (el) el.style.display = "none";
   }
-}).catch(() => {});
+}).catch(function () {});
