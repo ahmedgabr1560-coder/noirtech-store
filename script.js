@@ -127,6 +127,10 @@ function renderAll() {
   renderGrid($("#bestGrid"), PRODUCTS.filter(p => p.best).slice(0, 8));
   renderGrid($("#newGrid"), PRODUCTS.filter(p => p.newest).slice(0, 8));
   renderShop();
+  // default storefront to fashion
+  if (typeof setShopFilter === "function" && CATEGORIES.some(c => c.id === "fashion")) {
+    try { setShopFilter("fashion", ""); } catch (e) {}
+  }
 }
 
 function updateCartUI() {
@@ -922,7 +926,7 @@ function localSmartReply(q) {
   const phones = PRODUCTS.filter(p => p.category === "phones").slice(0, 4);
   const laptops = PRODUCTS.filter(p => p.category === "laptops").slice(0, 3);
   if (/مرحبا|اهلا|السلام|hi|hello|ازيك/.test(m)) {
-    return "أهلاً بيك في NEXORA 👋 أنا نورا. تحب موبايل، لابتوب، شاشة، ولا إكسسوار؟";
+    return "أهلاً بيكِ في NEXORA 👋 أنا نورا. تحبي شنطة، ملابس، أحذية، ولا إكسسوار موضة؟";
   }
   if (/موبايل|هاتف|iphone|سامسونج|galaxy/.test(m)) {
     if (!phones.length) return "قولي ميزانيتك وأرشحلك موبايل مناسب.";
