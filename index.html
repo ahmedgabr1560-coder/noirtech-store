@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
     <div class="bg-stage" aria-hidden="true">
@@ -305,17 +307,28 @@
     <div class="drawer-foot">
       <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
       <div id="checkoutFields" class="checkout-fields" hidden>
-        <label>الاسم<input type="text" id="orderName" placeholder="اسم المستلم" /></label>
-        <label>الهاتف<input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" /></label>
-        <label>العنوان<input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - تفاصيل" /></label>
-        <label>ملاحظات (اختياري)<input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" /></label>
-        <div class="pay-methods">
-          <p class="pay-title">طريقة الدفع</p>
-          <label class="pay-option"><input type="radio" name="payMethod" value="cod" checked /> 💵 الدفع عند الاستلام</label>
-          <label class="pay-option"><input type="radio" name="payMethod" value="transfer" /> 🏦 تحويل / إنستاباي</label>
-          <label class="pay-option" id="payCardOption"><input type="radio" name="payMethod" value="card" /> 💳 بطاقة (Visa / Mastercard)</label>
+        <label>الاسم (اختياري)<input type="text" id="orderName" placeholder="اسم المستلم" /></label>
+        <label>رقم الهاتف *
+          <input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" required />
+        </label>
+        <label>العنوان بالتفصيل *
+          <input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - الشارع - رقم المبنى" />
+        </label>
+        <div class="map-box">
+          <div class="map-head">
+            <strong>تحديد الموقع على الخريطة *</strong>
+            <div class="map-actions">
+              <button type="button" class="btn btn-ghost btn-sm" id="useMyLocation">موقعي الحالي</button>
+              <a class="btn btn-ghost btn-sm" id="openInGoogle" href="#" target="_blank" rel="noopener">فتح في Google Maps</a>
+            </div>
+          </div>
+          <div id="orderMap" class="order-map" aria-label="خريطة الموقع"></div>
+          <p class="map-hint">حرّك الدبوس أو اضغط على الخريطة لاختيار مكان التوصيل</p>
+          <input type="hidden" id="orderLat" />
+          <input type="hidden" id="orderLng" />
+          <div class="map-coords" id="mapCoords">لم يتم تحديد الموقع بعد</div>
         </div>
-      </div>
+        <label>ملاحظات (اختياري)<input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" /></label>
       <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب الآن</button>
       <p class="checkout-hint">اختار طريقة الدفع ثم أكّد الطلب</p>
     </div>
