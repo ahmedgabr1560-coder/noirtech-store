@@ -72,14 +72,15 @@ export default async function handler(req, res) {
 
     const name = String(body.name || "").trim();
     const price = Number(String(body.price || "").replace(/[^0-9.]/g, ""));
-    let category = String(body.category || "phones").toLowerCase();
+    let category = String(body.category || "electronics").toLowerCase();
+    const subcategory = String(body.subcategory || "").toLowerCase();
+    const brand = String(body.brand || "").trim();
     let image = String(body.image || "").trim();
     const description = String(body.description || "").trim();
     const badge = String(body.badge || "جديد").trim() || "جديد";
     const imageBase64 = body.imageBase64 || body.imageData || null;
 
-    const allowed = new Set(["phones","laptops","monitors","home","accessories"]);
-    if (!allowed.has(category)) category = "phones";
+    if (!category) category = "electronics";
     if (!name || !price) return res.status(400).json({ ok: false, error: "الاسم والسعر مطلوبين" });
 
     const file = await ghGet("products.json");
@@ -115,6 +116,8 @@ export default async function handler(req, res) {
       id,
       name: name.slice(0, 140),
       category,
+      subcategory: subcategory || "",
+      brand: brand || "",
       price: Math.round(price),
       oldPrice: body.oldPrice ? Math.round(Number(body.oldPrice)) : null,
       image,
