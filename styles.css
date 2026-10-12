@@ -1055,3 +1055,32 @@ button, input, select, textarea { font-family: inherit; }
 a.product-media { display:block; text-decoration:none; color:inherit; cursor:pointer; }
 a.product-link { color:inherit; text-decoration:none; }
 a.product-link:hover { color:#c4b5fd; }
+
+/* Checkout map */
+.map-box {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+  display: grid;
+  gap: 8px;
+}
+.map-head {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  align-items: center; justify-content: space-between;
+}
+.map-head strong { font-size: 0.88rem; color: #eee; }
+.map-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-sm { padding: 7px 12px !important; font-size: 0.78rem !important; }
+.order-map {
+  width: 100%;
+  height: 220px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #111;
+  z-index: 1;
+}
+.map-hint { font-size: 0.75rem; color: #8e8e98; margin: 0; }
+.map-coords { font-size: 0.78rem; color: #c4b5fd; font-weight: 700; }
+.leaflet-container { font-family: inherit; }
