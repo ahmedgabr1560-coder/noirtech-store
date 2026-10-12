@@ -33,6 +33,16 @@ let regAvatar = null;
 let pendingAvatar = null;
 
 const $ = (s, r = document) => r.querySelector(s);
+function normalizePhone(v) {
+  const map = {"٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9"};
+  return String(v || "").replace(/[٠-٩]/g, d => map[d] || d).replace(/[^0-9+]/g, "");
+}
+function cartLinePrice(i) {
+  if (i.price != null) return Number(i.price);
+  const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
+  return p ? Number(p.price) : 0;
+}
+
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
 function money(n) {
@@ -151,20 +161,36 @@ function updateCartUI() {
       <button type="button" class="icon-close" data-remove="${p.id}" style="width:30px;height:30px;font-size:1rem">×</button>
     </div>`;
   }).join("");
-  const total = cart.reduce((s, i) => {
-    const p = PRODUCTS.find(x => x.id === i.id);
-    return s + (p ? p.price * i.qty : 0);
-  }, 0);
+  const total = cart.reduce((s, i) => s + cartLinePrice(i) * (Number(i.qty) || 1), 0);
   $("#cartTotal").textContent = money(total);
 }
 
 function addToCart(id) {
-  const item = cart.find(x => x.id === id);
-  if (item) item.qty += 1;
-  else cart.push({ id, qty: 1 });
+  id = Number(id);
+  const p = PRODUCTS.find(x => Number(x.id) === id);
+  const item = cart.find(x => Number(x.id) === id);
+  if (item) {
+    item.qty += 1;
+    if (p) {
+      item.name = p.name;
+      item.price = p.price;
+      item.image = p.image;
+      item.category = p.category;
+      item.description = p.description || p.desc || "";
+    }
+  } else {
+    cart.push({
+      id: id,
+      qty: 1,
+      name: p ? p.name : ("منتج #" + id),
+      price: p ? p.price : 0,
+      image: p ? p.image : "",
+      category: p ? p.category : "",
+      description: p ? (p.description || p.desc || "") : ""
+    });
+  }
   saveCart();
-  const p = PRODUCTS.find(x => x.id === id);
-  toast(p ? `تمت إضافة ${p.name}` : "تمت الإضافة");
+  toast(p ? ("تمت إضافة " + p.name) : "تمت الإضافة");
 }
 
 function openCart() {
@@ -455,139 +481,128 @@ document.getElementById("orderSuccessClose")?.addEventListener("click", closeOrd
 document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeOrderSuccess);
 
 $("#checkoutBtn").addEventListener("click", async () => {
-  if (!cart.length) return toast("السلة فارغة");
-  if (!currentUser) {
-    closeCart();
-    openAuth("login");
-    return toast("سجّل الدخول أولاً لإتمام الطلب");
-  }
-
-  const name = ($("#orderName")?.value || currentUser.name || "").trim();
-  const phone = ($("#orderPhone")?.value || currentUser.phone || "").trim();
-  const address = ($("#orderAddress")?.value || currentUser.address || "").trim();
-  const note = ($("#orderNote")?.value || "").trim();
-  const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
-
-  if (!name) return toast("اكتب اسم المستلم");
-  if (!phone || phone.length < 10) return toast("اكتب رقم هاتف صحيح");
-  if (!address) return toast("اكتب عنوان التوصيل");
-
-  currentUser.name = name;
-  currentUser.phone = phone;
-  currentUser.address = address;
-  localStorage.setItem("nx_user", JSON.stringify(currentUser));
-  let db = JSON.parse(localStorage.getItem("nx_users") || "[]");
-  const ui = db.findIndex(u => u.email === currentUser.email);
-  if (ui >= 0) {
-    db[ui] = { ...db[ui], ...currentUser };
-    localStorage.setItem("nx_users", JSON.stringify(db));
-  }
-  updateUserUI();
-
-  const orderId = "NX-" + Date.now().toString().slice(-8);
-  const lines = cart.map(i => {
-    const p = PRODUCTS.find(x => x.id === i.id);
-    if (!p) return null;
-    return "• " + p.name + " × " + i.qty + " = " + (p.price * i.qty).toLocaleString("ar-EG") + " ج.م";
-  }).filter(Boolean);
-  const total = cart.reduce((s, i) => {
-    const p = PRODUCTS.find(x => x.id === i.id);
-    return s + (p ? p.price * i.qty : 0);
-  }, 0);
-
-  const orderRecord = {
-    id: orderId,
-    at: new Date().toISOString(),
-    customer: { name: name, phone: phone, email: currentUser.email, address: address, note: note },
-    items: cart.map(i => {
-      const p = PRODUCTS.find(x => x.id === i.id);
-      return p ? { id: p.id, name: p.name, price: p.price, qty: i.qty } : null;
-    }).filter(Boolean),
-    total: total,
-    status: "new",
-    paymentMethod: payMethod
-  };
-  const orders = JSON.parse(localStorage.getItem("nx_orders") || "[]");
-  orders.unshift(orderRecord);
-  localStorage.setItem("nx_orders", JSON.stringify(orders.slice(0, 50)));
-
-  // Card payment via Stripe Checkout when selected
-  if (payMethod === "card") {
-    try {
-      const payRes = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ method: "card", order: orderRecord })
-      });
-      const payData = await payRes.json();
-      if (payData.ok && payData.url) {
-        toast("جاري التحويل لصفحة الدفع...");
-        window.location.href = payData.url;
-        return;
-      }
-      toast(payData.error || "الدفع بالبطاقة غير متاح حالياً — اختار عند الاستلام");
-    } catch (e) {
-      toast("تعذر فتح الدفع بالبطاقة");
-    }
-  } else {
-    try {
-      await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ method: payMethod || "cod", order: orderRecord })
-      });
-    } catch (e) {}
-  }
-
-
-  let orderMsg = "🆔 " + orderId + "\n";
-  orderMsg += "👤 " + name + "\n📞 " + phone + "\n📧 " + currentUser.email + "\n📍 " + address + "\n";
-  if (note) orderMsg += "📝 " + note + "\n";
-  orderMsg += "\n📦 المنتجات:\n" + lines.join("\n");
-  orderMsg += "\n\n💰 الإجمالي: " + total.toLocaleString("ar-EG") + " ج.م";
-  orderMsg += "\n✅ طلب مؤكد — تواصل مع العميل";
-
-  const btn = $("#checkoutBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
-
-  
-  const richItems = cart.map(i => {
-    const p = PRODUCTS.find(x => x.id === i.id);
-    if (!p) return null;
-    return {
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      qty: i.qty,
-      image: p.image,
-      category: p.category,
-      description: p.description || p.desc || "",
-      specs: p.specs || {}
-    };
-  }).filter(Boolean);
-
-  const orderPayload = {
-    id: orderId,
-    total: total,
-    customer: { name: name, phone: phone, email: currentUser.email, address: address, note: note },
-    items: richItems
-  };
-
   try {
-    await notifyAdmin("order", orderMsg, { order: orderPayload });
-  } catch (e) {}
+    if (!cart.length) return toast("السلة فارغة");
+    if (!currentUser) {
+      closeCart();
+      openAuth("login");
+      return toast("سجّل الدخول أولاً لإتمام الطلب");
+    }
 
+    const name = ($("#orderName")?.value || currentUser.name || "").trim();
+    const phone = normalizePhone($("#orderPhone")?.value || currentUser.phone || "");
+    const address = ($("#orderAddress")?.value || currentUser.address || "").trim();
+    const note = ($("#orderNote")?.value || "").trim();
+    const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
 
-  const waText = encodeURIComponent("طلب NEXORA " + orderId + "\n\n" + orderMsg);
-  window.open("https://wa.me/201064519541?text=" + waText, "_blank");
+    if (!name) return toast("اكتب اسم المستلم");
+    if (!phone || phone.replace(/[^0-9]/g, "").length < 10) return toast("اكتب رقم هاتف صحيح (11 رقم)");
+    if (!address) return toast("اكتب عنوان التوصيل");
 
-  cart = [];
-  saveCart();
-  closeCart();
-  if ($("#orderNote")) $("#orderNote").value = "";
-  showOrderSuccess(orderId);
-  toast("تم تأكيد طلبك بنجاح");
-  if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+    currentUser.name = name;
+    currentUser.phone = phone;
+    currentUser.address = address;
+    localStorage.setItem("nx_user", JSON.stringify(currentUser));
+    try {
+      let db = JSON.parse(localStorage.getItem("nx_users") || "[]");
+      const ui = db.findIndex(u => u.email === currentUser.email);
+      if (ui >= 0) {
+        db[ui] = { ...db[ui], ...currentUser };
+        localStorage.setItem("nx_users", JSON.stringify(db));
+      }
+    } catch (e) {}
+    updateUserUI();
+
+    const btn = $("#checkoutBtn");
+    if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
+
+    const orderId = "NX-" + Date.now().toString().slice(-8);
+    const richItems = cart.map(i => {
+      const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
+      return {
+        id: Number(i.id),
+        name: i.name || (p && p.name) || ("منتج #" + i.id),
+        price: Number(i.price != null ? i.price : (p ? p.price : 0)),
+        qty: Number(i.qty) || 1,
+        image: i.image || (p && p.image) || "",
+        category: i.category || (p && p.category) || "",
+        description: i.description || (p && (p.description || p.desc)) || "",
+        specs: (p && p.specs) || {}
+      };
+    });
+    const total = richItems.reduce((s, it) => s + it.price * it.qty, 0);
+    const lines = richItems.map(it => "• " + it.name + " × " + it.qty + " = " + Number(it.price * it.qty).toLocaleString("ar-EG") + " ج.م");
+
+    const orderRecord = {
+      id: orderId,
+      at: new Date().toISOString(),
+      customer: { name: name, phone: phone, email: currentUser.email, address: address, note: note },
+      items: richItems,
+      total: total,
+      status: "new",
+      paymentMethod: payMethod
+    };
+    try {
+      const orders = JSON.parse(localStorage.getItem("nx_orders") || "[]");
+      orders.unshift(orderRecord);
+      localStorage.setItem("nx_orders", JSON.stringify(orders.slice(0, 50)));
+    } catch (e) {}
+
+    if (payMethod === "card") {
+      try {
+        const payRes = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ method: "card", order: orderRecord })
+        });
+        const payData = await payRes.json();
+        if (payData.ok && payData.url) {
+          toast("جاري التحويل لصفحة الدفع...");
+          window.location.href = payData.url;
+          return;
+        }
+        toast(payData.error || "الدفع بالبطاقة غير متاح — جرّب عند الاستلام");
+      } catch (e) {
+        toast("تعذر فتح الدفع بالبطاقة");
+      }
+    } else {
+      try {
+        await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ method: payMethod || "cod", order: orderRecord })
+        });
+      } catch (e) {}
+    }
+
+    let orderMsg = "🆔 " + orderId + "\n";
+    orderMsg += "👤 " + name + "\n📞 " + phone + "\n📧 " + (currentUser.email || "") + "\n📍 " + address + "\n";
+    if (note) orderMsg += "📝 " + note + "\n";
+    orderMsg += "💳 الدفع: " + (payMethod === "card" ? "بطاقة" : payMethod === "transfer" ? "تحويل" : "عند الاستلام") + "\n";
+    orderMsg += "\n📦 المنتجات:\n" + lines.join("\n");
+    orderMsg += "\n\n💰 الإجمالي: " + Number(total).toLocaleString("ar-EG") + " ج.م";
+    orderMsg += "\n✅ طلب مؤكد — تواصل مع العميل";
+
+    try {
+      await notifyAdmin("order", orderMsg, { order: orderRecord });
+    } catch (e) {
+      console.warn(e);
+    }
+
+    cart = [];
+    saveCart();
+    closeCart();
+    if ($("#orderNote")) $("#orderNote").value = "";
+    showOrderSuccess(orderId);
+    toast("تم تأكيد طلبك بنجاح — رقم " + orderId);
+
+    if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+  } catch (err) {
+    console.error(err);
+    toast("حصل خطأ أثناء إتمام الطلب — حاول تاني");
+    const btn = $("#checkoutBtn");
+    if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+  }
 });
 
 
