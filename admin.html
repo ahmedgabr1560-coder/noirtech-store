@@ -128,6 +128,7 @@
         <textarea id="description" placeholder="وصف قصير..."></textarea>
       </label>
       <button class="btn" type="submit" id="submitBtn">➕ إضافة المنتج ونشره</button>
+      <p class="hint" style="text-align:center;margin-top:10px">النشر تلقائي — المنتج يظهر على الموقع مباشرة بدون أي خطوة إضافية</p>
       <button class="btn btn-ghost" type="button" id="logoutBtn">تسجيل الخروج</button>
       <div class="msg" id="formMsg"></div>
       <div class="links">
@@ -270,7 +271,7 @@
           throw new Error(data.error || "فشل الإضافة");
         }
         formMsg.className = "msg ok";
-        formMsg.textContent = "✅ تم #" + data.product.id + " — " + data.product.name + " (الإجمالي: " + data.total + ")";
+        formMsg.textContent = "✅ تم النشر فورًا #" + data.product.id + " — " + data.product.name + " | الإجمالي: " + data.total + " | ظاهر على الموقع خلال ثواني";
         form.reset();
         document.getElementById("badge").value = "جديد";
         resetPhoto();
