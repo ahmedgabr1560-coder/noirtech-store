@@ -966,3 +966,75 @@ button, input, select, textarea { font-family: inherit; }
 }
 .pay-option input { width: auto; accent-color: #25d366; }
 .checkout-hint { font-size: 0.78rem; color: #8e8e98; text-align: center; }
+
+
+/* Multi-category mega menu & directory */
+.nav-drop { position: relative; display: inline-flex; align-items: center; }
+.nav-drop-btn {
+  background: transparent; border: 0; color: inherit; font: inherit; font-weight: 700;
+  cursor: pointer; padding: 6px 4px;
+}
+.mega-menu {
+  position: absolute; top: 100%; right: 0; z-index: 120;
+  width: min(920px, 92vw); max-height: 70vh; overflow: auto;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px;
+  padding: 14px; border-radius: 16px;
+  background: #121218; border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+}
+.mega-menu[hidden] { display: none !important; }
+.mega-col { padding: 8px; border-radius: 12px; background: rgba(255,255,255,0.03); }
+.mega-main {
+  width: 100%; text-align: right; background: transparent; border: 0; color: #fff;
+  font-weight: 800; font-size: 0.9rem; cursor: pointer; padding: 6px 4px; font-family: inherit;
+}
+.mega-sub {
+  display: block; width: 100%; text-align: right; background: transparent; border: 0;
+  color: #9a9aa3; font-size: 0.78rem; padding: 4px; cursor: pointer; font-family: inherit;
+}
+.mega-sub:hover, .mega-main:hover { color: #a78bfa; }
+.cat-pill {
+  border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+  color: #eee; border-radius: 999px; padding: 8px 14px; font-size: 0.82rem;
+  font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit;
+}
+.cat-pill:hover { border-color: rgba(167,139,250,0.45); color: #fff; }
+.cat-nav-inner { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: thin; }
+.cats-directory {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;
+}
+.dir-card {
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden;
+  background: rgba(255,255,255,0.03);
+}
+.dir-main {
+  display: grid; grid-template-columns: 88px 1fr; gap: 10px; width: 100%;
+  background: transparent; border: 0; color: #fff; text-align: right; cursor: pointer;
+  padding: 10px; font-family: inherit;
+}
+.dir-main img { width: 88px; height: 72px; object-fit: cover; border-radius: 10px; background: #111; }
+.dir-ico { font-size: 1.2rem; margin-left: 4px; }
+.dir-main h3 { font-size: 0.95rem; margin: 0; }
+.dir-main small { color: #8e8e98; font-size: 0.75rem; }
+.dir-subs { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 10px 12px; }
+.dir-sub {
+  border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+  color: #ccc; border-radius: 999px; padding: 4px 10px; font-size: 0.72rem;
+  cursor: pointer; font-family: inherit;
+}
+.dir-sub:hover { color: #fff; border-color: rgba(167,139,250,0.4); }
+.subcats-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.sub-chip {
+  border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #bbb;
+  border-radius: 999px; padding: 7px 12px; font-size: 0.8rem; cursor: pointer; font-family: inherit;
+}
+.sub-chip.active, .sub-chip:hover { background: rgba(167,139,250,0.15); color: #fff; border-color: rgba(167,139,250,0.45); }
+.shop-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-select {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+  color: #eee; border-radius: 10px; padding: 8px 12px; font-family: inherit; font-size: 0.85rem;
+}
+.cat-card small { display: block; color: #8e8e98; font-size: 0.75rem; margin-top: 4px; }
+@media (max-width: 720px) {
+  .mega-menu { grid-template-columns: 1fr 1fr; right: auto; left: 0; }
+}
