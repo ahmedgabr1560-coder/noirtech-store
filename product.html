@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>تفاصيل المنتج | NEXORA</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { min-height: 100vh; }
+    .pp-wrap { width: min(1100px, 94vw); margin: 0 auto; padding: 24px 0 60px; position: relative; z-index: 2; }
+    .pp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+    .pp-top a { color: #c4b5fd; text-decoration: none; font-weight: 700; }
+    .pp-card {
+      background: rgba(18,18,24,0.92);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+    }
+    .pp-loading, .pp-error { text-align: center; padding: 60px 16px; color: #9a9aa3; }
+  </style>
+</head>
+<body>
+  <div class="bg-stage" aria-hidden="true">
+    <div class="bg-black"></div>
+    <div class="fog"></div>
+  </div>
+  <div class="pp-wrap">
+    <div class="pp-top">
+      <a href="/">← العودة للمتجر</a>
+      <strong style="color:#fff">NEXORA</strong>
+    </div>
+    <div class="pp-card">
+      <div id="ppRoot" class="pp-loading">جاري تحميل المنتج...</div>
+    </div>
+  </div>
+  <script>
+    const money = (n) => Number(n).toLocaleString("ar-EG") + " ج.م";
+    const stars = (r) => {
+      const n = Math.round(Number(r) || 0);
+      return "★".repeat(Math.min(5, n)) + "☆".repeat(Math.max(0, 5 - Math.min(5, n)));
+    };
+    function esc(t) {
+      return String(t || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    async function loadJSON(urls) {
+      for (const u of urls) {
+        try {
+          const r = await fetch(u, { cache: "no-store" });
+          if (r.ok) return await r.json();
+        } catch (e) {}
+      }
+      return null;
+    }
+    function addLocalCart(p, qty) {
+      const key = "nx_cart";
+      let cart = [];
+      try { cart = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
+      const id = Number(p.id);
+      const item = cart.find(x => Number(x.id) === id);
+      if (item) item.qty += qty;
+      else cart.push({
+        id, qty,
+        name: p.name, price: p.price, image: p.image,
+        category: p.category, description: p.description || ""
+      });
+      localStorage.setItem(key, JSON.stringify(cart));
+    }
+    (async function () {
+      const id = Number(new URLSearchParams(location.search).get("id") || 0);
+      const root = document.getElementById("ppRoot");
+      if (!id) {
+        root.className = "pp-error";
+        root.innerHTML = "لم يتم تحديد منتج.<br><a href='/' style='color:#c4b5fd'>العودة للمتجر</a>";
+        return;
+      }
+      const [products, catalog] = await Promise.all([
+        loadJSON([
+          "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json?t=" + Date.now(),
+          "/products.json?t=" + Date.now()
+        ]),
+        loadJSON([
+          "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/categories.json?t=" + Date.now(),
+          "/categories.json?t=" + Date.now()
+        ])
+      ]);
+      const list = Array.isArray(products) ? products : [];
+      const p = list.find(x => Number(x.id) === id);
+      if (!p) {
+        root.className = "pp-error";
+        root.innerHTML = "المنتج غير موجود.<br><a href='/' style='color:#c4b5fd'>العودة للمتجر</a>";
+        return;
+      }
+      document.title = p.name + " | NEXORA";
+      const cats = catalog?.categories || [];
+      const cat = cats.find(c => c.id === p.category);
+      const sub = cat?.subs?.find(s => s.id === p.subcategory);
+      const off = p.oldPrice && p.oldPrice > p.price ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : null;
+      const specs = p.specs && typeof p.specs === "object" ? p.specs : {};
+      const specRows = Object.entries(specs).map(([k,v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("");
+      const desc = p.description || p.desc || (p.name + " — متوفر في NEXORA.");
+      const related = list.filter(x => x.category === p.category && Number(x.id) !== id).slice(0, 4);
+
+      root.className = "";
+      root.innerHTML = `
+        <div class="pd-layout">
+          <div class="pd-gallery">
+            <img class="pd-main-img" src="${p.image}" alt="${esc(p.name)}"
+              onerror="this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=70'" />
+          </div>
+          <div class="pd-info">
+            <div class="pd-breadcrumb">
+              <a href="/">المتجر</a>
+              ${cat ? `<span>/</span><a href="/#shop">${esc(cat.name_ar)}</a>` : ""}
+              ${sub ? `<span>/</span><span>${esc(sub.name_ar)}</span>` : ""}
+            </div>
+            ${p.brand ? `<div class="pd-brand">${esc(p.brand)}</div>` : ""}
+            <h1 class="pd-title">${esc(p.name)}</h1>
+            <div class="rating pd-rating">${stars(p.rating)} <span>(${p.reviews || 0} تقييم)</span></div>
+            <div class="price-row pd-price">
+              <span class="price" style="font-size:1.5rem">${money(p.price)}</span>
+              ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
+              ${off ? `<span class="badge-off" style="position:static">-${off}%</span>` : ""}
+            </div>
+            <div class="pd-stock">✓ متوفر للشحن خلال 24–48 ساعة</div>
+            <div class="pd-desc"><h4>الوصف الكامل</h4><p>${esc(desc)}</p></div>
+            ${specRows ? `<div class="pd-specs"><h4>المواصفات</h4><table>${specRows}</table></div>` : ""}
+            <div class="pd-meta">
+              ${cat ? `<span>القسم: ${esc(cat.name_ar)}</span>` : ""}
+              ${sub ? `<span>التصنيف: ${esc(sub.name_ar)}</span>` : ""}
+              ${p.brand ? `<span>الماركة: ${esc(p.brand)}</span>` : ""}
+              <span>رمز المنتج: #${p.id}</span>
+            </div>
+            <div class="pd-actions">
+              <div class="pd-qty">
+                <button type="button" id="qMinus">−</button>
+                <input type="number" id="qVal" value="1" min="1" max="20" />
+                <button type="button" id="qPlus">+</button>
+              </div>
+              <button type="button" class="btn btn-primary" id="addBtn">أضف للسلة</button>
+              <a class="btn btn-ghost" href="/#shop">متابعة التسوق</a>
+            </div>
+          </div>
+        </div>
+        ${related.length ? `
+          <div style="margin-top:28px">
+            <h3 style="color:#fff;margin-bottom:12px">منتجات مشابهة</h3>
+            <div class="products-grid">
+              ${related.map(r => `
+                <article class="product-card">
+                  <a href="/product.html?id=${r.id}" style="text-decoration:none;color:inherit">
+                    <div class="product-media"><img src="${r.image}" alt="" loading="lazy" /></div>
+                    <div class="product-body">
+                      <h3 class="product-name">${esc(r.name)}</h3>
+                      <div class="price-row"><span class="price">${money(r.price)}</span></div>
+                    </div>
+                  </a>
+                </article>`).join("")}
+            </div>
+          </div>` : ""}
+      `;
+      const qVal = document.getElementById("qVal");
+      document.getElementById("qMinus").onclick = () => { qVal.value = Math.max(1, (+qVal.value || 1) - 1); };
+      document.getElementById("qPlus").onclick = () => { qVal.value = Math.min(20, (+qVal.value || 1) + 1); };
+      document.getElementById("addBtn").onclick = () => {
+        const q = Math.max(1, parseInt(qVal.value, 10) || 1);
+        addLocalCart(p, q);
+        alert("تمت الإضافة للسلة (" + q + ")");
+      };
+    })();
+  </script>
+</body>
+</html>
