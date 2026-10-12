@@ -303,37 +303,50 @@
   <aside class="drawer" id="cartDrawer" aria-label="سلة التسوق">
     <div class="drawer-head">
       <h3>سلة التسوق</h3>
-      <button type="button" class="icon-close" id="closeCart">×</button>
+      <button type="button" class="icon-close" id="closeCart" aria-label="إغلاق">×</button>
     </div>
-    <div class="drawer-body" id="cartItems"></div>
-    <div class="drawer-foot">
-      <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
-      <div id="checkoutFields" class="checkout-fields" hidden>
-        <label>الاسم (اختياري)<input type="text" id="orderName" placeholder="اسم المستلم" /></label>
-        <label>رقم الهاتف *
-          <input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" required />
-        </label>
-        <label>العنوان بالتفصيل *
-          <input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - الشارع - رقم المبنى" />
-        </label>
-        <div class="map-box">
-          <div class="map-head">
-            <strong>تحديد الموقع على الخريطة *</strong>
-            <div class="map-actions">
-              <button type="button" class="btn btn-ghost btn-sm" id="useMyLocation">موقعي الحالي</button>
-              <a class="btn btn-ghost btn-sm" id="openInGoogle" href="#" target="_blank" rel="noopener">فتح في Google Maps</a>
+    <div class="drawer-scroll">
+      <div class="drawer-body" id="cartItems"></div>
+      <div class="drawer-foot">
+        <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
+        <div id="checkoutFields" class="checkout-fields" hidden>
+          <label>الاسم (اختياري)
+            <input type="text" id="orderName" placeholder="اسم المستلم" autocomplete="name" />
+          </label>
+          <label>رقم الهاتف *
+            <input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" inputmode="tel" autocomplete="tel" />
+          </label>
+          <label>العنوان بالتفصيل *
+            <input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - الشارع" autocomplete="street-address" />
+          </label>
+          <div class="map-box">
+            <div class="map-head">
+              <strong>تحديد الموقع *</strong>
+              <div class="map-actions">
+                <button type="button" class="btn btn-ghost btn-sm" id="useMyLocation">موقعي الحالي</button>
+                <a class="btn btn-ghost btn-sm" id="openInGoogle" href="#" target="_blank" rel="noopener">Google Maps</a>
+              </div>
             </div>
+            <div id="orderMap" class="order-map" aria-label="خريطة الموقع"></div>
+            <p class="map-hint">اضغط على الخريطة أو اسحب الدبوس</p>
+            <input type="hidden" id="orderLat" />
+            <input type="hidden" id="orderLng" />
+            <div class="map-coords" id="mapCoords">لم يتم تحديد الموقع بعد</div>
+            <iframe id="googleMapFrame" class="google-map-frame" hidden title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
-          <div id="orderMap" class="order-map" aria-label="خريطة الموقع"></div>
-          <p class="map-hint">حرّك الدبوس أو اضغط على الخريطة لاختيار مكان التوصيل</p>
-          <input type="hidden" id="orderLat" />
-          <input type="hidden" id="orderLng" />
-          <div class="map-coords" id="mapCoords">لم يتم تحديد الموقع بعد</div>
-          <iframe id="googleMapFrame" class="google-map-frame" hidden title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <label>ملاحظات (اختياري)
+            <input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" />
+          </label>
+          <div class="pay-methods">
+            <div class="pay-title">طريقة الدفع</div>
+            <label class="pay-option"><input type="radio" name="payMethod" value="cod" checked /> عند الاستلام</label>
+            <label class="pay-option"><input type="radio" name="payMethod" value="transfer" /> تحويل بنكي</label>
+            <label class="pay-option"><input type="radio" name="payMethod" value="card" /> بطاقة</label>
+          </div>
         </div>
-        <label>ملاحظات (اختياري)<input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" /></label>
-      <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب الآن</button>
-      <p class="checkout-hint">اختار طريقة الدفع ثم أكّد الطلب</p>
+        <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب الآن</button>
+        <p class="checkout-hint">أكملي البيانات وحددي الموقع ثم أكّدي الطلب</p>
+      </div>
     </div>
   </aside>
 
