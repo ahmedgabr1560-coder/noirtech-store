@@ -466,6 +466,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
   const phone = ($("#orderPhone")?.value || currentUser.phone || "").trim();
   const address = ($("#orderAddress")?.value || currentUser.address || "").trim();
   const note = ($("#orderNote")?.value || "").trim();
+  const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
 
   if (!name) return toast("اكتب اسم المستلم");
   if (!phone || phone.length < 10) return toast("اكتب رقم هاتف صحيح");
@@ -503,11 +504,41 @@ $("#checkoutBtn").addEventListener("click", async () => {
       return p ? { id: p.id, name: p.name, price: p.price, qty: i.qty } : null;
     }).filter(Boolean),
     total: total,
-    status: "new"
+    status: "new",
+    paymentMethod: payMethod
   };
   const orders = JSON.parse(localStorage.getItem("nx_orders") || "[]");
   orders.unshift(orderRecord);
   localStorage.setItem("nx_orders", JSON.stringify(orders.slice(0, 50)));
+
+  // Card payment via Stripe Checkout when selected
+  if (payMethod === "card") {
+    try {
+      const payRes = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method: "card", order: orderRecord })
+      });
+      const payData = await payRes.json();
+      if (payData.ok && payData.url) {
+        toast("جاري التحويل لصفحة الدفع...");
+        window.location.href = payData.url;
+        return;
+      }
+      toast(payData.error || "الدفع بالبطاقة غير متاح حالياً — اختار عند الاستلام");
+    } catch (e) {
+      toast("تعذر فتح الدفع بالبطاقة");
+    }
+  } else if (payMethod === "transfer") {
+    try {
+      await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method: "transfer", order: orderRecord })
+      });
+    } catch (e) {}
+  }
+
 
   let orderMsg = "🆔 " + orderId + "\n";
   orderMsg += "👤 " + name + "\n📞 " + phone + "\n📧 " + currentUser.email + "\n📍 " + address + "\n";
@@ -723,3 +754,26 @@ document.getElementById("aiSuggestions")?.addEventListener("click", e => {
   const input = document.getElementById("aiInput");
   if (input && q) { input.value = q; handleAiSend(); }
 });
+
+// Payment return from Stripe
+(function () {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get("paid") === "1") {
+      const oid = q.get("order") || "";
+      toast("تم الدفع بنجاح ✅" + (oid ? " — طلب " + oid : ""));
+      history.replaceState({}, "", location.pathname);
+    } else if (q.get("paid") === "0") {
+      toast("تم إلغاء الدفع");
+      history.replaceState({}, "", location.pathname);
+    }
+  } catch (e) {}
+})();
+
+// Hide card option if Stripe not configured
+fetch("/api/checkout").then(r => r.json()).then(d => {
+  if (!d.stripeEnabled) {
+    const el = document.getElementById("payCardOption");
+    if (el) el.style.display = "none";
+  }
+}).catch(() => {});
