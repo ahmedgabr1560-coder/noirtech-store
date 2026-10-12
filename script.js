@@ -617,18 +617,30 @@ $("#contactForm").addEventListener("submit", async (e) => {
 
 // Init — load products from JSON (Telegram bot can update them)
 async function loadProducts() {
+  const urls = [
+    "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json?t=" + Date.now(),
+    "/products.json?t=" + Date.now()
+  ];
+  let data = null;
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (Array.isArray(j) && j.length) { data = j; break; }
+    } catch (e) {}
+  }
   try {
-    const r = await fetch("/products.json?t=" + Date.now());
-    if (!r.ok) throw new Error("fail");
-    const data = await r.json();
     PRODUCTS = (Array.isArray(data) ? data : []).filter(p => !p.hidden).map(p => ({
       ...p,
+      id: Number(p.id),
+      price: Number(p.price) || 0,
+      oldPrice: p.oldPrice != null ? Number(p.oldPrice) : null,
       rating: p.rating || 4.2,
       reviews: p.reviews || 20,
-      best: p.best ?? (p.id % 3 === 0),
-      newest: p.newest ?? (p.id % 4 === 0),
+      best: p.best ?? (Number(p.id) % 3 === 0),
+      newest: p.newest ?? true,
       desc: p.description || p.desc || (p.name + " — متوفر في NEXORA"),
-      // map legacy categories
       category: p.category === "audio" || p.category === "wearables" ? "accessories" : p.category
     }));
   } catch (e) {
