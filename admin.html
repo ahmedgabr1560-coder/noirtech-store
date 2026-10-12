@@ -90,14 +90,15 @@
         </label>
       </div>
       <div class="row">
-        <label>القسم *
-          <select id="category">
-            <option value="phones">📱 موبايلات</option>
-            <option value="laptops">💻 لابتوبات</option>
-            <option value="monitors">🖥️ شاشات</option>
-            <option value="home">🏠 منزلية</option>
-            <option value="accessories">🎧 إكسسوارات</option>
-          </select>
+        <label>القسم الرئيسي *
+          <select id="category" required></select>
+        </label>
+        <label>القسم الفرعي *
+          <select id="subcategory" required></select>
+        </label>
+        <label>الماركة
+          <input type="text" id="brand" list="brandList" placeholder="Samsung" />
+          <datalist id="brandList"></datalist>
         </label>
         <label>شارة
           <input type="text" id="badge" value="جديد" />
@@ -139,6 +140,31 @@
   </div>
   <script>
     const SECRET_KEY = "nx_admin_secret";
+    let ADMIN_CATS = [];
+    async function loadAdminCatalog() {
+      try {
+        const r = await fetch("https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/categories.json?t=" + Date.now());
+        const data = await r.json();
+        ADMIN_CATS = data.categories || [];
+        const brands = data.brands || [];
+        const catSel = document.getElementById("category");
+        const brandList = document.getElementById("brandList");
+        if (catSel) {
+          catSel.innerHTML = ADMIN_CATS.map(c => `<option value="${c.id}">${c.icon || ""} ${c.name_ar}</option>`).join("");
+          catSel.onchange = fillSubs;
+          fillSubs();
+        }
+        if (brandList) brandList.innerHTML = brands.map(b => `<option value="${b}"></option>`).join("");
+      } catch (e) { console.warn(e); }
+    }
+    function fillSubs() {
+      const catId = document.getElementById("category")?.value;
+      const c = ADMIN_CATS.find(x => x.id === catId);
+      const sub = document.getElementById("subcategory");
+      if (!sub) return;
+      sub.innerHTML = (c?.subs || []).map(s => `<option value="${s.id}">${s.name_ar}</option>`).join("");
+    }
+    loadAdminCatalog();
     const form = document.getElementById("productForm");
     const lockCard = document.getElementById("lockCard");
     const formMsg = document.getElementById("formMsg");
@@ -255,6 +281,8 @@
           price: document.getElementById("price").value,
           oldPrice: document.getElementById("oldPrice").value || null,
           category: document.getElementById("category").value,
+          subcategory: document.getElementById("subcategory")?.value || "",
+          brand: document.getElementById("brand")?.value?.trim() || "",
           badge: document.getElementById("badge").value.trim() || "جديد",
           image: document.getElementById("image").value.trim(),
           imageBase64: imageBase64,
