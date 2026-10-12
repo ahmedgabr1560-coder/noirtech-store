@@ -85,13 +85,12 @@ function discountPct(p) {
 function productCard(p) {
   const off = discountPct(p);
   return `<article class="product-card" data-id="${p.id}">
-    <div class="product-media" data-open="${p.id}">
+    <a class="product-media" href="/product.html?id=${p.id}" data-open="${p.id}">
       <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />
       ${off ? `<span class="badge-off">-${off}%</span>` : ""}
-      
-    </div>
+    </a>
     <div class="product-body">
-      <h3 class="product-name" data-open="${p.id}"><a class="product-link" href="/product.html?id=${p.id}" data-open="${p.id}">${p.name}</a></h3>
+      <h3 class="product-name"><a class="product-link" href="/product.html?id=${p.id}" data-open="${p.id}">${p.name}</a></h3>
       <div class="rating" title="تقييم">${stars(p.rating)} <span>(${p.reviews} تقييم)</span></div>
       <div class="price-row">
         <span class="price">${money(p.price)}</span>
@@ -215,83 +214,25 @@ function closeCart() {
 }
 
 function openProduct(id) {
-  id = Number(id);
-  const p = PRODUCTS.find(x => Number(x.id) === id);
+  const p = PRODUCTS.find(x => Number(x.id) === Number(id));
   if (!p) return;
   const off = discountPct(p);
-  const cat = (typeof getCat === "function") ? getCat(p.category) : null;
-  const sub = (typeof getSub === "function") ? getSub(p.category, p.subcategory) : null;
-  const catName = cat ? cat.name_ar : (p.category || "");
-  const subName = sub ? sub.name_ar : (p.subcategory || "");
-  const specs = p.specs && typeof p.specs === "object" ? p.specs : {};
-  const specRows = Object.keys(specs).length
-    ? Object.entries(specs).map(([k,v]) => `<tr><th>${escapeHtml(String(k))}</th><td>${escapeHtml(String(v))}</td></tr>`).join("")
-    : "";
-  const desc = p.description || p.desc || (p.name + " — متوفر في NEXORA بجودة مضمونة.");
   $("#productDetail").innerHTML = `
-    <div class="pd-layout">
-      <div class="pd-gallery">
-        <img src="${p.image}" alt="${escapeHtml(p.name)}" class="pd-main-img"
-          onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=70'" />
+    <div><img src="${p.image}" alt="${p.name}" /></div>
+    <div>
+      <span class="detail-badge">متوفر الآن</span>
+      <h2 style="margin-bottom:8px">${p.name}</h2>
+      <div class="rating" style="margin-bottom:10px">${stars(p.rating)} <span>(${p.reviews} تقييم)</span></div>
+      <div class="price-row" style="margin-bottom:12px">
+        <span class="price" style="font-size:1.35rem">${money(p.price)}</span>
+        ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
+        ${off ? `<span class="badge-off" style="position:static">-${off}%</span>` : ""}
       </div>
-      <div class="pd-info">
-        <div class="pd-breadcrumb">
-          <a href="#shop" data-cat="${p.category || ""}">${escapeHtml(catName || "المتجر")}</a>
-          ${subName ? `<span>/</span><a href="#shop" data-cat="${p.category || ""}" data-sub="${p.subcategory || ""}">${escapeHtml(subName)}</a>` : ""}
-        </div>
-        ${p.brand ? `<div class="pd-brand">${escapeHtml(p.brand)}</div>` : ""}
-        <h2 class="pd-title">${escapeHtml(p.name)}</h2>
-        <div class="rating pd-rating">${stars(p.rating)} <span>(${p.reviews || 0} تقييم)</span></div>
-        <div class="price-row pd-price">
-          <span class="price">${money(p.price)}</span>
-          ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
-          ${off ? `<span class="badge-off" style="position:static">-${off}%</span>` : ""}
-        </div>
-        <div class="pd-stock">✓ متوفر للشحن خلال 24–48 ساعة</div>
-        <div class="pd-desc">
-          <h4>الوصف</h4>
-          <p>${escapeHtml(desc)}</p>
-        </div>
-        ${specRows ? `<div class="pd-specs"><h4>المواصفات</h4><table>${specRows}</table></div>` : ""}
-        <div class="pd-meta">
-          <span>القسم: ${escapeHtml(catName || "—")}</span>
-          ${subName ? `<span>التصنيف: ${escapeHtml(subName)}</span>` : ""}
-          ${p.brand ? `<span>الماركة: ${escapeHtml(p.brand)}</span>` : ""}
-          <span>رمز المنتج: #${p.id}</span>
-        </div>
-        <div class="pd-actions">
-          <div class="pd-qty">
-            <button type="button" id="pdQtyMinus">−</button>
-            <input type="number" id="pdQty" value="1" min="1" max="20" />
-            <button type="button" id="pdQtyPlus">+</button>
-          </div>
-          <button type="button" class="btn btn-primary" id="pdAddBtn" data-add="${p.id}">أضف للسلة</button>
-          <a class="btn btn-ghost" href="/product.html?id=${p.id}">صفحة كاملة</a>
-        </div>
-      </div>
+      <p class="muted" style="margin-bottom:16px">${p.desc}</p>
+      <button type="button" class="btn btn-primary" data-add="${p.id}">أضف للسلة</button>
     </div>`;
   $("#productOverlay").classList.add("open");
   $("#productModal").classList.add("open");
-  // qty controls
-  const qtyInput = document.getElementById("pdQty");
-  document.getElementById("pdQtyMinus")?.addEventListener("click", () => {
-    qtyInput.value = Math.max(1, (parseInt(qtyInput.value, 10) || 1) - 1);
-  });
-  document.getElementById("pdQtyPlus")?.addEventListener("click", () => {
-    qtyInput.value = Math.min(20, (parseInt(qtyInput.value, 10) || 1) + 1);
-  });
-  document.getElementById("pdAddBtn")?.addEventListener("click", () => {
-    const q = Math.max(1, parseInt(qtyInput?.value || "1", 10) || 1);
-    for (let i = 0; i < q; i++) addToCart(p.id);
-    toast("تمت إضافة " + q + " للسلة");
-  });
-}
-function escapeHtml(t) {
-  return String(t || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 function closeProduct() {
   $("#productOverlay").classList.remove("open");
@@ -342,10 +283,12 @@ document.addEventListener("click", (e) => {
   if (add) { addToCart(Number(add.dataset.add)); return; }
   const open = e.target.closest("[data-open]");
   if (open) {
-    const pid = Number(open.dataset.open || open.closest("[data-open]")?.dataset?.open);
-    if (open.tagName === "A" && open.getAttribute("href") && (window.event?.metaKey || window.event?.ctrlKey)) return;
-    openProduct(pid);
-    return;
+    e.preventDefault();
+    const pid = Number(open.getAttribute("data-open"));
+    if (pid) {
+      window.location.href = "/product.html?id=" + pid;
+      return;
+    }
   }
   const inc = e.target.closest("[data-inc]");
   if (inc) {
