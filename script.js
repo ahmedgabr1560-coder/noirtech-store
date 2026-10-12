@@ -652,8 +652,7 @@ function escapeAiText(t) {
   return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 function formatAiReply(t) {
-  return escapeAiText(String(t || "")).replace(/
-/g, "<br>");
+  return escapeAiText(String(t || "")).replace(/\n/g, "<br>");
 }
 function appendAiMsg(html, who) {
   const box = document.getElementById("aiMessages");
