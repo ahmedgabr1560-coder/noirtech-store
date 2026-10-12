@@ -602,37 +602,51 @@ window._aiHistory = JSON.parse(localStorage.getItem("nx_ai_history") || "[]");
 window._aiBusy = false;
 
 function openAiChat() {
-  document.getElementById("aiPanel")?.classList.add("open");
   document.getElementById("aiOverlay")?.classList.add("open");
-  document.getElementById("aiInput")?.focus();
+  document.getElementById("aiPanel")?.classList.add("open");
+  const box = document.getElementById("aiMessages");
+  if (box && !box.dataset.welcome) {
+    box.dataset.welcome = "1";
+    if (!box.querySelector(".ai-msg")) {
+      appendAiMsg(formatAiReply("أهلاً بيك 👋 أنا نورا مساعدة NEXORA
+اسألني عن موبايل أو لابتوب أو أي منتج."), "bot");
+    }
+  }
+  setTimeout(function () { document.getElementById("aiInput")?.focus(); }, 200);
 }
 function closeAiChat() {
-  document.getElementById("aiPanel")?.classList.remove("open");
   document.getElementById("aiOverlay")?.classList.remove("open");
+  document.getElementById("aiPanel")?.classList.remove("open");
 }
 function escapeAiText(t) {
   return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 function formatAiReply(t) {
-  return escapeAiText(t).replace(/\n/g, "<br>");
+  return escapeAiText(String(t || "")).replace(/
+/g, "<br>");
 }
 function appendAiMsg(html, who) {
   const box = document.getElementById("aiMessages");
   if (!box) return;
-  const div = document.createElement("div");
-  div.className = "ai-msg " + who;
-  div.innerHTML = `<div class="ai-bubble">${html}</div>`;
-  box.appendChild(div);
+  const time = (function () {
+    try { return new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return ""; }
+  })();
+  const row = document.createElement("div");
+  row.className = "ai-msg " + (who === "user" ? "user" : "bot");
+  row.innerHTML = '<div class="ai-bubble">' + html + '<span class="ai-time">' + time + "</span></div>";
+  box.appendChild(row);
   box.scrollTop = box.scrollHeight;
 }
 function addAiTyping() {
   const box = document.getElementById("aiMessages");
   if (!box) return;
-  const typing = document.createElement("div");
-  typing.className = "ai-msg bot";
-  typing.id = "aiTyping";
-  typing.innerHTML = `<div class="ai-bubble ai-typing"><i></i><i></i><i></i></div>`;
-  box.appendChild(typing);
+  document.getElementById("aiTyping")?.remove();
+  const row = document.createElement("div");
+  row.className = "ai-typing";
+  row.id = "aiTyping";
+  row.innerHTML = '<div class="ai-bubble"><span></span><span></span><span></span></div>';
+  box.appendChild(row);
   box.scrollTop = box.scrollHeight;
 }
 function localAiReply(msg) {
