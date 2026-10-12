@@ -282,9 +282,15 @@
         <label>الهاتف<input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" /></label>
         <label>العنوان<input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - تفاصيل" /></label>
         <label>ملاحظات (اختياري)<input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" /></label>
+        <div class="pay-methods">
+          <p class="pay-title">طريقة الدفع</p>
+          <label class="pay-option"><input type="radio" name="payMethod" value="cod" checked /> 💵 الدفع عند الاستلام</label>
+          <label class="pay-option"><input type="radio" name="payMethod" value="transfer" /> 🏦 تحويل / إنستاباي</label>
+          <label class="pay-option" id="payCardOption"><input type="radio" name="payMethod" value="card" /> 💳 بطاقة (Visa / Mastercard)</label>
+        </div>
       </div>
       <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب الآن</button>
-      <p class="checkout-hint">بعد الطلب هنتواصل معاك لتأكيد التوصيل والدفع</p>
+      <p class="checkout-hint">اختار طريقة الدفع ثم أكّد الطلب</p>
     </div>
   </aside>
 
