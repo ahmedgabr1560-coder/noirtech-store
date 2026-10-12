@@ -142,6 +142,11 @@ function updateCartUI() {
   }
   if (fields) {
     fields.hidden = false;
+    if (currentUser) {
+      if ($("#orderName") && !$("#orderName").value) $("#orderName").value = currentUser.name || "";
+      if ($("#orderPhone") && !$("#orderPhone").value) $("#orderPhone").value = currentUser.phone || "";
+      if ($("#orderAddress") && !$("#orderAddress").value) $("#orderAddress").value = currentUser.address || "";
+    }
   }
   box.innerHTML = cart.map(i => {
     const p = PRODUCTS.find(x => x.id === i.id);
@@ -234,7 +239,11 @@ function closeProduct() {
   $("#productModal").classList.remove("open");
 }
 
-function openAuth() { /* login removed */ toast("التسوق متاح بدون حساب"); }
+function openAuth(tab = "login") {
+  $("#authOverlay").classList.add("open");
+  $("#authModal").classList.add("open");
+  switchAuth(tab);
+}
 function closeAuth() {
   $("#authOverlay").classList.remove("open");
   $("#authModal").classList.remove("open");
@@ -255,7 +264,14 @@ function updateUserUI() {
   }
 }
 
-function openProfile() { /* disabled */ }
+function openProfile() {
+  if (!currentUser) {
+    openAuth("login");
+    return;
+  }
+  // صفحة بروفايل كاملة
+  window.location.href = "/profile.html";
+}
 function closeProfile() {
   $("#profileOverlay").classList.remove("open");
   $("#profileModal").classList.remove("open");
@@ -308,9 +324,9 @@ $("#authOverlay").addEventListener("click", closeAuth);
 $("#closeProfile").addEventListener("click", closeProfile);
 $("#profileOverlay").addEventListener("click", closeProfile);
 
-// account/login removed
-document.getElementById("accountBtn")?.addEventListener("click", () => {
-  toast("التسوق متاح بدون تسجيل دخول");
+$("#accountBtn").addEventListener("click", () => {
+  if (currentUser) openProfile();
+  else openAuth("login");
 });
 
 document.getElementById("goToRegister")?.addEventListener("click", () => switchAuth("register"));
@@ -492,17 +508,35 @@ document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeO
 $("#checkoutBtn").addEventListener("click", async () => {
   try {
     if (!cart.length) return toast("السلة فارغة");
-    
+    if (!currentUser) {
+      closeCart();
+      openAuth("login");
+      return toast("سجّل الدخول أولاً لإتمام الطلب");
+    }
 
-    const name = ($("#orderName")?.value || "").trim();
-    const phone = normalizePhone($("#orderPhone")?.value || "");
-    const address = ($("#orderAddress")?.value || "").trim();
+    const name = ($("#orderName")?.value || currentUser.name || "").trim();
+    const phone = normalizePhone($("#orderPhone")?.value || currentUser.phone || "");
+    const address = ($("#orderAddress")?.value || currentUser.address || "").trim();
     const note = ($("#orderNote")?.value || "").trim();
     const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
 
     if (!name) return toast("اكتب اسم المستلم");
     if (!phone || phone.replace(/[^0-9]/g, "").length < 10) return toast("اكتب رقم هاتف صحيح (11 رقم)");
     if (!address) return toast("اكتب عنوان التوصيل");
+
+    currentUser.name = name;
+    currentUser.phone = phone;
+    currentUser.address = address;
+    localStorage.setItem("nx_user", JSON.stringify(currentUser));
+    try {
+      let db = JSON.parse(localStorage.getItem("nx_users") || "[]");
+      const ui = db.findIndex(u => u.email === currentUser.email);
+      if (ui >= 0) {
+        db[ui] = { ...db[ui], ...currentUser };
+        localStorage.setItem("nx_users", JSON.stringify(db));
+      }
+    } catch (e) {}
+    updateUserUI();
 
     const btn = $("#checkoutBtn");
     if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
@@ -527,7 +561,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const orderRecord = {
       id: orderId,
       at: new Date().toISOString(),
-      customer: { name: name, phone: phone, email: (currentUser && currentUser.email) || "", address: address, note: note },
+      customer: { name: name, phone: phone, email: currentUser.email, address: address, note: note },
       items: richItems,
       total: total,
       status: "new",
@@ -567,7 +601,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
     }
 
     let orderMsg = "🆔 " + orderId + "\n";
-    orderMsg += "👤 " + name + "\n📞 " + phone + "\n📍 " + address + "\n";
+    orderMsg += "👤 " + name + "\n📞 " + phone + "\n📧 " + (currentUser.email || "") + "\n📍 " + address + "\n";
     if (note) orderMsg += "📝 " + note + "\n";
     orderMsg += "💳 الدفع: " + (payMethod === "card" ? "بطاقة" : payMethod === "transfer" ? "تحويل" : "عند الاستلام") + "\n";
     orderMsg += "\n📦 المنتجات:\n" + lines.join("\n");
