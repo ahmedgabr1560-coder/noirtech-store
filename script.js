@@ -153,20 +153,23 @@ function updateCartUI() {
     }
   }
   box.innerHTML = cart.map(i => {
-    const p = PRODUCTS.find(x => x.id === i.id);
-    if (!p) return "";
+    const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
+    const name = (i.name || (p && p.name) || ("منتج #" + i.id));
+    const price = (i.price != null ? i.price : (p ? p.price : 0));
+    const image = (i.image || (p && p.image) || "");
+    if (!name && !p) return "";
     return `<div class="cart-line">
-      <img src="${p.image}" alt="" />
+      <img src="${image}" alt="" />
       <div>
-        <h4>${p.name}</h4>
-        <div class="price">${money(p.price)}</div>
+        <h4>${name}</h4>
+        <div class="price">${money(price)}</div>
         <div class="qty-controls">
-          <button type="button" data-dec="${p.id}">−</button>
+          <button type="button" data-dec="${i.id}">−</button>
           <span>${i.qty}</span>
-          <button type="button" data-inc="${p.id}">+</button>
+          <button type="button" data-inc="${i.id}">+</button>
         </div>
       </div>
-      <button type="button" class="icon-close" data-remove="${p.id}" style="width:30px;height:30px;font-size:1rem">×</button>
+      <button type="button" class="icon-close" data-remove="${i.id}" style="width:30px;height:30px;font-size:1rem">×</button>
     </div>`;
   }).join("");
   const total = cart.reduce((s, i) => s + cartLinePrice(i) * (Number(i.qty) || 1), 0);
@@ -207,7 +210,10 @@ function openCart() {
   if (overlay) overlay.classList.add("open");
   if (drawer) drawer.classList.add("open");
   document.body.style.overflow = "hidden";
-  renderCart();
+  updateCartUI();
+  setTimeout(function () { ensureOrderMap(); }, 100);
+  setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 350);
+  setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 700);
 }
 function closeCart() {
   const overlay = document.getElementById("cartOverlay");
@@ -515,8 +521,16 @@ let orderMap = null, orderMarker = null, orderMapReady = false;
 function updateMapCoordsUI(lat, lng) {
   const el = document.getElementById("mapCoords");
   const a = document.getElementById("openInGoogle");
+  const gframe = document.getElementById("googleMapFrame");
   if (el) el.textContent = "الموقع: " + Number(lat).toFixed(6) + ", " + Number(lng).toFixed(6);
-  if (a) a.href = "https://www.google.com/maps?q=" + lat + "," + lng;
+  if (a) {
+    a.href = "https://www.google.com/maps?q=" + lat + "," + lng;
+    a.style.display = "inline-flex";
+  }
+  if (gframe) {
+    gframe.src = "https://maps.google.com/maps?q=" + encodeURIComponent(lat + "," + lng) + "&z=16&output=embed";
+    gframe.hidden = false;
+  }
   const latEl = document.getElementById("orderLat");
   const lngEl = document.getElementById("orderLng");
   if (latEl) latEl.value = String(lat);
@@ -533,23 +547,36 @@ function setOrderLocation(lat, lng, pan) {
       const p = orderMarker.getLatLng();
       updateMapCoordsUI(p.lat, p.lng);
     });
-  } else orderMarker.setLatLng([lat, lng]);
-  if (pan !== false) orderMap.setView([lat, lng], Math.max(orderMap.getZoom(), 16));
+  } else {
+    orderMarker.setLatLng([lat, lng]);
+  }
+  if (pan !== false) orderMap.setView([lat, lng], Math.max(orderMap.getZoom() || 12, 16));
 }
 function initOrderMap() {
-  if (orderMapReady || typeof L === "undefined") return;
+  if (typeof L === "undefined") return false;
   const el = document.getElementById("orderMap");
-  if (!el) return;
-  orderMap = L.map("orderMap", { zoomControl: true }).setView([30.0444, 31.2357], 12);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(orderMap);
-  orderMap.on("click", function (e) { setOrderLocation(e.latlng.lat, e.latlng.lng, false); });
-  orderMapReady = true;
-  setTimeout(function () { orderMap.invalidateSize(); }, 200);
+  if (!el) return false;
+  if (!orderMapReady) {
+    orderMap = L.map("orderMap", { zoomControl: true, scrollWheelZoom: true }).setView([30.0444, 31.2357], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(orderMap);
+    orderMap.on("click", function (e) {
+      setOrderLocation(e.latlng.lat, e.latlng.lng, false);
+    });
+    orderMapReady = true;
+  }
+  setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 50);
+  setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 300);
+  return true;
 }
 function ensureOrderMap() {
+  let tries = 0;
   const tryInit = function () {
-    if (typeof L !== "undefined") { initOrderMap(); setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 250); }
-    else setTimeout(tryInit, 150);
+    tries += 1;
+    if (initOrderMap()) return;
+    if (tries < 20) setTimeout(tryInit, 200);
   };
   tryInit();
 }
@@ -575,7 +602,10 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
     if (!phone || phone.replace(/[^0-9]/g, "").length < 10) return toast("اكتب رقم هاتف صحيح");
     if (!address) return toast("اكتب عنوان التوصيل");
-    if (!isFinite(lat) || !isFinite(lng)) return toast("حدّد موقع التوصيل على الخريطة");
+    if (!isFinite(lat) || !isFinite(lng)) {
+      ensureOrderMap();
+      return toast("اضغط على الخريطة أو «موقعي الحالي» لتحديد موقع التوصيل");
+    }
     const mapsLink = "https://www.google.com/maps?q=" + lat + "," + lng;
     const btn = $("#checkoutBtn");
     if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
