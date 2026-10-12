@@ -2,315 +2,488 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>NEXORA | إضافة منتج</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكم | NEXORA</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    :root { --bg:#050505; --card:#121218; --border:rgba(255,255,255,.1); --text:#f5f5f7; --muted:#9a9aa3; --accent:#a78bfa; }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:"Cairo",system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:20px 14px 48px; }
-    .wrap { width:min(560px,100%); margin:0 auto; }
-    .brand { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
-    .mark { width:40px; height:40px; border-radius:12px; background:#fff; color:#000; display:grid; place-items:center; font-weight:900; font-size:.75rem; }
-    h1 { font-size:1.3rem; font-weight:800; }
-    .sub { color:var(--muted); font-size:.86rem; margin-top:3px; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:20px; margin-bottom:14px; }
-    label { display:grid; gap:6px; margin-bottom:12px; font-size:.84rem; font-weight:600; color:var(--muted); }
-    input, select, textarea {
-      width:100%; padding:13px 14px; border-radius:12px; border:1px solid var(--border);
-      background:rgba(255,255,255,.04); color:var(--text); font-family:inherit; font-size:.95rem; outline:none;
+    :root {
+      --bg:#0b0b10; --panel:#12121a; --card:#181822; --border:rgba(255,255,255,.08);
+      --text:#f4f4f8; --muted:#9a9aa8; --accent:#8b5cf6; --accent2:#6366f1;
+      --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444; --side:260px;
     }
-    input:focus, select:focus, textarea:focus { border-color:rgba(167,139,250,.5); }
-    textarea { min-height:80px; resize:vertical; }
-    .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .btn {
-      width:100%; padding:14px; border:0; border-radius:999px; font-weight:800; font-size:.95rem;
-      cursor:pointer; font-family:inherit; background:#fff; color:#000; margin-top:6px;
-    }
-    .btn:disabled { opacity:.55; cursor:wait; }
-    .btn-ghost { background:transparent; border:1px solid var(--border); color:#fff; margin-top:10px; }
-    .msg { margin-top:12px; padding:12px 14px; border-radius:12px; font-size:.9rem; display:none; }
-    .msg.ok { display:block; background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.3); color:#86efac; }
-    .msg.err { display:block; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
-    .lock { text-align:center; padding:28px 12px; }
-    .links { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
-    .links a { color:var(--accent); font-size:.86rem; font-weight:600; text-decoration:none; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Cairo,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
+    .login-card{width:min(400px,100%);background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px}
+    .login-card h1{font-size:1.3rem;margin-bottom:6px}
+    .login-card p{color:var(--muted);margin-bottom:16px;font-size:.9rem}
+    label{display:grid;gap:6px;margin-bottom:12px;font-size:.85rem;color:var(--muted);font-weight:600}
+    input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-family:inherit;font-size:.95rem}
+    textarea{min-height:90px;resize:vertical}
+    .btn{border:0;border-radius:12px;padding:12px 16px;font-weight:800;font-family:inherit;cursor:pointer}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+    .btn-ghost{background:transparent;border:1px solid var(--border);color:#eee}
+    .btn-danger{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+    .btn-ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+    .btn:disabled{opacity:.55;cursor:wait}
+    .msg{margin-top:10px;font-size:.88rem;display:none}
+    .msg.err{display:block;color:#fca5a5}.msg.ok{display:block;color:#86efac}
 
-    .photo-box {
-      border:1.5px dashed rgba(255,255,255,.18); border-radius:16px; padding:16px;
-      text-align:center; background:rgba(255,255,255,.03); margin-bottom:14px;
+    .app{display:none;min-height:100vh}
+    .app.on{display:grid;grid-template-columns:var(--side) 1fr}
+    .side{background:var(--panel);border-left:1px solid var(--border);padding:18px 12px;position:sticky;top:0;height:100vh;overflow:auto}
+    .brand{display:flex;align-items:center;gap:10px;padding:8px 10px 18px;font-weight:900}
+    .brand span{width:36px;height:36px;border-radius:10px;background:#fff;color:#000;display:grid;place-items:center;font-size:.7rem}
+    .nav button{width:100%;text-align:right;background:transparent;border:0;color:#cfcfd8;padding:12px 12px;border-radius:12px;font-family:inherit;font-weight:700;cursor:pointer;margin-bottom:4px}
+    .nav button.active,.nav button:hover{background:rgba(139,92,246,.15);color:#fff}
+    .main{padding:20px;min-width:0}
+    .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+    .top h2{font-size:1.25rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px}
+    .stat b{display:block;font-size:1.35rem;margin-top:6px}
+    .stat span{color:var(--muted);font-size:.8rem}
+    .panel{display:none}
+    .panel.active{display:block}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}
+    .card h3{margin-bottom:12px;font-size:1rem}
+    table{width:100%;border-collapse:collapse;font-size:.88rem}
+    th,td{padding:10px 8px;border-bottom:1px solid var(--border);text-align:right;vertical-align:top}
+    th{color:var(--muted);font-weight:700}
+    .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.72rem;font-weight:800}
+    .badge.on{background:rgba(34,197,94,.15);color:#86efac}
+    .badge.off{background:rgba(239,68,68,.12);color:#fca5a5}
+    .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .toolbar input,.toolbar select{max-width:220px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:900px){
+      .app.on{grid-template-columns:1fr}
+      .side{position:relative;height:auto;border-left:0;border-bottom:1px solid var(--border)}
+      .form-grid{grid-template-columns:1fr}
+      .nav{display:flex;overflow:auto;gap:6px}
+      .nav button{white-space:nowrap;width:auto}
     }
-    .photo-box.has-img { border-style:solid; border-color:rgba(167,139,250,.35); }
-    .photo-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
-    .photo-btn {
-      display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:999px;
-      border:1px solid var(--border); background:rgba(255,255,255,.06); color:#fff;
-      font-weight:700; font-size:.84rem; cursor:pointer; font-family:inherit;
-    }
-    .preview {
-      width:100%; max-height:220px; object-fit:contain; border-radius:12px;
-      background:rgba(0,0,0,.35); display:none; margin:0 auto;
-    }
-    .preview.on { display:block; }
-    .hint { font-size:.78rem; color:var(--muted); margin-top:8px; }
+    .hint{color:var(--muted);font-size:.85rem;line-height:1.6}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="brand">
-      <div class="mark">NX</div>
-      <div>
-        <h1>إضافة منتج</h1>
-        <p class="sub">ارفع صورة من الموبايل أو أكتب رابط</p>
-      </div>
-    </div>
-
-    <div class="card" id="lockCard">
-      <div class="lock">
-        <h2>🔐 دخول الإدارة</h2>
-        <p class="sub" style="margin-bottom:14px">كلمة سر الإدارة</p>
-        <label>كلمة السر
-          <input type="password" id="secretInput" placeholder="••••••••" />
-        </label>
-        <button class="btn" type="button" id="unlockBtn">دخول</button>
-        <div class="msg" id="lockMsg"></div>
-      </div>
-    </div>
-
-    <form class="card" id="productForm" style="display:none">
-      <label>اسم المنتج *
-        <input type="text" id="name" required placeholder="مثال: Samsung Galaxy A36" />
+  <div class="login-wrap" id="loginView">
+    <div class="login-card">
+      <h1>لوحة تحكم NEXORA</h1>
+      <p>أدخل كلمة سر الإدارة للمتابعة</p>
+      <label>كلمة السر
+        <input type="password" id="adminSecret" placeholder="••••••••" />
       </label>
-      <div class="row">
-        <label>السعر (ج.م) *
-          <input type="number" id="price" required min="1" placeholder="25000" inputmode="numeric" />
-        </label>
-        <label>قبل الخصم
-          <input type="number" id="oldPrice" min="1" placeholder="اختياري" inputmode="numeric" />
-        </label>
-      </div>
-      <div class="row">
-        <label>القسم الرئيسي *
-          <select id="category" required></select>
-        </label>
-        <label>القسم الفرعي *
-          <select id="subcategory" required></select>
-        </label>
-        <label>الماركة
-          <input type="text" id="brand" list="brandList" placeholder="Samsung" />
-          <datalist id="brandList"></datalist>
-        </label>
-        <label>شارة
-          <input type="text" id="badge" value="جديد" />
-        </label>
-      </div>
+      <button class="btn btn-primary" id="loginBtn" style="width:100%">دخول</button>
+      <div class="msg" id="loginMsg"></div>
+      <p class="hint" style="margin-top:14px"><a href="/" style="color:#c4b5fd">العودة للمتجر</a></p>
+    </div>
+  </div>
 
-      <div class="photo-box" id="photoBox">
-        <img class="preview" id="imgPreview" alt="معاينة الصورة" />
-        <p id="photoLabel" style="font-weight:700;color:#eee">📷 صورة المنتج</p>
-        <p class="hint">من الكاميرا أو الاستوديو — أو رابط صورة</p>
-        <div class="photo-actions">
-          <label class="photo-btn">
-            📁 من المعرض
-            <input type="file" id="fileGallery" accept="image/*" hidden />
-          </label>
-          <label class="photo-btn">
-            📸 كاميرا
-            <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden />
-          </label>
-          <button type="button" class="photo-btn" id="clearPhoto" style="display:none">🗑 إزالة</button>
+  <div class="app" id="app">
+    <aside class="side">
+      <div class="brand"><span>NX</span> الإدارة</div>
+      <nav class="nav" id="nav">
+        <button data-panel="dash" class="active">الرئيسية</button>
+        <button data-panel="categories">الأقسام (إظهار/إخفاء)</button>
+        <button data-panel="products">المنتجات</button>
+        <button data-panel="add">إضافة منتج</button>
+        <button data-panel="orders">الطلبات</button>
+        <button data-panel="finance">الأرباح والمصروفات</button>
+        <button data-panel="settings">إعدادات</button>
+      </nav>
+      <button class="btn btn-ghost" id="logoutBtn" style="width:100%;margin-top:12px">خروج</button>
+    </aside>
+    <main class="main">
+      <div class="top">
+        <h2 id="pageTitle">الرئيسية</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn btn-ghost" href="/" target="_blank">فتح المتجر</a>
+          <button class="btn btn-ghost" id="refreshBtn">تحديث</button>
         </div>
       </div>
 
-      <label>أو رابط صورة
-        <input type="url" id="image" placeholder="https://..." inputmode="url" />
-      </label>
-      <label>الوصف
-        <textarea id="description" placeholder="وصف قصير..."></textarea>
-      </label>
-      <button class="btn" type="submit" id="submitBtn">➕ إضافة المنتج ونشره</button>
-      <p class="hint" style="text-align:center;margin-top:10px">النشر تلقائي — المنتج يظهر على الموقع مباشرة بدون أي خطوة إضافية</p>
-      <button class="btn btn-ghost" type="button" id="logoutBtn">تسجيل الخروج</button>
-      <div class="msg" id="formMsg"></div>
-      <div class="links">
-        <a href="/" target="_blank">🌐 المتجر</a>
-        <a href="https://t.me/tacnoahmrd55_bot" target="_blank">🤖 البوت</a>
-      </div>
-    </form>
+      <section class="panel active" id="panel-dash">
+        <div class="grid" id="statsGrid"></div>
+        <div class="card">
+          <h3>أحدث الطلبات</h3>
+          <div id="recentOrders">جاري التحميل...</div>
+        </div>
+        <div class="card">
+          <h3>ملاحظة</h3>
+          <p class="hint">الإحصائيات محسوبة من المنتجات والطلبات والمصروفات المحفوظة في GitHub. حاليًا القسم الظاهر في المتجر: <strong>الموضة والأزياء</strong> فقط، ويمكنك إظهار باقي الأقسام من تبويب الأقسام.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-categories">
+        <div class="card">
+          <h3>إدارة ظهور الأقسام</h3>
+          <p class="hint" style="margin-bottom:12px">الأقسام المخفية تبقى محفوظة ويمكن إظهارها في أي وقت. المتجر يعرض الأقسام المفعّلة فقط.</p>
+          <div id="catsTable">جاري التحميل...</div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-products">
+        <div class="card">
+          <div class="toolbar">
+            <input type="search" id="prodSearch" placeholder="بحث في المنتجات..." />
+            <select id="prodCatFilter"><option value="">كل الأقسام</option></select>
+          </div>
+          <div id="prodTable">جاري التحميل...</div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-add">
+        <div class="card">
+          <h3>إضافة منتج جديد</h3>
+          <form id="addForm">
+            <div class="form-grid">
+              <label>اسم المنتج *<input id="pName" required /></label>
+              <label>السعر *<input id="pPrice" type="number" required /></label>
+              <label>السعر قبل الخصم<input id="pOld" type="number" /></label>
+              <label>الماركة<input id="pBrand" list="brandList" /><datalist id="brandList"></datalist></label>
+              <label>القسم الرئيسي *<select id="pCat" required></select></label>
+              <label>القسم الفرعي *<select id="pSub" required></select></label>
+              <label>المخزون<input id="pStock" type="number" value="10" /></label>
+              <label>شارة<input id="pBadge" value="جديد" /></label>
+            </div>
+            <label>رابط الصورة أو رفع من الجهاز
+              <input id="pImageUrl" placeholder="https://..." />
+              <input id="pImageFile" type="file" accept="image/*" capture="environment" style="margin-top:8px" />
+            </label>
+            <label>الوصف<textarea id="pDesc"></textarea></label>
+            <button class="btn btn-primary" type="submit" id="addBtn">نشر المنتج</button>
+            <div class="msg" id="addMsg"></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-orders">
+        <div class="card">
+          <h3>الطلبات</h3>
+          <div id="ordersTable">جاري التحميل...</div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-finance">
+        <div class="grid" id="finStats"></div>
+        <div class="card">
+          <h3>تسجيل مصروف</h3>
+          <div class="form-grid">
+            <label>المبلغ<input id="exAmount" type="number" /></label>
+            <label>التصنيف
+              <select id="exCat">
+                <option value="ads">إعلانات</option>
+                <option value="shipping">شحن</option>
+                <option value="ops">تشغيل</option>
+                <option value="salaries">رواتب</option>
+                <option value="other">أخرى</option>
+              </select>
+            </label>
+          </div>
+          <label>الوصف<input id="exDesc" /></label>
+          <button class="btn btn-primary" id="exBtn">حفظ المصروف</button>
+          <div class="msg" id="exMsg"></div>
+        </div>
+        <div class="card">
+          <h3>سجل المصروفات</h3>
+          <div id="exTable">—</div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-settings">
+        <div class="card">
+          <h3>إعدادات سريعة</h3>
+          <p class="hint">كلمة سر الإدارة الافتراضية: <code>nexora2026</code> (يمكن تغييرها من متغيرات Vercel: ADMIN_SECRET)</p>
+          <p class="hint" style="margin-top:8px">البيانات تُحفظ على GitHub (products.json / categories.json / orders.json / expenses.json) والمتجر يقرأها مباشرة.</p>
+          <p class="hint" style="margin-top:8px">الأقسام غير الظاهرة الآن محفوظة بالكامل ويمكن تفعيلها من تبويب الأقسام.</p>
+        </div>
+      </section>
+    </main>
   </div>
+
   <script>
     const SECRET_KEY = "nx_admin_secret";
-    let ADMIN_CATS = [];
-    async function loadAdminCatalog() {
-      try {
-        const r = await fetch("https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/categories.json?t=" + Date.now());
-        const data = await r.json();
-        ADMIN_CATS = data.categories || [];
-        const brands = data.brands || [];
-        const catSel = document.getElementById("category");
-        const brandList = document.getElementById("brandList");
-        if (catSel) {
-          catSel.innerHTML = ADMIN_CATS.map(c => `<option value="${c.id}">${c.icon || ""} ${c.name_ar}</option>`).join("");
-          catSel.onchange = fillSubs;
-          fillSubs();
-        }
-        if (brandList) brandList.innerHTML = brands.map(b => `<option value="${b}"></option>`).join("");
-      } catch (e) { console.warn(e); }
+    let SECRET = localStorage.getItem(SECRET_KEY) || "";
+    let CATALOG = { categories: [], brands: [] };
+    let PRODUCTS = [];
+
+    const $ = (id) => document.getElementById(id);
+    async function api(action, payload = {}) {
+      const r = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-secret": SECRET },
+        body: JSON.stringify({ secret: SECRET, action, ...payload })
+      });
+      return r.json();
+    }
+    function money(n){ return Number(n||0).toLocaleString("ar-EG") + " ج.م"; }
+
+    function showApp() {
+      $("loginView").style.display = "none";
+      $("app").classList.add("on");
+      refreshAll();
+    }
+    function showLogin(msg) {
+      $("app").classList.remove("on");
+      $("loginView").style.display = "grid";
+      if (msg) { $("loginMsg").className = "msg err"; $("loginMsg").textContent = msg; }
+    }
+
+    $("loginBtn").onclick = async () => {
+      SECRET = $("adminSecret").value.trim();
+      const data = await api("stats");
+      if (!data.ok) {
+        $("loginMsg").className = "msg err";
+        $("loginMsg").textContent = data.error || "كلمة سر خاطئة";
+        return;
+      }
+      localStorage.setItem(SECRET_KEY, SECRET);
+      showApp();
+    };
+    $("logoutBtn").onclick = () => { localStorage.removeItem(SECRET_KEY); SECRET=""; showLogin(); };
+    $("refreshBtn").onclick = () => refreshAll();
+
+    document.querySelectorAll("#nav button").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll("#nav button").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        $("panel-" + btn.dataset.panel).classList.add("active");
+        $("pageTitle").textContent = btn.textContent;
+      };
+    });
+
+    async function refreshAll() {
+      await Promise.all([loadStats(), loadCategories(), loadProducts(), loadOrders(), loadExpenses()]);
+    }
+
+    async function loadStats() {
+      const data = await api("stats");
+      if (!data.ok) return;
+      const s = data.stats;
+      $("statsGrid").innerHTML = [
+        ["المنتجات", s.products],
+        ["الأقسام الظاهرة", s.visibleCategories + " / " + s.totalCategories],
+        ["الطلبات", s.orders],
+        ["طلبات جديدة", s.newOrders],
+        ["مكتملة", s.completed],
+        ["ملغاة", s.cancelled],
+        ["المبيعات", money(s.sales)],
+        ["المصروفات", money(s.expenses)],
+        ["صافي تقديري", money(s.profit)],
+      ].map(([k,v]) => `<div class="stat"><span>${k}</span><b>${v}</b></div>`).join("");
+      const rec = data.recentOrders || [];
+      $("recentOrders").innerHTML = rec.length ? `<table><thead><tr><th>رقم</th><th>العميل</th><th>الإجمالي</th><th>الحالة</th></tr></thead><tbody>
+        ${rec.map(o=>`<tr><td>${o.id||"—"}</td><td>${o.customer?.name||"—"}<br><small>${o.customer?.phone||""}</small></td><td>${money(o.total)}</td><td>${o.status||"new"}</td></tr>`).join("")}
+      </tbody></table>` : `<p class="hint">لا توجد طلبات محفوظة بعد على الخادم.</p>`;
+    }
+
+    async function loadCategories() {
+      const data = await api("list_categories");
+      if (!data.ok) return;
+      CATALOG = data;
+      const rows = (data.categories || []).map(c => {
+        const on = c.visible !== false;
+        return `<tr>
+          <td>${c.icon||""} <strong>${c.name_ar}</strong><br><small style="color:#9a9aa8">${c.name_en||c.id}</small></td>
+          <td>${(c.subs||[]).length} فرعي</td>
+          <td><span class="badge ${on?"on":"off"}">${on?"ظاهر":"مخفي"}</span></td>
+          <td class="row-actions">
+            <button class="btn ${on?"btn-danger":"btn-ok"}" data-toggle-cat="${c.id}">${on?"إخفاء":"إظهار"}</button>
+          </td>
+        </tr>`;
+      }).join("");
+      $("catsTable").innerHTML = `<table><thead><tr><th>القسم</th><th>فرعي</th><th>الحالة</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+      // fill product form selects
+      const catSel = $("pCat");
+      const filter = $("prodCatFilter");
+      if (catSel) {
+        catSel.innerHTML = (data.categories||[]).map(c=>`<option value="${c.id}">${c.name_ar}</option>`).join("");
+        fillSubs();
+        catSel.onchange = fillSubs;
+      }
+      if (filter) {
+        filter.innerHTML = `<option value="">كل الأقسام</option>` + (data.categories||[]).map(c=>`<option value="${c.id}">${c.name_ar}</option>`).join("");
+      }
+      const bl = $("brandList");
+      if (bl) bl.innerHTML = (data.brands||[]).map(b=>`<option value="${b}">`).join("");
     }
     function fillSubs() {
-      const catId = document.getElementById("category")?.value;
-      const c = ADMIN_CATS.find(x => x.id === catId);
-      const sub = document.getElementById("subcategory");
-      if (!sub) return;
-      sub.innerHTML = (c?.subs || []).map(s => `<option value="${s.id}">${s.name_ar}</option>`).join("");
+      const id = $("pCat").value;
+      const c = (CATALOG.categories||[]).find(x=>x.id===id);
+      $("pSub").innerHTML = (c?.subs||[]).map(s=>`<option value="${s.id}">${s.name_ar}</option>`).join("");
     }
-    loadAdminCatalog();
-    const form = document.getElementById("productForm");
-    const lockCard = document.getElementById("lockCard");
-    const formMsg = document.getElementById("formMsg");
-    const lockMsg = document.getElementById("lockMsg");
-    const imgPreview = document.getElementById("imgPreview");
-    const photoBox = document.getElementById("photoBox");
-    const photoLabel = document.getElementById("photoLabel");
-    const clearPhoto = document.getElementById("clearPhoto");
-    let imageBase64 = null;
 
-    function showForm() {
-      lockCard.style.display = "none";
-      form.style.display = "block";
+    document.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-toggle-cat]");
+      if (!btn) return;
+      btn.disabled = true;
+      const id = btn.getAttribute("data-toggle-cat");
+      const data = await api("toggle_category", { id });
+      btn.disabled = false;
+      if (!data.ok) return alert(data.error || "فشل");
+      await loadCategories();
+      alert(data.category.visible === false ? "تم إخفاء القسم من المتجر" : "تم إظهار القسم في المتجر");
+    });
+
+    async function loadProducts() {
+      const data = await api("list_products");
+      if (!data.ok) return;
+      PRODUCTS = data.products || [];
+      renderProducts();
     }
-    if (localStorage.getItem(SECRET_KEY)) showForm();
-
-    document.getElementById("unlockBtn").onclick = () => {
-      const s = document.getElementById("secretInput").value.trim();
-      if (!s) { lockMsg.className = "msg err"; lockMsg.textContent = "اكتب كلمة السر"; return; }
-      localStorage.setItem(SECRET_KEY, s);
-      showForm();
-    };
-    document.getElementById("logoutBtn").onclick = () => {
-      localStorage.removeItem(SECRET_KEY);
-      location.reload();
-    };
-
-    function setPreview(src) {
-      imgPreview.src = src;
-      imgPreview.classList.add("on");
-      photoBox.classList.add("has-img");
-      photoLabel.style.display = "none";
-      clearPhoto.style.display = "inline-flex";
+    function renderProducts() {
+      const q = ($("prodSearch").value || "").toLowerCase();
+      const cat = $("prodCatFilter").value;
+      let list = PRODUCTS.slice();
+      if (cat) list = list.filter(p => p.category === cat);
+      if (q) list = list.filter(p => (p.name||"").toLowerCase().includes(q) || (p.brand||"").toLowerCase().includes(q));
+      $("prodTable").innerHTML = `<table><thead><tr><th>المنتج</th><th>القسم</th><th>السعر</th><th>الحالة</th><th></th></tr></thead><tbody>
+        ${list.slice(0,200).map(p=>`<tr>
+          <td><strong>${p.name}</strong><br><small>#${p.id} ${p.brand||""}</small></td>
+          <td>${p.category||""}<br><small>${p.subcategory||""}</small></td>
+          <td>${money(p.price)}</td>
+          <td><span class="badge ${p.hidden?"off":"on"}">${p.hidden?"مخفي":"منشور"}</span></td>
+          <td class="row-actions">
+            <button class="btn btn-ghost" data-hide-prod="${p.id}">${p.hidden?"إظهار":"إخفاء"}</button>
+            <button class="btn btn-danger" data-del-prod="${p.id}">حذف</button>
+          </td>
+        </tr>`).join("")}
+      </tbody></table>
+      <p class="hint" style="margin-top:8px">عرض ${Math.min(list.length,200)} من ${list.length}</p>`;
     }
-    function resetPhoto() {
-      imageBase64 = null;
-      imgPreview.src = "";
-      imgPreview.classList.remove("on");
-      photoBox.classList.remove("has-img");
-      photoLabel.style.display = "block";
-      clearPhoto.style.display = "none";
-      document.getElementById("fileGallery").value = "";
-      document.getElementById("fileCamera").value = "";
-    }
-    clearPhoto.onclick = resetPhoto;
+    $("prodSearch").oninput = renderProducts;
+    $("prodCatFilter").onchange = renderProducts;
 
-    document.getElementById("image").addEventListener("input", (e) => {
-      const v = e.target.value.trim();
-      if (/^https?:\/\//i.test(v)) {
-        imageBase64 = null;
-        setPreview(v);
+    document.addEventListener("click", async (e) => {
+      const del = e.target.closest("[data-del-prod]");
+      const hide = e.target.closest("[data-hide-prod]");
+      if (del) {
+        if (!confirm("حذف المنتج نهائيًا؟")) return;
+        del.disabled = true;
+        const data = await api("delete_product", { id: Number(del.getAttribute("data-del-prod")) });
+        if (!data.ok) alert(data.error||"فشل");
+        await loadProducts();
+      }
+      if (hide) {
+        hide.disabled = true;
+        await api("toggle_product", { id: Number(hide.getAttribute("data-hide-prod")) });
+        await loadProducts();
       }
     });
 
-    function compressImage(file) {
-      return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith("image/")) return reject(new Error("اختر صورة"));
-        if (file.size > 8 * 1024 * 1024) return reject(new Error("الصورة أكبر من 8MB"));
-        const reader = new FileReader();
-        reader.onerror = () => reject(new Error("تعذر قراءة الصورة"));
-        reader.onload = () => {
-          const img = new Image();
-          img.onload = () => {
-            const max = 1000;
-            let w = img.width, h = img.height;
-            if (w > max || h > max) {
-              const r = Math.min(max / w, max / h);
-              w = Math.round(w * r);
-              h = Math.round(h * r);
-            }
-            const canvas = document.createElement("canvas");
-            canvas.width = w; canvas.height = h;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, w, h);
-            const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-            resolve(dataUrl);
-          };
-          img.onerror = () => reject(new Error("صورة غير صالحة"));
-          img.src = reader.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
+    // image file to data url
+    let pendingImage = "";
+    $("pImageFile").onchange = (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = () => { pendingImage = r.result; };
+      r.readAsDataURL(f);
+    };
 
-    async function onFile(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      try {
-        formMsg.className = "msg";
-        formMsg.textContent = "";
-        const dataUrl = await compressImage(file);
-        imageBase64 = dataUrl;
-        document.getElementById("image").value = "";
-        setPreview(dataUrl);
-      } catch (err) {
-        formMsg.className = "msg err";
-        formMsg.textContent = "❌ " + err.message;
-      }
-    }
-    document.getElementById("fileGallery").addEventListener("change", onFile);
-    document.getElementById("fileCamera").addEventListener("change", onFile);
-
-    form.addEventListener("submit", async (e) => {
+    $("addForm").onsubmit = async (e) => {
       e.preventDefault();
-      const btn = document.getElementById("submitBtn");
-      formMsg.className = "msg";
-      formMsg.textContent = "";
-      btn.disabled = true;
-      btn.textContent = "جاري النشر...";
+      const btn = $("addBtn");
+      const msg = $("addMsg");
+      btn.disabled = true; msg.className="msg";
       try {
         const payload = {
-          secret: localStorage.getItem(SECRET_KEY),
-          name: document.getElementById("name").value.trim(),
-          price: document.getElementById("price").value,
-          oldPrice: document.getElementById("oldPrice").value || null,
-          category: document.getElementById("category").value,
-          subcategory: document.getElementById("subcategory")?.value || "",
-          brand: document.getElementById("brand")?.value?.trim() || "",
-          badge: document.getElementById("badge").value.trim() || "جديد",
-          image: document.getElementById("image").value.trim(),
-          imageBase64: imageBase64,
-          description: document.getElementById("description").value.trim()
+          secret: SECRET,
+          name: $("pName").value.trim(),
+          price: $("pPrice").value,
+          oldPrice: $("pOld").value || null,
+          brand: $("pBrand").value.trim(),
+          category: $("pCat").value,
+          subcategory: $("pSub").value,
+          stock: Number($("pStock").value||10),
+          badge: $("pBadge").value.trim() || "جديد",
+          description: $("pDesc").value.trim(),
+          image: pendingImage || $("pImageUrl").value.trim()
         };
         const r = await fetch("/api/product", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-admin-secret": SECRET },
           body: JSON.stringify(payload)
         });
         const data = await r.json();
-        if (!r.ok || !data.ok) {
-          if (r.status === 401) localStorage.removeItem(SECRET_KEY);
-          throw new Error(data.error || "فشل الإضافة");
-        }
-        formMsg.className = "msg ok";
-        formMsg.textContent = "✅ تم النشر فورًا #" + data.product.id + " — " + data.product.name + " | الإجمالي: " + data.total + " | ظاهر على الموقع خلال ثواني";
-        form.reset();
-        document.getElementById("badge").value = "جديد";
-        resetPhoto();
+        if (!data.ok) throw new Error(data.error || "فشل الإضافة");
+        msg.className = "msg ok";
+        msg.textContent = "تم نشر المنتج #" + data.product.id + " — يظهر في المتجر حسب ظهور القسم";
+        e.target.reset(); pendingImage = "";
+        await loadProducts(); await loadStats();
       } catch (err) {
-        formMsg.className = "msg err";
-        formMsg.textContent = "❌ " + (err.message || "حصل خطأ");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "➕ إضافة المنتج ونشره";
+        msg.className = "msg err";
+        msg.textContent = err.message || "خطأ";
+      } finally { btn.disabled = false; }
+    };
+
+    async function loadOrders() {
+      const data = await api("list_orders");
+      if (!data.ok) return;
+      const orders = data.orders || [];
+      if (!orders.length) {
+        $("ordersTable").innerHTML = `<p class="hint">لا توجد طلبات على الخادم بعد. الطلبات تُرسل أيضًا لتليجرام.</p>`;
+        return;
       }
+      $("ordersTable").innerHTML = `<table><thead><tr><th>الطلب</th><th>العميل</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th></tr></thead><tbody>
+        ${orders.slice(0,100).map(o=>{
+          const items=(o.items||[]).map(i=>`${i.name}×${i.qty||1}`).join("<br>");
+          return `<tr>
+            <td><strong>${o.id}</strong><br><small>${o.at?new Date(o.at).toLocaleString("ar-EG"):""}</small>
+              ${o.customer?.mapsLink?`<br><a href="${o.customer.mapsLink}" target="_blank" style="color:#c4b5fd">الموقع</a>`:""}
+            </td>
+            <td>${o.customer?.name||"—"}<br>${o.customer?.phone||""}<br><small>${o.customer?.address||""}</small></td>
+            <td>${items||"—"}</td>
+            <td>${money(o.total)}</td>
+            <td>
+              <select data-order-status="${o.id}">
+                ${["new","confirmed","processing","shipped","delivered","cancelled","returned"].map(s=>`<option value="${s}" ${o.status===s?"selected":""}>${s}</option>`).join("")}
+              </select>
+            </td>
+          </tr>`;
+        }).join("")}
+      </tbody></table>`;
+    }
+    document.addEventListener("change", async (e) => {
+      const sel = e.target.closest("[data-order-status]");
+      if (!sel) return;
+      await api("update_order_status", { id: sel.getAttribute("data-order-status"), status: sel.value });
+      await loadStats();
     });
+
+    async function loadExpenses() {
+      const data = await api("list_expenses");
+      if (!data.ok) return;
+      const list = data.expenses || [];
+      const total = list.reduce((s,x)=>s+Number(x.amount||0),0);
+      $("finStats").innerHTML = `<div class="stat"><span>إجمالي المصروفات</span><b>${money(total)}</b></div>`;
+      $("exTable").innerHTML = list.length ? `<table><thead><tr><th>التاريخ</th><th>التصنيف</th><th>الوصف</th><th>المبلغ</th></tr></thead><tbody>
+        ${list.slice(0,50).map(x=>`<tr><td>${new Date(x.at).toLocaleString("ar-EG")}</td><td>${x.category}</td><td>${x.description||""}</td><td>${money(x.amount)}</td></tr>`).join("")}
+      </tbody></table>` : `<p class="hint">لا مصروفات بعد</p>`;
+    }
+    $("exBtn").onclick = async () => {
+      const amount = Number($("exAmount").value);
+      if (!amount) return alert("أدخل مبلغًا");
+      const data = await api("add_expense", {
+        amount,
+        category: $("exCat").value,
+        description: $("exDesc").value.trim()
+      });
+      $("exMsg").className = data.ok ? "msg ok" : "msg err";
+      $("exMsg").textContent = data.ok ? "تم الحفظ" : (data.error||"فشل");
+      if (data.ok) { $("exAmount").value=""; $("exDesc").value=""; await loadExpenses(); await loadStats(); }
+    };
+
+    // auto login if secret saved
+    (async () => {
+      if (!SECRET) return;
+      const data = await api("stats");
+      if (data.ok) showApp();
+      else { localStorage.removeItem(SECRET_KEY); SECRET=""; }
+    })();
   </script>
 </body>
 </html>
