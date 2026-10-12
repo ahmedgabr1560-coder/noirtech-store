@@ -147,6 +147,7 @@ function updateCartUI() {
       if ($("#orderPhone") && !$("#orderPhone").value) $("#orderPhone").value = currentUser.phone || "";
       if ($("#orderAddress") && !$("#orderAddress").value) $("#orderAddress").value = currentUser.address || "";
     }
+    ensureOrderMap();
   }
   box.innerHTML = cart.map(i => {
     const p = PRODUCTS.find(x => x.id === i.id);
@@ -204,6 +205,7 @@ function openCart() {
   if (drawer) drawer.classList.add("open");
   document.body.style.overflow = "hidden";
   renderCart();
+  ensureOrderMap();
 }
 function closeCart() {
   const overlay = document.getElementById("cartOverlay");
@@ -505,39 +507,101 @@ function closeOrderSuccess() {
 document.getElementById("orderSuccessClose")?.addEventListener("click", closeOrderSuccess);
 document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeOrderSuccess);
 
+
+/* —— Checkout map (Leaflet + Google Maps link) —— */
+let orderMap = null;
+let orderMarker = null;
+let orderMapReady = false;
+
+function updateMapCoordsUI(lat, lng) {
+  const el = document.getElementById("mapCoords");
+  const a = document.getElementById("openInGoogle");
+  if (el) el.textContent = "الموقع: " + Number(lat).toFixed(6) + ", " + Number(lng).toFixed(6);
+  if (a) a.href = "https://www.google.com/maps?q=" + lat + "," + lng;
+  const latEl = document.getElementById("orderLat");
+  const lngEl = document.getElementById("orderLng");
+  if (latEl) latEl.value = String(lat);
+  if (lngEl) lngEl.value = String(lng);
+}
+
+function setOrderLocation(lat, lng, pan) {
+  lat = Number(lat); lng = Number(lng);
+  if (!isFinite(lat) || !isFinite(lng)) return;
+  updateMapCoordsUI(lat, lng);
+  if (!orderMap || typeof L === "undefined") return;
+  if (!orderMarker) {
+    orderMarker = L.marker([lat, lng], { draggable: true }).addTo(orderMap);
+    orderMarker.on("dragend", function () {
+      const p = orderMarker.getLatLng();
+      updateMapCoordsUI(p.lat, p.lng);
+    });
+  } else {
+    orderMarker.setLatLng([lat, lng]);
+  }
+  if (pan !== false) orderMap.setView([lat, lng], Math.max(orderMap.getZoom(), 16));
+}
+
+function initOrderMap() {
+  if (orderMapReady || typeof L === "undefined") return;
+  const el = document.getElementById("orderMap");
+  if (!el) return;
+  // Default Cairo
+  const start = [30.0444, 31.2357];
+  orderMap = L.map("orderMap", { zoomControl: true }).setView(start, 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap"
+  }).addTo(orderMap);
+  orderMap.on("click", function (e) {
+    setOrderLocation(e.latlng.lat, e.latlng.lng, false);
+  });
+  orderMapReady = true;
+  setTimeout(function () { orderMap.invalidateSize(); }, 200);
+}
+
+function ensureOrderMap() {
+  const tryInit = function () {
+    if (typeof L !== "undefined") {
+      initOrderMap();
+      setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 250);
+    } else {
+      setTimeout(tryInit, 150);
+    }
+  };
+  tryInit();
+}
+
+document.getElementById("useMyLocation")?.addEventListener("click", function () {
+  if (!navigator.geolocation) return toast("المتصفح لا يدعم تحديد الموقع");
+  toast("جاري تحديد موقعك...");
+  navigator.geolocation.getCurrentPosition(
+    function (pos) {
+      ensureOrderMap();
+      setOrderLocation(pos.coords.latitude, pos.coords.longitude, true);
+      toast("تم تحديد موقعك");
+    },
+    function () { toast("تعذر الوصول للموقع — فعّل GPS أو اختر من الخريطة"); },
+    { enableHighAccuracy: true, timeout: 12000 }
+  );
+});
+
 $("#checkoutBtn").addEventListener("click", async () => {
   try {
     if (!cart.length) return toast("السلة فارغة");
-    if (!currentUser) {
-      closeCart();
-      openAuth("login");
-      return toast("سجّل الدخول أولاً لإتمام الطلب");
-    }
 
-    const name = ($("#orderName")?.value || currentUser.name || "").trim();
-    const phone = normalizePhone($("#orderPhone")?.value || currentUser.phone || "");
-    const address = ($("#orderAddress")?.value || currentUser.address || "").trim();
+    const name = ($("#orderName")?.value || "").trim();
+    const phone = normalizePhone($("#orderPhone")?.value || "");
+    const address = ($("#orderAddress")?.value || "").trim();
     const note = ($("#orderNote")?.value || "").trim();
+    const lat = Number($("#orderLat")?.value || "");
+    const lng = Number($("#orderLng")?.value || "");
     const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
 
-    if (!name) return toast("اكتب اسم المستلم");
-    if (!phone || phone.replace(/[^0-9]/g, "").length < 10) return toast("اكتب رقم هاتف صحيح (11 رقم)");
+    if (!phone || phone.replace(/[^0-9]/g, "").length < 10) return toast("اكتب رقم هاتف صحيح");
     if (!address) return toast("اكتب عنوان التوصيل");
+    if (!isFinite(lat) || !isFinite(lng)) return toast("حدّد موقع التوصيل على الخريطة");
 
-    currentUser.name = name;
-    currentUser.phone = phone;
-    currentUser.address = address;
-    localStorage.setItem("nx_user", JSON.stringify(currentUser));
-    try {
-      let db = JSON.parse(localStorage.getItem("nx_users") || "[]");
-      const ui = db.findIndex(u => u.email === currentUser.email);
-      if (ui >= 0) {
-        db[ui] = { ...db[ui], ...currentUser };
-        localStorage.setItem("nx_users", JSON.stringify(db));
-      }
-    } catch (e) {}
-    updateUserUI();
-
+    const mapsLink = "https://www.google.com/maps?q=" + lat + "," + lng;
     const btn = $("#checkoutBtn");
     if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
 
@@ -561,7 +625,16 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const orderRecord = {
       id: orderId,
       at: new Date().toISOString(),
-      customer: { name: name, phone: phone, email: currentUser.email, address: address, note: note },
+      customer: {
+        name: name || "عميل",
+        phone: phone,
+        email: (currentUser && currentUser.email) || "",
+        address: address,
+        note: note,
+        lat: lat,
+        lng: lng,
+        mapsLink: mapsLink
+      },
       items: richItems,
       total: total,
       status: "new",
@@ -600,13 +673,15 @@ $("#checkoutBtn").addEventListener("click", async () => {
       } catch (e) {}
     }
 
-    let orderMsg = "🆔 " + orderId + "\n";
-    orderMsg += "👤 " + name + "\n📞 " + phone + "\n📧 " + (currentUser.email || "") + "\n📍 " + address + "\n";
-    if (note) orderMsg += "📝 " + note + "\n";
-    orderMsg += "💳 الدفع: " + (payMethod === "card" ? "بطاقة" : payMethod === "transfer" ? "تحويل" : "عند الاستلام") + "\n";
-    orderMsg += "\n📦 المنتجات:\n" + lines.join("\n");
-    orderMsg += "\n\n💰 الإجمالي: " + Number(total).toLocaleString("ar-EG") + " ج.م";
-    orderMsg += "\n✅ طلب مؤكد — تواصل مع العميل";
+    let orderMsg = "🆔 " + orderId + "\\n";
+    orderMsg += "👤 " + (name || "عميل") + "\\n📞 " + phone + "\\n📍 " + address + "\\n";
+    orderMsg += "🗺️ الموقع: " + mapsLink + "\\n";
+    orderMsg += "📌 " + lat + ", " + lng + "\\n";
+    if (note) orderMsg += "📝 " + note + "\\n";
+    orderMsg += "💳 الدفع: " + (payMethod === "card" ? "بطاقة" : payMethod === "transfer" ? "تحويل" : "عند الاستلام") + "\\n";
+    orderMsg += "\\n📦 المنتجات:\\n" + lines.join("\\n");
+    orderMsg += "\\n\\n💰 الإجمالي: " + Number(total).toLocaleString("ar-EG") + " ج.م";
+    orderMsg += "\\n✅ طلب بدون تسجيل — تواصل مع العميل";
 
     try {
       await notifyAdmin("order", orderMsg, { order: orderRecord });
@@ -619,7 +694,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
     closeCart();
     if ($("#orderNote")) $("#orderNote").value = "";
     showOrderSuccess(orderId);
-    toast("تم تأكيد طلبك بنجاح — رقم " + orderId);
+    toast("تم تأكيد طلبك — رقم " + orderId);
 
     if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
   } catch (err) {
