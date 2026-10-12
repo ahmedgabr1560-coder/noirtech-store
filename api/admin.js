@@ -158,6 +158,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, category: c });
     }
 
+    if (action === "save_order") {
+      const order = body.order;
+      if (!order || !order.id) return res.status(400).json({ ok: false, error: "order required" });
+      const f = await ghGet("orders.json");
+      const orders = f ? JSON.parse(f.content) : [];
+      const idx = orders.findIndex(o => String(o.id) === String(order.id));
+      if (idx >= 0) orders[idx] = order; else orders.unshift(order);
+      const put = await ghPut("orders.json", JSON.stringify(orders.slice(0, 300), null, 2), `Order ${order.id}`, f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed" });
+      return res.status(200).json({ ok: true });
+    }
+
     if (action === "list_orders") {
       const f = await ghGet("orders.json");
       const orders = f ? JSON.parse(f.content) : [];
