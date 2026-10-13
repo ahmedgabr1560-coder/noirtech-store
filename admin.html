@@ -111,6 +111,7 @@
         <button data-panel="add">إضافة منتج</button>
         <button data-panel="orders">الطلبات</button>
         <button data-panel="finance">الأرباح والمصروفات</button>
+        <button data-panel="brand">الاسم والأيقونة</button>
         <button data-panel="hero">الواجهة</button>
         <button data-panel="settings">إعدادات</button>
       </nav>
@@ -218,6 +219,37 @@
         <div class="card">
           <h3>سجل المصروفات</h3>
           <div id="exTable">—</div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-brand">
+        <div class="card">
+          <h3>اسم الموقع والأيقونة</h3>
+          <p class="hint" style="margin-bottom:12px">غيّري اسم المتجر وأيقونة المتصفح (Favicon) في أي وقت — التغيير يظهر على المتجر بعد الحفظ.</p>
+          <div class="form-grid">
+            <label>اسم الموقع
+              <input id="brandName" placeholder="NEXORA" />
+            </label>
+            <label>اختصار الشعار (حرفين/ثلاثة)
+              <input id="brandMark" placeholder="NX" maxlength="3" />
+            </label>
+          </div>
+          <label>وصف قصير بجانب الاسم في عنوان الصفحة
+            <input id="brandTagline" placeholder="الموضة والأزياء" />
+          </label>
+          <label>الأيقونة (Favicon)
+            <input id="brandFavUrl" placeholder="رابط الأيقونة أو ارفعي صورة" />
+            <input id="brandFavFile" type="file" accept="image/*,.ico,image/svg+xml" style="margin-top:8px" />
+            <div style="margin-top:10px;display:flex;align-items:center;gap:12px">
+              <img id="brandFavPrev" alt="أيقونة" style="width:48px;height:48px;object-fit:contain;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);display:none" />
+              <span class="hint">يفضّل صورة مربعة PNG أو SVG</span>
+            </div>
+          </label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <button type="button" class="btn btn-primary" id="saveBrandBtn">حفظ الاسم والأيقونة</button>
+            <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">فتح المتجر</a>
+          </div>
+          <div class="msg" id="brandMsg"></div>
         </div>
       </section>
 
@@ -809,12 +841,14 @@
     document.querySelectorAll("#nav button").forEach(btn => {
       btn.addEventListener("click", () => {
         if (btn.dataset.panel === "hero") loadHeroSettings();
+        if (btn.dataset.panel === "brand") loadBrandSettings();
       });
     });
     // placeholder remove dup - handled below
     document.querySelectorAll("#nav button").forEach(btn => {
       btn.addEventListener("click", () => {
         if (btn.dataset.panel === "hero") loadHeroSettings();
+        if (btn.dataset.panel === "brand") loadBrandSettings();
       });
     });
 
@@ -822,6 +856,7 @@
     refreshAll = async function() {
       await _refreshAll();
       try { await loadHeroSettings(); } catch(e) {}
+      try { await loadBrandSettings(); } catch(e) {}
     };
 
     $("savePayBtn")?.addEventListener("click", async () => {
@@ -849,6 +884,59 @@
       } catch (err) {
         if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
       } finally { if (btn) btn.disabled = false; }
+    });
+
+    
+    let pendingFavicon = "";
+    async function loadBrandSettings() {
+      const data = await api("get_config");
+      if (!data.ok) return;
+      const c = data.config || {};
+      if ($("brandName")) $("brandName").value = c.siteName || "NEXORA";
+      if ($("brandMark")) $("brandMark").value = c.logoMark || "NX";
+      if ($("brandTagline")) $("brandTagline").value = c.siteTagline || c.tagline || "";
+      if ($("brandFavUrl")) $("brandFavUrl").value = c.favicon || "";
+      const prev = $("brandFavPrev");
+      if (prev && c.favicon) { prev.src = c.favicon; prev.style.display = "block"; }
+      pendingFavicon = "";
+    }
+    $("brandFavFile")?.addEventListener("change", (e) => {
+      const f = e.target.files?.[0];
+      if (!f) return;
+      if (f.size > 2 * 1024 * 1024) return alert("الأيقونة كبيرة — أقل من 2MB");
+      const r = new FileReader();
+      r.onload = () => {
+        pendingFavicon = r.result;
+        const prev = $("brandFavPrev");
+        if (prev) { prev.src = pendingFavicon; prev.style.display = "block"; }
+      };
+      r.readAsDataURL(f);
+    });
+    $("saveBrandBtn")?.addEventListener("click", async () => {
+      const btn = $("saveBrandBtn");
+      const msg = $("brandMsg");
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      try {
+        const name = $("brandName")?.value.trim() || "NEXORA";
+        const payload = {
+          siteName: name,
+          logoMark: ($("brandMark")?.value.trim() || name.slice(0, 2)).toUpperCase(),
+          siteTagline: $("brandTagline")?.value.trim() || "",
+          favicon: pendingFavicon || $("brandFavUrl")?.value.trim() || "/favicon.svg"
+        };
+        const data = await api("update_hero", payload);
+        if (!data.ok) throw new Error(data.error || "فشل الحفظ");
+        pendingFavicon = "";
+        const c = data.config || {};
+        if (c.favicon && $("brandFavUrl")) $("brandFavUrl").value = c.favicon;
+        if (c.favicon && $("brandFavPrev")) { $("brandFavPrev").src = c.favicon; $("brandFavPrev").style.display = "block"; }
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم الحفظ — حدّثي المتجر لرؤية الاسم والأيقونة"; }
+      } catch (err) {
+        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
+      } finally {
+        if (btn) btn.disabled = false;
+      }
     });
 
     // auto login if secret saved
