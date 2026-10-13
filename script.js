@@ -931,6 +931,91 @@ function bindCategoryUI() {
   });
 }
 
+
+/* ===== AI Chat (WhatsApp-style) ===== */
+let aiBusy = false;
+const aiHistory = [];
+
+function openAiChat() {
+  const overlay = document.getElementById("aiOverlay");
+  const panel = document.getElementById("aiPanel");
+  if (overlay) overlay.classList.add("open");
+  if (panel) panel.classList.add("open");
+  document.body.style.overflow = "hidden";
+  setTimeout(() => document.getElementById("aiInput")?.focus(), 200);
+}
+function closeAiChat() {
+  document.getElementById("aiOverlay")?.classList.remove("open");
+  document.getElementById("aiPanel")?.classList.remove("open");
+  document.body.style.overflow = "";
+}
+function appendAiMsg(role, text) {
+  const box = document.getElementById("aiMessages");
+  if (!box) return;
+  const div = document.createElement("div");
+  div.className = "ai-msg " + (role === "user" ? "user" : "bot");
+  const time = new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+  const safe = String(text || "").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+  div.innerHTML = `<div class="ai-bubble">${safe}<span class="ai-time">${time}</span></div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+function appendAiTyping() {
+  const box = document.getElementById("aiMessages");
+  if (!box) return null;
+  const div = document.createElement("div");
+  div.className = "ai-msg bot";
+  div.id = "aiTyping";
+  div.innerHTML = `<div class="ai-bubble">جاري الكتابة<span class="ai-dots">...</span></div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+function removeAiTyping() {
+  document.getElementById("aiTyping")?.remove();
+}
+async function handleAiSend() {
+  if (aiBusy) return;
+  const input = document.getElementById("aiInput");
+  const text = (input?.value || "").trim();
+  if (!text) return;
+  if (input) input.value = "";
+  appendAiMsg("user", text);
+  aiHistory.push({ role: "user", content: text });
+  aiBusy = true;
+  appendAiTyping();
+  try {
+    const catalog = (PRODUCTS || []).slice(0, 40).map(p => ({
+      id: p.id, name: p.name, price: p.price, category: p.category, subcategory: p.subcategory
+    }));
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, history: aiHistory.slice(-12), catalog })
+    });
+    const data = await res.json().catch(() => ({}));
+    removeAiTyping();
+    const reply = data.reply || "معلش حصل تأخير بسيط 😅 قولي تاني وأنا معاكِ.";
+    appendAiMsg("bot", reply);
+    aiHistory.push({ role: "assistant", content: reply });
+  } catch (e) {
+    removeAiTyping();
+    appendAiMsg("bot", "الاتصال اتقطع لحظة 😅 جرّبي تاني أو واتساب من الزر الأخضر.");
+  } finally {
+    aiBusy = false;
+  }
+}
+document.getElementById("aiChatBtn")?.addEventListener("click", openAiChat);
+document.getElementById("aiClose")?.addEventListener("click", closeAiChat);
+document.getElementById("aiOverlay")?.addEventListener("click", closeAiChat);
+document.getElementById("aiSend")?.addEventListener("click", handleAiSend);
+document.getElementById("aiInput")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    handleAiSend();
+  }
+});
+
 document.getElementById("aiSuggestions")?.addEventListener("click", function (e) {
   const chip = e.target.closest(".ai-chip");
   if (!chip) return;
@@ -984,7 +1069,31 @@ async function loadProducts() {
   }
 }
 
+
+function ensureHomeOnStart() {
+  try {
+    // close overlays
+    ["authOverlay","authModal","profileOverlay","profileModal","cartOverlay","cartDrawer","aiOverlay","aiPanel","productOverlay","productModal"].forEach(id => {
+      document.getElementById(id)?.classList.remove("open");
+    });
+    document.body.style.overflow = "";
+    // if deep link to product keep it; else go home
+    const path = location.pathname || "/";
+    const isHome = path === "/" || path.endsWith("/index.html") || path.endsWith("index.html") || path === "";
+    if (isHome) {
+      if (location.hash && location.hash !== "#home" && location.hash !== "#") {
+        // allow section anchors
+      } else {
+        history.replaceState({}, "", "/");
+        window.scrollTo(0, 0);
+        document.getElementById("home")?.scrollIntoView({ block: "start" });
+      }
+    }
+  } catch (e) {}
+}
+
 async function bootStore() {
+  try { ensureHomeOnStart(); } catch (e) {}
   try { await loadHeroConfig(); } catch (e) { console.warn(e); }
   try { await loadCatalog(); } catch (e) { console.warn(e); }
   try { await loadProducts(); } catch (e) { console.warn(e); }
