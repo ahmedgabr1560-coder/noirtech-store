@@ -239,59 +239,61 @@ export default async function handler(req, res) {
     }
 
     if (action === "update_hero") {
-      const f = await ghGet("site-config.json");
+      // always read latest sha
+      let f = await ghGet("site-config.json");
       if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
-      const config = JSON.parse(f.content);
-      const fields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","heroImage1","heroImage2"];
-      for (const k of fields) {
-        if (body[k] != null && String(body[k]).trim() !== "") config[k] = String(body[k]).trim();
+      let config = {};
+      try { config = JSON.parse(f.content); } catch { config = {}; }
+
+      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub"];
+      for (const k of textFields) {
+        if (body[k] != null) config[k] = String(body[k]);
       }
-      // optional base64 uploads
-      async function upImg(dataUrl, name) {
-        if (!dataUrl || !String(dataUrl).startsWith("data:image/")) return null;
-        const parsed = parseDataUrl(dataUrl);
-        if (!parsed) return null;
-        const ext = parsed.mime.includes("png") ? "png" : "jpg";
-        const path = `product-images/hero-${name}.${ext}`;
-        const up = await ghPut(path, null, `Admin hero ${name}`, null, parsed.b64);
-        // ghPut signature in admin may not support binary - check
-        return up;
-      }
-      // handle image1/2 as data urls into github
-      for (const key of ["heroImage1", "heroImage2"]) {
-        const val = body[key];
-        if (val && String(val).startsWith("data:image/")) {
-          const parsed = parseDataUrl(val);
-          if (parsed) {
-            const ext = parsed.mime.includes("png") ? "png" : "jpg";
-            const path = `product-images/${key}.${ext}`;
-            // put binary
-            const bodyPut = {
-              message: `Admin: update ${key}`,
-              content: parsed.b64,
-              branch: "main"
-            };
-            // need sha if exists
-            const existing = await ghGet(path);
-            if (existing?.sha) bodyPut.sha = existing.sha;
-            const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
-              method: "PUT",
-              headers: {
-                Authorization: `Bearer ${GH_TOKEN}`,
-                Accept: "application/vnd.github+json",
-                "Content-Type": "application/json",
-                "User-Agent": "NEXORA-Admin"
-              },
-              body: JSON.stringify(bodyPut)
-            });
-            if (r.ok) {
-              config[key] = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`;
-            }
-          }
+
+      async function saveImage(dataOrUrl, key) {
+        const val = dataOrUrl == null ? "" : String(dataOrUrl).trim();
+        if (!val) return;
+        if (val.startsWith("http://") || val.startsWith("https://")) {
+          config[key] = val;
+          return;
+        }
+        if (!val.startsWith("data:image/")) return;
+        const parsed = parseDataUrl(val);
+        if (!parsed) return;
+        const ext = parsed.mime.includes("png") ? "png" : (parsed.mime.includes("webp") ? "webp" : "jpg");
+        const path = `product-images/${key}.${ext}`;
+        const existing = await ghGet(path);
+        const putBody = {
+          message: `Admin: hero ${key}`,
+          content: parsed.b64,
+          branch: "main"
+        };
+        if (existing?.sha) putBody.sha = existing.sha;
+        const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${GH_TOKEN}`,
+            Accept: "application/vnd.github+json",
+            "Content-Type": "application/json",
+            "User-Agent": "NEXORA-Admin"
+          },
+          body: JSON.stringify(putBody)
+        });
+        if (r.ok) {
+          config[key] = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`;
+        } else {
+          const err = await r.json().catch(() => ({}));
+          console.error("hero image upload failed", key, err);
         }
       }
-      const put = await ghPut("site-config.json", JSON.stringify(config, null, 2), "Admin: update hero", f.sha);
-      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+
+      await saveImage(body.heroImage1, "heroImage1");
+      await saveImage(body.heroImage2, "heroImage2");
+
+      // re-fetch sha in case image uploads changed nothing on config but concurrent edits
+      f = await ghGet("site-config.json");
+      const put = await ghPut("site-config.json", JSON.stringify(config, null, 2), "Admin: update hero/storefront", f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر حفظ الإعدادات", detail: put.data });
       return res.status(200).json({ ok: true, config });
     }
 
