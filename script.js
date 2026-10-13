@@ -365,25 +365,8 @@ function closeCart() {
 }
 
 function openProduct(id) {
-  const p = PRODUCTS.find(x => Number(x.id) === Number(id));
-  if (!p) return;
-  const off = discountPct(p);
-  $("#productDetail").innerHTML = `
-    <div><img src="${p.image}" alt="${p.name}" /></div>
-    <div>
-      <span class="detail-badge">متوفر الآن</span>
-      <h2 style="margin-bottom:8px">${p.name}</h2>
-      <div class="rating" style="margin-bottom:10px">${stars(p.rating)} <span>(${p.reviews} تقييم)</span></div>
-      <div class="price-row" style="margin-bottom:12px">
-        <span class="price" style="font-size:1.35rem">${money(p.price)}</span>
-        ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
-        ${off ? `<span class="badge-off" style="position:static">-${off}%</span>` : ""}
-      </div>
-      <p class="muted" style="margin-bottom:16px">${p.desc}</p>
-      <button type="button" class="btn btn-primary" data-add="${p.id}">أضف للسلة</button>
-    </div>`;
-  $("#productOverlay").classList.add("open");
-  $("#productModal").classList.add("open");
+  // dedicated page with colors & stock
+  window.location.href = "/product.html?id=" + encodeURIComponent(id);
 }
 function closeProduct() {
   $("#productOverlay").classList.remove("open");
