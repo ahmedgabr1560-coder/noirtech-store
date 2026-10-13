@@ -1,12 +1,18 @@
 
 async function loadHeroConfig() {
   try {
-    const r = await fetch("/site-config.json?t=" + Date.now());
+    const r = await fetch("/site-config.json?t=" + Date.now(), { cache: "no-store" });
     if (!r.ok) return;
     const c = await r.json();
     window.siteConfig = c;
-    const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null && val !== "") el.textContent = val; };
-    const setImg = (id, val) => { const el = document.getElementById(id); if (el && val) { el.src = val; el.onerror = null; } };
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null && String(val).trim() !== "") el.textContent = val; };
+    const setImg = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val) {
+        el.src = val;
+        el.loading = "eager";
+      }
+    };
     setTxt("heroBadgeText", c.heroBadge);
     if (c.heroTitle) {
       const h = document.getElementById("heroTitleLine");
