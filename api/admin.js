@@ -245,7 +245,7 @@ export default async function handler(req, res) {
       let config = {};
       try { config = JSON.parse(f.content); } catch { config = {}; }
 
-      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email"];
+      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email","siteName","siteTagline","logoMark","favicon"];
       for (const k of textFields) {
         if (body[k] != null) config[k] = String(body[k]);
       }
@@ -289,6 +289,33 @@ export default async function handler(req, res) {
 
       await saveImage(body.heroImage1, "heroImage1");
       await saveImage(body.heroImage2, "heroImage2");
+      // favicon can be data URL or http URL
+      if (body.favicon != null && String(body.favicon).trim()) {
+        const fv = String(body.favicon).trim();
+        if (fv.startsWith("data:image/")) {
+          const parsed = parseDataUrl(fv);
+          if (parsed) {
+            const ext = parsed.mime.includes("png") ? "png" : (parsed.mime.includes("svg") ? "svg" : (parsed.mime.includes("webp") ? "webp" : "jpg"));
+            const path = `product-images/favicon.${ext}`;
+            const existing = await ghGet(path);
+            const putBody = { message: "Admin: favicon", content: parsed.b64, branch: "main" };
+            if (existing?.sha) putBody.sha = existing.sha;
+            const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${GH_TOKEN}`,
+                Accept: "application/vnd.github+json",
+                "Content-Type": "application/json",
+                "User-Agent": "NEXORA-Admin"
+              },
+              body: JSON.stringify(putBody)
+            });
+            if (r.ok) config.favicon = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`;
+          }
+        } else if (fv.startsWith("http://") || fv.startsWith("https://") || fv.startsWith("/")) {
+          config.favicon = fv;
+        }
+      }
 
       // re-fetch sha in case image uploads changed nothing on config but concurrent edits
       f = await ghGet("site-config.json");
