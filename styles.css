@@ -1545,3 +1545,63 @@ a.product-link:hover { color:#c4b5fd; }
 }
 .pay-instructions strong { color: #fff; }
 .pay-instructions small { color: #b7b7c5; }
+
+/* Compact site categories */
+.cats-section .section-head h2,
+#categories .section-head h2 {
+  font-size: 1.25rem !important;
+}
+.cats-directory {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+.dir-card {
+  border-radius: 14px !important;
+}
+.dir-main img {
+  height: 110px !important;
+}
+.dir-main > div {
+  padding: 8px 10px 4px !important;
+}
+.dir-main h3 {
+  font-size: 0.92rem !important;
+}
+.dir-main small {
+  font-size: 0.7rem !important;
+}
+.dir-ico {
+  font-size: 0.95rem !important;
+}
+.dir-subs {
+  padding: 4px 10px 10px !important;
+  gap: 6px !important;
+}
+.dir-sub {
+  padding: 5px 10px !important;
+  font-size: 0.72rem !important;
+}
+.cat-card {
+  padding: 12px 10px !important;
+  border-radius: 14px !important;
+  min-height: auto !important;
+}
+.cat-card .ico {
+  font-size: 1.3rem !important;
+  margin-bottom: 6px !important;
+}
+.cat-card h3 {
+  font-size: 0.8rem !important;
+}
+.cat-card small {
+  font-size: 0.68rem !important;
+}
+.cats-grid {
+  gap: 10px !important;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+}
+@media (max-width: 640px) {
+  .dir-main img { height: 96px !important; }
+  .cats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
