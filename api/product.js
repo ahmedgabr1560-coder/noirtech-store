@@ -78,9 +78,14 @@ export default async function handler(req, res) {
     let image = String(body.image || "").trim();
     const description = String(body.description || "").trim();
     const badge = String(body.badge || "جديد").trim() || "جديد";
-    const imageBase64 = body.imageBase64 || body.imageData || null;
+    let imageBase64 = body.imageBase64 || body.imageData || null;
+    // Admin may send data-URL in image field
+    if (!imageBase64 && image.startsWith("data:image/")) {
+      imageBase64 = image;
+      image = "";
+    }
 
-    if (!category) category = "electronics";
+    if (!category) category = "fashion";
     if (!name || !price) return res.status(400).json({ ok: false, error: "الاسم والسعر مطلوبين" });
 
     const file = await ghGet("products.json");
@@ -94,23 +99,28 @@ export default async function handler(req, res) {
     if (imageBase64) {
       const parsed = parseDataUrl(imageBase64);
       if (parsed) {
-        const ext = parsed.mime.includes("png") ? "png" : "jpg";
+        const ext = parsed.mime.includes("png") ? "png" : (parsed.mime.includes("webp") ? "webp" : "jpg");
         const imgPath = `product-images/${id}.${ext}`;
         const up = await ghPut(imgPath, null, `admin: product image ${id}`, null, parsed.b64);
         if (up.ok) {
-          image = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}`;
+          image = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}?t=${Date.now()}`;
+        } else {
+          // fallback: keep data URL only if small (not ideal) — prefer error
+          console.error("image upload failed", up.data);
         }
       }
     }
 
     const fallbackImages = {
+      fashion: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=80",
+      electronics: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80",
       phones: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80",
       laptops: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=800&fit=crop&q=80",
       monitors: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&h=800&fit=crop&q=80",
       home: "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&h=800&fit=crop&q=80",
       accessories: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800&h=800&fit=crop&q=80"
     };
-    if (!image || !/^https?:\/\//i.test(image)) image = fallbackImages[category];
+    if (!image || !/^https?:\/\//i.test(image)) image = fallbackImages[category] || fallbackImages.fashion;
 
     const product = {
       id,
