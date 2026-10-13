@@ -111,6 +111,7 @@
         <button data-panel="add">إضافة منتج</button>
         <button data-panel="orders">الطلبات</button>
         <button data-panel="finance">الأرباح والمصروفات</button>
+        <button data-panel="hero">الواجهة</button>
         <button data-panel="settings">إعدادات</button>
       </nav>
       <button class="btn btn-ghost" id="logoutBtn" style="width:100%;margin-top:12px">خروج</button>
@@ -220,40 +221,47 @@
         </div>
       </section>
 
-      <section class="panel" id="panel-settings">
+      <section class="panel" id="panel-hero">
         <div class="card">
-          <h3>صور ونصوص الواجهة (Hero)</h3>
-          <p class="hint" style="margin-bottom:12px">غيّري صور الشنط والنصوص اللي في أول الموقع — التغيير يظهر فورًا بعد الحفظ.</p>
+          <h3>التحكم في واجهة المتجر</h3>
+          <p class="hint" style="margin-bottom:14px">عدّلي النصوص وصور الشنط في أول صفحة المتجر، ثم اضغطي حفظ.</p>
           <div class="form-grid">
-            <label>العنوان الرئيسي<input id="hTitle" /></label>
-            <label>الجزء الملوّن<input id="hHighlight" /></label>
-            <label>شارة أعلى العنوان<input id="hBadge" /></label>
-            <label>نص الزر<input id="hBtn" /></label>
-            <label>عنوان البطاقة على الصورة<input id="hChipTitle" /></label>
-            <label>وصف البطاقة<input id="hChipSub" /></label>
+            <label>شارة أعلى العنوان<input id="hBadge" placeholder="مجموعة الموضة" /></label>
+            <label>نص زر التسوق<input id="hBtn" placeholder="تسوقي الآن" /></label>
+            <label>العنوان الرئيسي<input id="hTitle" placeholder="أناقة تليق بك." /></label>
+            <label>الجزء الملوّن من العنوان<input id="hHighlight" placeholder="موضة بلا حدود." /></label>
+            <label>عنوان البطاقة على الصورة<input id="hChipTitle" placeholder="شنط حريمي" /></label>
+            <label>وصف البطاقة<input id="hChipSub" placeholder="أحدث التشكيلة" /></label>
           </div>
-          <label>الوصف
-            <textarea id="hDesc"></textarea>
+          <label>وصف الواجهة
+            <textarea id="hDesc" placeholder="وصف قصير تحت العنوان"></textarea>
           </label>
           <div class="form-grid">
-            <label>الصورة الأولى (رابط أو رفع)
-              <input id="hImg1Url" placeholder="https://..." />
-              <input id="hImg1File" type="file" accept="image/*" style="margin-top:8px" />
-              <img id="hImg1Prev" alt="" style="margin-top:8px;width:100%;max-height:160px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
+            <label>الصورة الأولى
+              <input id="hImg1Url" placeholder="رابط الصورة أو ارفعي من الجهاز" />
+              <input id="hImg1File" type="file" accept="image/*" capture="environment" style="margin-top:8px" />
+              <img id="hImg1Prev" alt="معاينة 1" style="margin-top:8px;width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
             </label>
-            <label>الصورة الثانية (رابط أو رفع)
-              <input id="hImg2Url" placeholder="https://..." />
-              <input id="hImg2File" type="file" accept="image/*" style="margin-top:8px" />
-              <img id="hImg2Prev" alt="" style="margin-top:8px;width:100%;max-height:160px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
+            <label>الصورة الثانية
+              <input id="hImg2Url" placeholder="رابط الصورة أو ارفعي من الجهاز" />
+              <input id="hImg2File" type="file" accept="image/*" capture="environment" style="margin-top:8px" />
+              <img id="hImg2Prev" alt="معاينة 2" style="margin-top:8px;width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
             </label>
           </div>
-          <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة</button>
+            <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">معاينة المتجر</a>
+          </div>
           <div class="msg" id="heroMsg"></div>
         </div>
+      </section>
+
+      <section class="panel" id="panel-settings">
         <div class="card">
-          <h3>ملاحظات</h3>
-          <p class="hint">كلمة سر الإدارة الافتراضية: <code>nexora2026</code></p>
-          <p class="hint" style="margin-top:8px">بعد حفظ صور الواجهة، حدّثي صفحة المتجر (Ctrl+F5) لرؤية التغيير.</p>
+          <h3>إعدادات عامة</h3>
+          <p class="hint">كلمة سر الإدارة: <code>nexora2026</code> (يمكن تغييرها من Vercel: ADMIN_SECRET)</p>
+          <p class="hint" style="margin-top:8px">التحكم في صور ونصوص أول الموقع من تبويب <strong>الواجهة</strong>.</p>
+          <p class="hint" style="margin-top:8px">الأقسام والفروع من تبويب <strong>الأقسام</strong>.</p>
         </div>
       </section>
     </main>
@@ -618,7 +626,8 @@
     let pendingHero1 = "";
     let pendingHero2 = "";
     function fileToDataUrl(file, cb) {
-      if (!file || !file.type.startsWith("image/")) return;
+      if (!file || !file.type.startsWith("image/")) return alert("اختاري صورة");
+      if (file.size > 10 * 1024 * 1024) return alert("الصورة كبيرة — أقل من 10MB");
       const r = new FileReader();
       r.onload = () => {
         const im = new Image();
@@ -634,69 +643,96 @@
           c.getContext("2d").drawImage(im, 0, 0, w, h);
           cb(c.toDataURL("image/jpeg", 0.88));
         };
+        im.onerror = () => alert("تعذر قراءة الصورة");
         im.src = r.result;
       };
+      r.onerror = () => alert("تعذر رفع الملف");
       r.readAsDataURL(file);
+    }
+    function setPrev(id, src) {
+      const img = $(id);
+      if (!img) return;
+      if (src) { img.src = src; img.style.display = "block"; }
+      else { img.removeAttribute("src"); img.style.display = "none"; }
     }
     async function loadHeroSettings() {
       const data = await api("get_config");
       if (!data.ok) return;
       const c = data.config || {};
-      $("hTitle").value = c.heroTitle || "";
-      $("hHighlight").value = c.heroHighlight || "";
-      $("hBadge").value = c.heroBadge || "";
-      $("hBtn").value = c.heroBtn || "";
-      $("hChipTitle").value = c.heroChipTitle || "";
-      $("hChipSub").value = c.heroChipSub || "";
-      $("hDesc").value = c.heroDesc || "";
-      $("hImg1Url").value = c.heroImage1 || "";
-      $("hImg2Url").value = c.heroImage2 || "";
-      if (c.heroImage1) { $("hImg1Prev").src = c.heroImage1; $("hImg1Prev").style.display = "block"; }
-      if (c.heroImage2) { $("hImg2Prev").src = c.heroImage2; $("hImg2Prev").style.display = "block"; }
+      const set = (id, v) => { const el = $(id); if (el) el.value = v || ""; };
+      set("hTitle", c.heroTitle);
+      set("hHighlight", c.heroHighlight);
+      set("hBadge", c.heroBadge);
+      set("hBtn", c.heroBtn);
+      set("hChipTitle", c.heroChipTitle);
+      set("hChipSub", c.heroChipSub);
+      set("hDesc", c.heroDesc);
+      set("hImg1Url", c.heroImage1);
+      set("hImg2Url", c.heroImage2);
+      setPrev("hImg1Prev", c.heroImage1);
+      setPrev("hImg2Prev", c.heroImage2);
+      pendingHero1 = "";
+      pendingHero2 = "";
     }
-    $("hImg1File").onchange = (e) => {
+    $("hImg1File")?.addEventListener("change", (e) => {
       fileToDataUrl(e.target.files?.[0], (url) => {
         pendingHero1 = url;
-        $("hImg1Prev").src = url;
-        $("hImg1Prev").style.display = "block";
+        setPrev("hImg1Prev", url);
       });
-    };
-    $("hImg2File").onchange = (e) => {
+    });
+    $("hImg2File")?.addEventListener("change", (e) => {
       fileToDataUrl(e.target.files?.[0], (url) => {
         pendingHero2 = url;
-        $("hImg2Prev").src = url;
-        $("hImg2Prev").style.display = "block";
+        setPrev("hImg2Prev", url);
       });
-    };
-    $("saveHeroBtn").onclick = async () => {
+    });
+    $("hImg1Url")?.addEventListener("input", () => {
+      const v = $("hImg1Url").value.trim();
+      if (v && !pendingHero1) setPrev("hImg1Prev", v);
+    });
+    $("hImg2Url")?.addEventListener("input", () => {
+      const v = $("hImg2Url").value.trim();
+      if (v && !pendingHero2) setPrev("hImg2Prev", v);
+    });
+    $("saveHeroBtn")?.addEventListener("click", async () => {
       const btn = $("saveHeroBtn");
       const msg = $("heroMsg");
-      btn.disabled = true; msg.className = "msg";
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
       try {
         const payload = {
-          heroTitle: $("hTitle").value.trim(),
-          heroHighlight: $("hHighlight").value.trim(),
-          heroBadge: $("hBadge").value.trim(),
-          heroBtn: $("hBtn").value.trim(),
-          heroChipTitle: $("hChipTitle").value.trim(),
-          heroChipSub: $("hChipSub").value.trim(),
-          heroDesc: $("hDesc").value.trim(),
-          heroImage1: pendingHero1 || $("hImg1Url").value.trim(),
-          heroImage2: pendingHero2 || $("hImg2Url").value.trim()
+          heroTitle: $("hTitle")?.value.trim() || "",
+          heroHighlight: $("hHighlight")?.value.trim() || "",
+          heroBadge: $("hBadge")?.value.trim() || "",
+          heroBtn: $("hBtn")?.value.trim() || "",
+          heroChipTitle: $("hChipTitle")?.value.trim() || "",
+          heroChipSub: $("hChipSub")?.value.trim() || "",
+          heroDesc: $("hDesc")?.value.trim() || "",
+          heroImage1: pendingHero1 || $("hImg1Url")?.value.trim() || "",
+          heroImage2: pendingHero2 || $("hImg2Url")?.value.trim() || ""
         };
         const data = await api("update_hero", payload);
         if (!data.ok) throw new Error(data.error || "فشل الحفظ");
-        pendingHero1 = ""; pendingHero2 = "";
-        if (data.config?.heroImage1) { $("hImg1Url").value = data.config.heroImage1; $("hImg1Prev").src = data.config.heroImage1; }
-        if (data.config?.heroImage2) { $("hImg2Url").value = data.config.heroImage2; $("hImg2Prev").src = data.config.heroImage2; }
-        msg.className = "msg ok";
-        msg.textContent = "تم حفظ الواجهة — حدّثي المتجر (Ctrl+F5)";
+        pendingHero1 = "";
+        pendingHero2 = "";
+        const c = data.config || {};
+        if (c.heroImage1) { $("hImg1Url").value = c.heroImage1; setPrev("hImg1Prev", c.heroImage1); }
+        if (c.heroImage2) { $("hImg2Url").value = c.heroImage2; setPrev("hImg2Prev", c.heroImage2); }
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ الواجهة بنجاح — افتحي المتجر وحدّثي الصفحة"; }
       } catch (err) {
-        msg.className = "msg err";
-        msg.textContent = err.message || "خطأ";
-      } finally { btn.disabled = false; }
-    };
-    // load hero settings when opening settings or app
+        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+
+    // load hero when opening panel
+    document.querySelectorAll("#nav button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.panel === "hero") loadHeroSettings();
+      });
+    });
+
     const _refreshAll = refreshAll;
     refreshAll = async function() {
       await _refreshAll();
