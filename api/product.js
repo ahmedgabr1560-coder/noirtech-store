@@ -78,6 +78,28 @@ export default async function handler(req, res) {
     let image = String(body.image || "").trim();
     const description = String(body.description || "").trim();
     const badge = String(body.badge || "جديد").trim() || "جديد";
+    const stock = Math.max(0, Number(body.stock ?? body.qty ?? 0) || 0);
+    let available = body.available;
+    if (available === undefined || available === null || available === "") {
+      available = stock > 0;
+    } else {
+      available = available === true || available === "true" || available === 1 || available === "1" || available === "on";
+    }
+    // colors: array or comma-separated "أسود,#111" or names
+    let colors = [];
+    if (Array.isArray(body.colors)) {
+      colors = body.colors.map(c => {
+        if (typeof c === "string") return { name: c, code: "" };
+        return { name: String(c.name || c.label || "").trim(), code: String(c.code || c.hex || "").trim() };
+      }).filter(c => c.name);
+    } else if (typeof body.colors === "string" && body.colors.trim()) {
+      colors = body.colors.split(/[,،\n]/).map(s => s.trim()).filter(Boolean).map(s => {
+        const m = s.match(/^(.+?)[|:：]\s*(#[0-9a-fA-F]{3,8})$/);
+        if (m) return { name: m[1].trim(), code: m[2].trim() };
+        if (/^#[0-9a-fA-F]{3,8}$/.test(s)) return { name: s, code: s };
+        return { name: s, code: "" };
+      });
+    }
     let imageBase64 = body.imageBase64 || body.imageData || null;
     // Admin may send data-URL in image field
     if (!imageBase64 && image.startsWith("data:image/")) {
@@ -129,16 +151,19 @@ export default async function handler(req, res) {
       subcategory: subcategory || "",
       brand: brand || "",
       price: Math.round(price),
-      oldPrice: body.oldPrice ? Math.round(Number(body.oldPrice)) : null,
+      oldPrice: body.oldPrice ? Math.round(Number(String(body.oldPrice).replace(/[^0-9.]/g, "")) || 0) : null,
       image,
+      description: description.slice(0, 2000),
       badge,
-      hidden: false,
-      description: description || `${name} — متوفر لدى NEXORA`,
-      specs: body.specs && typeof body.specs === "object" ? body.specs : {},
+      stock,
+      available: available && stock > 0,
+      colors,
       rating: 4.5,
-      reviews: 5,
+      reviews: 0,
       best: false,
-      newest: true
+      newest: true,
+      hidden: false,
+      createdAt: new Date().toISOString()
     };
     products.unshift(product);
 
