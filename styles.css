@@ -1532,3 +1532,16 @@ a.product-link:hover { color:#c4b5fd; }
   .cart-line img { width: 48px; height: 48px; }
   .map-actions .btn { flex: 1; justify-content: center; text-align: center; }
 }
+
+.pay-instructions {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(167,139,250,0.1);
+  border: 1px solid rgba(167,139,250,0.28);
+  color: #e9e7ff;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.pay-instructions strong { color: #fff; }
+.pay-instructions small { color: #b7b7c5; }
