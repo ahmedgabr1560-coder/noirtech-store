@@ -29,6 +29,43 @@ document.addEventListener("change", (e) => {
   if (e.target && e.target.name === "payMethod") updatePayInstructions();
 });
 
+function applyGeneralConfig(c) {
+  if (!c) return;
+  const phone = (c.phone || "").trim();
+  const email = (c.email || "").trim();
+  const wa = String(c.whatsapp || phone || "").replace(/[^0-9]/g, "");
+  const tg = (c.telegramBot || "").replace(/^@/, "").trim();
+  const addr = (c.address || "").trim();
+
+  const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.textContent = val; };
+  setTxt("contactPhone", phone);
+  setTxt("contactEmail", email);
+  setTxt("contactAddress", addr);
+  if (c.footerText) setTxt("footerText", c.footerText);
+  if (c.aboutText || c.footerAbout) setTxt("footerAbout", c.aboutText || c.footerAbout);
+
+  // WhatsApp float
+  const waEl = document.getElementById("floatWhatsapp") || document.querySelector('a[href*="wa.me"]');
+  if (waEl) {
+    if (wa) waEl.href = "https://wa.me/" + wa;
+    waEl.style.display = c.showFloatWhatsapp === false ? "none" : "";
+  }
+  // Telegram float
+  const tgEl = document.getElementById("floatTelegram") || document.querySelector('a[href*="t.me"]');
+  if (tgEl) {
+    if (tg) tgEl.href = "https://t.me/" + tg;
+    tgEl.style.display = c.showFloatTelegram === false ? "none" : "";
+  }
+  // AI float
+  const aiEl = document.getElementById("floatAiBtn") || document.getElementById("aiToggle") || document.querySelector(".ai-fab, #aiOpen, .ai-open");
+  if (aiEl) {
+    aiEl.style.display = c.showFloatAI === false ? "none" : "";
+  }
+  // contact anchors in page
+  document.querySelectorAll('a[href^="tel:"]').forEach(a => { if (phone) a.href = "tel:" + phone; });
+  document.querySelectorAll('a[href^="mailto:"]').forEach(a => { if (email) a.href = "mailto:" + email; });
+}
+
 function applyBrandConfig(c) {
   if (!c) return;
   const name = (c.siteName || "NEXORA").trim();
@@ -69,6 +106,7 @@ async function loadHeroConfig() {
     const c = await r.json();
     window.siteConfig = c;
     applyBrandConfig(c);
+    applyGeneralConfig(c);
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null && String(val).trim() !== "") el.textContent = val; };
     const setImg = (id, val) => {
       const el = document.getElementById(id);
