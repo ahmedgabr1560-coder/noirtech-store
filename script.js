@@ -1,4 +1,34 @@
 
+function paymentLabel(method) {
+  const map = { cod: "عند الاستلام", vodafone: "فودافون كاش", instapay: "إنستا باي", transfer: "تحويل بنكي", card: "بطاقة" };
+  return map[method] || method || "عند الاستلام";
+}
+function updatePayInstructions() {
+  const box = document.getElementById("payInstructions");
+  if (!box) return;
+  const method = document.querySelector('input[name="payMethod"]:checked')?.value || "cod";
+  const c = window.siteConfig || {};
+  const vf = c.vodafoneCash || c.phone || "";
+  const ip = c.instapay || c.email || "";
+  const note = c.paymentNote || "بعد التحويل ابعتي صورة الإيصال على واتساب.";
+  if (method === "vodafone") {
+    box.hidden = false;
+    box.innerHTML = "<strong>فودافون كاش:</strong> <span dir=\"ltr\">" + vf + "</span><br><small>" + note + "</small>";
+  } else if (method === "instapay") {
+    box.hidden = false;
+    box.innerHTML = "<strong>إنستا باي:</strong> <span dir=\"ltr\">" + ip + "</span><br><small>" + note + "</small>";
+  } else if (method === "transfer") {
+    box.hidden = false;
+    box.innerHTML = "<strong>تحويل بنكي:</strong> تواصلي لتأكيد الحساب<br><small>" + note + "</small>";
+  } else {
+    box.hidden = true;
+    box.innerHTML = "";
+  }
+}
+document.addEventListener("change", (e) => {
+  if (e.target && e.target.name === "payMethod") updatePayInstructions();
+});
+
 async function loadHeroConfig() {
   try {
     const r = await fetch("/site-config.json?t=" + Date.now(), { cache: "no-store" });
@@ -30,6 +60,7 @@ async function loadHeroConfig() {
     }
     setImg("heroImg1", c.heroImage1);
     setImg("heroImg2", c.heroImage2);
+    updatePayInstructions();
   } catch (e) { console.warn("hero config", e); }
 }
 
@@ -780,6 +811,7 @@ function renderShop() {
     ).join("");
   }
 }
+
 function bindCategoryUI() {
   document.getElementById("catsMenuBtn")?.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -791,6 +823,36 @@ function bindCategoryUI() {
     btn?.classList.toggle("open", open);
     btn?.setAttribute("aria-expanded", open ? "true" : "false");
   });
+
+  document.addEventListener("click", (e) => {
+    const menu = document.getElementById("megaMenu");
+    if (menu && !e.target.closest(".nav-drop")) {
+      menu.hidden = true;
+      document.getElementById("catsMenuBtn")?.classList.remove("open");
+      document.getElementById("catsMenuBtn")?.setAttribute("aria-expanded", "false");
+    }
+    const catBtn = e.target.closest("[data-cat]");
+    if (catBtn && !catBtn.closest(".pay-methods")) {
+      const cat = catBtn.getAttribute("data-cat") || "";
+      const sub = catBtn.getAttribute("data-sub") || "";
+      if (catBtn.classList.contains("mega-link") || catBtn.classList.contains("mega-main") || catBtn.classList.contains("mega-sub") || catBtn.classList.contains("dir-sub") || catBtn.classList.contains("dir-main") || catBtn.classList.contains("cat-card") || catBtn.classList.contains("cat-pill") || catBtn.classList.contains("sub-chip")) {
+        setShopFilter(cat, sub);
+        if (menu) menu.hidden = true;
+        document.getElementById("shop")?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  });
+
+  document.getElementById("filterBrand")?.addEventListener("change", (e) => {
+    activeBrand = e.target.value || "";
+    renderShop();
+  });
+  document.getElementById("filterSort")?.addEventListener("change", (e) => {
+    activeSort = e.target.value || "newest";
+    renderShop();
+  });
+}
+
 document.getElementById("aiSuggestions")?.addEventListener("click", function (e) {
   const chip = e.target.closest(".ai-chip");
   if (!chip) return;
@@ -816,8 +878,12 @@ document.getElementById("aiSuggestions")?.addEventListener("click", function (e)
 
 // Hide card option if Stripe not configured
 fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d) {
-  if (!d.stripeEnabled) {
+  if (!d || !d.stripeEnabled) {
     const el = document.getElementById("payCardOption");
     if (el) el.style.display = "none";
+    document.querySelectorAll('input[name="payMethod"][value="card"]').forEach(function (n) {
+      const lab = n.closest("label");
+      if (lab) lab.style.display = "none";
+    });
   }
 }).catch(function () {});
