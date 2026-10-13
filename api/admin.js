@@ -150,6 +150,23 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, category: c });
     }
 
+    if (action === "set_subcategory_visible") {
+      const catId = String(body.categoryId || body.catId || "");
+      const subId = String(body.subId || body.id || "");
+      const visible = body.visible === true || body.visible === "true" || body.visible === 1;
+      const f = await ghGet("categories.json");
+      if (!f) return res.status(404).json({ ok: false, error: "categories missing" });
+      const data = JSON.parse(f.content);
+      const c = (data.categories || []).find(x => x.id === catId);
+      if (!c) return res.status(404).json({ ok: false, error: "category not found" });
+      const s = (c.subs || []).find(x => x.id === subId);
+      if (!s) return res.status(404).json({ ok: false, error: "subcategory not found" });
+      s.visible = !!visible;
+      const put = await ghPut("categories.json", JSON.stringify(data, null, 2), `Admin: sub ${catId}/${subId} visible=${s.visible}`, f.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "put failed", detail: put.data });
+      return res.status(200).json({ ok: true, subcategory: s, categoryId: catId });
+    }
+
     if (action === "toggle_subcategory") {
       const catId = String(body.categoryId || body.catId || "");
       const subId = String(body.subId || body.id || "");
