@@ -11,8 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
 <body>
     <div class="bg-stage" aria-hidden="true">
@@ -319,21 +317,6 @@
           <label>العنوان بالتفصيل *
             <input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - الشارع" autocomplete="street-address" />
           </label>
-          <div class="map-box">
-            <div class="map-head">
-              <strong>تحديد الموقع *</strong>
-              <div class="map-actions">
-                <button type="button" class="btn btn-ghost btn-sm" id="useMyLocation">موقعي الحالي</button>
-                <a class="btn btn-ghost btn-sm" id="openInGoogle" href="#" target="_blank" rel="noopener">Google Maps</a>
-              </div>
-            </div>
-            <div id="orderMap" class="order-map" aria-label="خريطة الموقع"></div>
-            <p class="map-hint">اضغط على الخريطة أو اسحب الدبوس</p>
-            <input type="hidden" id="orderLat" />
-            <input type="hidden" id="orderLng" />
-            <div class="map-coords" id="mapCoords">لم يتم تحديد الموقع بعد</div>
-            <iframe id="googleMapFrame" class="google-map-frame" hidden title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-          </div>
           <label>ملاحظات (اختياري)
             <input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" />
           </label>
@@ -345,7 +328,7 @@
           </div>
         </div>
         <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب الآن</button>
-        <p class="checkout-hint">أكملي البيانات وحددي الموقع ثم أكّدي الطلب</p>
+        <p class="checkout-hint">أكملي البيانات ثم أكّدي الطلب</p>
       </div>
     </div>
   </aside>
