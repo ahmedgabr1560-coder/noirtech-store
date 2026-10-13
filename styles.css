@@ -1605,3 +1605,14 @@ a.product-link:hover { color:#c4b5fd; }
   .dir-main img { height: 96px !important; }
   .cats-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
+
+/* Product colors & stock */
+.color-row { display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0 8px; }
+.color-swatch {
+  width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,.2);
+  cursor: pointer; position: relative; padding: 0; background: #333;
+}
+.color-swatch.active { outline: 2px solid #a78bfa; outline-offset: 2px; border-color: #fff; }
+.stock-row { margin: 10px 0 14px; font-size: .9rem; font-weight: 700; }
+.stock-row.in { color: #4ade80; }
+.stock-row.out { color: #f87171; }
