@@ -1,4 +1,33 @@
 
+async function loadHeroConfig() {
+  try {
+    const r = await fetch("/site-config.json?t=" + Date.now());
+    if (!r.ok) return;
+    const c = await r.json();
+    window.siteConfig = c;
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null && val !== "") el.textContent = val; };
+    const setImg = (id, val) => { const el = document.getElementById(id); if (el && val) { el.src = val; el.onerror = null; } };
+    setTxt("heroBadgeText", c.heroBadge);
+    if (c.heroTitle) {
+      const h = document.getElementById("heroTitleLine");
+      if (h) {
+        const hi = c.heroHighlight || "";
+        h.innerHTML = c.heroTitle + (hi ? "<br><span class=\"grad\" id=\"heroHighlightText\">" + hi + "</span>" : "");
+      }
+    }
+    setTxt("heroDescText", c.heroDesc);
+    setTxt("heroChipTitle", c.heroChipTitle);
+    setTxt("heroChipSub", c.heroChipSub);
+    if (c.heroBtn) {
+      const b = document.getElementById("heroBtnText");
+      if (b) b.innerHTML = c.heroBtn + ' <span class="arrow">←</span>';
+    }
+    setImg("heroImg1", c.heroImage1);
+    setImg("heroImg2", c.heroImage2);
+  } catch (e) { console.warn("hero config", e); }
+}
+
+
 // One-time: clear ONLY legacy accounts, then never again (new accounts stay)
 (function () {
   try {
