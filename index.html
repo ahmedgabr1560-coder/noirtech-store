@@ -104,11 +104,11 @@
     <section class="hero" id="home">
       <div class="container hero-grid">
         <div class="hero-copy">
-          <p class="hero-eyebrow"><span class="dot"></span> مجموعة الموضة</p>
-          <h1>أناقة تليق بك.<br><span class="grad">موضة بلا حدود.</span></h1>
-          <p class="hero-desc">تسوقي أحدث الشنط والملابس والإكسسوارات الحريمي — قطع مختارة بعناية، جودة عالية، وتوصيل سريع لباب البيت.</p>
+          <p class="hero-eyebrow"><span class="dot"></span> <span id="heroBadgeText">مجموعة الموضة</span></p>
+          <h1 id="heroTitleLine">أناقة تليق بك.<br><span class="grad" id="heroHighlightText">موضة بلا حدود.</span></h1>
+          <p class="hero-desc" id="heroDescText">تسوقي أحدث الشنط والملابس والإكسسوارات الحريمي — قطع مختارة بعناية، جودة عالية، وتوصيل سريع لباب البيت.</p>
           <div class="hero-cta">
-            <a href="#shop" class="btn btn-primary">تسوقي الآن <span class="arrow">←</span></a>
+            <a href="#shop" class="btn btn-primary" id="heroBtnText">تسوقي الآن <span class="arrow">←</span></a>
             <a href="#cats" class="btn btn-ghost">تصفح التصنيفات</a>
           </div>
           <div class="hero-trust">
@@ -130,16 +130,16 @@
           <div class="hero-light"></div>
           <div class="phones-stack">
             <div class="phone p1">
-              <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=700&h=1200&fit=crop&q=90" alt="شنطة حريمي أنيقة" onerror="this.src='https://images.unsplash.com/photo-1590874103328-eac38a941346?w=700&h=1200&fit=crop&q=90'" />
+              <img id="heroImg1" src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=700&h=1200&fit=crop&q=90" alt="صورة الواجهة 1" />
             </div>
             <div class="phone p2">
-              <img src="https://images.unsplash.com/photo-1590874103328-eac38a941346?w=700&h=1200&fit=crop&q=90" alt="شنطة حريمي" />
+              <img id="heroImg2" src="https://images.unsplash.com/photo-1590874103328-eac38a941346?w=700&h=1200&fit=crop&q=90" alt="صورة الواجهة 2" />
             </div>
           </div>
           <a class="hero-chip" href="#shop">
             <div>
-              <strong>شنط حريمي</strong>
-              <span>أحدث التشكيلة</span>
+              <strong id="heroChipTitle">شنط حريمي</strong>
+              <span id="heroChipSub">أحدث التشكيلة</span>
             </div>
             <span class="chip-go">←</span>
           </a>
@@ -520,5 +520,8 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+  // hero config applied from script.js
+  </script>
 </body>
 </html>
