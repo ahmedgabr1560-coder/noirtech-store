@@ -65,6 +65,10 @@
       .nav button{white-space:nowrap;width:auto}
     }
     .hint{color:var(--muted);font-size:.85rem;line-height:1.6}
+    .sub-list{display:grid;gap:8px}
+    .sub-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;
+      padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03)}
+    .sub-row .btn{padding:8px 12px;font-size:.78rem}
   </style>
 </head>
 <body>
@@ -148,9 +152,12 @@
               <label>المخزون<input id="pStock" type="number" value="10" /></label>
               <label>شارة<input id="pBadge" value="جديد" /></label>
             </div>
-            <label>رابط الصورة أو رفع من الجهاز
-              <input id="pImageUrl" placeholder="https://..." />
+            <label>صورة المنتج *
+              <input id="pImageUrl" placeholder="رابط الصورة https://... (اختياري)" />
               <input id="pImageFile" type="file" accept="image/*" capture="environment" style="margin-top:8px" />
+              <div id="imgPreviewWrap" style="margin-top:10px;display:none">
+                <img id="imgPreview" alt="معاينة" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.12)" />
+              </div>
             </label>
             <label>الوصف<textarea id="pDesc"></textarea></label>
             <button class="btn btn-primary" type="submit" id="addBtn">نشر المنتج</button>
@@ -284,18 +291,28 @@
       const data = await api("list_categories");
       if (!data.ok) return;
       CATALOG = data;
-      const rows = (data.categories || []).map(c => {
+      const blocks = (data.categories || []).map(c => {
         const on = c.visible !== false;
-        return `<tr>
-          <td>${c.icon||""} <strong>${c.name_ar}</strong><br><small style="color:#9a9aa8">${c.name_en||c.id}</small></td>
-          <td>${(c.subs||[]).length} فرعي</td>
-          <td><span class="badge ${on?"on":"off"}">${on?"ظاهر":"مخفي"}</span></td>
-          <td class="row-actions">
-            <button class="btn ${on?"btn-danger":"btn-ok"}" data-toggle-cat="${c.id}">${on?"إخفاء":"إظهار"}</button>
-          </td>
-        </tr>`;
+        const subRows = (c.subs || []).map(s => {
+          const son = s.visible !== false;
+          return `<div class="sub-row">
+            <span>${s.name_ar} <small style="color:#9a9aa8">(${s.id})</small></span>
+            <span class="badge ${son?"on":"off"}">${son?"ظاهر":"مخفي"}</span>
+            <button type="button" class="btn ${son?"btn-danger":"btn-ok"}" data-toggle-sub="${s.id}" data-cat-parent="${c.id}" ${on?"":"disabled"}>${son?"إخفاء الفرع":"إظهار الفرع"}</button>
+          </div>`;
+        }).join("") || `<p class="hint">لا فروع</p>`;
+        return `<div class="card" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+            <div>${c.icon||""} <strong>${c.name_ar}</strong>
+              <span class="badge ${on?"on":"off"}" style="margin-right:8px">${on?"القسم ظاهر":"القسم مخفي"}</span>
+            </div>
+            <button type="button" class="btn ${on?"btn-danger":"btn-ok"}" data-toggle-cat="${c.id}">${on?"إخفاء القسم":"إظهار القسم"}</button>
+          </div>
+          <p class="hint" style="margin-bottom:8px">الفروع داخل القسم (تظهر في المتجر فقط لو القسم ظاهر):</p>
+          <div class="sub-list">${subRows}</div>
+        </div>`;
       }).join("");
-      $("catsTable").innerHTML = `<table><thead><tr><th>القسم</th><th>فرعي</th><th>الحالة</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+      $("catsTable").innerHTML = blocks;
       // fill product form selects
       const catSel = $("pCat");
       const filter = $("prodCatFilter");
@@ -318,6 +335,18 @@
 
     document.addEventListener("click", async (e) => {
       const btn = e.target.closest("[data-toggle-cat]");
+      const subBtn = e.target.closest("[data-toggle-sub]");
+      if (subBtn) {
+        subBtn.disabled = true;
+        const data = await api("toggle_subcategory", {
+          categoryId: subBtn.getAttribute("data-cat-parent"),
+          subId: subBtn.getAttribute("data-toggle-sub")
+        });
+        subBtn.disabled = false;
+        if (!data.ok) return alert(data.error || "فشل");
+        await loadCategories();
+        return;
+      }
       if (!btn) return;
       btn.disabled = true;
       const id = btn.getAttribute("data-toggle-cat");
@@ -376,12 +405,42 @@
 
     // image file to data url
     let pendingImage = "";
+    function showPreview(src) {
+      const w = $("imgPreviewWrap");
+      const img = $("imgPreview");
+      if (!w || !img) return;
+      if (src) { img.src = src; w.style.display = "block"; }
+      else { w.style.display = "none"; img.removeAttribute("src"); }
+    }
     $("pImageFile").onchange = (e) => {
       const f = e.target.files?.[0];
       if (!f) return;
+      if (!f.type.startsWith("image/")) { alert("اختاري صورة"); return; }
+      if (f.size > 8 * 1024 * 1024) { alert("الصورة كبيرة — أقل من 8MB"); return; }
       const r = new FileReader();
-      r.onload = () => { pendingImage = r.result; };
+      r.onload = () => {
+        // compress
+        const im = new Image();
+        im.onload = () => {
+          const max = 1200;
+          let w = im.width, h = im.height;
+          if (w > max || h > max) {
+            const ratio = Math.min(max / w, max / h);
+            w = Math.round(w * ratio); h = Math.round(h * ratio);
+          }
+          const c = document.createElement("canvas");
+          c.width = w; c.height = h;
+          c.getContext("2d").drawImage(im, 0, 0, w, h);
+          pendingImage = c.toDataURL("image/jpeg", 0.85);
+          showPreview(pendingImage);
+        };
+        im.src = r.result;
+      };
       r.readAsDataURL(f);
+    };
+    $("pImageUrl").oninput = () => {
+      const v = $("pImageUrl").value.trim();
+      if (v && !pendingImage) showPreview(v);
     };
 
     $("addForm").onsubmit = async (e) => {
@@ -390,6 +449,8 @@
       const msg = $("addMsg");
       btn.disabled = true; msg.className="msg";
       try {
+        const imageVal = pendingImage || $("pImageUrl").value.trim();
+        if (!imageVal) throw new Error("أضيفي صورة للمنتج (رفع من الجهاز أو رابط)");
         const payload = {
           secret: SECRET,
           name: $("pName").value.trim(),
@@ -401,7 +462,7 @@
           stock: Number($("pStock").value||10),
           badge: $("pBadge").value.trim() || "جديد",
           description: $("pDesc").value.trim(),
-          image: pendingImage || $("pImageUrl").value.trim()
+          image: imageVal
         };
         const r = await fetch("/api/product", {
           method: "POST",
@@ -412,7 +473,7 @@
         if (!data.ok) throw new Error(data.error || "فشل الإضافة");
         msg.className = "msg ok";
         msg.textContent = "تم نشر المنتج #" + data.product.id + " — يظهر في المتجر حسب ظهور القسم";
-        e.target.reset(); pendingImage = "";
+        e.target.reset(); pendingImage = ""; showPreview("");
         await loadProducts(); await loadStats();
       } catch (err) {
         msg.className = "msg err";
