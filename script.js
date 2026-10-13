@@ -211,9 +211,6 @@ function openCart() {
   if (drawer) drawer.classList.add("open");
   document.body.style.overflow = "hidden";
   updateCartUI();
-  setTimeout(function () { ensureOrderMap(); }, 100);
-  setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 350);
-  setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 700);
 }
 function closeCart() {
   const overlay = document.getElementById("cartOverlay");
@@ -516,80 +513,6 @@ document.getElementById("orderSuccessClose")?.addEventListener("click", closeOrd
 document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeOrderSuccess);
 
 
-/* Checkout map */
-let orderMap = null, orderMarker = null, orderMapReady = false;
-function updateMapCoordsUI(lat, lng) {
-  const el = document.getElementById("mapCoords");
-  const a = document.getElementById("openInGoogle");
-  const gframe = document.getElementById("googleMapFrame");
-  if (el) el.textContent = "الموقع: " + Number(lat).toFixed(6) + ", " + Number(lng).toFixed(6);
-  if (a) {
-    a.href = "https://www.google.com/maps?q=" + lat + "," + lng;
-    a.style.display = "inline-flex";
-  }
-  if (gframe) {
-    gframe.src = "https://maps.google.com/maps?q=" + encodeURIComponent(lat + "," + lng) + "&z=16&output=embed";
-    gframe.hidden = false;
-  }
-  const latEl = document.getElementById("orderLat");
-  const lngEl = document.getElementById("orderLng");
-  if (latEl) latEl.value = String(lat);
-  if (lngEl) lngEl.value = String(lng);
-}
-function setOrderLocation(lat, lng, pan) {
-  lat = Number(lat); lng = Number(lng);
-  if (!isFinite(lat) || !isFinite(lng)) return;
-  updateMapCoordsUI(lat, lng);
-  if (!orderMap || typeof L === "undefined") return;
-  if (!orderMarker) {
-    orderMarker = L.marker([lat, lng], { draggable: true }).addTo(orderMap);
-    orderMarker.on("dragend", function () {
-      const p = orderMarker.getLatLng();
-      updateMapCoordsUI(p.lat, p.lng);
-    });
-  } else {
-    orderMarker.setLatLng([lat, lng]);
-  }
-  if (pan !== false) orderMap.setView([lat, lng], Math.max(orderMap.getZoom() || 12, 16));
-}
-function initOrderMap() {
-  if (typeof L === "undefined") return false;
-  const el = document.getElementById("orderMap");
-  if (!el) return false;
-  if (!orderMapReady) {
-    orderMap = L.map("orderMap", { zoomControl: true, scrollWheelZoom: true }).setView([30.0444, 31.2357], 12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap"
-    }).addTo(orderMap);
-    orderMap.on("click", function (e) {
-      setOrderLocation(e.latlng.lat, e.latlng.lng, false);
-    });
-    orderMapReady = true;
-  }
-  setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 50);
-  setTimeout(function () { if (orderMap) orderMap.invalidateSize(); }, 300);
-  return true;
-}
-function ensureOrderMap() {
-  let tries = 0;
-  const tryInit = function () {
-    tries += 1;
-    if (initOrderMap()) return;
-    if (tries < 20) setTimeout(tryInit, 200);
-  };
-  tryInit();
-}
-document.getElementById("useMyLocation")?.addEventListener("click", function () {
-  if (!navigator.geolocation) return toast("المتصفح لا يدعم تحديد الموقع");
-  toast("جاري تحديد موقعك...");
-  navigator.geolocation.getCurrentPosition(
-    function (pos) { ensureOrderMap(); setOrderLocation(pos.coords.latitude, pos.coords.longitude, true); toast("تم تحديد موقعك"); },
-    function () { toast("تعذر الوصول للموقع — اختر من الخريطة"); },
-    { enableHighAccuracy: true, timeout: 12000 }
-  );
-});
-
 $("#checkoutBtn").addEventListener("click", async () => {
   try {
     if (!cart.length) return toast("السلة فارغة");
@@ -597,16 +520,9 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const phone = normalizePhone($("#orderPhone")?.value || "");
     const address = ($("#orderAddress")?.value || "").trim();
     const note = ($("#orderNote")?.value || "").trim();
-    const lat = Number($("#orderLat")?.value || "");
-    const lng = Number($("#orderLng")?.value || "");
     const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
     if (!phone || phone.replace(/[^0-9]/g, "").length < 10) return toast("اكتب رقم هاتف صحيح");
     if (!address) return toast("اكتب عنوان التوصيل");
-    if (!isFinite(lat) || !isFinite(lng)) {
-      ensureOrderMap();
-      return toast("اضغط على الخريطة أو «موقعي الحالي» لتحديد موقع التوصيل");
-    }
-    const mapsLink = "https://www.google.com/maps?q=" + lat + "," + lng;
     const btn = $("#checkoutBtn");
     if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
     const orderId = "NX-" + Date.now().toString().slice(-8);
@@ -628,7 +544,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const orderRecord = {
       id: orderId,
       at: new Date().toISOString(),
-      customer: { name: name || "عميل", phone, email: (currentUser && currentUser.email) || "", address, note, lat, lng, mapsLink },
+      customer: { name: name || "عميل", phone, email: (currentUser && currentUser.email) || "", address, note },
       items: richItems,
       total,
       status: "new",
@@ -639,7 +555,6 @@ $("#checkoutBtn").addEventListener("click", async () => {
       orders.unshift(orderRecord);
       localStorage.setItem("nx_orders", JSON.stringify(orders.slice(0, 50)));
     } catch (e) {}
-    // persist order to server for admin
     try {
       await fetch("/api/admin", {
         method: "POST",
@@ -655,7 +570,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
         toast(payData.error || "الدفع بالبطاقة غير متاح — جرّب عند الاستلام");
       } catch (e) { toast("تعذر فتح الدفع بالبطاقة"); }
     }
-    let orderMsg = "🆔 " + orderId + "\\n👤 " + (name || "عميل") + "\\n📞 " + phone + "\\n📍 " + address + "\\n🗺️ " + mapsLink + "\\n";
+    let orderMsg = "🆔 " + orderId + "\\n👤 " + (name || "عميل") + "\\n📞 " + phone + "\\n📍 " + address + "\\n";
     if (note) orderMsg += "📝 " + note + "\\n";
     orderMsg += "\\n📦 المنتجات:\\n" + lines.join("\\n") + "\\n\\n💰 الإجمالي: " + Number(total).toLocaleString("ar-EG") + " ج.م";
     try { await notifyAdmin("order", orderMsg, { order: orderRecord }); } catch (e) {}
@@ -764,7 +679,7 @@ function renderCatsDirectory() {
   const el = document.getElementById("catsDirectory");
   if (!el) return;
   el.innerHTML = CATEGORIES.map(c => {
-    const subs = (c.subs || []).slice(0, 6).map(s =>
+    const subs = (c.subs || []).filter(s => s && s.visible !== false).slice(0, 8).map(s =>
       `<button type="button" class="dir-sub" data-cat="${c.id}" data-sub="${s.id}">${s.name_ar}</button>`
     ).join("");
     return `<article class="dir-card">
@@ -786,7 +701,7 @@ function renderSubcatsBar() {
   const c = getCat(activeCategory);
   if (!c) { bar.innerHTML = ""; return; }
   const allBtn = `<button type="button" class="sub-chip ${!activeSubcategory ? "active" : ""}" data-cat="${c.id}" data-sub="">الكل</button>`;
-  const chips = (c.subs || []).map(s =>
+  const chips = (c.subs || []).filter(s => s && s.visible !== false).map(s =>
     `<button type="button" class="sub-chip ${activeSubcategory === s.id ? "active" : ""}" data-cat="${c.id}" data-sub="${s.id}">${s.name_ar}</button>`
   ).join("");
   bar.innerHTML = allBtn + chips;
