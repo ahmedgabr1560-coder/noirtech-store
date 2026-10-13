@@ -29,12 +29,46 @@ document.addEventListener("change", (e) => {
   if (e.target && e.target.name === "payMethod") updatePayInstructions();
 });
 
+function applyBrandConfig(c) {
+  if (!c) return;
+  const name = (c.siteName || "NEXORA").trim();
+  const mark = (c.logoMark || name.slice(0, 2) || "NX").trim().slice(0, 3).toUpperCase();
+  const tag = (c.siteTagline || "").trim();
+  const fav = (c.favicon || "").trim();
+  const logoName = document.getElementById("logoName");
+  const logoMark = document.getElementById("logoMarkText");
+  const docTitle = document.getElementById("docTitle");
+  if (logoName) logoName.textContent = name;
+  if (logoMark) logoMark.textContent = mark;
+  if (docTitle) docTitle.textContent = tag ? (name + " | " + tag) : name;
+  document.title = tag ? (name + " | " + tag) : name;
+  // favicon
+  let link = document.getElementById("siteFavicon");
+  if (!link) {
+    link = document.querySelector('link[rel="icon"]');
+  }
+  if (link && fav) {
+    link.href = fav + (fav.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
+    if (fav.endsWith(".svg")) link.type = "image/svg+xml";
+    else if (fav.endsWith(".png")) link.type = "image/png";
+    else if (fav.endsWith(".ico")) link.type = "image/x-icon";
+    else link.removeAttribute("type");
+  }
+  // footer logo text if any
+  document.querySelectorAll(".footer-logo .logo-text, .footer-logo #logoName").forEach(el => {
+    if (el.id === "logoName" || el.classList.contains("logo-text")) {
+      // skip if same as header id already updated
+    }
+  });
+}
+
 async function loadHeroConfig() {
   try {
     const r = await fetch("/site-config.json?t=" + Date.now(), { cache: "no-store" });
     if (!r.ok) return;
     const c = await r.json();
     window.siteConfig = c;
+    applyBrandConfig(c);
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null && String(val).trim() !== "") el.textContent = val; };
     const setImg = (id, val) => {
       const el = document.getElementById(id);
