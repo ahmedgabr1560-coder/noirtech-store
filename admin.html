@@ -69,6 +69,22 @@
     .sub-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;
       padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03)}
     .sub-row .btn{padding:8px 12px;font-size:.78rem}
+    .vis-card{border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px;background:rgba(255,255,255,.03)}
+    .vis-card.dim{opacity:.55}
+    .vis-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+    .vis-head h4{margin:0;font-size:1rem}
+    .switch-row{display:flex;align-items:center;gap:10px}
+    .switch{position:relative;width:48px;height:28px;flex-shrink:0}
+    .switch input{opacity:0;width:0;height:0}
+    .switch .slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.12);border-radius:999px;transition:.2s;border:1px solid rgba(255,255,255,.12)}
+    .switch .slider:before{content:"";position:absolute;height:22px;width:22px;right:2px;bottom:2px;background:#fff;border-radius:50%;transition:.2s}
+    .switch input:checked + .slider{background:rgba(34,197,94,.55);border-color:rgba(34,197,94,.4)}
+    .switch input:checked + .slider:before{transform:translateX(-20px)}
+    .switch input:disabled + .slider{opacity:.4;cursor:not-allowed}
+    .sub-list{display:grid;gap:8px;margin-top:8px}
+    .sub-row .name{flex:1;min-width:120px;font-weight:700;font-size:.88rem}
+    .busy{opacity:.6;pointer-events:none}
+
   </style>
 </head>
 <body>
@@ -122,9 +138,14 @@
 
       <section class="panel" id="panel-categories">
         <div class="card">
-          <h3>إدارة ظهور الأقسام</h3>
-          <p class="hint" style="margin-bottom:12px">الأقسام المخفية تبقى محفوظة ويمكن إظهارها في أي وقت. المتجر يعرض الأقسام المفعّلة فقط.</p>
+          <h3>إدارة ظهور الأقسام والفروع</h3>
+          <p class="hint" style="margin-bottom:12px">فعّل أو أخفِ أي قسم أو فرع. التغيير يظهر في المتجر بعد تحديث الصفحة. الأقسام المخفية تبقى محفوظة.</p>
+          <div class="toolbar" style="margin-bottom:12px">
+            <button type="button" class="btn btn-ghost" id="expandVisibleOnly">عرض الظاهر فقط</button>
+            <button type="button" class="btn btn-ghost" id="expandAllCats">عرض الكل</button>
+          </div>
           <div id="catsTable">جاري التحميل...</div>
+          <div class="msg" id="catsMsg"></div>
         </div>
       </section>
 
@@ -315,37 +336,47 @@
       </tbody></table>` : `<p class="hint">لا توجد طلبات محفوظة بعد على الخادم.</p>`;
     }
 
+    let catsFilterMode = "all"; // all | visible
     async function loadCategories() {
       const data = await api("list_categories");
       if (!data.ok) return;
       CATALOG = data;
-      const blocks = (data.categories || []).map(c => {
+      let list = data.categories || [];
+      if (catsFilterMode === "visible") list = list.filter(c => c.visible !== false);
+      const blocks = list.map(c => {
         const on = c.visible !== false;
         const subRows = (c.subs || []).map(s => {
           const son = s.visible !== false;
           return `<div class="sub-row">
-            <span>${s.name_ar} <small style="color:#9a9aa8">(${s.id})</small></span>
+            <span class="name">${s.name_ar}</span>
             <span class="badge ${son?"on":"off"}">${son?"ظاهر":"مخفي"}</span>
-            <button type="button" class="btn ${son?"btn-danger":"btn-ok"}" data-toggle-sub="${s.id}" data-cat-parent="${c.id}" ${on?"":"disabled"}>${son?"إخفاء الفرع":"إظهار الفرع"}</button>
+            <label class="switch" title="إظهار/إخفاء الفرع">
+              <input type="checkbox" data-sub-switch="${s.id}" data-cat-parent="${c.id}" ${son?"checked":""} ${on?"":"disabled"} />
+              <span class="slider"></span>
+            </label>
           </div>`;
         }).join("") || `<p class="hint">لا فروع</p>`;
-        return `<div class="card" style="margin-bottom:12px">
-          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
-            <div>${c.icon||""} <strong>${c.name_ar}</strong>
-              <span class="badge ${on?"on":"off"}" style="margin-right:8px">${on?"القسم ظاهر":"القسم مخفي"}</span>
+        return `<div class="vis-card ${on?"":"dim"}" data-cat-card="${c.id}">
+          <div class="vis-head">
+            <h4>${c.icon||""} ${c.name_ar} <small style="color:#9a9aa8;font-weight:600">(${(c.subs||[]).length} فرع)</small></h4>
+            <div class="switch-row">
+              <span class="badge ${on?"on":"off"}">${on?"القسم ظاهر":"القسم مخفي"}</span>
+              <label class="switch" title="إظهار/إخفاء القسم">
+                <input type="checkbox" data-cat-switch="${c.id}" ${on?"checked":""} />
+                <span class="slider"></span>
+              </label>
             </div>
-            <button type="button" class="btn ${on?"btn-danger":"btn-ok"}" data-toggle-cat="${c.id}">${on?"إخفاء القسم":"إظهار القسم"}</button>
           </div>
-          <p class="hint" style="margin-bottom:8px">الفروع داخل القسم (تظهر في المتجر فقط لو القسم ظاهر):</p>
+          <p class="hint">الفروع (تظهر في المتجر فقط إذا كان القسم ظاهرًا):</p>
           <div class="sub-list">${subRows}</div>
         </div>`;
       }).join("");
-      $("catsTable").innerHTML = blocks;
+      $("catsTable").innerHTML = blocks || `<p class="hint">لا أقسام</p>`;
       // fill product form selects
       const catSel = $("pCat");
       const filter = $("prodCatFilter");
       if (catSel) {
-        catSel.innerHTML = (data.categories||[]).map(c=>`<option value="${c.id}">${c.name_ar}</option>`).join("");
+        catSel.innerHTML = (data.categories||[]).map(c=>`<option value="${c.id}">${c.name_ar}${c.visible===false?" (مخفي)":""}</option>`).join("");
         fillSubs();
         catSel.onchange = fillSubs;
       }
@@ -358,31 +389,48 @@
     function fillSubs() {
       const id = $("pCat").value;
       const c = (CATALOG.categories||[]).find(x=>x.id===id);
-      $("pSub").innerHTML = (c?.subs||[]).map(s=>`<option value="${s.id}">${s.name_ar}</option>`).join("");
+      $("pSub").innerHTML = (c?.subs||[]).map(s=>`<option value="${s.id}">${s.name_ar}${s.visible===false?" (مخفي)":""}</option>`).join("");
     }
 
-    document.addEventListener("click", async (e) => {
-      const btn = e.target.closest("[data-toggle-cat]");
-      const subBtn = e.target.closest("[data-toggle-sub]");
-      if (subBtn) {
-        subBtn.disabled = true;
-        const data = await api("toggle_subcategory", {
-          categoryId: subBtn.getAttribute("data-cat-parent"),
-          subId: subBtn.getAttribute("data-toggle-sub")
-        });
-        subBtn.disabled = false;
-        if (!data.ok) return alert(data.error || "فشل");
+    document.getElementById("expandVisibleOnly")?.addEventListener("click", () => { catsFilterMode = "visible"; loadCategories(); });
+    document.getElementById("expandAllCats")?.addEventListener("click", () => { catsFilterMode = "all"; loadCategories(); });
+
+    document.addEventListener("change", async (e) => {
+      const catSw = e.target.closest("[data-cat-switch]");
+      const subSw = e.target.closest("[data-sub-switch]");
+      const msg = $("catsMsg");
+      if (catSw) {
+        const id = catSw.getAttribute("data-cat-switch");
+        const visible = !!catSw.checked;
+        catSw.closest(".vis-card")?.classList.add("busy");
+        if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+        const data = await api("set_category_visible", { id, visible });
+        catSw.closest(".vis-card")?.classList.remove("busy");
+        if (!data.ok) {
+          catSw.checked = !visible;
+          if (msg) { msg.className = "msg err"; msg.textContent = data.error || "فشل الحفظ"; }
+          return;
+        }
+        if (msg) { msg.className = "msg ok"; msg.textContent = visible ? "تم إظهار القسم في المتجر" : "تم إخفاء القسم من المتجر"; }
         await loadCategories();
         return;
       }
-      if (!btn) return;
-      btn.disabled = true;
-      const id = btn.getAttribute("data-toggle-cat");
-      const data = await api("toggle_category", { id });
-      btn.disabled = false;
-      if (!data.ok) return alert(data.error || "فشل");
-      await loadCategories();
-      alert(data.category.visible === false ? "تم إخفاء القسم من المتجر" : "تم إظهار القسم في المتجر");
+      if (subSw) {
+        const categoryId = subSw.getAttribute("data-cat-parent");
+        const subId = subSw.getAttribute("data-sub-switch");
+        const visible = !!subSw.checked;
+        subSw.closest(".vis-card")?.classList.add("busy");
+        if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+        const data = await api("set_subcategory_visible", { categoryId, subId, visible });
+        subSw.closest(".vis-card")?.classList.remove("busy");
+        if (!data.ok) {
+          subSw.checked = !visible;
+          if (msg) { msg.className = "msg err"; msg.textContent = data.error || "فشل الحفظ"; }
+          return;
+        }
+        if (msg) { msg.className = "msg ok"; msg.textContent = visible ? "تم إظهار الفرع" : "تم إخفاء الفرع"; }
+        await loadCategories();
+      }
     });
 
     async function loadProducts() {
