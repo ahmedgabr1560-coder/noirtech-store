@@ -254,6 +254,17 @@
           </div>
           <div class="msg" id="heroMsg"></div>
         </div>
+        <div class="card">
+          <h3>طرق الدفع (فودافون كاش / إنستا باي)</h3>
+          <p class="hint" style="margin-bottom:10px">تظهر للعميل عند اختيار طريقة الدفع في السلة.</p>
+          <div class="form-grid">
+            <label>رقم فودافون كاش<input id="payVodafone" placeholder="01xxxxxxxxx" dir="ltr" /></label>
+            <label>إنستا باي<input id="payInstapay" placeholder="رقم أو حساب InstaPay" dir="ltr" /></label>
+          </div>
+          <label>ملاحظة الدفع<input id="payNote" placeholder="بعد التحويل ابعتي الإيصال..." /></label>
+          <button type="button" class="btn btn-primary" id="savePayBtn">حفظ بيانات الدفع</button>
+          <div class="msg" id="payMsg"></div>
+        </div>
       </section>
 
       <section class="panel" id="panel-settings">
@@ -671,6 +682,9 @@
       set("hImg2Url", c.heroImage2);
       setPrev("hImg1Prev", c.heroImage1);
       setPrev("hImg2Prev", c.heroImage2);
+      if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
+      if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
+      if ($("payNote")) $("payNote").value = c.paymentNote || "";
       pendingHero1 = "";
       pendingHero2 = "";
     }
@@ -701,6 +715,9 @@
           pendingHero2 = "";
           if ($("hImg2Url")) $("hImg2Url").value = c.heroImage2;
           setPrev("hImg2Prev", c.heroImage2);
+      if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
+      if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
+      if ($("payNote")) $("payNote").value = c.paymentNote || "";
         }
         if (msg) {
           msg.className = "msg ok";
@@ -776,7 +793,10 @@
         pendingHero2 = "";
         const c = data.config || {};
         if (c.heroImage1) { $("hImg1Url").value = c.heroImage1; setPrev("hImg1Prev", c.heroImage1); }
-        if (c.heroImage2) { $("hImg2Url").value = c.heroImage2; setPrev("hImg2Prev", c.heroImage2); }
+        if (c.heroImage2) { $("hImg2Url").value = c.heroImage2; setPrev("hImg2Prev", c.heroImage2);
+      if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
+      if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
+      if ($("payNote")) $("payNote").value = c.paymentNote || ""; }
         if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ الواجهة بنجاح — افتحي المتجر وحدّثي الصفحة"; }
       } catch (err) {
         if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
@@ -791,12 +811,45 @@
         if (btn.dataset.panel === "hero") loadHeroSettings();
       });
     });
+    // placeholder remove dup - handled below
+    document.querySelectorAll("#nav button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.panel === "hero") loadHeroSettings();
+      });
+    });
 
     const _refreshAll = refreshAll;
     refreshAll = async function() {
       await _refreshAll();
       try { await loadHeroSettings(); } catch(e) {}
     };
+
+    $("savePayBtn")?.addEventListener("click", async () => {
+      const btn = $("savePayBtn");
+      const msg = $("payMsg");
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      try {
+        const data = await api("update_hero", {
+          heroTitle: $("hTitle")?.value.trim() || "",
+          heroHighlight: $("hHighlight")?.value.trim() || "",
+          heroBadge: $("hBadge")?.value.trim() || "",
+          heroBtn: $("hBtn")?.value.trim() || "",
+          heroChipTitle: $("hChipTitle")?.value.trim() || "",
+          heroChipSub: $("hChipSub")?.value.trim() || "",
+          heroDesc: $("hDesc")?.value.trim() || "",
+          heroImage1: $("hImg1Url")?.value.trim() || "",
+          heroImage2: $("hImg2Url")?.value.trim() || "",
+          vodafoneCash: $("payVodafone")?.value.trim() || "",
+          instapay: $("payInstapay")?.value.trim() || "",
+          paymentNote: $("payNote")?.value.trim() || ""
+        });
+        if (!data.ok) throw new Error(data.error || "فشل");
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ بيانات الدفع"; }
+      } catch (err) {
+        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
+      } finally { if (btn) btn.disabled = false; }
+    });
 
     // auto login if secret saved
     (async () => {
