@@ -111,6 +111,7 @@
         <button data-panel="add">إضافة منتج</button>
         <button data-panel="orders">الطلبات</button>
         <button data-panel="finance">الأرباح والمصروفات</button>
+        <button data-panel="general">إعدادات الموقع</button>
         <button data-panel="brand">الاسم والأيقونة</button>
         <button data-panel="hero">الواجهة</button>
         <button data-panel="settings">إعدادات</button>
@@ -219,6 +220,37 @@
         <div class="card">
           <h3>سجل المصروفات</h3>
           <div id="exTable">—</div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-general">
+        <div class="card">
+          <h3>التحكم الكامل في الموقع</h3>
+          <p class="hint" style="margin-bottom:12px">بيانات التواصل، الفوتر، وأزرار واتساب وتليجرام والذكاء الاصطناعي.</p>
+          <div class="form-grid">
+            <label>رقم الهاتف<input id="gPhone" dir="ltr" placeholder="01xxxxxxxxx" /></label>
+            <label>واتساب (بكود الدولة)<input id="gWhatsapp" dir="ltr" placeholder="2010..." /></label>
+            <label>البريد<input id="gEmail" dir="ltr" placeholder="email@example.com" /></label>
+            <label>عنوان المحل<input id="gAddress" placeholder="القاهرة، مصر" /></label>
+            <label>يوزر بوت تليجرام<input id="gTelegram" dir="ltr" placeholder="username_bot" /></label>
+            <label>اسم صاحب المتجر<input id="gOwner" /></label>
+          </div>
+          <label>نص الفوتر<input id="gFooter" placeholder="© 2026 NEXORA" /></label>
+          <label>نبذة عن المتجر<textarea id="gAbout"></textarea></label>
+          <div class="form-grid">
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="gShowWa" /> إظهار زر واتساب</label>
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="gShowTg" /> إظهار زر تليجرام</label>
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="gShowAi" /> إظهار زر الذكاء الاصطناعي</label>
+          </div>
+          <button type="button" class="btn btn-primary" id="saveGeneralBtn">حفظ إعدادات الموقع</button>
+          <div class="msg" id="generalMsg"></div>
+        </div>
+        <div class="card">
+          <h3>خريطة التحكم</h3>
+          <p class="hint">• الاسم والأيقونة — اسم المتجر والشعار</p>
+          <p class="hint">• الواجهة — صور ونصوص أول صفحة + الدفع</p>
+          <p class="hint">• الأقسام — إظهار/إخفاء</p>
+          <p class="hint">• المنتجات والطلبات والأرباح</p>
         </div>
       </section>
 
@@ -842,6 +874,7 @@
       btn.addEventListener("click", () => {
         if (btn.dataset.panel === "hero") loadHeroSettings();
         if (btn.dataset.panel === "brand") loadBrandSettings();
+        if (btn.dataset.panel === "general") loadGeneralSettings();
       });
     });
     // placeholder remove dup - handled below
@@ -849,6 +882,7 @@
       btn.addEventListener("click", () => {
         if (btn.dataset.panel === "hero") loadHeroSettings();
         if (btn.dataset.panel === "brand") loadBrandSettings();
+        if (btn.dataset.panel === "general") loadGeneralSettings();
       });
     });
 
@@ -857,6 +891,7 @@
       await _refreshAll();
       try { await loadHeroSettings(); } catch(e) {}
       try { await loadBrandSettings(); } catch(e) {}
+      try { await loadGeneralSettings(); } catch(e) {}
     };
 
     $("savePayBtn")?.addEventListener("click", async () => {
@@ -937,6 +972,50 @@
       } finally {
         if (btn) btn.disabled = false;
       }
+    });
+
+    
+    async function loadGeneralSettings() {
+      const data = await api("get_config");
+      if (!data.ok) return;
+      const c = data.config || {};
+      const set = (id, v) => { const el = $(id); if (el) el.value = v || ""; };
+      set("gPhone", c.phone);
+      set("gWhatsapp", c.whatsapp);
+      set("gEmail", c.email);
+      set("gAddress", c.address);
+      set("gTelegram", c.telegramBot);
+      set("gOwner", c.ownerName);
+      set("gFooter", c.footerText);
+      set("gAbout", c.aboutText);
+      if ($("gShowWa")) $("gShowWa").checked = c.showFloatWhatsapp !== false;
+      if ($("gShowTg")) $("gShowTg").checked = c.showFloatTelegram !== false;
+      if ($("gShowAi")) $("gShowAi").checked = c.showFloatAI !== false;
+    }
+    $("saveGeneralBtn")?.addEventListener("click", async () => {
+      const btn = $("saveGeneralBtn");
+      const msg = $("generalMsg");
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      try {
+        const data = await api("update_hero", {
+          phone: $("gPhone")?.value.trim() || "",
+          whatsapp: $("gWhatsapp")?.value.trim() || "",
+          email: $("gEmail")?.value.trim() || "",
+          address: $("gAddress")?.value.trim() || "",
+          telegramBot: $("gTelegram")?.value.trim() || "",
+          ownerName: $("gOwner")?.value.trim() || "",
+          footerText: $("gFooter")?.value.trim() || "",
+          aboutText: $("gAbout")?.value.trim() || "",
+          showFloatWhatsapp: !!$("gShowWa")?.checked,
+          showFloatTelegram: !!$("gShowTg")?.checked,
+          showFloatAI: !!$("gShowAi")?.checked
+        });
+        if (!data.ok) throw new Error(data.error || "فشل");
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ إعدادات الموقع — حدّثي المتجر"; }
+      } catch (err) {
+        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
+      } finally { if (btn) btn.disabled = false; }
     });
 
     // auto login if secret saved
