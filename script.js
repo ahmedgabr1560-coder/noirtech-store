@@ -687,15 +687,30 @@ function setShopFilter(cat, sub) {
 function renderMegaMenu() {
   const menu = document.getElementById("megaMenu");
   if (!menu) return;
-  menu.innerHTML = CATEGORIES.map(c => {
-    const subs = (c.subs || []).slice(0, 8).map(s =>
-      `<button type="button" class="mega-sub" data-cat="${c.id}" data-sub="${s.id}">${s.name_ar}</button>`
-    ).join("");
+  const cats = (CATEGORIES || []).filter(c => c && c.visible !== false);
+  if (!cats.length) {
+    menu.innerHTML = `<div class="mega-empty">لا توجد أقسام ظاهرة</div>`;
+    return;
+  }
+  // لو قسم واحد (موضة): قائمة فروع أنيقة
+  if (cats.length === 1) {
+    const c = cats[0];
+    const subs = (c.subs || []).filter(s => s && s.visible !== false);
+    menu.innerHTML = `<div class="mega-simple">
+      <button type="button" class="mega-link mega-link-all" data-cat="${c.id}" data-sub="">كل ${c.name_ar}</button>
+      ${subs.map(s => `<button type="button" class="mega-link" data-cat="${c.id}" data-sub="${s.id}">${s.name_ar}</button>`).join("")}
+    </div>`;
+    return;
+  }
+  menu.innerHTML = `<div class="mega-grid">${cats.map(c => {
+    const subs = (c.subs || []).filter(s => s && s.visible !== false).slice(0, 8);
     return `<div class="mega-col">
       <button type="button" class="mega-main" data-cat="${c.id}">${c.icon || ""} ${c.name_ar}</button>
-      <div class="mega-subs">${subs}</div>
+      <div class="mega-subs">${subs.map(s =>
+        `<button type="button" class="mega-sub" data-cat="${c.id}" data-sub="${s.id}">${s.name_ar}</button>`
+      ).join("")}</div>
     </div>`;
-  }).join("");
+  }).join("")}</div>`;
 }
 function renderCatNav() {
   const el = document.getElementById("catNavInner");
@@ -763,196 +778,13 @@ function bindCategoryUI() {
   document.getElementById("catsMenuBtn")?.addEventListener("click", (e) => {
     e.stopPropagation();
     const menu = document.getElementById("megaMenu");
+    const btn = document.getElementById("catsMenuBtn");
     if (!menu) return;
-    menu.hidden = !menu.hidden;
+    const open = menu.hidden;
+    menu.hidden = !open;
+    btn?.classList.toggle("open", open);
+    btn?.setAttribute("aria-expanded", open ? "true" : "false");
   });
-  document.addEventListener("click", (e) => {
-    const menu = document.getElementById("megaMenu");
-    if (!menu || menu.hidden) return;
-    if (!e.target.closest(".nav-drop")) menu.hidden = true;
-  });
-  document.body.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-cat]");
-    if (!t) return;
-    if (t.closest("#filterBrand")) return;
-    const cat = t.getAttribute("data-cat") || "";
-    const sub = t.getAttribute("data-sub") || "";
-    if (t.closest("#megaMenu") || t.closest("#catNav") || t.closest("#catsDirectory") || t.closest("#subcatsBar") || t.closest("#catsGrid")) {
-      const menu = document.getElementById("megaMenu");
-      if (menu) menu.hidden = true;
-      setShopFilter(cat, sub);
-    }
-  });
-  document.getElementById("filterBrand")?.addEventListener("change", (e) => {
-    activeBrand = e.target.value || "";
-    renderShop();
-  });
-  document.getElementById("filterSort")?.addEventListener("change", (e) => {
-    activeSort = e.target.value || "newest";
-    renderShop();
-  });
-}
-
-async function loadProducts() {
-  const urls = [
-    "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json?t=" + Date.now(),
-    "/products.json?t=" + Date.now()
-  ];
-  let data = null;
-  for (const url of urls) {
-    try {
-      const r = await fetch(url, { cache: "no-store" });
-      if (!r.ok) continue;
-      const j = await r.json();
-      if (Array.isArray(j) && j.length) { data = j; break; }
-    } catch (e) {}
-  }
-  try {
-    const visibleIds = new Set(CATEGORIES.map(c => c.id));
-    PRODUCTS = (Array.isArray(data) ? data : []).filter(p => !p.hidden && (!visibleIds.size || visibleIds.has(p.category) || !p.category)).map(p => {
-      let category = p.category || "electronics";
-      let subcategory = p.subcategory || "";
-      // legacy map
-      if (["phones","laptops","monitors","home","accessories"].includes(category)) {
-        const legacy = { phones: ["electronics","mobiles"], laptops: ["electronics","laptops"], monitors: ["electronics","computer-accessories"], home: ["home-appliances","tv-entertainment"], accessories: ["electronics","mobiles"] };
-        const m = legacy[category];
-        if (m) { category = m[0]; subcategory = subcategory || m[1]; }
-      }
-      return {
-        ...p,
-        id: Number(p.id),
-        price: Number(p.price) || 0,
-        oldPrice: p.oldPrice != null ? Number(p.oldPrice) : null,
-        rating: p.rating || 4.2,
-        reviews: p.reviews || 20,
-        best: p.best ?? (Number(p.id) % 3 === 0),
-        newest: p.newest ?? true,
-        desc: p.description || p.desc || (p.name + " — متوفر في NEXORA"),
-        category,
-        subcategory,
-        brand: p.brand || "",
-        tags: p.tags || []
-      };
-    });
-  } catch (e) {
-    console.error(e);
-    PRODUCTS = [];
-  }
-  renderAll();
-  updateCartUI();
-}
-
-(async function initStore() {
-  await loadCatalog();
-  await loadProducts();
-  bindCategoryUI();
-  updateUserUI();
-})();
-
-
-/* —— AI Chat (WhatsApp style) —— */
-window._aiHistory = JSON.parse(localStorage.getItem("nx_ai_history") || "[]");
-window._aiBusy = false;
-
-function openAiChat() {
-  document.getElementById("aiOverlay")?.classList.add("open");
-  document.getElementById("aiPanel")?.classList.add("open");
-  setTimeout(function () { document.getElementById("aiInput")?.focus(); }, 200);
-}
-function closeAiChat() {
-  document.getElementById("aiOverlay")?.classList.remove("open");
-  document.getElementById("aiPanel")?.classList.remove("open");
-}
-function escapeAiText(t) {
-  return String(t || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-function formatAiReply(t) {
-  return escapeAiText(String(t || "")).replace(/\n/g, "<br>");
-}
-function appendAiMsg(html, who) {
-  const box = document.getElementById("aiMessages");
-  if (!box) return;
-  let time = "";
-  try { time = new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" }); } catch (e) {}
-  const row = document.createElement("div");
-  row.className = "ai-msg " + (who === "user" ? "user" : "bot");
-  row.innerHTML = '<div class="ai-bubble">' + html + '<span class="ai-time">' + time + "</span></div>";
-  box.appendChild(row);
-  box.scrollTop = box.scrollHeight;
-}
-function addAiTyping() {
-  const box = document.getElementById("aiMessages");
-  if (!box) return;
-  document.getElementById("aiTyping")?.remove();
-  const row = document.createElement("div");
-  row.className = "ai-typing";
-  row.id = "aiTyping";
-  row.innerHTML = '<div class="ai-bubble"><span></span><span></span><span></span></div>';
-  box.appendChild(row);
-  box.scrollTop = box.scrollHeight;
-}
-function localSmartReply(q) {
-  const m = String(q || "").toLowerCase();
-  const phones = PRODUCTS.filter(p => p.category === "phones").slice(0, 4);
-  const laptops = PRODUCTS.filter(p => p.category === "laptops").slice(0, 3);
-  if (/مرحبا|اهلا|السلام|hi|hello|ازيك/.test(m)) {
-    return "أهلاً بيكِ في NEXORA 👋 أنا نورا. تحبي شنطة، ملابس، أحذية، ولا إكسسوار موضة؟";
-  }
-  if (/موبايل|هاتف|iphone|سامسونج|galaxy/.test(m)) {
-    if (!phones.length) return "قولي ميزانيتك وأرشحلك موبايل مناسب.";
-    return "موبايلات مميزة:\n" + phones.map(p => "• " + p.name + " — " + p.price + " ج.م").join("\n");
-  }
-  if (/لابتوب|laptop|ماك/.test(m)) {
-    if (!laptops.length) return "قولي استخدامك (شغل / ألعاب) والميزانية.";
-    return "لابتوبات مقترحة:\n" + laptops.map(p => "• " + p.name + " — " + p.price + " ج.م").join("\n");
-  }
-  if (/عرض|خصم|رخيص/.test(m)) {
-    const deals = PRODUCTS.filter(p => p.oldPrice && p.oldPrice > p.price).slice(0, 5);
-    if (deals.length) return "عروض حالية:\n" + deals.map(p => "• " + p.name + " — " + p.price + " ج.م").join("\n");
-    return "فيه عروض كتير في الأقسام — قول الفئة اللي تهمك.";
-  }
-  if (/سعر|كام|تمن/.test(m)) return "ابحث باسم المنتج من فوق أو قولي الفئة والميزانية.";
-  return "تمام! قولي: موبايل / لابتوب / شاشة / إكسسوار + ميزانيتك وأرشحلك فوراً.";
-}
-async function handleAiSend() {
-  const input = document.getElementById("aiInput");
-  if (!input || window._aiBusy) return;
-  const text = input.value.trim();
-  if (!text) return;
-  window._aiBusy = true;
-  input.value = "";
-  appendAiMsg(escapeAiText(text), "user");
-  addAiTyping();
-  let reply = "";
-  try {
-    const r = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text, history: window._aiHistory.slice(-8) })
-    });
-    const data = await r.json().catch(function () { return {}; });
-    reply = (data && data.reply) ? data.reply : localSmartReply(text);
-  } catch (e) {
-    reply = localSmartReply(text);
-  }
-  document.getElementById("aiTyping")?.remove();
-  appendAiMsg(formatAiReply(reply), "bot");
-  window._aiHistory.push({ role: "user", content: text }, { role: "assistant", content: reply });
-  try { localStorage.setItem("nx_ai_history", JSON.stringify(window._aiHistory.slice(-20))); } catch (e) {}
-  window._aiBusy = false;
-}
-
-document.getElementById("aiChatBtn")?.addEventListener("click", openAiChat);
-document.getElementById("aiClose")?.addEventListener("click", closeAiChat);
-document.getElementById("aiOverlay")?.addEventListener("click", closeAiChat);
-document.getElementById("aiSend")?.addEventListener("click", handleAiSend);
-document.getElementById("aiInput")?.addEventListener("keydown", function (e) {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleAiSend(); }
-});
 document.getElementById("aiSuggestions")?.addEventListener("click", function (e) {
   const chip = e.target.closest(".ai-chip");
   if (!chip) return;
