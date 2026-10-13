@@ -173,7 +173,13 @@
               <label>الماركة<input id="pBrand" list="brandList" /><datalist id="brandList"></datalist></label>
               <label>القسم الرئيسي *<select id="pCat" required></select></label>
               <label>القسم الفرعي *<select id="pSub" required></select></label>
-              <label>المخزون<input id="pStock" type="number" value="10" /></label>
+              <label>عدد القطع المتوفرة<input id="pStock" type="number" min="0" value="10" /></label>
+              <label>متوفر للبيع؟
+                <select id="pAvailable">
+                  <option value="true" selected>متوفر</option>
+                  <option value="false">غير متوفر</option>
+                </select>
+              </label>
               <label>شارة<input id="pBadge" value="جديد" /></label>
             </div>
             <label>صورة المنتج *
@@ -182,6 +188,10 @@
               <div id="imgPreviewWrap" style="margin-top:10px;display:none">
                 <img id="imgPreview" alt="معاينة" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.12)" />
               </div>
+            </label>
+            <label>الألوان المتوفرة
+              <input id="pColors" placeholder="مثال: أسود, أبيض, بيج  أو  أسود:#111, أبيض:#fff" />
+              <small class="hint">افصلي بين كل لون بفاصلة. تقدري تضيفي كود اللون بعد :</small>
             </label>
             <label>الوصف<textarea id="pDesc"></textarea></label>
             <button class="btn btn-primary" type="submit" id="addBtn">نشر المنتج</button>
@@ -618,7 +628,9 @@
           brand: $("pBrand").value.trim(),
           category: $("pCat").value,
           subcategory: $("pSub").value,
-          stock: Number($("pStock").value||10),
+          stock: Number($("pStock").value||0),
+          available: $("pAvailable")?.value !== "false",
+          colors: $("pColors")?.value.trim() || "",
           badge: $("pBadge").value.trim() || "جديد",
           description: $("pDesc").value.trim(),
           image: imageVal
