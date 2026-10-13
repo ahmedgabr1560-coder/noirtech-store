@@ -1,6 +1,6 @@
 import { resilientChat } from "./_ai.js";
 
-const SYSTEM = `أنت «نورا» مساعدة NEXORA الذكية لمتجر إلكترونيات في مصر.
+const SYSTEM = `أنت «نورا» مساعدة NEXORA الذكية لمتجر الموضة والأزياء في مصر.
 
 شخصيتك:
 - مصرية خفيفة الدم، بتهزر باعتدال، ودودة وذكية.
@@ -15,7 +15,7 @@ const SYSTEM = `أنت «نورا» مساعدة NEXORA الذكية لمتجر 
 4) استخدم إيموجي باعتدال.
 5) عند الطلب: وجّه للسلة بعد تسجيل الدخول، أو واتساب 01064519541.
 
-المنتجات: موبايلات، لابتوبات، شاشات، أجهزة منزلية، إكسسوارات.
+المنتجات: ملابس، شنط، أحذية، ساعات، نظارات، إكسسوارات موضة.
 التواصل: 01064519541 | ahmedgabr1560@gmail.com
 الموقع: NEXORA
 
@@ -73,7 +73,7 @@ function localSmartReply(message, catalog) {
   const opener = ["تمام 😄", "حاضر 🔥", "يلا نختار بذوق ✨", "أوكيه 👌"][Math.floor(Math.random() * 4)];
 
   if (/مرحبا|اهلا|أهل|السلام|hello|hi|هاي|ازيك|إزيك|صباح|مساء/.test(low)) {
-    return "أهلاً بيك في NEXORA 👋 أنا نورا مساعدة المتجر.\nتحب نبدأ بموبايل، لابتوب، شاشة، ولا إكسسوار؟ ولو عندك ميزانية اكتبها وأنا أفلترلك.";
+    return "أهلاً بيكِ في NEXORA 👋 أنا نورا مساعدة المتجر.\nتحبي نبدأ بشنطة، ملابس، أحذية، ولا إكسسوار؟ ولو عندكِ ميزانية اكتبيها وأنا أفلتر.";
   }
   if (/شكر|تسلم|ممتاز|رائع|جامد/.test(low)) {
     return "العفو يا غالي 🙌 لو حابب نكمّل اختيار أو نعمل طلب من السلة قولي وأنا معاك.";
@@ -94,12 +94,12 @@ function localSmartReply(message, catalog) {
 
   // Category intents
   const intents = [
-    { re: /هاتف|موبايل|ايفون|آيفون|سامسونج|phone|iphone|galaxy|pixel|ريلمي|realme|شاومي|xiaomi/, cats: ["phones", "phone"], label: "موبايلات 📱" },
-    { re: /لابتوب|لاب |ماك|macbook|laptop|نوتبوك|thinkpad|dell|hp |asus/, cats: ["laptops", "laptop"], label: "لابتوبات 💻" },
-    { re: /شاشة|monitor|عرض|gaming monitor/, cats: ["monitors", "monitor"], label: "شاشات 🖥️" },
-    { re: /سماع|ايربود|airpods|هيدفون|صوت|jbl|sony|buds|سماعة/, cats: ["accessories", "audio"], label: "صوتيات 🎧" },
-    { re: /ساع|watch|ساعة|band|fitbit/, cats: ["accessories", "wearables"], label: "ساعات ⌚" },
-    { re: /منزل|خلاط|مكنسة|ثلاجة|home/, cats: ["home"], label: "أجهزة منزلية 🏠" },
+    { re: /شنط|شنطة|حقيبة|bag|bags/, cats: ["fashion", "bags"], label: "شنط 👜" },
+    { re: /فستان|بلوزة|تيشيرت|جاكيت|ملابس|حريمي|رجالي|كاجوال|dress|shirt/, cats: ["fashion", "women-fashion", "men-fashion"], label: "ملابس 👗" },
+    { re: /حذاء|كوتشي|سنيكر|شبشب|shoe|shoes/, cats: ["fashion", "shoes"], label: "أحذية 👠" },
+    { re: /ساعه|ساعة|watch/, cats: ["fashion", "watches"], label: "ساعات ⌚" },
+    { re: /نظار|glasses|eyewear/, cats: ["fashion", "eyewear"], label: "نظارات 🕶️" },
+    { re: /اكسسوار|إكسسوار|خاتم|حلق|accessory/, cats: ["fashion", "fashion-accessories"], label: "إكسسوارات ✨" },
   ];
 
   for (const intent of intents) {
@@ -137,7 +137,7 @@ function localSmartReply(message, catalog) {
   // generic with catalog hints
   const top = list.slice(0, 3);
   const hint = formatList(top);
-  return `${opener} قولي عايز مساعدة في إيه: موبايل، لابتوب، شاشة، ولا إكسسوار؟\nولو عندك ميزانية اكتبها وأنا أفلتر على طول.${hint ? `\n\nمن المميز عندنا:\n${hint}` : ""}`;
+  return `${opener} قولي عايزة مساعدة في إيه: شنطة، ملابس، أحذية، ولا إكسسوار؟\nولو عندك ميزانية اكتبها وأنا أفلتر على طول.${hint ? `\n\nمن المميز عندنا:\n${hint}` : ""}`;
 }
 
 export default async function handler(req, res) {
@@ -179,7 +179,7 @@ export default async function handler(req, res) {
   } catch (e) {
     console.error(e);
     return res.status(200).json({
-      reply: "حصلت لخبطة بسيطة 😅 جرّب تاني أو قولي: موبايل / لابتوب / سماعة وميزانيتك.",
+      reply: "حصلت لخبطة بسيطة 😅 جرّبي تاني أو قولي: شنطة / ملابس / حذاء وميزانيتك.",
       provider: "error"
     });
   }
