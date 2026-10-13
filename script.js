@@ -72,10 +72,16 @@ async function loadHeroConfig() {
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null && String(val).trim() !== "") el.textContent = val; };
     const setImg = (id, val) => {
       const el = document.getElementById(id);
-      if (el && val) {
-        el.src = val;
-        el.loading = "eager";
-      }
+      if (!el || !val) return;
+      const url = String(val);
+      const bust = url + (url.indexOf("?") >= 0 ? "&" : "?") + "v=" + Date.now();
+      el.setAttribute("src", bust);
+      el.loading = "eager";
+      el.style.opacity = "1";
+      el.onerror = function () {
+        // fallback without bust
+        if (el.src !== url) el.src = url;
+      };
     };
     setTxt("heroBadgeText", c.heroBadge);
     if (c.heroTitle) {
@@ -921,3 +927,49 @@ fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d)
     });
   }
 }).catch(function () {});
+
+
+async function loadProducts() {
+  const urls = [
+    "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json?t=" + Date.now(),
+    "/products.json?t=" + Date.now()
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      const data = await r.json();
+      PRODUCTS = Array.isArray(data) ? data : (data.products || []);
+      PRODUCTS = PRODUCTS.filter(p => p && !p.hidden);
+      break;
+    } catch (e) {}
+  }
+}
+
+async function bootStore() {
+  try { await loadHeroConfig(); } catch (e) { console.warn(e); }
+  try { await loadCatalog(); } catch (e) { console.warn(e); }
+  try { await loadProducts(); } catch (e) { console.warn(e); }
+  try { renderAll(); } catch (e) { console.warn(e); }
+  try { bindCategoryUI(); } catch (e) { console.warn(e); }
+  try { updateCartUI(); } catch (e) {}
+  try { updateUserUI(); } catch (e) {}
+  try {
+    if (typeof setShopFilter === "function" && CATEGORIES.some(c => c.id === "fashion")) {
+      setShopFilter("fashion", "");
+    }
+  } catch (e) {}
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootStore);
+} else {
+  bootStore();
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    loadHeroConfig();
+  }
+});
+setInterval(() => { loadHeroConfig(); }, 30000);
