@@ -7,7 +7,7 @@
       document.getElementById('profileOverlay')?.classList.remove('open');
       document.getElementById('profileModal')?.classList.remove('open');
       document.getElementById('cartOverlay')?.classList.remove('open');
-      document.getElementById('cartSidebar')?.classList.remove('open');
+      document.getElementById('cartDrawer')?.classList.remove('open');
       document.getElementById('aiOverlay')?.classList.remove('open');
       document.getElementById('aiPanel')?.classList.remove('open');
     }catch(e){}
