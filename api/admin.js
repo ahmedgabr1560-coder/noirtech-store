@@ -215,6 +215,26 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, orders });
     }
 
+    if (action === "delete_order") {
+      const id = String(body.id || body.orderId || "");
+      if (!id) return res.status(400).json({ ok: false, error: "id required" });
+      const f = await ghGet("orders.json");
+      if (!f) return res.status(200).json({ ok: true, total: 0 });
+      let orders = [];
+      try { orders = JSON.parse(f.content); } catch { orders = []; }
+      const next = orders.filter(x => String(x.id) !== id);
+      const put = await ghPut("orders.json", JSON.stringify(next, null, 2), `Admin: delete order ${id}`, f.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر الحذف", detail: put.data });
+      return res.status(200).json({ ok: true, total: next.length });
+    }
+
+    if (action === "clear_orders") {
+      const f = await ghGet("orders.json");
+      const put = await ghPut("orders.json", "[]", "Admin: clear all orders", f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر مسح الطلبات", detail: put.data });
+      return res.status(200).json({ ok: true, total: 0 });
+    }
+
     if (action === "update_order_status") {
       const id = String(body.id || "");
       const status = String(body.status || "new");
