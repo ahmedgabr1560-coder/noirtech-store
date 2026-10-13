@@ -224,7 +224,7 @@
       <section class="panel" id="panel-hero">
         <div class="card">
           <h3>التحكم في واجهة المتجر</h3>
-          <p class="hint" style="margin-bottom:14px">عدّلي النصوص وصور الشنط في أول صفحة المتجر، ثم اضغطي حفظ.</p>
+          <p class="hint" style="margin-bottom:14px">ارفعى الصورة فتظهر وتُحفظ تلقائيًا. النصوص احفظيها بزر «حفظ الواجهة».</p>
           <div class="form-grid">
             <label>شارة أعلى العنوان<input id="hBadge" placeholder="مجموعة الموضة" /></label>
             <label>نص زر التسوق<input id="hBtn" placeholder="تسوقي الآن" /></label>
@@ -674,16 +674,61 @@
       pendingHero1 = "";
       pendingHero2 = "";
     }
+    async function autoSaveHeroImages(partial) {
+      const msg = $("heroMsg");
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري رفع الصورة وحفظها تلقائيًا..."; }
+      try {
+        const payload = {
+          heroTitle: $("hTitle")?.value.trim() || "",
+          heroHighlight: $("hHighlight")?.value.trim() || "",
+          heroBadge: $("hBadge")?.value.trim() || "",
+          heroBtn: $("hBtn")?.value.trim() || "",
+          heroChipTitle: $("hChipTitle")?.value.trim() || "",
+          heroChipSub: $("hChipSub")?.value.trim() || "",
+          heroDesc: $("hDesc")?.value.trim() || "",
+          heroImage1: partial.heroImage1 != null ? partial.heroImage1 : (pendingHero1 || $("hImg1Url")?.value.trim() || ""),
+          heroImage2: partial.heroImage2 != null ? partial.heroImage2 : (pendingHero2 || $("hImg2Url")?.value.trim() || "")
+        };
+        const data = await api("update_hero", payload);
+        if (!data.ok) throw new Error(data.error || "فشل الحفظ التلقائي");
+        const c = data.config || {};
+        if (c.heroImage1) {
+          pendingHero1 = "";
+          if ($("hImg1Url")) $("hImg1Url").value = c.heroImage1;
+          setPrev("hImg1Prev", c.heroImage1);
+        }
+        if (c.heroImage2) {
+          pendingHero2 = "";
+          if ($("hImg2Url")) $("hImg2Url").value = c.heroImage2;
+          setPrev("hImg2Prev", c.heroImage2);
+        }
+        if (msg) {
+          msg.className = "msg ok";
+          msg.textContent = "تم حفظ الصورة وظهرت على المتجر — حدّثي صفحة المتجر إن لزم";
+        }
+        return true;
+      } catch (err) {
+        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "فشل رفع الصورة"; }
+        return false;
+      }
+    }
+
     $("hImg1File")?.addEventListener("change", (e) => {
-      fileToDataUrl(e.target.files?.[0], (url) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      fileToDataUrl(file, async (url) => {
         pendingHero1 = url;
         setPrev("hImg1Prev", url);
+        await autoSaveHeroImages({ heroImage1: url });
       });
     });
     $("hImg2File")?.addEventListener("change", (e) => {
-      fileToDataUrl(e.target.files?.[0], (url) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      fileToDataUrl(file, async (url) => {
         pendingHero2 = url;
         setPrev("hImg2Prev", url);
+        await autoSaveHeroImages({ heroImage2: url });
       });
     });
     $("hImg1Url")?.addEventListener("input", () => {
@@ -693,6 +738,20 @@
     $("hImg2Url")?.addEventListener("input", () => {
       const v = $("hImg2Url").value.trim();
       if (v && !pendingHero2) setPrev("hImg2Prev", v);
+    });
+    $("hImg1Url")?.addEventListener("change", async () => {
+      const v = $("hImg1Url").value.trim();
+      if (!v) return;
+      pendingHero1 = "";
+      setPrev("hImg1Prev", v);
+      await autoSaveHeroImages({ heroImage1: v });
+    });
+    $("hImg2Url")?.addEventListener("change", async () => {
+      const v = $("hImg2Url").value.trim();
+      if (!v) return;
+      pendingHero2 = "";
+      setPrev("hImg2Prev", v);
+      await autoSaveHeroImages({ heroImage2: v });
     });
     $("saveHeroBtn")?.addEventListener("click", async () => {
       const btn = $("saveHeroBtn");
