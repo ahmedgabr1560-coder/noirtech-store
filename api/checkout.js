@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       stripeEnabled: Boolean(STRIPE_SECRET),
-      methods: ["cod", "transfer"].concat(STRIPE_SECRET ? ["card"] : [])
+      methods: ["cod", "vodafone", "instapay", "transfer"].concat(STRIPE_SECRET ? ["card"] : [])
     });
   }
 
@@ -38,6 +38,12 @@ export default async function handler(req, res) {
     const total = Number(order.total || 0);
     const orderId = order.id || ("NX-" + Date.now().toString().slice(-8));
     const customer = order.customer || {};
+
+    if (method === "vodafone" || method === "instapay" || method === "transfer" || method === "cod") {
+      const label = method === "vodafone" ? "فودافون كاش" : method === "instapay" ? "إنستا باي" : method === "transfer" ? "تحويل" : "عند الاستلام";
+      await notify("طلب " + orderId + "\nالدفع: " + label + "\nالعميل: " + (customer.name || "") + " / " + (customer.phone || "") + "\nالإجمالي: " + total);
+      return res.status(200).json({ ok: true, method, orderId });
+    }
 
     if (method === "card") {
       if (!STRIPE_SECRET) {
