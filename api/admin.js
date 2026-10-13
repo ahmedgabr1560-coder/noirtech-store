@@ -5,6 +5,12 @@ const GH_REPO = "noirtech-store";
 const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "nexora2026";
 
+function parseDataUrl(dataUrl) {
+  const m = String(dataUrl || "").match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!m) return null;
+  return { mime: m[1], b64: m[2] };
+}
+
 async function ghGet(path) {
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
     headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Admin" }
@@ -207,6 +213,69 @@ export default async function handler(req, res) {
       const put = await ghPut("orders.json", JSON.stringify(orders, null, 2), `Admin: order ${id} -> ${status}`, f.sha);
       if (!put.ok) return res.status(500).json({ ok: false, error: "put failed" });
       return res.status(200).json({ ok: true, order: o });
+    }
+
+    if (action === "get_config") {
+      const f = await ghGet("site-config.json");
+      const config = f ? JSON.parse(f.content) : {};
+      return res.status(200).json({ ok: true, config });
+    }
+
+    if (action === "update_hero") {
+      const f = await ghGet("site-config.json");
+      if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
+      const config = JSON.parse(f.content);
+      const fields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","heroImage1","heroImage2"];
+      for (const k of fields) {
+        if (body[k] != null && String(body[k]).trim() !== "") config[k] = String(body[k]).trim();
+      }
+      // optional base64 uploads
+      async function upImg(dataUrl, name) {
+        if (!dataUrl || !String(dataUrl).startsWith("data:image/")) return null;
+        const parsed = parseDataUrl(dataUrl);
+        if (!parsed) return null;
+        const ext = parsed.mime.includes("png") ? "png" : "jpg";
+        const path = `product-images/hero-${name}.${ext}`;
+        const up = await ghPut(path, null, `Admin hero ${name}`, null, parsed.b64);
+        // ghPut signature in admin may not support binary - check
+        return up;
+      }
+      // handle image1/2 as data urls into github
+      for (const key of ["heroImage1", "heroImage2"]) {
+        const val = body[key];
+        if (val && String(val).startsWith("data:image/")) {
+          const parsed = parseDataUrl(val);
+          if (parsed) {
+            const ext = parsed.mime.includes("png") ? "png" : "jpg";
+            const path = `product-images/${key}.${ext}`;
+            // put binary
+            const bodyPut = {
+              message: `Admin: update ${key}`,
+              content: parsed.b64,
+              branch: "main"
+            };
+            // need sha if exists
+            const existing = await ghGet(path);
+            if (existing?.sha) bodyPut.sha = existing.sha;
+            const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${GH_TOKEN}`,
+                Accept: "application/vnd.github+json",
+                "Content-Type": "application/json",
+                "User-Agent": "NEXORA-Admin"
+              },
+              body: JSON.stringify(bodyPut)
+            });
+            if (r.ok) {
+              config[key] = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`;
+            }
+          }
+        }
+      }
+      const put = await ghPut("site-config.json", JSON.stringify(config, null, 2), "Admin: update hero", f.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+      return res.status(200).json({ ok: true, config });
     }
 
     if (action === "list_expenses") {
