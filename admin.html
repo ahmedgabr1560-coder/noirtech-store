@@ -215,8 +215,13 @@
 
       <section class="panel" id="panel-orders">
         <div class="card">
-          <h3>الطلبات</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+            <h3 style="margin:0">الطلبات</h3>
+            <button type="button" class="btn btn-ghost" id="clearOrdersBtn" style="border-color:rgba(248,113,113,.4);color:#fca5a5">حذف كل الطلبات السابقة</button>
+          </div>
+          <p class="hint" style="margin-bottom:10px">تقدري تحذفي طلب واحد من الجدول، أو تمسحي كل الطلبات القديمة مرة واحدة.</p>
           <div id="ordersTable">جاري التحميل...</div>
+          <div class="msg" id="ordersMsg"></div>
         </div>
       </section>
 
@@ -665,33 +670,40 @@
       } finally { btn.disabled = false; }
     };
 
+    
     async function loadOrders() {
       const data = await api("list_orders");
       if (!data.ok) return;
       const orders = data.orders || [];
       if (!orders.length) {
-        $("ordersTable").innerHTML = `<p class="hint">لا توجد طلبات على الخادم بعد. الطلبات تُرسل أيضًا لتليجرام.</p>`;
+        $("ordersTable").innerHTML = `<p class="hint">لا توجد طلبات حاليًا.</p>`;
         return;
       }
-      $("ordersTable").innerHTML = `<table><thead><tr><th>الطلب</th><th>العميل</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th></tr></thead><tbody>
-        ${orders.slice(0,100).map(o=>{
-          const items=(o.items||[]).map(i=>`${i.name}×${i.qty||1}`).join("<br>");
+      $("ordersTable").innerHTML = `<table><thead><tr><th>الطلب</th><th>العميل</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th><th>حذف</th></tr></thead><tbody>
+        ${orders.slice(0,100).map(o => {
+          const items = (o.items || []).map(it => (it.name || "") + " ×" + (it.qty || 1)).join("<br>") || "—";
+          const cust = (o.customer && (o.customer.name || o.customer.phone)) ? ((o.customer.name || "") + "<br>" + (o.customer.phone || "")) : "—";
+          const st = o.status || "new";
           return `<tr>
-            <td><strong>${o.id}</strong><br><small>${o.at?new Date(o.at).toLocaleString("ar-EG"):""}</small>
-              ${o.customer?.mapsLink?`<br><a href="${o.customer.mapsLink}" target="_blank" style="color:#c4b5fd">الموقع</a>`:""}
-            </td>
-            <td>${o.customer?.name||"—"}<br>${o.customer?.phone||""}<br><small>${o.customer?.address||""}</small></td>
-            <td>${items||"—"}</td>
+            <td><b>${o.id || ""}</b><br><small>${o.at ? new Date(o.at).toLocaleString("ar-EG") : ""}</small></td>
+            <td>${cust}</td>
+            <td style="font-size:.8rem">${items}</td>
             <td>${money(o.total)}</td>
             <td>
               <select data-order-status="${o.id}">
-                ${["new","confirmed","processing","shipped","delivered","cancelled","returned"].map(s=>`<option value="${s}" ${o.status===s?"selected":""}>${s}</option>`).join("")}
+                <option value="new" ${st==="new"?"selected":""}>جديد</option>
+                <option value="processing" ${st==="processing"?"selected":""}>قيد التنفيذ</option>
+                <option value="shipped" ${st==="shipped"?"selected":""}>تم الشحن</option>
+                <option value="delivered" ${st==="delivered"?"selected":""}>تم التسليم</option>
+                <option value="cancelled" ${st==="cancelled"?"selected":""}>ملغي</option>
               </select>
             </td>
+            <td><button type="button" class="btn btn-ghost" data-del-order="${o.id}" style="color:#fca5a5;padding:6px 10px">حذف</button></td>
           </tr>`;
         }).join("")}
       </tbody></table>`;
     }
+
     document.addEventListener("change", async (e) => {
       const sel = e.target.closest("[data-order-status]");
       if (!sel) return;
@@ -1136,6 +1148,33 @@
     const _showAppColors = typeof showApp === "function" ? showApp : null;
     // call once DOM ready
     setTimeout(() => { try { renderColorPalette(); syncColorsHidden(); } catch(e) {} }, 300);
+
+    
+    $("ordersTable")?.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-del-order]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-del-order");
+      if (!id) return;
+      if (!confirm("حذف الطلب " + id + " نهائيًا؟")) return;
+      const data = await api("delete_order", { id });
+      const msg = $("ordersMsg");
+      if (msg) {
+        msg.className = data.ok ? "msg ok" : "msg err";
+        msg.textContent = data.ok ? "تم حذف الطلب" : (data.error || "فشل الحذف");
+      }
+      if (data.ok) await loadOrders();
+    });
+    $("clearOrdersBtn")?.addEventListener("click", async () => {
+      if (!confirm("هل تريدين حذف كل الطلبات السابقة نهائيًا؟")) return;
+      if (!confirm("تأكيد أخير: مسح كل الطلبات؟")) return;
+      const data = await api("clear_orders");
+      const msg = $("ordersMsg");
+      if (msg) {
+        msg.className = data.ok ? "msg ok" : "msg err";
+        msg.textContent = data.ok ? "تم حذف كل الطلبات" : (data.error || "فشل");
+      }
+      if (data.ok) await loadOrders();
+    });
 
     // auto login if secret saved
     (async () => {
