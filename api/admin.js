@@ -245,7 +245,7 @@ export default async function handler(req, res) {
       let config = {};
       try { config = JSON.parse(f.content); } catch { config = {}; }
 
-      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub"];
+      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email"];
       for (const k of textFields) {
         if (body[k] != null) config[k] = String(body[k]);
       }
