@@ -201,10 +201,38 @@
 
       <section class="panel" id="panel-settings">
         <div class="card">
-          <h3>إعدادات سريعة</h3>
-          <p class="hint">كلمة سر الإدارة الافتراضية: <code>nexora2026</code> (يمكن تغييرها من متغيرات Vercel: ADMIN_SECRET)</p>
-          <p class="hint" style="margin-top:8px">البيانات تُحفظ على GitHub (products.json / categories.json / orders.json / expenses.json) والمتجر يقرأها مباشرة.</p>
-          <p class="hint" style="margin-top:8px">الأقسام غير الظاهرة الآن محفوظة بالكامل ويمكن تفعيلها من تبويب الأقسام.</p>
+          <h3>صور ونصوص الواجهة (Hero)</h3>
+          <p class="hint" style="margin-bottom:12px">غيّري صور الشنط والنصوص اللي في أول الموقع — التغيير يظهر فورًا بعد الحفظ.</p>
+          <div class="form-grid">
+            <label>العنوان الرئيسي<input id="hTitle" /></label>
+            <label>الجزء الملوّن<input id="hHighlight" /></label>
+            <label>شارة أعلى العنوان<input id="hBadge" /></label>
+            <label>نص الزر<input id="hBtn" /></label>
+            <label>عنوان البطاقة على الصورة<input id="hChipTitle" /></label>
+            <label>وصف البطاقة<input id="hChipSub" /></label>
+          </div>
+          <label>الوصف
+            <textarea id="hDesc"></textarea>
+          </label>
+          <div class="form-grid">
+            <label>الصورة الأولى (رابط أو رفع)
+              <input id="hImg1Url" placeholder="https://..." />
+              <input id="hImg1File" type="file" accept="image/*" style="margin-top:8px" />
+              <img id="hImg1Prev" alt="" style="margin-top:8px;width:100%;max-height:160px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
+            </label>
+            <label>الصورة الثانية (رابط أو رفع)
+              <input id="hImg2Url" placeholder="https://..." />
+              <input id="hImg2File" type="file" accept="image/*" style="margin-top:8px" />
+              <img id="hImg2Prev" alt="" style="margin-top:8px;width:100%;max-height:160px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
+            </label>
+          </div>
+          <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة</button>
+          <div class="msg" id="heroMsg"></div>
+        </div>
+        <div class="card">
+          <h3>ملاحظات</h3>
+          <p class="hint">كلمة سر الإدارة الافتراضية: <code>nexora2026</code></p>
+          <p class="hint" style="margin-top:8px">بعد حفظ صور الواجهة، حدّثي صفحة المتجر (Ctrl+F5) لرؤية التغيير.</p>
         </div>
       </section>
     </main>
@@ -536,6 +564,95 @@
       $("exMsg").className = data.ok ? "msg ok" : "msg err";
       $("exMsg").textContent = data.ok ? "تم الحفظ" : (data.error||"فشل");
       if (data.ok) { $("exAmount").value=""; $("exDesc").value=""; await loadExpenses(); await loadStats(); }
+    };
+
+    
+    let pendingHero1 = "";
+    let pendingHero2 = "";
+    function fileToDataUrl(file, cb) {
+      if (!file || !file.type.startsWith("image/")) return;
+      const r = new FileReader();
+      r.onload = () => {
+        const im = new Image();
+        im.onload = () => {
+          const max = 1400;
+          let w = im.width, h = im.height;
+          if (w > max || h > max) {
+            const ratio = Math.min(max/w, max/h);
+            w = Math.round(w*ratio); h = Math.round(h*ratio);
+          }
+          const c = document.createElement("canvas");
+          c.width = w; c.height = h;
+          c.getContext("2d").drawImage(im, 0, 0, w, h);
+          cb(c.toDataURL("image/jpeg", 0.88));
+        };
+        im.src = r.result;
+      };
+      r.readAsDataURL(file);
+    }
+    async function loadHeroSettings() {
+      const data = await api("get_config");
+      if (!data.ok) return;
+      const c = data.config || {};
+      $("hTitle").value = c.heroTitle || "";
+      $("hHighlight").value = c.heroHighlight || "";
+      $("hBadge").value = c.heroBadge || "";
+      $("hBtn").value = c.heroBtn || "";
+      $("hChipTitle").value = c.heroChipTitle || "";
+      $("hChipSub").value = c.heroChipSub || "";
+      $("hDesc").value = c.heroDesc || "";
+      $("hImg1Url").value = c.heroImage1 || "";
+      $("hImg2Url").value = c.heroImage2 || "";
+      if (c.heroImage1) { $("hImg1Prev").src = c.heroImage1; $("hImg1Prev").style.display = "block"; }
+      if (c.heroImage2) { $("hImg2Prev").src = c.heroImage2; $("hImg2Prev").style.display = "block"; }
+    }
+    $("hImg1File").onchange = (e) => {
+      fileToDataUrl(e.target.files?.[0], (url) => {
+        pendingHero1 = url;
+        $("hImg1Prev").src = url;
+        $("hImg1Prev").style.display = "block";
+      });
+    };
+    $("hImg2File").onchange = (e) => {
+      fileToDataUrl(e.target.files?.[0], (url) => {
+        pendingHero2 = url;
+        $("hImg2Prev").src = url;
+        $("hImg2Prev").style.display = "block";
+      });
+    };
+    $("saveHeroBtn").onclick = async () => {
+      const btn = $("saveHeroBtn");
+      const msg = $("heroMsg");
+      btn.disabled = true; msg.className = "msg";
+      try {
+        const payload = {
+          heroTitle: $("hTitle").value.trim(),
+          heroHighlight: $("hHighlight").value.trim(),
+          heroBadge: $("hBadge").value.trim(),
+          heroBtn: $("hBtn").value.trim(),
+          heroChipTitle: $("hChipTitle").value.trim(),
+          heroChipSub: $("hChipSub").value.trim(),
+          heroDesc: $("hDesc").value.trim(),
+          heroImage1: pendingHero1 || $("hImg1Url").value.trim(),
+          heroImage2: pendingHero2 || $("hImg2Url").value.trim()
+        };
+        const data = await api("update_hero", payload);
+        if (!data.ok) throw new Error(data.error || "فشل الحفظ");
+        pendingHero1 = ""; pendingHero2 = "";
+        if (data.config?.heroImage1) { $("hImg1Url").value = data.config.heroImage1; $("hImg1Prev").src = data.config.heroImage1; }
+        if (data.config?.heroImage2) { $("hImg2Url").value = data.config.heroImage2; $("hImg2Prev").src = data.config.heroImage2; }
+        msg.className = "msg ok";
+        msg.textContent = "تم حفظ الواجهة — حدّثي المتجر (Ctrl+F5)";
+      } catch (err) {
+        msg.className = "msg err";
+        msg.textContent = err.message || "خطأ";
+      } finally { btn.disabled = false; }
+    };
+    // load hero settings when opening settings or app
+    const _refreshAll = refreshAll;
+    refreshAll = async function() {
+      await _refreshAll();
+      try { await loadHeroSettings(); } catch(e) {}
     };
 
     // auto login if secret saved
