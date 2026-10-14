@@ -998,7 +998,7 @@ function bindCategoryUI() {
 }
 
 
-/* ===== AI Chat (WhatsApp-style) ===== */
+/* ===== AI Chat (WhatsApp-style) — interactive ===== */
 let aiBusy = false;
 const aiHistory = [];
 
@@ -1008,6 +1008,19 @@ function openAiChat() {
   if (overlay) overlay.classList.add("open");
   if (panel) panel.classList.add("open");
   document.body.style.overflow = "hidden";
+  const box = document.getElementById("aiMessages");
+  if (box && !box.dataset.welcomed) {
+    box.dataset.welcomed = "1";
+    const name = window.__SITE_NAME__ || "NEXORA";
+    appendAiMsg("bot", "أهلاً بيكِ 👋 أنا نورا مساعدة " + name + "\nتحبي أساعد في شنطة، ملابس، حذاء، ولا عرض؟", {
+      chips: [
+        { label: "👜 شنطة", q: "عايزة شنطة حريمي أنيقة" },
+        { label: "👗 ملابس", q: "عايزة إطلالة كاجوال" },
+        { label: "🔥 عروض", q: "فيه عروض؟" },
+        { label: "💰 ميزانية", q: "ميزانيتي 500 رشحيلي" }
+      ]
+    });
+  }
   setTimeout(() => document.getElementById("aiInput")?.focus(), 200);
 }
 function closeAiChat() {
@@ -1015,9 +1028,6 @@ function closeAiChat() {
   document.getElementById("aiPanel")?.classList.remove("open");
   document.body.style.overflow = "";
 }
-
-let aiHistory = [];
-let aiBusy = false;
 
 function appendAiMsg(role, text, opts) {
   opts = opts || {};
@@ -1028,9 +1038,8 @@ function appendAiMsg(role, text, opts) {
   const bubble = document.createElement("div");
   bubble.className = "ai-bubble";
   const time = new Date().toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
-  // preserve line breaks
-  const safe = String(text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  bubble.innerHTML = safe.replace(/\n/g, "<br>") + '<span class="ai-time">' + time + "</span>";
+  const safe = String(text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g, "<br>");
+  bubble.innerHTML = safe + '<span class="ai-time">' + time + "</span>";
   wrap.appendChild(bubble);
   if (opts.chips && opts.chips.length) {
     const row = document.createElement("div");
@@ -1057,19 +1066,20 @@ function appendAiMsg(role, text, opts) {
 function showAiTyping() {
   const box = document.getElementById("aiMessages");
   if (!box) return;
-  const el = document.createElement("div");
-  el.className = "ai-msg bot ai-typing";
-  el.id = "aiTyping";
-  el.innerHTML = '<div class="ai-bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
-  box.appendChild(el);
+  removeAiTyping();
+  const div = document.createElement("div");
+  div.className = "ai-msg bot ai-typing";
+  div.id = "aiTyping";
+  div.innerHTML = '<div class="ai-bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+  box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
-function hideAiTyping() {
+function removeAiTyping() {
   document.getElementById("aiTyping")?.remove();
 }
 
 function suggestFollowChips(userText, reply) {
-  const t = (userText + " " + reply).toLowerCase();
+  const t = (String(userText) + " " + String(reply)).toLowerCase();
   const chips = [];
   if (/شنط|شنطة|bag/.test(t)) {
     chips.push({ label: "💼 بيج", q: "عايزة شنطة بيج أنيقة" });
@@ -1077,17 +1087,17 @@ function suggestFollowChips(userText, reply) {
     chips.push({ label: "💰 تحت 500", q: "شنطة تحت 500 جنيه" });
   } else if (/حذاء|شوز|كوتشي/.test(t)) {
     chips.push({ label: "👟 رياضي", q: "حذاء رياضي مريح" });
-    chips.push({ label: "👠 سهره", q: "حذاء سهرة أنيق" });
+    chips.push({ label: "👠 سهرة", q: "حذاء سهرة أنيق" });
   } else if (/عرض|خصم/.test(t)) {
     chips.push({ label: "🔥 عروض تانية", q: "إيه العروض المتاحة؟" });
-    chips.push({ label: "🛍️ أضيف للسلة", q: "ازاي أطلب من الموقع؟" });
-  } else if (/طلب|سله|سلة|اوردر/.test(t)) {
+    chips.push({ label: "🛒 ازاي أطلب", q: "ازاي أطلب من الموقع؟" });
+  } else if (/طلب|سله|سلة|اوردر|واتس/.test(t)) {
     chips.push({ label: "📞 واتساب", q: "رقم الواتساب كام؟" });
-    chips.push({ label: "🎨 الألوان", q: "الألوان إجبارية؟" });
+    chips.push({ label: "🎨 الألوان", q: "الألوان إجبارية قبل الطلب؟" });
   } else {
     chips.push({ label: "👜 شنط", q: "وريني شنط حلوة" });
     chips.push({ label: "👗 ملابس", q: "عايزة ملابس كاجوال" });
-    chips.push({ label: "🔥 عروض", q: "فيه recents عروض؟".replace("recents ","") });
+    chips.push({ label: "🔥 عروض", q: "فيه عروض؟" });
   }
   chips.push({ label: "💬 ميزانيتي", q: "ميزانيتي 400 جنيه رشحيلي" });
   return chips.slice(0, 4);
@@ -1113,26 +1123,24 @@ async function handleAiSend() {
         id: p.id, name: p.name, price: p.price, oldPrice: p.oldPrice,
         category: p.category, isOffer: p.isOffer, brand: p.brand
       }));
-    const siteName = window.__SITE_NAME__ || "NEXORA";
-    const r = await fetch("/api/chat", {
+    const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message: text,
         history: aiHistory.slice(-12),
         catalog,
-        siteName
+        siteName: window.__SITE_NAME__ || "NEXORA"
       })
     });
-    const data = await r.json();
-    hideAiTyping();
+    const data = await res.json().catch(() => ({}));
+    removeAiTyping();
     const reply = data.reply || "حاضر 😅 قولي تاني بصيغة أوضح وأنا معاكِ.";
-    const chips = suggestFollowChips(text, reply);
-    appendAiMsg("bot", reply, { chips });
+    appendAiMsg("bot", reply, { chips: suggestFollowChips(text, reply) });
     aiHistory.push({ role: "assistant", content: reply });
   } catch (e) {
-    hideAiTyping();
-    appendAiMsg("bot", "الاتصال اتقطع لحظة 😅 جرّبي تاني، أو واتساب من الزر الأخضر.", {
+    removeAiTyping();
+    appendAiMsg("bot", "الاتصال اتقطع لحظة 😅 جرّبي تاني أو واتساب من الزر الأخضر.", {
       chips: [
         { label: "🔁 حاول تاني", q: text },
         { label: "📞 رقم الواتساب", q: "رقم الواتساب كام؟" }
@@ -1143,30 +1151,6 @@ async function handleAiSend() {
     if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = "إرسال"; }
   }
 }
-
-function openAiChat() {
-  document.getElementById("aiOverlay")?.classList.add("open");
-  document.getElementById("aiPanel")?.classList.add("open");
-  const box = document.getElementById("aiMessages");
-  if (box && !box.dataset.welcomed) {
-    box.dataset.welcomed = "1";
-    const name = window.__SITE_NAME__ || "NEXORA";
-    appendAiMsg("bot", "أهلاً بيكِ 👋 أنا نورا مساعدة " + name + "\\nتحبي أساعد في شنطة، ملابس، حذاء، ولا عرض؟", {
-      chips: [
-        { label: "👜 شنطة", q: "عايزة شنطة حريمي أنيقة" },
-        { label: "👗 ملابس", q: "عايزة إطلالة كاجوال" },
-        { label: "🔥 عروض", q: "فيه عروض؟" },
-        { label: "💰 ميزانية", q: "ميزانيتي 500 رشحيلي" }
-      ]
-    });
-  }
-  setTimeout(() => document.getElementById("aiInput")?.focus(), 200);
-}
-function closeAiChat() {
-  document.getElementById("aiOverlay")?.classList.remove("open");
-  document.getElementById("aiPanel")?.classList.remove("open");
-}
-
 
 document.getElementById("aiChatBtn")?.addEventListener("click", openAiChat);
 document.getElementById("aiClose")?.addEventListener("click", closeAiChat);
@@ -1179,6 +1163,14 @@ document.getElementById("aiInput")?.addEventListener("keydown", (e) => {
   }
 });
 
+document.getElementById("aiChips")?.addEventListener("click", function (e) {
+  const chip = e.target.closest(".ai-chip");
+  if (!chip) return;
+  const q = chip.getAttribute("data-q") || chip.textContent || "";
+  const input = document.getElementById("aiInput");
+  if (input && q) { input.value = q; handleAiSend(); }
+});
+// backward compat if old id
 document.getElementById("aiSuggestions")?.addEventListener("click", function (e) {
   const chip = e.target.closest(".ai-chip");
   if (!chip) return;
