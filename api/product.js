@@ -70,13 +70,13 @@ export default async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "غير مصرح — اكتب كلمة السر الصحيحة" });
     }
 
-    const name = String(body.name || "").trim();
-    const price = Number(String(body.price || "").replace(/[^0-9.]/g, ""));
+    let name = String(body.name || "").trim();
+    let price = Number(String(body.price || "").replace(/[^0-9.]/g, ""));
     let category = String(body.category || "electronics").toLowerCase();
-    const subcategory = String(body.subcategory || "").toLowerCase();
-    const brand = String(body.brand || "").trim();
+    let subcategory = String(body.subcategory || "").toLowerCase();
+    let brand = String(body.brand || "").trim();
     let image = String(body.image || "").trim();
-    const description = String(body.description || "").trim();
+    let description = String(body.description || "").trim();
     let badge = String(body.badge || "").trim();
     const isOfferFlag = body.isOffer === true || body.isOffer === "true" || body.isOffer === 1 || body.isOffer === "1";
     if (!badge) badge = isOfferFlag ? "عرض" : "جديد";
@@ -166,6 +166,8 @@ export default async function handler(req, res) {
         }
       }
     }
+
+    if (!name || !price) return res.status(400).json({ ok: false, error: "الاسم والسعر مطلوبين" });
 
     // Upload phone/gallery image to GitHub if provided
     if (imageBase64) {
