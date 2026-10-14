@@ -57,10 +57,13 @@ function applyGeneralConfig(c) {
     tgEl.style.display = c.showFloatTelegram === false ? "none" : "";
   }
   // AI float
-  const aiEl = document.getElementById("floatAiBtn") || document.getElementById("aiToggle") || document.querySelector(".ai-fab, #aiOpen, .ai-open");
+  const aiEl = document.getElementById("aiChatBtn") || document.getElementById("floatAiBtn");
   if (aiEl) {
-    aiEl.style.display = c.showFloatAI === false ? "none" : "";
+    aiEl.style.display = ""; // الشات العائم يفضل ظاهر دائمًا
   }
+  const fb = document.getElementById("floatButtons");
+  if (fb) fb.style.display = "flex";
+
   // contact anchors in page
   document.querySelectorAll('a[href^="tel:"]').forEach(a => { if (phone) a.href = "tel:" + phone; });
   document.querySelectorAll('a[href^="mailto:"]').forEach(a => { if (email) a.href = "mailto:" + email; });
@@ -1005,21 +1008,27 @@ const aiHistory = [];
 function openAiChat() {
   const overlay = document.getElementById("aiOverlay");
   const panel = document.getElementById("aiPanel");
+  if (panel && panel.classList.contains("open")) {
+    closeAiChat();
+    return;
+  }
   if (overlay) overlay.classList.add("open");
   if (panel) panel.classList.add("open");
-  document.body.style.overflow = "hidden";
   const box = document.getElementById("aiMessages");
   if (box && !box.dataset.welcomed) {
     box.dataset.welcomed = "1";
-    const name = window.__SITE_NAME__ || "NEXORA";
-    appendAiMsg("bot", "أهلاً بيكِ 👋 أنا نورا مساعدة " + name + "\nتحبي أساعد في شنطة، ملابس، حذاء، ولا عرض؟", {
-      chips: [
-        { label: "👜 شنطة", q: "عايزة شنطة حريمي أنيقة" },
-        { label: "👗 ملابس", q: "عايزة إطلالة كاجوال" },
-        { label: "🔥 عروض", q: "فيه عروض؟" },
-        { label: "💰 ميزانية", q: "ميزانيتي 500 رشحيلي" }
-      ]
-    });
+    // keep existing welcome if any, else add
+    if (!box.children.length) {
+      const name = window.__SITE_NAME__ || "NEXORA";
+      appendAiMsg("bot", "أهلاً بيكِ 👋 أنا نورا مساعدة " + name + "
+تحبي أساعد في شنطة، ملابس، حذاء، ولا عرض؟", {
+        chips: [
+          { label: "👜 شنطة", q: "عايزة شنطة حريمي أنيقة" },
+          { label: "👗 ملابس", q: "عايزة إطلالة كاجوال" },
+          { label: "🔥 عروض", q: "فيه عروض؟" }
+        ]
+      });
+    }
   }
   setTimeout(() => document.getElementById("aiInput")?.focus(), 200);
 }
