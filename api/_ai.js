@@ -124,11 +124,12 @@ export async function geminiChat(system, messages, maxTokens = 450) {
 
 export async function resilientChat(system, messages, maxTokens = 450) {
   // ابدأ بالمحركات المتاحة عادةً للمتجر، حتى لا نضيع وقت الطلب في مفتاح OpenAI منتهي.
+  // ترتيب مجاني أولاً: Gemini (فري) ثم الباقي — نتخطى OpenAI لو OPENAI_SKIP=1
   const providers = [
-    ["openrouter", openrouterChat],
     ["gemini", geminiChat],
-    ["openai", openaiChat],
-    ["claude", claudeChat]
+    ["openrouter", openrouterChat],
+    ["claude", claudeChat],
+    ...(process.env.OPENAI_SKIP === "1" ? [] : [["openai", openaiChat]])
   ].filter(([name]) => ({ openrouter: providerKey("OPENROUTER_API_KEY"), gemini: providerKey("GEMINI_API_KEY"), openai: process.env.OPENAI_API_KEY, claude: process.env.ANTHROPIC_API_KEY }[name]));
   const errors = {};
   for (const [provider, fn] of providers) {
