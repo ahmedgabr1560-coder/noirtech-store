@@ -260,5 +260,24 @@
 
     })();
   </script>
+
+  <script>
+    (async function(){
+      try {
+        const r = await fetch("/site-config.json?t="+Date.now(),{cache:"no-store"});
+        if (!r.ok) return;
+        const c = await r.json();
+        const name = (c.siteName||"NEXORA").trim();
+        const mark = (c.logoMark||name.slice(0,2)||"NX").toString().slice(0,3).toUpperCase();
+        document.querySelectorAll("[data-site-name]").forEach(el=>el.textContent=name);
+        document.querySelectorAll("[data-site-mark]").forEach(el=>el.textContent=mark);
+        if (!location.search.includes("id=")) document.title = name;
+        else if (document.title.includes("NEXORA")) document.title = document.title.replace(/NEXORA/g, name);
+        const strong = document.querySelector(".pp-top strong");
+        if (strong) strong.textContent = name;
+      } catch(e){}
+    })();
+  </script>
+
 </body>
 </html>
