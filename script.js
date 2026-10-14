@@ -298,7 +298,7 @@ function updateCartUI() {
   }
   box.innerHTML = cart.map(i => {
     const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
-    const name = (i.name || (p && p.name) || ("منتج #" + i.id));
+    const name = (i.name || (p && p.name) || ("منتج #" + i.id)) + (i.color ? (" — لون: " + i.color) : "");
     const price = (i.price != null ? i.price : (p ? p.price : 0));
     const image = (i.image || (p && p.image) || "");
     if (!name && !p) return "";
