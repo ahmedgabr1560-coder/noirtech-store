@@ -166,6 +166,11 @@
               ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
               ${off ? `<span class="badge-off" style="position:static">-${off}%</span>` : ""}
             </div>
+            ${Array.isArray(p.offerMeta?.tiers) && p.offerMeta.tiers.length ? `
+            <div style="margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.35);color:#fdba74;font-weight:700;line-height:1.6">
+              🔥 عروض الكمية:<br>
+              ${p.offerMeta.tiers.map(t => `• ${t.qty} قطع بـ ${money(t.price)}`).join("<br>")}
+            </div>` : ""}
             <div class="stock-row ${available ? "in" : "out"}" id="stockRow">
               ${available
                 ? `✅ متوفر حالياً — <span class="stock-count">${stock}</span> قطعة`
