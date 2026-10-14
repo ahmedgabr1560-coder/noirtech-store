@@ -20,6 +20,7 @@ function money(n) {
 function itemBlock(item, idx) {
   const lines = [];
   lines.push(`${idx}. ${item.name || "منتج"}`);
+  if (item.color) lines.push(`اللون: ${item.color}`);
   if (item.qty) lines.push(`الكمية: ${item.qty}`);
   if (item.price != null) lines.push(`السعر: ${money(item.price)}`);
   if (item.qty && item.price != null) lines.push(`الإجمالي: ${money(item.price * item.qty)}`);
