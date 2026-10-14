@@ -151,6 +151,14 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      openai: Boolean(process.env.OPENAI_API_KEY),
+      anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
+      grok: Boolean(process.env.XAI_API_KEY || process.env.GROK_API_KEY)
+    });
+  }
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
@@ -179,7 +187,8 @@ export default async function handler(req, res) {
       return res.status(200).json({
         reply: localSmartReply(message, catalog),
         provider: "local",
-        note: "fallback"
+        note: "fallback",
+        error: String(aiError.message || aiError).slice(0, 180)
       });
     }
   } catch (e) {
