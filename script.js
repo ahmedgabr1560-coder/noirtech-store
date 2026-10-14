@@ -1276,3 +1276,39 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 setInterval(() => { loadHeroConfig(); }, 30000);
+
+
+/* Mobile nav sheet */
+(function(){
+  function buildMobileNav() {
+    const src = document.getElementById("mainNav");
+    const dest = document.getElementById("mobileNavLinks");
+    if (!src || !dest) return;
+    dest.innerHTML = "";
+    src.querySelectorAll("a").forEach(a => {
+      const link = document.createElement("a");
+      link.href = a.getAttribute("href") || "#";
+      link.textContent = a.textContent.trim();
+      link.addEventListener("click", closeMobileNav);
+      dest.appendChild(link);
+    });
+  }
+  function openMobileNav() {
+    buildMobileNav();
+    const sheet = document.getElementById("mobileNavSheet");
+    const ov = document.getElementById("mobileNavOverlay");
+    if (sheet) { sheet.hidden = false; requestAnimationFrame(() => sheet.classList.add("open")); }
+    if (ov) ov.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closeMobileNav() {
+    const sheet = document.getElementById("mobileNavSheet");
+    const ov = document.getElementById("mobileNavOverlay");
+    if (sheet) { sheet.classList.remove("open"); setTimeout(() => { sheet.hidden = true; }, 250); }
+    if (ov) ov.hidden = true;
+    document.body.style.overflow = "";
+  }
+  document.getElementById("mobileMenuBtn")?.addEventListener("click", openMobileNav);
+  document.getElementById("mobileNavClose")?.addEventListener("click", closeMobileNav);
+  document.getElementById("mobileNavOverlay")?.addEventListener("click", closeMobileNav);
+})();
