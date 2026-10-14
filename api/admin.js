@@ -77,12 +77,34 @@ export default async function handler(req, res) {
       const completed = deliveredOrders.length;
       const cancelled = (orders || []).filter(o => o.status === "cancelled").length;
       const newOrders = (orders || []).filter(o => o.status === "new" || !o.status).length;
-      // المبيعات والأرباح تُحسب فقط من الطلبات المسلّمة
       const sales = deliveredOrders.reduce((s, o) => s + Number(o.total || 0), 0);
       const pendingSales = (orders || [])
         .filter(o => !["delivered", "completed", "cancelled"].includes(o.status || "new"))
         .reduce((s, o) => s + Number(o.total || 0), 0);
-      const expTotal = (expenses || []).reduce((s, e) => s + Number(e.amount || 0), 0);
+
+      // تكلفة البضاعة من سعر الشراء (costPrice) للطلبات المسلّمة
+      const productMap = new Map((products || []).map(p => [String(p.id), p]));
+      let cogs = 0;
+      let grossProfit = 0;
+      for (const o of deliveredOrders) {
+        for (const it of (o.items || [])) {
+          const qty = Number(it.qty) || 1;
+          const sell = Number(it.price != null ? it.price : 0);
+          let cost = Number(it.costPrice != null ? it.costPrice : NaN);
+          if (Number.isNaN(cost)) {
+            const p = productMap.get(String(it.id));
+            cost = p ? Number(p.costPrice || 0) : 0;
+          }
+          cogs += cost * qty;
+          grossProfit += (sell - cost) * qty;
+        }
+      }
+
+      const expList = expenses || [];
+      const capitalTotal = expList.filter(e => e.type === "capital").reduce((s, e) => s + Number(e.amount || 0), 0);
+      const expTotal = expList.filter(e => e.type !== "capital").reduce((s, e) => s + Number(e.amount || 0), 0);
+      // صافي الربح = (سعر البيع − سعر الشراء) للمسلّم − المصروفات التشغيلية (بدون رأس المال)
+      const profit = grossProfit - expTotal;
       return res.status(200).json({
         ok: true,
         stats: {
@@ -95,8 +117,11 @@ export default async function handler(req, res) {
           cancelled,
           sales,
           pendingSales,
+          cogs,
+          grossProfit,
+          capital: capitalTotal,
           expenses: expTotal,
-          profit: sales - expTotal,
+          profit,
           lowStock: products.filter(p => Number(p.stock || 999) < 5).length
         },
         recentOrders: (orders || []).slice(0, 10)
@@ -362,8 +387,10 @@ export default async function handler(req, res) {
     if (action === "add_expense") {
       const f = await ghGet("expenses.json");
       const expenses = f ? JSON.parse(f.content) : [];
+      const expType = String(body.type || "expense") === "capital" ? "capital" : "expense";
       const item = {
         id: "EX-" + Date.now().toString(36),
+        type: expType,
         amount: Number(body.amount) || 0,
         category: String(body.category || "other"),
         description: String(body.description || ""),
