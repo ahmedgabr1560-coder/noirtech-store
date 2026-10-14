@@ -110,6 +110,36 @@ export default async function handler(req, res) {
     }
 
     if (!category) category = "fashion";
+
+    // Offer from existing product
+    let sourceProductId = body.sourceProductId != null ? Number(body.sourceProductId) : null;
+    let offerType = String(body.offerType || (isOfferFlag ? "discount" : "")).trim();
+    let offerMeta = null;
+    if (isOfferFlag) {
+      const tiers = [];
+      if (Array.isArray(body.bundleTiers)) {
+        for (const t of body.bundleTiers) {
+          const q = Math.max(1, Number(t.qty || t.quantity || 0));
+          const pr = Math.round(Number(t.price || 0));
+          if (q && pr > 0) tiers.push({ qty: q, price: pr });
+        }
+      }
+      // helpers from form fields
+      const b2 = Number(body.bundle2Price || 0);
+      const b3 = Number(body.bundle3Price || 0);
+      if (b2 > 0) tiers.push({ qty: 2, price: Math.round(b2) });
+      if (b3 > 0) tiers.push({ qty: 3, price: Math.round(b3) });
+      // unique by qty
+      const map = new Map();
+      for (const t of tiers) map.set(t.qty, t);
+      const uniq = [...map.values()].sort((a,b) => a.qty - b.qty);
+      offerMeta = {
+        type: offerType || (uniq.length ? "bundle" : "discount"),
+        sourceProductId: sourceProductId || null,
+        tiers: uniq
+      };
+    }
+
     if (!name || !price) return res.status(400).json({ ok: false, error: "الاسم والسعر مطلوبين" });
 
     const file = await ghGet("products.json");
@@ -118,6 +148,24 @@ export default async function handler(req, res) {
     try { products = JSON.parse(file.content); } catch { return res.status(500).json({ ok: false, error: "ملف منتجات تالف" }); }
 
     const id = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
+
+    if (sourceProductId) {
+      const src = products.find(p => Number(p.id) === Number(sourceProductId));
+      if (src) {
+        if (!name) name = src.name;
+        if (!brand) brand = src.brand || "";
+        if (!category || category === "electronics") category = src.category || category;
+        if (!subcategory) subcategory = src.subcategory || "";
+        if (!image) image = src.image || "";
+        if (!description) description = src.description || src.desc || "";
+        if (!colors.length && Array.isArray(src.colors)) colors = src.colors;
+        if (!stock && src.stock != null) { /* keep form stock */ }
+        // default oldPrice to original product price for discount offers
+        if (isOfferFlag && !(body.oldPrice) && src.price) {
+          body.oldPrice = src.price;
+        }
+      }
+    }
 
     // Upload phone/gallery image to GitHub if provided
     if (imageBase64) {
@@ -160,11 +208,14 @@ export default async function handler(req, res) {
       stock,
       available: available && stock > 0,
       colors,
-      isOffer: body.isOffer === true || body.isOffer === "true" || body.isOffer === 1 || body.isOffer === "1",
+      isOffer: isOfferFlag,
+      sourceProductId: sourceProductId || null,
+      offerType: offerType || null,
+      offerMeta,
       rating: 4.5,
       reviews: 0,
-      best: body.isOffer === true || body.isOffer === "true" || body.best === true,
-      newest: !(body.isOffer === true || body.isOffer === "true"),
+      best: isOfferFlag || body.best === true,
+      newest: !isOfferFlag,
       hidden: false,
       createdAt: new Date().toISOString()
     };
