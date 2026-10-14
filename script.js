@@ -268,8 +268,8 @@ function renderAll() {
   renderMegaMenu();
   renderCatNav();
   renderCatsDirectory();
-  renderGrid($("#bestGrid"), PRODUCTS.filter(p => p.best).slice(0, 8));
-  renderGrid($("#newGrid"), PRODUCTS.filter(p => p.newest).slice(0, 8));
+  renderGrid($("#bestGrid"), PRODUCTS.filter(p => p.isOffer || p.best || (p.oldPrice && p.price && p.oldPrice > p.price)).slice(0, 12));
+  renderGrid($("#newGrid"), PRODUCTS.filter(p => !p.isOffer && (p.newest || true)).slice(0, 12));
   renderShop();
   // default storefront to fashion
   if (typeof setShopFilter === "function" && CATEGORIES.some(c => c.id === "fashion")) {
