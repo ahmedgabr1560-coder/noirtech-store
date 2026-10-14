@@ -73,10 +73,15 @@ export default async function handler(req, res) {
       const orders = ordFile ? JSON.parse(ordFile.content) : [];
       const expenses = expFile ? JSON.parse(expFile.content) : [];
       const visibleCats = (categories.categories || []).filter(c => c.visible !== false);
-      const sales = (orders || []).reduce((s, o) => s + Number(o.total || 0), 0);
-      const completed = (orders || []).filter(o => ["delivered", "completed"].includes(o.status)).length;
+      const deliveredOrders = (orders || []).filter(o => ["delivered", "completed"].includes(o.status));
+      const completed = deliveredOrders.length;
       const cancelled = (orders || []).filter(o => o.status === "cancelled").length;
       const newOrders = (orders || []).filter(o => o.status === "new" || !o.status).length;
+      // المبيعات والأرباح تُحسب فقط من الطلبات المسلّمة
+      const sales = deliveredOrders.reduce((s, o) => s + Number(o.total || 0), 0);
+      const pendingSales = (orders || [])
+        .filter(o => !["delivered", "completed", "cancelled"].includes(o.status || "new"))
+        .reduce((s, o) => s + Number(o.total || 0), 0);
       const expTotal = (expenses || []).reduce((s, e) => s + Number(e.amount || 0), 0);
       return res.status(200).json({
         ok: true,
@@ -89,6 +94,7 @@ export default async function handler(req, res) {
           completed,
           cancelled,
           sales,
+          pendingSales,
           expenses: expTotal,
           profit: sales - expTotal,
           lowStock: products.filter(p => Number(p.stock || 999) < 5).length
