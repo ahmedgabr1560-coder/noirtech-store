@@ -105,41 +105,41 @@ export async function geminiChat(system, messages, maxTokens = 450) {
     role: message.role === "assistant" ? "model" : "user",
     parts: [{ text: String(message.content || "") }]
   }));
-  const models = [
-    process.env.GEMINI_MODEL,
-    "gemini-2.0-flash",
-    "gemini-1.5-flash"
-  ].filter(Boolean);
+  const models = [process.env.GEMINI_MODEL || "gemini-3.8-flash", "gemini-3.8-flash"].filter((v, i, a) => a.indexOf(v) === i);
   let lastErr = "Gemini failed";
   for (const model of models) {
-    try {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: system }] },
-          contents,
-          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85 }
-        })
-      });
-      const data = await r.json();
-      if (!r.ok) {
-        lastErr = data.error?.message || `Gemini ${model} failed`;
-        continue;
-      }
-      const text = (data.candidates || []).flatMap(c => c.content?.parts || []).map(p => p.text).filter(Boolean).join("
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: system }] },
+            contents,
+            generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85 }
+          })
+        });
+        const data = await r.json();
+        if (!r.ok) {
+          lastErr = data.error?.message || `Gemini ${model} failed`;
+          if (r.status === 503 || /high demand|unavailable/i.test(lastErr)) {
+            await new Promise(res => setTimeout(res, 800 * (attempt + 1)));
+            continue;
+          }
+          break;
+        }
+        const text = (data.candidates || []).flatMap(c => c.content?.parts || []).map(p => p.text).filter(Boolean).join("
 ").trim();
-      if (!text) {
-        lastErr = `Gemini ${model} returned empty`;
-        continue;
+        if (!text) { lastErr = `Gemini ${model} empty`; break; }
+        return text;
+      } catch (e) {
+        lastErr = String(e.message || e);
       }
-      return text;
-    } catch (e) {
-      lastErr = String(e.message || e);
     }
   }
   throw new Error(lastErr);
 }
+
 
 
 export async function resilientChat(system, messages, maxTokens = 450) {
