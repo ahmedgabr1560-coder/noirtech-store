@@ -1069,6 +1069,7 @@
       if (!data.ok) return;
       const c = data.config || {};
       if ($("brandName")) $("brandName").value = c.siteName || "NEXORA";
+        applyAdminBrand(c);
       if ($("brandMark")) $("brandMark").value = c.logoMark || "NX";
       if ($("brandTagline")) $("brandTagline").value = c.siteTagline || c.tagline || "";
       if ($("brandFavUrl")) $("brandFavUrl").value = c.favicon || "";
@@ -1107,7 +1108,8 @@
         const c = data.config || {};
         if (c.favicon && $("brandFavUrl")) $("brandFavUrl").value = c.favicon;
         if (c.favicon && $("brandFavPrev")) { $("brandFavPrev").src = c.favicon; $("brandFavPrev").style.display = "block"; }
-        if (msg) { msg.className = "msg ok"; msg.textContent = "تم الحفظ — حدّثي المتجر لرؤية الاسم والأيقونة"; }
+        applyAdminBrand({ siteName: name, logoMark: payload.logoMark, siteTagline: payload.siteTagline, favicon: payload.favicon });
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم الحفظ — الاسم اتحدث في الأدمن والمتجر"; }
       } catch (err) {
         if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
       } finally {
@@ -1379,6 +1381,22 @@
         adminAiSend();
       });
     });
+
+    
+    function applyAdminBrand(c) {
+      if (!c) return;
+      const name = (c.siteName || "NEXORA").trim();
+      const mark = (c.logoMark || name.slice(0, 2) || "NX").toString().slice(0, 3).toUpperCase();
+      document.title = "إدارة | " + name;
+      document.querySelectorAll("[data-site-name]").forEach(el => { el.textContent = name; });
+      document.querySelectorAll("[data-site-mark]").forEach(el => { el.textContent = mark; });
+      const sideTitle = document.getElementById("adminBrandName");
+      if (sideTitle) sideTitle.textContent = name;
+      const sideMark = document.getElementById("adminBrandMark");
+      if (sideMark) sideMark.textContent = mark;
+      const top = document.getElementById("adminTopName");
+      if (top) top.textContent = "لوحة تحكم " + name;
+    }
 
     // auto login if secret saved
     (async () => {
