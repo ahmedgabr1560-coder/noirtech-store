@@ -382,32 +382,45 @@ function updateCartUI() {
   $("#cartTotal").textContent = money(total);
 }
 
-function addToCart(id) {
+function addToCart(id, opts) {
+  opts = opts || {};
   id = Number(id);
   const p = PRODUCTS.find(x => Number(x.id) === id);
-  const item = cart.find(x => Number(x.id) === id);
+  if (!p) { toast("المنتج غير متاح"); return; }
+  const colors = Array.isArray(p.colors) ? p.colors : [];
+  // لو فيه ألوان ومفيش لون مختار → صفحة المنتج
+  if (colors.length && !opts.color && !opts.skipColorCheck) {
+    window.location.href = "/product.html?id=" + encodeURIComponent(id);
+    return;
+  }
+  if (p.available === false || (p.stock != null && Number(p.stock) <= 0)) {
+    toast("المنتج غير متوفر حاليًا");
+    return;
+  }
+  const color = opts.color || "";
+  const item = cart.find(x => Number(x.id) === id && String(x.color || "") === String(color));
   if (item) {
     item.qty += 1;
-    if (p) {
-      item.name = p.name;
-      item.price = p.price;
-      item.image = p.image;
-      item.category = p.category;
-      item.description = p.description || p.desc || "";
-    }
+    item.name = p.name;
+    item.price = p.price;
+    item.image = p.image;
+    item.category = p.category;
+    item.description = p.description || p.desc || "";
+    item.color = color;
   } else {
     cart.push({
       id: id,
       qty: 1,
-      name: p ? p.name : ("منتج #" + id),
-      price: p ? p.price : 0,
-      image: p ? p.image : "",
-      category: p ? p.category : "",
-      description: p ? (p.description || p.desc || "") : ""
+      name: p.name,
+      price: p.price,
+      image: p.image || "",
+      category: p.category || "",
+      description: p.description || p.desc || "",
+      color: color
     });
   }
   saveCart();
-  toast(p ? ("تمت إضافة " + p.name) : "تمت الإضافة");
+  toast(color ? ("تمت إضافة " + p.name + " — " + color) : ("تمت إضافة " + p.name));
 }
 
 function openCart() {
@@ -516,8 +529,8 @@ if (cartBtnEl) {
 }
 document.getElementById("closeCart")?.addEventListener("click", closeCart);
 document.getElementById("cartOverlay")?.addEventListener("click", closeCart);
-$("#closeProduct").addEventListener("click", closeProduct);
-$("#productOverlay").addEventListener("click", closeProduct);
+document.getElementById("closeProduct")?.addEventListener("click", closeProduct);
+document.getElementById("productOverlay")?.addEventListener("click", closeProduct);
 $("#closeAuth").addEventListener("click", closeAuth);
 $("#authOverlay").addEventListener("click", closeAuth);
 $("#closeProfile").addEventListener("click", closeProfile);
@@ -1020,8 +1033,7 @@ function openAiChat() {
     // keep existing welcome if any, else add
     if (!box.children.length) {
       const name = window.__SITE_NAME__ || "NEXORA";
-      appendAiMsg("bot", "أهلاً بيكِ 👋 أنا نورا مساعدة " + name + "
-تحبي أساعد في شنطة، ملابس، حذاء، ولا عرض؟", {
+      appendAiMsg("bot", "أهلاً أهلاً 😊 أنا نورا… قولي بتفكري في إيه؟ شنطة، هدوم، حذاء، ولا لسه بتلفّي؟", {
         chips: [
           { label: "👜 شنطة", q: "عايزة شنطة حريمي أنيقة" },
           { label: "👗 ملابس", q: "عايزة إطلالة كاجوال" },
