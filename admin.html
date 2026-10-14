@@ -433,11 +433,12 @@
       $("statsGrid").innerHTML = [
         ["المنتجات", s.products],
         ["الأقسام الظاهرة", s.visibleCategories + " / " + s.totalCategories],
-        ["الطلبات", s.orders],
+        ["كل الطلبات", s.orders],
         ["طلبات جديدة", s.newOrders],
-        ["مكتملة", s.completed],
+        ["تم التسليم", s.completed],
         ["ملغاة", s.cancelled],
-        ["المبيعات", money(s.sales)],
+        ["مبيعات المسلّم", money(s.sales)],
+        ["قيد التنفيذ", money(s.pendingSales || 0)],
         ["المصروفات", money(s.expenses)],
         ["صافي تقديري", money(s.profit)],
       ].map(([k,v]) => `<div class="stat"><span>${k}</span><b>${v}</b></div>`).join("");
