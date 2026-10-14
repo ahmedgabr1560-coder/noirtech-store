@@ -84,13 +84,14 @@
       let cart = [];
       try { cart = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
       const id = Number(p.id);
-      const item = cart.find(x => Number(x.id) === id);
+      const color = p.selectedColor || p.color || "";
+      const item = cart.find(x => Number(x.id) === id && String(x.color || "") === String(color));
       if (item) item.qty += qty;
       else cart.push({
         id, qty,
         name: p.name, price: p.price, image: p.image,
         category: p.category, description: p.description || "",
-        color: p.selectedColor || p.color || ""
+        color
       });
       localStorage.setItem(key, JSON.stringify(cart));
     }
@@ -141,7 +142,7 @@
             const name = typeof c === "string" ? c : (c.name || c.label || ("لون " + (i+1)));
             const code = typeof c === "string" ? "" : (c.code || c.hex || "");
             const bg = code || "#888";
-            return `<button type="button" class="color-swatch ${i===0?"active":""}" data-color="${esc(name)}" data-code="${esc(code)}" style="background:${esc(bg)}" title="${esc(name)}"><span class="color-cap">${esc(name)}</span></button>`;
+            return `<button type="button" class="color-swatch" data-color="${esc(name)}" data-code="${esc(code)}" style="background:${esc(bg)}" title="${esc(name)}"><span class="color-cap">${esc(name)}</span></button>`;
           }).join("")
         : `<span style="color:#9a9aa3;font-size:.85rem">لا يوجد اختيار ألوان لهذا المنتج</span>`;
 
@@ -208,9 +209,12 @@
         </div>` : ""}
       `;
 
-      let selectedColor = colors.length ? (typeof colors[0] === "string" ? colors[0] : (colors[0].name || "")) : "";
+      let selectedColor = "";
       const selLabel = document.getElementById("selectedColorLabel");
-      if (selLabel && selectedColor) selLabel.textContent = "اللون المختار: " + selectedColor;
+      if (selLabel) {
+        selLabel.textContent = colors.length ? "⚠️ اختاري لونًا (إجباري)" : "";
+        selLabel.style.color = colors.length ? "#fbbf24" : "#c4b5fd";
+      }
 
       document.getElementById("colorRow")?.addEventListener("click", (e) => {
         const btn = e.target.closest(".color-swatch");
@@ -218,7 +222,10 @@
         document.querySelectorAll(".color-swatch").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         selectedColor = btn.getAttribute("data-color") || "";
-        if (selLabel) selLabel.textContent = selectedColor ? ("اللون المختار: " + selectedColor) : "";
+        if (selLabel) {
+          selLabel.textContent = selectedColor ? ("اللون المختار: " + selectedColor) : "⚠️ اختاري لونًا (إجباري)";
+          selLabel.style.color = selectedColor ? "#c4b5fd" : "#fbbf24";
+        }
       });
 
       const qtyInput = document.getElementById("buyQty");
@@ -233,9 +240,14 @@
       });
       document.getElementById("ppAddCart")?.addEventListener("click", () => {
         if (!available) return;
+        if (colors.length && !selectedColor) {
+          if (selLabel) { selLabel.textContent = "⚠️ لازم تختاري لون قبل الإضافة للسلة"; selLabel.style.color = "#f87171"; }
+          alert("اختاري لون المنتج أولاً");
+          return;
+        }
         let qty = Math.max(1, Number(qtyInput?.value) || 1);
         if (stock > 0) qty = Math.min(qty, stock);
-        const payload = Object.assign({}, p, { selectedColor });
+        const payload = Object.assign({}, p, { selectedColor, color: selectedColor });
         addLocalCart(payload, qty);
         const btn = document.getElementById("ppAddCart");
         if (btn) { btn.textContent = "تمت الإضافة ✓"; setTimeout(() => { btn.textContent = "أضف للسلة"; }, 1500); }
