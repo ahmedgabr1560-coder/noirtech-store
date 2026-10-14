@@ -734,6 +734,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
         category: i.category || (p && p.category) || "",
         description: i.description || (p && (p.description || p.desc)) || "",
         color: i.color || i.selectedColor || "",
+        costPrice: Number((p && p.costPrice) || i.costPrice || 0),
         specs: (p && p.specs) || {}
       };
     });
