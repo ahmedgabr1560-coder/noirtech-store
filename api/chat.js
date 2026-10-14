@@ -1,153 +1,202 @@
 import { resilientChat } from "./_ai.js";
 
-const SYSTEM = `أنت «نورا» مساعدة متجر الموضة الذكية في مصر (NEXORA / اسم الموقع الحالي).
+const SYSTEM = `أنتِ «نورا» مساعدة مبيعات ودودة لمتجر موضة في مصر.
 
-شخصيتك تفاعلية جدًا:
-- مصرية خفيفة الدم، بتهزر وتجاوب بسرعة، ودودة وذكية.
-- بتتكلم عامية مصرية، مش روبوت رسمي.
-- بتتفاعلي: تسألي، تقتري، تشجعي، وتكملي الحوار مش رد واحد وبس.
-- بتفتكري سياق المحادثة (history) وترجعي عليه.
+الشخصية:
+- بنت مصرية خفيفة الدم، ذكية، بتتكلم عامية مصرية طبيعية.
+- بتحمّسي العميل من غير مبالغة تقيلة.
+- بتهزري جملة بسيطة لو المناسبة تسمح، وبعدين ترجعي للمهم.
 
-أسلوب الرد التفاعلي:
-1) افتحي بجملة حيّة (مش قالب مكرر كل مرة).
-2) ادّي فائدة عملية (ترشيح / مقارنة / ميزانية).
-3) اختمي بسؤال واحد واضح عشان المحادثة تكمل.
-4) استخدمي إيموجي باعتدال (١–٣).
-5) لو الكتالوج موجود: اذكري أسماء وأسعار حقيقية منه.
-6) لو العميل متردد: ادّي خيارين بس بوضوح.
-7) للطلب: وجّهي للسلة أو واتساب 01064519541.
+طريقة الرد:
+1) افتحي بجملة مختلفة كل مرة (متكرريش نفس الجملة).
+2) افهمي هي عايزة إيه: شنطة / ملابس / حذاء / عرض / طلب / ميزانية.
+3) لو في كتالوج: رشّحي ٢–٤ منتجات بأسعارها الحقيقية فقط.
+4) لو ناقص معلومة: اسألي سؤال واحد بس (لون؟ ميزانية؟ استخدام يومي ولا سهرات؟).
+5) اختمي بجملة تفتح حوار أو خطوة واضحة (أضيفي للسلة / اختاري لون / ابعتي رقم).
+6) الرد قصير: ٣–٦ جمل أو نقاط مرتبة. إيموجي ١–٣ بس.
 
-قواعد:
-- عربي مصري.
-- متختراعش أسعار مش في الكتالوج.
-- متقولش إنك نموذج تجريبي أو fallback.
-- خلي الرد ٢–٧ جمل، مش فقرة طويلة مملة.`;
+ممنوع:
+- اختراع أسعار أو منتجات مش في الكتالوج.
+- تقولي إنكِ نموذج تجريبي أو fallback.
+- فقرات طويلة مملة.
+- فصحى ثقيلة.
 
-const ADMIN_SYSTEM = `أنت مساعد إداري ذكي لمتجر NEXORA (موضة وأزياء في مصر).
-تساعد صاحب المتجر في: إدارة المنتجات، العروض، الطلبات، الألوان، المخزون، التسويق، والرد على العملاء.
-ردي بالعامية المصرية، واضح ومباشر، خطوات عملية.
-لو سألت عن شيء تقني في اللوحة: أشرحي أين يضغط (إضافة منتج / العروض / الطلبات / الإحصائيات).
-متختراعش أرقام مبيعات حقيقية لو مش متاحة.`;
+التواصل: واتساب 01064519541
+الطلب: من السلة على الموقع بعد اختيار اللون لو مطلوب.`;
+
+const ADMIN_SYSTEM = `أنتِ مساعدة إدارة لمتجر موضة (لوحة التحكم).
+ردي بالعامية المصرية، خطوات مرقمة وواضحة.
+مواضيعك: إضافة منتج، عمل عرض (خصم أو ٢/٣ قطع)، الطلبات والتسليم، الألوان والمخزون، الإحصائيات، اسم الموقع.
+متختراعيش أرقام مبيعات.`;
 
 function money(n) {
   try { return Number(n).toLocaleString("ar-EG") + " ج.م"; } catch { return n + " ج.م"; }
 }
 
-function pickFromCatalog(list, cats, limit = 4) {
-  const catSet = new Set((cats || []).map(c => String(c).toLowerCase()));
-  const scored = (list || []).filter(p => !p.hidden).map(p => {
-    const c = String(p.category || "").toLowerCase();
-    const name = String(p.name || "");
-    let score = 0;
-    if (catSet.has(c)) score += 3;
-    for (const k of catSet) {
-      if (name.toLowerCase().includes(k)) score += 1;
-    }
-    return { p, score };
-  }).filter(x => x.score > 0);
-  scored.sort((a, b) => b.score - a.score || (a.p.price || 0) - (b.p.price || 0));
-  return scored.slice(0, limit).map(x => x.p);
-}
-
 function formatList(items) {
   if (!items.length) return "";
-  return items.map((p, i) => `${i + 1}) ${p.name}${p.price ? ` — ${money(p.price)}` : ""}`).join("\n");
+  return items.map((p, i) => {
+    const price = p.price != null ? money(p.price) : "";
+    const old = p.oldPrice && p.oldPrice > p.price ? ` (بدل ${money(p.oldPrice)})` : "";
+    return `${i + 1}) ${p.name}${price ? " — " + price : ""}${old}`;
+  }).join("\n");
 }
 
 function extractBudget(t) {
-  const m = String(t).replace(/,/g, "").match(/(\d{3,7})\s*(الف|ألف|k)?/i);
+  const s = String(t).replace(/,/g, "");
+  const m = s.match(/(\d{2,7})\s*(الف|ألف|k|ج|جنيه)?/i);
   if (!m) return null;
   let n = Number(m[1]);
-  if (m[2]) n = n < 1000 ? n * 1000 : n;
+  if (m[2] && /الف|ألف|k/i.test(m[2]) && n < 1000) n *= 1000;
+  if (n > 0 && n < 50) return null;
   return n;
 }
 
+function lastUserTopics(history) {
+  const texts = (history || [])
+    .filter(h => h && h.role === "user")
+    .slice(-3)
+    .map(h => String(h.content || ""));
+  return texts.join(" ");
+}
 
-function localSmartReply(message, catalog, mode) {
+function scoreProduct(p, keywords) {
+  const name = String(p.name || "").toLowerCase();
+  const cat = String(p.category || "").toLowerCase();
+  const sub = String(p.subcategory || "").toLowerCase();
+  const brand = String(p.brand || "").toLowerCase();
+  let score = 0;
+  for (const k of keywords) {
+    const kk = String(k).toLowerCase();
+    if (!kk) continue;
+    if (name.includes(kk)) score += 4;
+    if (cat.includes(kk)) score += 2;
+    if (sub.includes(kk)) score += 2;
+    if (brand.includes(kk)) score += 1;
+  }
+  if (p.isOffer || (p.oldPrice && p.price && p.oldPrice > p.price)) score += 1;
+  return score;
+}
+
+function pickProducts(list, keywords, budget, limit = 4) {
+  let items = (list || []).filter(p => !p.hidden);
+  if (budget) items = items.filter(p => !p.price || Number(p.price) <= budget * 1.05);
+  const scored = items.map(p => ({ p, s: scoreProduct(p, keywords) })).filter(x => x.s > 0);
+  scored.sort((a, b) => b.s - a.s || Number(a.p.price || 0) - Number(b.p.price || 0));
+  let out = scored.slice(0, limit).map(x => x.p);
+  if (!out.length && budget) {
+    out = items.filter(p => p.price).sort((a, b) => a.price - b.price).slice(0, limit);
+  }
+  if (!out.length) out = (list || []).filter(p => !p.hidden).slice(0, limit);
+  return out;
+}
+
+function localSmartReply(message, catalog, mode, history, siteName) {
   const t = String(message || "").trim();
   const low = t.toLowerCase();
+  const ctx = (t + " " + lastUserTopics(history)).toLowerCase();
   const list = Array.isArray(catalog) ? catalog.filter(p => !p.hidden) : [];
-  const budget = extractBudget(t);
+  const budget = extractBudget(t) || extractBudget(lastUserTopics(history));
+  const store = siteName || "المتجر";
 
-  // —— وضع الإدارة ——
   if (mode === "admin") {
-    if (/عرض|خصم|bundle|قطعت/.test(t)) {
-      return "لإضافة عرض من منتج موجود:\n1) لوحة التحكم → إضافة منتج\n2) اختاري «② عرض / خصم»\n3) اختاري المنتج من القائمة\n4) حطي سعر القطعة بعد الخصم و/أو ٢ قطع بسعر… و ٣ قطع بسعر…\n5) احفظي — هيظهر في قسم العروض على الموقع.";
+    if (/عرض|خصم|قطعت|bundle/.test(t)) {
+      return "حاضر 💼 عشان تعملي عرض:\n1) إضافة منتج → «عرض / خصم»\n2) اختاري المنتج الأساسي\n3) حطي سعر بعد الخصم و/أو ٢ قطع بسعر و٣ قطع بسعر\n4) احفظي — يظهر في قسم العروض\nتحبي أوضحلكِ خصم القطعة ولا عرض الكمية؟";
     }
-    if (/طلب|تسليم|مسلّم|احص|مبيع/.test(t)) {
-      return "متابعة الطلبات:\n• الطلبات → غيّري الحالة أو اضغطي «تأكيد التسليم»\n• أول ما يتأكد التسليم، المبلغ يدخل في «مبيعات المسلّم» وصافي الربح\n• تقدري تحذفي طلب قديم أو تمسحي كل الطلبات من نفس الصفحة.";
+    if (/طلب|تسليم|مسل/.test(t)) {
+      return "من تبويب الطلبات:\n• غيّري الحالة أو اضغطي «تأكيد التسليم»\n• الطلبات المسلّمة بتتحسب في مبيعات المسلّم\n• تقدري تحذفي طلب قديم\nفي طلب معيّن عالقة معاكِ؟";
     }
-    if (/منتج|اضاف|صورة|لون|مخزون/.test(t)) {
-      return "إضافة منتج عادي:\n1) إضافة منتج → «① منتج عادي»\n2) الاسم، السعر، القسم، الألوان، المخزون، الصورة من المعرض\n3) احفظي\nلو عايزة عرض مش منتج جديد: استخدمي تبويب العروض واختارى منتج موجود.";
+    if (/منتج|اضاف|صور|لون|مخزون/.test(t)) {
+      return "إضافة منتج:\n1) إضافة منتج → منتج عادي\n2) الاسم والسعر والقسم والألوان والمخزون والصورة\n3) احفظي\nلو هتعملي خصم على منتج موجود استخدمي تبويب العروض.";
     }
-    if (/ذكاء|ai|شات|مفتاح|openai|رصيد/.test(low)) {
-      return "الشات شغال مجانًا بالوضع المحلي الذكي دلوقتي.\nلو حابة ذكاء أقوى بدون ما تدفعي كتير: اعملي مفتاح مجاني من Google AI Studio (Gemini) وحطيه في Vercel باسم GEMINI_API_KEY — مجاني لحد حد يومي كويس.";
-    }
-    return "أنا مساعدة الإدارة 💼 قولي عايزة تظبطي إيه:\n• إضافة منتج / عرض\n• الطلبات والتسليم\n• الألوان والمخزون\n• صياغة رد لعميلة\nهديكِ الخطوات بالظبط.";
+    return "قولي عايزة تظبطي إيه بالظبط: منتجات، عروض، طلبات، ولا الإحصائيات؟ وأديكِ الخطوات.";
   }
 
-  // —— وضع العملاء ——
-  const greet = /ازيك|أهلا|اهلا|مرحبا|السلام|هاي|hello|hi/.test(low) || t.length < 3;
-  if (greet && !/شنط|حذاء|فستان|تيشيرت|عرض/.test(t)) {
-    return "أهلاً بيكِ في NEXORA ✨ أنا نورا.\nتحبي نبدأ بشنطة، ملابس، حذاء، ولا إكسسوار؟ ولو ميزانيتكِ جاهزة اكتبيها وأنا أفلترلكِ.";
+  // greetings
+  if (/^(ازيك|ازيكم|أهلا|اهلا|مرحبا|السلام|هاي|hello|hi|صباح|مساء)\b/i.test(t) || t.length < 4) {
+    const opens = [
+      `أهلاً بيكِ في ${store} ✨ أنا نورا، معاكي تختارني إيه النهاردة؟`,
+      `يا أهلاً 💕 نورة معاكِ — شنطة، ملابس، حذاء، ولا ندوّر على عرض؟`,
+      `نورتِ 🌟 قولي ميزانيتك أو النوع اللي في بالك وأرشّحلكِ بسرعة.`
+    ];
+    return opens[Math.floor(Math.random() * opens.length)];
   }
 
-  if (/سعر|بكام|كام\s|تمن/.test(t) && list.length) {
-    const items = list.slice(0, 5);
-    return "حاضر 👇 دي أمثلة من الأسعار الحالية:\n" + formatList(items) + "\nقولي ميزانيتك أو نوع المنتج وأدقّق أكتر.";
+  if (/شكرا|ميرسي|تسلم|ربنا يخلي/.test(t)) {
+    return "العفو يا قمر 💕 لو احتجتي أي حاجة تاني أنا هنا. تحبي أساعدك في حاجة كمان؟";
   }
 
-  if (/عرض|خصم|تخفيض/.test(t)) {
-    const offers = list.filter(p => p.isOffer || (p.oldPrice && p.price && p.oldPrice > p.price)).slice(0, 5);
-    if (offers.length) return "العروض المتاحة دلوقتي 🔥\n" + formatList(offers) + "\nادخلي قسم العروض أو قولي ميزانيتك.";
-    return "العروض بتتحدث من لوحة التحكم. ادخلي قسم «العروض» في الموقع، أو قولي عايزة شنطة/ملابس/حذاء وأرشّحلكِ.";
+  if (/واتس|تليفون|رقم|تواصل|فون/.test(t)) {
+    return "رقم التواصل واتساب: 01064519541 📞\nتقدري كمان تطلبي من السلة على الموقع مباشرة بعد ما تختاري المنتج واللون.";
   }
 
-  if (/طلب|اوردر|توصيل|شحن|واتس|تليفون|رقم/.test(t)) {
-    return "الطلب سهل 🛒\n1) أضيفي للسلة (واختاري اللون لو مطلوب)\n2) اكتبي الاسم والموبايل والعنوان\n3) إتمام الطلب\nللتواصل السريع: واتساب 01064519541";
+  if (/طلب|اوردر|سله|سلة|اشتري|كيف اطلب|ازاي اطلب/.test(t)) {
+    return "الطلب سهل جدًا 🛒\n1) افتحي المنتج واختاري اللون (لو موجود)\n2) أضيفي للسلة والكمية\n3) اكتبي الاسم والموبايل والعنوان → إتمام الطلب\nولو حابة نسهّلها: واتساب 01064519541";
   }
 
   if (/لون|الوان|ألوان/.test(t)) {
-    return "معظم المنتجات ليها ألوان — افتحي صفحة المنتج واختاري اللون (إجباري قبل الإضافة للسلة). لو منتج معيّن قولي اسمه.";
+    return "أيوا الألوان مهمة 🎨\nلو المنتج له ألوان، لازم تختاري لون قبل الإضافة للسلة، واللون بيظهر في الطلب.\nفتحى المنتج ودوري على دوائر الألوان تحت السعر.";
   }
 
-  // categories keywords
-  const map = [
-    [["شنط", "شنطة", "bag", "حقيبة"], ["bag", "bags", "handbag", "شنط"]],
-    [["حذاء", "شوز", "كوتشي", "سنيكر"], ["shoes", "shoe", "حذاء"]],
-    [["فستان", "بلوزة", "تيشيرت", "قميص", "ملابس", "هدوم"], ["women", "men", "kids", "ملابس"]],
-    [["ساعة", "ساعات"], ["watch", "watches"]],
-    [["نظارة", "نظارات"], ["eyewear", "glasses"]],
-    [["اكسسوار", "إكسسوار", "خاتم", "سلسلة"], ["accessories", "acc"]]
+  if (/شحن|توصيل|متى|امتى يوصل/.test(t)) {
+    return "التوصيل حسب المنطقة وعادةً يتم التواصل لتأكيد الميعاد 🚚\nاكتبي عنوانكِ عند إتمام الطلب، ولو عايزة تسألي على منطقة معيّنة ابعتي على واتساب 010645519541".replace("010645519541","01064519541");
+  }
+
+  if (/عرض|خصم|تخفيض|تخفيضات/.test(t)) {
+    const offers = list.filter(p => p.isOffer || (p.oldPrice && p.price && Number(p.oldPrice) > Number(p.price)));
+    if (offers.length) {
+      return `العروض المتاحة دلوقتي 🔥\n${formatList(offers.slice(0, 5))}\nتحبي عرض لشنط ولا ملابس؟`;
+    }
+    return "دلوقتي ممكن تدوري قسم العروض في الموقع 🔥\nقولي ميزانيتك ونوع القطعة وأدورلكِ أحسن خصم متاح.";
+  }
+
+  // intent keywords
+  const intents = [
+    { keys: ["شنط", "شنطة", "حقيبة", "bag", "handbag", "توت باج"], words: ["شنط", "شنطة", "حقيبة", "bag"] },
+    { keys: ["حذاء", "شوز", "كوتشي", "سنيكر", "صندل", "shoe"], words: ["حذاء", "شوز", "كوتشي"] },
+    { keys: ["فستان", "بلوزة", "تيشيرت", "قميص", "ملابس", "هدوم", "جينز", "بنطلون", "طقم"], words: ["ملابس", "فستان", "بلوزة", "تيشيرت"] },
+    { keys: ["ساعة", "ساعات", "watch"], words: ["ساعة", "ساعات"] },
+    { keys: ["نظارة", "نظارات"], words: ["نظارة"] },
+    { keys: ["اكسسوار", "إكسسوار", "خاتم", "سلسلة", "حلق"], words: ["إكسسوار"] }
   ];
-  for (const [words, tags] of map) {
-    if (words.some(w => t.includes(w) || low.includes(w))) {
-      let items = pickFromCatalog(list, tags, 5);
-      if (!items.length) items = list.filter(p => words.some(w => String(p.name||"").includes(w))).slice(0, 5);
-      if (budget) items = (items.length ? items : list).filter(p => Number(p.price||0) <= budget + 50).slice(0, 5);
+
+  for (const intent of intents) {
+    if (intent.keys.some(k => ctx.includes(k))) {
+      const items = pickProducts(list, intent.words.concat(intent.keys), budget, 4);
+      const label = intent.words[0];
       if (items.length) {
-        return `تمام! ترشيحات تناسب «${words[0]}»${budget ? " في حدود " + money(budget) : ""}:\n${formatList(items)}\nتحبي لون معيّن أو مقاس؟`;
+        const head = budget
+          ? `تمام! لـ«${label}» في حدود ${money(budget)} دي اقتراحاتي ✨`
+          : `تمام! لـ«${label}» رشّحتلكِ دول ✨`;
+        return `${head}\n${formatList(items)}\nتحبي لون معيّن أو استخدام يومي ولا سهرات؟`;
       }
-      return `حاضر بخصوص ${words[0]} ✨ الميزانية كام تقريبًا وأرشّحلكِ أسرع؟ أو ابحثي من شريط البحث فوق.`;
+      return budget
+        ? `حاضر بخصوص ${label} في حدود ${money(budget)} 💫 قولي تفضيلي لون أو ستايل (كاجوال/رسمي) وأدقّق أكتر.`
+        : `حاضر بخصوص ${label} 💫 ميزانيتك تقريبًا كام عشان أرشّحلكِ المناسب؟`;
     }
   }
 
   if (budget) {
-    const items = list.filter(p => Number(p.price || 0) > 0 && Number(p.price) <= budget).slice(0, 6);
-    if (items.length) return `في حدود ${money(budget)} تقدري تختاري:\n${formatList(items)}\nقولي شنطة ولا ملابس ولا حذاء؟`;
-    return `ميزانية ${money(budget)} تمام — قولي النوع (شنطة / ملابس / حذاء) وأدورلكِ الأنسب.`;
+    const items = pickProducts(list, [], budget, 5);
+    if (items.length) {
+      return `في حدود ${money(budget)} تقدري تبدأي بـ:\n${formatList(items)}\nقولي شنطة ولا ملابس ولا حذاء وأضيّق النتيجة.`;
+    }
+    return `ميزانية ${money(budget)} تمام 👍 قولي النوع (شنطة / ملابس / حذاء) وأدورلكِ الأنسب.`;
   }
 
-  if (/شكرا|ميرسي|تسلم/.test(t)) return "العفو يا قمر 💕 لو احتجتي أي حاجة تاني نورة هنا.";
+  if (/غالي|رخيص|سعر|بكام|كام /.test(t) && list.length) {
+    const sorted = [...list].filter(p => p.price).sort((a, b) => a.price - b.price).slice(0, 4);
+    return `أمثلة على الأسعار الحالية 💸\n${formatList(sorted)}\nميزانيته كام وأرشّحلكِ جوّاها؟`;
+  }
 
-  // generic help with catalog sample
+  // fallback with catalog taste
   if (list.length) {
-    const sample = list.slice(0, 4);
-    return "قولي بوضوح أكتر وأنا أساعدك 💡\nمثال: «شنطة بيج تحت 500» أو «عرض على الأحذية»\nمن المتاح حاليًا:\n" + formatList(sample);
+    const sample = list.slice(0, 3);
+    return `قولي أكتر شوية وأنا أساعدك أحسن 💡\nمثال: «شنطة بيج تحت 500» أو «فستان كاجوال»\nمن المتاح حاليًا:\n${formatList(sample)}`;
   }
-  return "أنا نورا مساعدة NEXORA ✨\nقولي: نوع المنتج + الميزانية (لو حابة) وأرشّحلكِ.\nأو تواصلي واتساب: 01064519541";
-}
 
+  return `أنا نورا مساعدة ${store} ✨\nقولي النوع + الميزانية (لو حابة) وأرشّحلكِ.\nأو واتساب: 01064519541`;
+}
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -158,58 +207,60 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       openai: Boolean(process.env.OPENAI_API_KEY),
-      anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
       gemini: Boolean(process.env.GEMINI_API_KEY),
-      freeLocal: true,
-      mode: process.env.GEMINI_API_KEY ? "gemini-or-local" : "free-local"
+      freeLocal: true
     });
   }
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-    const { message, history, catalog, mode } = body;
+    const { message, history, catalog, mode, siteName } = body;
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "Message required" });
     }
 
     const messages = [
-      ...(Array.isArray(history) ? history.slice(-16) : []),
+      ...(Array.isArray(history) ? history.slice(-12) : []),
       { role: "user", content: message.slice(0, 2500) }
     ];
 
-    let system = (mode === 'admin') ? ADMIN_SYSTEM : SYSTEM;
+    let system = mode === "admin" ? ADMIN_SYSTEM : SYSTEM;
+    if (siteName) system += `\n\nاسم المتجر الحالي: ${siteName}`;
     if (Array.isArray(catalog) && catalog.length) {
-      const sample = catalog.slice(0, 40).map(p => `#${p.id || ""} ${p.name} | ${p.category} | ${p.price}`).join("\n");
-      system += `\n\nكتالوج مختصر من المتجر (استخدمه في الترشيح):\n${sample}`;
+      const sample = catalog.slice(0, 50).map(p => {
+        const off = p.isOffer ? " | عرض" : "";
+        const old = p.oldPrice ? ` | قبل ${p.oldPrice}` : "";
+        return `#${p.id || ""} ${p.name} | ${p.category || ""} | ${p.price}${old}${off}`;
+      }).join("\n");
+      system += `\n\nكتالوج المتجر (رشّحي منه فقط):\n${sample}`;
     }
 
-    // مجاني افتراضيًا: رد محلي ذكي بدون رصيد مدفوع
-    // لو حابة محركات خارجية مجانية (Gemini) خليه يحاول الأول لما المفتاح يكون موجود
     const preferExternal = process.env.AI_PREFER_EXTERNAL === "1" || process.env.GEMINI_API_KEY;
     if (preferExternal) {
       try {
-        const result = await resilientChat(system, messages, 700);
-        return res.status(200).json({ reply: result.reply, provider: result.provider || "ai" });
+        const result = await resilientChat(system, messages, 650);
+        const reply = String(result.reply || "").trim();
+        if (reply) return res.status(200).json({ reply, provider: result.provider || "ai" });
       } catch (aiError) {
         console.error("AI providers failed:", aiError.message);
         return res.status(200).json({
-          reply: localSmartReply(message, catalog, mode),
+          reply: localSmartReply(message, catalog, mode, history, siteName),
           provider: "local",
-          note: "free-local",
-          error: String(aiError.message || aiError).slice(0, 180)
+          note: "local-after-ai-fail"
         });
       }
     }
+
     return res.status(200).json({
-      reply: localSmartReply(message, catalog, mode),
+      reply: localSmartReply(message, catalog, mode, history, siteName),
       provider: "local",
-      note: "free-local"
+      note: "smart-local"
     });
   } catch (e) {
     console.error(e);
     return res.status(200).json({
-      reply: "حصلت لخبطة بسيطة 😅 جرّبي تاني أو قولي: شنطة / ملابس / حذاء وميزانيتك.",
+      reply: "حصلت لخبطة بسيطة 😅 قولي تاني: شنطة / ملابس / حذاء وميزانيتك.",
       provider: "error"
     });
   }
