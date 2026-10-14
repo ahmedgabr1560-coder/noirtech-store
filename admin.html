@@ -243,7 +243,11 @@
 
             <div class="form-grid">
               <label>اسم المنتج *<input id="pName" required /></label>
-              <label>السعر *<input id="pPrice" type="number" required /></label>
+              <label>سعر البيع (يظهر في المتجر) *<input id="pPrice" type="number" required /></label>
+              <label>سعر الشراء / التكلفة (سري — مش بيظهر)
+                <input id="pCost" type="number" min="0" placeholder="سعر التكلفة الحقيقي" />
+              </label>
+              <p class="hint" id="pMarginHint" style="grid-column:1/-1">هامش الربح يتحسب تلقائي: سعر البيع − سعر الشراء</p>
                             <label>الماركة<input id="pBrand" list="brandList" /><datalist id="brandList"></datalist></label>
               <label>القسم الرئيسي *<select id="pCat" required></select></label>
               <label>القسم الفرعي *<select id="pSub" required></select></label>
@@ -327,8 +331,15 @@
       <section class="panel" id="panel-finance">
         <div class="grid" id="finStats"></div>
         <div class="card">
-          <h3>تسجيل مصروف</h3>
+          <h3>رأس المال والمصروفات</h3>
+          <p class="hint" style="margin-bottom:10px">رأس المال منفصل عن المصروفات. الربح = (سعر البيع − سعر الشراء) للطلبات المسلّمة − المصروفات.</p>
           <div class="form-grid">
+            <label>النوع
+              <select id="exType">
+                <option value="expense">مصروف تشغيلي</option>
+                <option value="capital">رأس مال</option>
+              </select>
+            </label>
             <label>المبلغ<input id="exAmount" type="number" /></label>
             <label>التصنيف
               <select id="exCat">
@@ -757,6 +768,7 @@
           secret: SECRET,
           name: $("pName").value.trim(),
           price: $("pPrice").value,
+          costPrice: $("pCost")?.value || 0,
           oldPrice: $("pOld").value || null,
           brand: $("pBrand").value.trim(),
           category: $("pCat").value,
@@ -856,20 +868,41 @@
       const data = await api("list_expenses");
       if (!data.ok) return;
       const list = data.expenses || [];
-      const total = list.reduce((s,x)=>s+Number(x.amount||0),0);
-      $("finStats").innerHTML = `<div class="stat"><span>إجمالي المصروفات</span><b>${money(total)}</b></div>`;
-      $("exTable").innerHTML = list.length ? `<table><thead><tr><th>التاريخ</th><th>التصنيف</th><th>الوصف</th><th>المبلغ</th></tr></thead><tbody>
-        ${list.slice(0,50).map(x=>`<tr><td>${new Date(x.at).toLocaleString("ar-EG")}</td><td>${x.category}</td><td>${x.description||""}</td><td>${money(x.amount)}</td></tr>`).join("")}
-      </tbody></table>` : `<p class="hint">لا مصروفات بعد</p>`;
+      const capital = list.filter(e => e.type === "capital").reduce((s, e) => s + Number(e.amount || 0), 0);
+      const ops = list.filter(e => e.type !== "capital").reduce((s, e) => s + Number(e.amount || 0), 0);
+      if ($("finStats")) {
+        $("finStats").innerHTML =
+          `<div class="stat"><span>رأس المال</span><b>${money(capital)}</b></div>` +
+          `<div class="stat"><span>المصروفات التشغيلية</span><b>${money(ops)}</b></div>`;
+      }
+      const box = $("exList") || $("expensesList") || document.querySelector("#panel-finance .card:last-child");
+      const tableHost = $("exTable") || $("expensesTable");
+      const host = tableHost || null;
+      const rows = list.slice(0, 80).map(e => {
+        const typ = e.type === "capital" ? "رأس مال" : "مصروف";
+        return `<tr><td>${typ}</td><td>${money(e.amount)}</td><td>${e.note || e.desc || e.description || "—"}</td><td>${e.at ? new Date(e.at).toLocaleString("ar-EG") : ""}</td></tr>`;
+      }).join("");
+      const html = list.length
+        ? `<table><thead><tr><th>النوع</th><th>المبلغ</th><th>البيان</th><th>التاريخ</th></tr></thead><tbody>${rows}</tbody></table>`
+        : `<p class="hint">لا مصروفات أو رأس مال بعد</p>`;
+      // try known containers
+      if ($("exList")) $("exList").innerHTML = html;
+      else if ($("expensesList")) $("expensesList").innerHTML = html;
+      else {
+        const cards = document.querySelectorAll("#panel-finance .card");
+        if (cards.length >= 2) {
+          const last = cards[cards.length - 1];
+          let box = last.querySelector("#exListAuto");
+          if (!box) { box = document.createElement("div"); box.id = "exListAuto"; last.appendChild(box); }
+          box.innerHTML = html;
+        }
+      }
     }
     $("exBtn").onclick = async () => {
       const amount = Number($("exAmount").value);
+      const expType = $("exType")?.value || "expense";
       if (!amount) return alert("أدخل مبلغًا");
-      const data = await api("add_expense", {
-        amount,
-        category: $("exCat").value,
-        description: $("exDesc").value.trim()
-      });
+      const data = await api("add_expense", { amount, type: expType, note: ($("exDesc")?.value || "").trim(), description: ($("exDesc")?.value || "").trim() });
       $("exMsg").className = data.ok ? "msg ok" : "msg err";
       $("exMsg").textContent = data.ok ? "تم الحفظ" : (data.error||"فشل");
       if (data.ok) { $("exAmount").value=""; $("exDesc").value=""; await loadExpenses(); await loadStats(); }
@@ -1434,6 +1467,24 @@
       const top = document.getElementById("adminTopName");
       if (top) top.textContent = "لوحة تحكم " + name;
     }
+
+    
+    function updateMarginHint() {
+      const sell = Number($("pPrice")?.value || 0);
+      const cost = Number($("pCost")?.value || 0);
+      const el = $("pMarginHint");
+      if (!el) return;
+      if (sell > 0 && cost >= 0) {
+        const m = sell - cost;
+        el.textContent = m >= 0
+          ? (`هامش الربح المتوقع للقطعة: ${m.toLocaleString("ar-EG")} ج.م (يظهر في الأرباح بعد تأكيد التسليم)`)
+          : (`تحذير: سعر البيع أقل من التكلفة بـ ${Math.abs(m).toLocaleString("ar-EG")} ج.م`);
+      } else {
+        el.textContent = "هامش الربح يتحسب تلقائي: سعر البيع − سعر الشراء (سري ومش بيظهر في المتجر)";
+      }
+    }
+    $("pPrice")?.addEventListener("input", updateMarginHint);
+    $("pCost")?.addEventListener("input", updateMarginHint);
 
     // auto login if secret saved
     (async () => {
