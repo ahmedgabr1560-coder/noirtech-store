@@ -1,22 +1,18 @@
-const SYSTEM = `انت نورا مساعدة مبيعات لمتجر موضة في مصر.
-اتكلمي بالعامية المصرية بشكل طبيعي وودي.
-رشيحي من الكتالوج فقط واسعاره الحقيقية.
-الرد 3 الى 6 جمل مع سؤال واحد في الاخر.
-للتواصل واتساب 01064519541
-متقوليش انك نموذج تجريبي.`;
-
-const ADMIN_SYSTEM = `مساعدة ادارة متجر موضة. خطوات واضحة بالعامية المصرية عن المنتجات والعروض والطلبات.`;
-
 function money(n) {
   try { return Number(n).toLocaleString("ar-EG") + " ج.م"; } catch (e) { return String(n) + " ج.م"; }
 }
 
-function formatList(items) {
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function formatSoft(items) {
   if (!items || !items.length) return "";
-  return items.map(function (p, i) {
-    var price = p.price != null ? money(p.price) : "";
-    var old = p.oldPrice && p.oldPrice > p.price ? " (بدل " + money(p.oldPrice) + ")" : "";
-    return (i + 1) + ") " + p.name + (price ? " — " + price : "") + old;
+  return items.map(function (p) {
+    var line = "• " + p.name;
+    if (p.price != null) line += " بـ " + money(p.price);
+    if (p.oldPrice && p.oldPrice > p.price) line += " (كانت " + money(p.oldPrice) + ")";
+    return line;
   }).join("\n");
 }
 
@@ -30,10 +26,18 @@ function extractBudget(t) {
   return n;
 }
 
+function ctxText(history) {
+  return (history || [])
+    .filter(function (h) { return h && h.role === "user"; })
+    .slice(-4)
+    .map(function (h) { return String(h.content || ""); })
+    .join(" ");
+}
+
 function pickProducts(list, keywords, budget, limit) {
-  limit = limit || 4;
+  limit = limit || 3;
   var items = (list || []).filter(function (p) { return !p.hidden; });
-  if (budget) items = items.filter(function (p) { return !p.price || Number(p.price) <= budget * 1.05; });
+  if (budget) items = items.filter(function (p) { return !p.price || Number(p.price) <= budget * 1.08; });
   var scored = items.map(function (p) {
     var name = String(p.name || "").toLowerCase();
     var cat = String(p.category || "").toLowerCase();
@@ -56,61 +60,139 @@ function pickProducts(list, keywords, budget, limit) {
   return out;
 }
 
-function localSmartReply(message, catalog, mode, history, siteName) {
+function humanReply(message, catalog, mode, history, siteName) {
   var t = String(message || "").trim();
-  var low = t.toLowerCase();
   var list = Array.isArray(catalog) ? catalog.filter(function (p) { return !p.hidden; }) : [];
-  var budget = extractBudget(t);
-  var store = siteName || "المتجر";
+  var budget = extractBudget(t) || extractBudget(ctxText(history));
+  var store = siteName || "عندنا";
+  var prev = ctxText(history).toLowerCase();
+  var all = (t + " " + prev).toLowerCase();
 
   if (mode === "admin") {
-    if (/عرض|خصم/.test(t)) return "لاضافة عرض: اضافة منتج ثم تبويب عرض/خصم، اختاري المنتج، حددي السعر او عرض 2 و 3 قطع، ثم احفظي.";
-    if (/طلب|تسليم/.test(t)) return "من الطلبات: اكدي التسليم عشان يتحسب في المبيعات، او غيري حالة الطلب، او احذفي طلب قديم.";
-    return "قولي عايزة تظبطي: منتجات، عروض، ولا طلبات؟";
+    if (/عرض|خصم/.test(t)) return "طيب بصي… من إضافة منتج اختاري تبويب العرض، هاتي المنتج، وحطي السعر الجديد أو عرض القطعتين/التلاتة، واحفظي. لو حابة أمشي معاكِ خطوة خطوة قولي.";
+    if (/طلب|تسليم/.test(t)) return "أيوة من الطلبات… أول ما توصّلي وتأكدي التسليم، المبلغ يدخل في الإحصائيات. تقدري كمان تمسحي طلبات قديمة لو مش محتاجاها.";
+    return "قولي عايزة نعمل إيه دلوقتي: منتجات، عروض، ولا طلبات؟ وأنا أقولكِ تعملي إيه بالظبط.";
   }
 
-  if (/^(ازيك|ازيكم|أهلا|اهلا|مرحبا|هاي|hi|hello)/i.test(t) || t.length < 3) {
-    return "اهلا بيك في " + store + " انا نورا\nتحبي نبدأ بشنطة، ملابس، حذاء، ولا عرض؟";
+  // pure greeting
+  if (/^(ازيك|ازيكم|أهلا|اهلا|مرحبا|السلام|هاي|hi|hello|صباح|مساء)[\s!?.]*$/i.test(t) || t.length < 3) {
+    return pick([
+      "أهلاً أهلاً 😊 أنا نورا… قولي بتفكري في إيه النهاردة؟",
+      "يا أهلاً بيكِ! موجوده معاكِ… شنطة؟ هدوم؟ ولا لسه بتلفّي؟",
+      "هاي 💕 نورتِ " + store + ". تحبي أساعدك تختاري ولا عندكِ حاجة معينة في بالك؟"
+    ]);
   }
-  if (/شكرا|ميرسي|تسلم/.test(t)) return "العفو يا قمر لو احتجتي حاجة تاني انا هنا";
-  if (/واتس|تليفون|رقم|تواصل/.test(t)) return "واتساب: 01064519541\nوتقدري تطلبي من السلة على الموقع كمان.";
-  if (/طلب|اوردر|سله|سلة|ازاي اطلب|كيف اطلب/.test(t)) {
-    return "الطلب سهل:\n1) اختاري المنتج واللون\n2) اضيفي للسلة\n3) الاسم والموبايل والعنوان ثم اتمام الطلب\nاو واتساب 01064519541";
+
+  if (/شكرا|ميرسي|تسلم|ربنا يخلي|متشكره/.test(t)) {
+    return pick([
+      "العفو يا قمر 💕 أي وقت.",
+      "ولا يهمك، دي حاجتي 😄 لو احتجتي حاجة صوتيلي.",
+      "تسلميلي 🌸 لو حابة نكمل ندور على حاجة تانية قولي."
+    ]);
   }
-  if (/لون|الوان|ألوان/.test(t)) return "لو المنتج له الوان لازم تختاري لون قبل السلة، واللون بيوصل مع الطلب.";
-  if (/عرض|خصم|تخفيض/.test(t)) {
+
+  if (/باي|مع السلامه|اشوفك|خلاص كده/.test(t)) {
+    return "تمام يا قمر، أشوفك على خير 🌸 ولو رجعتي أنا هنا.";
+  }
+
+  if (/بنت|انسان|بشري|روبوت|ذكاء|بوت|مش حقيقي/.test(t)) {
+    return "هههه طب اعتبريني صاحبتكِ في الشوب 😄 قولي عايزة إيه وأنا أديكِ رأي صريح.";
+  }
+
+  if (/واتس|تليفون|رقم|تواصل/.test(t)) {
+    return "آه طبعًا… كلّمينا على واتساب 01064519541 ولو حابة تطلبي من هنا برضه السِلّة جاهزة.";
+  }
+
+  if (/طلب|اوردر|سله|سلة|ازاي اطلب|كيف اطلب|عايزة اطلب/.test(t)) {
+    return "بصي الموضوع بسيط أوي: اختاري القطعة واللون، حطيها في السِلّة، واكتبي اسمكِ ورقمكِ وعنوانكِ وخلاص.\nولو مش فاضيالكِ، ابعتي على 01064519541 وأنا أسهّلها عليكي.";
+  }
+
+  if (/لون|الوان|ألوان/.test(t)) {
+    return "ايوة الألوان بتفرق… لو لقيتي دوائر ألوان تحت المنتج، اختاري اللي يريّحكِ الأول وبعدين حطي في السِلّة، عشان يوصلنا اللون صح.";
+  }
+
+  if (/غالي|رخيص|ميزانيتي ضعيف|معنديش|غاليه/.test(t)) {
+    if (budget || list.length) {
+      var cheap = pickProducts(list, [], budget || 500, 3);
+      if (cheap.length) {
+        return pick(["فاهمة//", "طب ماشي//"]).replace("//", "") + " خلينا في حاجة عملية:\n" + formatSoft(cheap) + "\nتحبي أدورلكِ أرخص شوية؟";
+      }
+    }
+    return "فاهمة//".replace("//","") + " قولي ميزانيتكِ بالتقريب وأدورلكِ جوّاها من غير لف.";
+  }
+
+  if (/عرض|خصم|تخفيض|حرق/.test(t)) {
     var offers = list.filter(function (p) { return p.isOffer || (p.oldPrice && p.price && p.oldPrice > p.price); });
-    if (offers.length) return "العروض دلوقتي:\n" + formatList(offers.slice(0, 5)) + "\nتحبي شنط ولا ملابس؟";
-    return "دخلي قسم العروض في الموقع، او قولي ميزانيتك ونوع القطعة.";
+    if (offers.length) {
+      return pick([
+        "أيوة في حركات حلوة دلوقتي 👀\n",
+        "بصي العروض اللي ماسكاها:\n"
+      ]) + formatSoft(offers.slice(0, 4)) + "\nحاجة منهم قربت من ذوقكِ؟";
+    }
+    return "دلوقتي العروض بتتغير… قولي عايزة شنطة ولا هدوم وأشوفلكِ أحسن حاجة متاحة.";
   }
 
   var intents = [
-    { test: /شنط|شنطة|حقيبة|bag/i, keys: ["شنط", "شنطة", "حقيبة", "bag"] },
-    { test: /حذاء|شوز|كوتشي|سنيكر/i, keys: ["حذاء", "شوز", "كوتشي"] },
-    { test: /فستان|بلوزة|تيشيرت|ملابس|هدوم|جينز|بنطلون/i, keys: ["ملابس", "فستان", "بلوزة"] },
-    { test: /ساعة|ساعات/i, keys: ["ساعة"] },
-    { test: /نظارة|نظارات/i, keys: ["نظارة"] },
-    { test: /اكسسوار|إكسسوار|خاتم|سلسلة/i, keys: ["اكسسوار", "إكسسوار"] }
+    { re: /شنط|شنطة|حقيبة|bag/i, keys: ["شنط", "شنطة", "حقيبة", "bag"], label: "شنطة" },
+    { re: /حذاء|شوز|كوتشي|سنيكر|صندل/i, keys: ["حذاء", "شوز", "كوتشي"], label: "حذاء" },
+    { re: /فستان|بلوزة|تيشيرت|ملابس|هدوم|جينز|بنطلون|طقم/i, keys: ["ملابس", "فستان", "بلوزة", "تيشيرت"], label: "لبس" },
+    { re: /ساعة|ساعات/i, keys: ["ساعة"], label: "ساعة" },
+    { re: /نظارة|نظارات/i, keys: ["نظارة"], label: "نظارة" },
+    { re: /اكسسوار|إكسسوار|خاتم|سلسلة|حلق/i, keys: ["اكسسوار", "إكسسوار"], label: "إكسسوار" }
   ];
+
   for (var i = 0; i < intents.length; i++) {
-    if (intents[i].test.test(t)) {
-      var items = pickProducts(list, intents[i].keys, budget, 4);
+    if (intents[i].re.test(all)) {
+      var items = pickProducts(list, intents[i].keys, budget, 3);
+      var label = intents[i].label;
       if (items.length) {
-        var head = budget ? "تمام في حدود " + money(budget) + ":" : "تمام رشحتلك:";
-        return head + "\n" + formatList(items) + "\nتحبي لون معين؟";
+        var open = budget
+          ? pick([
+              "تمام، في حدود " + money(budget) + " دول ناسبوكِ أوي:",
+              "طيب على ميزانيتكِ… خدي بالِك من دول:",
+              "لقيتلكِ كام اختيار حلو جوّا " + money(budget) + ":"
+            ])
+          : pick([
+              "طيب على الـ" + label + "… دول أول ناس في بالي:",
+              "حاضر، بصي رشّحتلكِ الحاجات دي:",
+              "يلا نختار " + label + "… دول حلوين:"
+            ]);
+        var close = pick([
+          "تحبي أضيّق على لون معيّن؟",
+          "يومي ولا سهرات؟",
+          "قربوا من اللي في بالكِ؟"
+        ]);
+        return open + "\n" + formatSoft(items) + "\n" + close;
       }
-      return budget ? "حاضر في حدود " + money(budget) + " قولي ستايل كاجوال ولا رسمي؟" : "حاضر قولي ميزانيتك تقريبًا كام؟";
+      return budget
+        ? "ماشي على " + money(budget) + "… بس قولي ستايلكِ إيه بالظبط (كاجوال ولا شيك) عشان أدقّق."
+        : "حاضر على الـ" + label + " 💕 ميزانيتكِ تقريبًا كام عشان منلفّش؟";
     }
   }
 
   if (budget) {
-    var byBudget = pickProducts(list, [], budget, 5);
-    if (byBudget.length) return "في حدود " + money(budget) + ":\n" + formatList(byBudget) + "\nشنطة ولا ملابس ولا حذاء؟";
-    return "ميزانية " + money(budget) + " تمام، قولي النوع عشان ادورلك.";
+    var byB = pickProducts(list, [], budget, 3);
+    if (byB.length) {
+      return "طيب على " + money(budget) + " تقدري تبدأي بكده:\n" + formatSoft(byB) + "\nقولي شنطة ولا هدوم ولا حذاء وأكمل معاكِ.";
+    }
+    return "ميزانية " + money(budget) + " تمام… قولي النوع وبلاقيلكِ.";
   }
 
-  if (list.length) return "قولي اكتر شوية مثال: شنطة تحت 500\nمن المتاح:\n" + formatList(list.slice(0, 3));
-  return "انا نورا مساعدة " + store + "\nقولي النوع والميزانية او واتساب 01064519541";
+  if (/سعر|بكام|كام /.test(t) && list.length) {
+    var sample = list.filter(function (p) { return p.price; }).sort(function (a, b) { return a.price - b.price; }).slice(0, 3);
+    return "الأسعار عندنا بتختلف حسب القطعة… مثلًا:\n" + formatSoft(sample) + "\nميزانيته كام؟";
+  }
+
+  // small talk / unknown
+  if (list.length) {
+    return pick([
+      "فهمتكِ… بس خليني أركز أحسن: عايزة شنطة، هدوم، ولا حذاء؟ ولو ميزانية قوليها.",
+      "تمام، قوليلِ أكتر شوية. مثال: «شنطة بيج تحت ٥٠٠» وأنا أمسكها من الآخر.",
+      "أنا معاكِ 😊 قولي النوع والميزانية وأرتّبلكِ اختيارات من غير صداع."
+    ]);
+  }
+
+  return "أنا نورا من " + store + "… قولي عايزة إيه وأساعدك كإننا بنتكلم عادي 💕\nأو واتساب 01064519541";
 }
 
 export default async function handler(req, res) {
@@ -118,36 +200,23 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method === "GET") {
-    return res.status(200).json({ ok: true, gemini: Boolean(process.env.GEMINI_API_KEY), freeLocal: true });
-  }
+  if (req.method === "GET") return res.status(200).json({ ok: true, style: "human-local" });
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
     var body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     var message = body.message;
-    var history = body.history;
-    var catalog = body.catalog;
-    var mode = body.mode;
-    var siteName = body.siteName;
     if (!message || typeof message !== "string") return res.status(400).json({ error: "Message required" });
 
-    var messages = [].concat(Array.isArray(history) ? history.slice(-12) : [], [{ role: "user", content: message.slice(0, 2500) }]);
-    var system = mode === "admin" ? ADMIN_SYSTEM : SYSTEM;
-    if (siteName) system += "\nاسم المتجر: " + siteName;
-    if (Array.isArray(catalog) && catalog.length) {
-      system += "\nكتالوج:\n" + catalog.slice(0, 40).map(function (p) {
-        return (p.name || "") + " | " + (p.price || "") + " | " + (p.category || "");
-      }).join("\n");
-    }
-
-    // رد محلي سريع وذكي أولاً (مستقر)، وGemini اختياري لو AI_PREFER_EXTERNAL=1
     return res.status(200).json({
-      reply: localSmartReply(message, catalog, mode, history, siteName),
+      reply: humanReply(message, body.catalog, body.mode, body.history, body.siteName),
       provider: "local"
     });
   } catch (e) {
     console.error(e);
-    return res.status(200).json({ reply: "حصلت لخبطة بسيطة جربي تاني: شنطة او ملابس وميزانيتك.", provider: "error" });
+    return res.status(200).json({
+      reply: "معلش حصلت لخبطة بسيطة 😅 قولي تاني وأنا معاكِ.",
+      provider: "error"
+    });
   }
 }
