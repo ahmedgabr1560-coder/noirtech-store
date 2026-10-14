@@ -77,7 +77,9 @@ export default async function handler(req, res) {
     const brand = String(body.brand || "").trim();
     let image = String(body.image || "").trim();
     const description = String(body.description || "").trim();
-    const badge = String(body.badge || "جديد").trim() || "جديد";
+    let badge = String(body.badge || "").trim();
+    const isOfferFlag = body.isOffer === true || body.isOffer === "true" || body.isOffer === 1 || body.isOffer === "1";
+    if (!badge) badge = isOfferFlag ? "عرض" : "جديد";
     const stock = Math.max(0, Number(body.stock ?? body.qty ?? 0) || 0);
     let available = body.available;
     if (available === undefined || available === null || available === "") {
@@ -158,10 +160,11 @@ export default async function handler(req, res) {
       stock,
       available: available && stock > 0,
       colors,
+      isOffer: body.isOffer === true || body.isOffer === "true" || body.isOffer === 1 || body.isOffer === "1",
       rating: 4.5,
       reviews: 0,
-      best: false,
-      newest: true,
+      best: body.isOffer === true || body.isOffer === "true" || body.best === true,
+      newest: !(body.isOffer === true || body.isOffer === "true"),
       hidden: false,
       createdAt: new Date().toISOString()
     };
