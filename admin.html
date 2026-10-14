@@ -164,13 +164,18 @@
 
       <section class="panel" id="panel-add">
         <div class="card">
-          <h3>إضافة منتج جديد</h3>
+          <h3>إضافة منتج / عرض</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+            <button type="button" class="btn btn-primary" id="tabProduct" style="flex:1">① منتج عادي</button>
+            <button type="button" class="btn btn-ghost" id="tabOffer" style="flex:1">② عرض / خصم</button>
+          </div>
+          <p class="hint" id="addTypeHint" style="margin-bottom:12px">أضيفي منتجًا عاديًا للمتجر.</p>
           <form id="addForm">
+            <input type="hidden" id="pType" value="product" />
             <div class="form-grid">
               <label>اسم المنتج *<input id="pName" required /></label>
               <label>السعر *<input id="pPrice" type="number" required /></label>
-              <label>السعر قبل الخصم<input id="pOld" type="number" /></label>
-              <label>الماركة<input id="pBrand" list="brandList" /><datalist id="brandList"></datalist></label>
+                            <label>الماركة<input id="pBrand" list="brandList" /><datalist id="brandList"></datalist></label>
               <label>القسم الرئيسي *<select id="pCat" required></select></label>
               <label>القسم الفرعي *<select id="pSub" required></select></label>
               <label>عدد القطع المتوفرة<input id="pStock" type="number" min="0" value="10" /></label>
@@ -181,6 +186,9 @@
                 </select>
               </label>
               <label>شارة<input id="pBadge" value="جديد" /></label>
+              <label id="pOldWrap">السعر قبل الخصم (للعروض *)
+                <input id="pOld" type="number" placeholder="يظهر كسعر مشطوب" />
+              </label>
             </div>
             <label>صورة المنتج *
               <input id="pImageUrl" placeholder="رابط الصورة https://... (اختياري)" />
@@ -633,6 +641,14 @@
 
     $("addForm").onsubmit = async (e) => {
       e.preventDefault();
+      if ($("pType")?.value === "offer") {
+        const price = Number($("pPrice").value);
+        const oldP = Number($("pOld")?.value || 0);
+        if (!oldP || oldP <= price) {
+          alert("للعرض: اكتبي سعر قبل الخصم أكبر من السعر الحالي");
+          return;
+        }
+      }
       const btn = $("addBtn");
       const msg = $("addMsg");
       btn.disabled = true; msg.className="msg";
@@ -650,9 +666,11 @@
           stock: Number($("pStock").value||0),
           available: $("pAvailable")?.value !== "false",
           colors: $("pColors")?.value.trim() || "",
-          badge: $("pBadge").value.trim() || "جديد",
+          badge: $("pBadge").value.trim() || ($("pType")?.value === "offer" ? "عرض" : "جديد"),
           description: $("pDesc").value.trim(),
-          image: imageVal
+          image: imageVal,
+          isOffer: $("pType")?.value === "offer",
+          oldPrice: $("pOld")?.value || ""
         };
         const r = await fetch("/api/product", {
           method: "POST",
@@ -1215,6 +1233,31 @@
         return;
       }
     });
+
+    
+    function setAddType(type) {
+      const isOffer = type === "offer";
+      if ($("pType")) $("pType").value = isOffer ? "offer" : "product";
+      if ($("tabProduct")) {
+        $("tabProduct").className = isOffer ? "btn btn-ghost" : "btn btn-primary";
+      }
+      if ($("tabOffer")) {
+        $("tabOffer").className = isOffer ? "btn btn-primary" : "btn btn-ghost";
+      }
+      if ($("addTypeHint")) {
+        $("addTypeHint").textContent = isOffer
+          ? "أضيفي عرضًا: لازم سعر قبل الخصم والسعر الحالي. هيظهر في قسم العروض."
+          : "أضيفي منتجًا عاديًا للمتجر.";
+      }
+      if ($("pBadge") && !$("pBadge").dataset.touched) {
+        $("pBadge").value = isOffer ? "عرض" : "جديد";
+      }
+      const oldInp = $("pOld");
+      if (oldInp) oldInp.required = isOffer;
+    }
+    $("tabProduct")?.addEventListener("click", () => setAddType("product"));
+    $("tabOffer")?.addEventListener("click", () => setAddType("offer"));
+    $("pBadge")?.addEventListener("input", () => { if ($("pBadge")) $("pBadge").dataset.touched = "1"; });
 
     // auto login if secret saved
     (async () => {
