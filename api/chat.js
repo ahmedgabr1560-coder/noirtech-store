@@ -64,87 +64,92 @@ function extractBudget(t) {
   return n;
 }
 
-function localSmartReply(message, catalog) {
-  const t = String(message || "");
+
+function localSmartReply(message, catalog, mode) {
+  const t = String(message || "").trim();
   const low = t.toLowerCase();
-  const list = Array.isArray(catalog) ? catalog : [];
+  const list = Array.isArray(catalog) ? catalog.filter(p => !p.hidden) : [];
   const budget = extractBudget(t);
 
-  const jokes = [
-    "على رأيك 😄",
-    "تمام يا وحش 🔥",
-    "خليني أ facilitلك الاختيار ✨",
+  // —— وضع الإدارة ——
+  if (mode === "admin") {
+    if (/عرض|خصم|bundle|قطعت/.test(t)) {
+      return "لإضافة عرض من منتج موجود:\n1) لوحة التحكم → إضافة منتج\n2) اختاري «② عرض / خصم»\n3) اختاري المنتج من القائمة\n4) حطي سعر القطعة بعد الخصم و/أو ٢ قطع بسعر… و ٣ قطع بسعر…\n5) احفظي — هيظهر في قسم العروض على الموقع.";
+    }
+    if (/طلب|تسليم|مسلّم|احص|مبيع/.test(t)) {
+      return "متابعة الطلبات:\n• الطلبات → غيّري الحالة أو اضغطي «تأكيد التسليم»\n• أول ما يتأكد التسليم، المبلغ يدخل في «مبيعات المسلّم» وصافي الربح\n• تقدري تحذفي طلب قديم أو تمسحي كل الطلبات من نفس الصفحة.";
+    }
+    if (/منتج|اضاف|صورة|لون|مخزون/.test(t)) {
+      return "إضافة منتج عادي:\n1) إضافة منتج → «① منتج عادي»\n2) الاسم، السعر، القسم، الألوان، المخزون، الصورة من المعرض\n3) احفظي\nلو عايزة عرض مش منتج جديد: استخدمي تبويب العروض واختارى منتج موجود.";
+    }
+    if (/ذكاء|ai|شات|مفتاح|openai|رصيد/.test(low)) {
+      return "الشات شغال مجانًا بالوضع المحلي الذكي دلوقتي.\nلو حابة ذكاء أقوى بدون ما تدفعي كتير: اعملي مفتاح مجاني من Google AI Studio (Gemini) وحطيه في Vercel باسم GEMINI_API_KEY — مجاني لحد حد يومي كويس.";
+    }
+    return "أنا مساعدة الإدارة 💼 قولي عايزة تظبطي إيه:\n• إضافة منتج / عرض\n• الطلبات والتسليم\n• الألوان والمخزون\n• صياغة رد لعميلة\nهديكِ الخطوات بالظبط.";
+  }
+
+  // —— وضع العملاء ——
+  const greet = /ازيك|أهلا|اهلا|مرحبا|السلام|هاي|hello|hi/.test(low) || t.length < 3;
+  if (greet && !/شنط|حذاء|فستان|تيشيرت|عرض/.test(t)) {
+    return "أهلاً بيكِ في NEXORA ✨ أنا نورا.\nتحبي نبدأ بشنطة، ملابس، حذاء، ولا إكسسوار؟ ولو ميزانيتكِ جاهزة اكتبيها وأنا أفلترلكِ.";
+  }
+
+  if (/سعر|بكام|كام\s|تمن/.test(t) && list.length) {
+    const items = list.slice(0, 5);
+    return "حاضر 👇 دي أمثلة من الأسعار الحالية:\n" + formatList(items) + "\nقولي ميزانيتك أو نوع المنتج وأدقّق أكتر.";
+  }
+
+  if (/عرض|خصم|تخفيض/.test(t)) {
+    const offers = list.filter(p => p.isOffer || (p.oldPrice && p.price && p.oldPrice > p.price)).slice(0, 5);
+    if (offers.length) return "العروض المتاحة دلوقتي 🔥\n" + formatList(offers) + "\nادخلي قسم العروض أو قولي ميزانيتك.";
+    return "العروض بتتحدث من لوحة التحكم. ادخلي قسم «العروض» في الموقع، أو قولي عايزة شنطة/ملابس/حذاء وأرشّحلكِ.";
+  }
+
+  if (/طلب|اوردر|توصيل|شحن|واتس|تليفون|رقم/.test(t)) {
+    return "الطلب سهل 🛒\n1) أضيفي للسلة (واختاري اللون لو مطلوب)\n2) اكتبي الاسم والموبايل والعنوان\n3) إتمام الطلب\nللتواصل السريع: واتساب 01064519541";
+  }
+
+  if (/لون|الوان|ألوان/.test(t)) {
+    return "معظم المنتجات ليها ألوان — افتحي صفحة المنتج واختاري اللون (إجباري قبل الإضافة للسلة). لو منتج معيّن قولي اسمه.";
+  }
+
+  // categories keywords
+  const map = [
+    [["شنط", "شنطة", "bag", "حقيبة"], ["bag", "bags", "handbag", "شنط"]],
+    [["حذاء", "شوز", "كوتشي", "سنيكر"], ["shoes", "shoe", "حذاء"]],
+    [["فستان", "بلوزة", "تيشيرت", "قميص", "ملابس", "هدوم"], ["women", "men", "kids", "ملابس"]],
+    [["ساعة", "ساعات"], ["watch", "watches"]],
+    [["نظارة", "نظارات"], ["eyewear", "glasses"]],
+    [["اكسسوار", "إكسسوار", "خاتم", "سلسلة"], ["accessories", "acc"]]
   ];
-  // avoid broken arabic in jokes
-  const opener = ["تمام 😄", "حاضر 🔥", "يلا نختار بذوق ✨", "أوكيه 👌"][Math.floor(Math.random() * 4)];
-
-  if (/مرحبا|اهلا|أهل|السلام|hello|hi|هاي|ازيك|إزيك|صباح|مساء/.test(low)) {
-    return "أهلاً بيكِ في NEXORA 👋 أنا نورا مساعدة المتجر.\nتحبي نبدأ بشنطة، ملابس، أحذية، ولا إكسسوار؟ ولو عندكِ ميزانية اكتبيها وأنا أفلتر.";
-  }
-  if (/شكر|تسلم|ممتاز|رائع|جامد/.test(low)) {
-    return "العفو يا غالي 🙌 لو حابب نكمّل اختيار أو نعمل طلب من السلة قولي وأنا معاك.";
-  }
-  if (/انسان|بشري|مين انت|انت مين|ai|ذكاء/.test(low)) {
-    return "أنا نورا 🤖 مساعدة NEXORA الذكية — هنا عشان تسهّل عليك الاختيار والشراء. تحب نبدأ بإيه؟";
-  }
-
-  if (/شحن|توصيل|مواعيد|كام يوم/.test(low)) {
-    return "الشحن داخل مصر ✅ والتوصيل حسب المنطقة.\nتقدر تطلب من السلة بعد تسجيل الدخول، أو واتساب: 01064519541";
-  }
-  if (/ضمان|ارجاع|إرجاع|استبدال/.test(low)) {
-    return "الأجهزة أصلية ومعاها ضمان حسب نوع المنتج ✅\nلو حابب تفاصيل منتج معيّن ابعت اسمه.";
-  }
-  if (/طلب|اشتري|ادفع|سلة|checkout/.test(low)) {
-    return "تمام! اختار المنتج → أضفه للسلة → سجّل دخول → أتمم الطلب.\nولو حابب مساعدة سريعة: واتساب 01064519541";
-  }
-
-  // Category intents
-  const intents = [
-    { re: /شنط|شنطة|حقيبة|bag|bags/, cats: ["fashion", "bags"], label: "شنط 👜" },
-    { re: /فستان|بلوزة|تيشيرت|جاكيت|ملابس|حريمي|رجالي|كاجوال|dress|shirt/, cats: ["fashion", "women-fashion", "men-fashion"], label: "ملابس 👗" },
-    { re: /حذاء|كوتشي|سنيكر|شبشب|shoe|shoes/, cats: ["fashion", "shoes"], label: "أحذية 👠" },
-    { re: /ساعه|ساعة|watch/, cats: ["fashion", "watches"], label: "ساعات ⌚" },
-    { re: /نظار|glasses|eyewear/, cats: ["fashion", "eyewear"], label: "نظارات 🕶️" },
-    { re: /اكسسوار|إكسسوار|خاتم|حلق|accessory/, cats: ["fashion", "fashion-accessories"], label: "إكسسوارات ✨" },
-  ];
-
-  for (const intent of intents) {
-    if (intent.re.test(low)) {
-      let items = pickFromCatalog(list, intent.cats, 5);
-      if (budget) {
-        const near = items.filter(p => p.price && p.price <= budget * 1.05);
-        if (near.length) items = near;
-        else {
-          const under = list.filter(p => intent.cats.includes(String(p.category || "").toLowerCase()) && p.price && p.price <= budget)
-            .sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, 5);
-          if (under.length) items = under;
-        }
+  for (const [words, tags] of map) {
+    if (words.some(w => t.includes(w) || low.includes(w))) {
+      let items = pickFromCatalog(list, tags, 5);
+      if (!items.length) items = list.filter(p => words.some(w => String(p.name||"").includes(w))).slice(0, 5);
+      if (budget) items = (items.length ? items : list).filter(p => Number(p.price||0) <= budget + 50).slice(0, 5);
+      if (items.length) {
+        return `تمام! ترشيحات تناسب «${words[0]}»${budget ? " في حدود " + money(budget) : ""}:\n${formatList(items)}\nتحبي لون معيّن أو مقاس؟`;
       }
-      const block = formatList(items);
-      if (block) {
-        return `${opener} من ${intent.label} عندنا مثلًا:\n${block}\n\n${budget ? `ميزانيتك حوالي ${money(budget)} — ` : ""}قولي استخدامك (ألعاب/شغل/يومي) وأضيقلك الاختيار.`;
-      }
-      return `${opener} قسم ${intent.label} متاح في المتجر.\n${budget ? `ميزانيتك ${money(budget)} — ` : ""}قولي تفضيلاتك وأرشّحلك.`;
+      return `حاضر بخصوص ${words[0]} ✨ الميزانية كام تقريبًا وأرشّحلكِ أسرع؟ أو ابحثي من شريط البحث فوق.`;
     }
   }
 
-  if (/عرض|خصم|رخيص|تخفيض/.test(low)) {
-    const deals = list.filter(p => p.oldPrice && p.price && p.oldPrice > p.price).slice(0, 5);
-    const block = formatList(deals);
-    return block
-      ? `العروض حالياً 🔥\n${block}\nحابب فئة معيّنة؟`
-      : "العروض تتغير باستمرار 🔥 قولي الفئة وميزانيتك وأدورلك أفضل قيمة.";
+  if (budget) {
+    const items = list.filter(p => Number(p.price || 0) > 0 && Number(p.price) <= budget).slice(0, 6);
+    if (items.length) return `في حدود ${money(budget)} تقدري تختاري:\n${formatList(items)}\nقولي شنطة ولا ملابس ولا حذاء؟`;
+    return `ميزانية ${money(budget)} تمام — قولي النوع (شنطة / ملابس / حذاء) وأدورلكِ الأنسب.`;
   }
 
-  if (/قارن|فرق|ولا |أنسب|افضل|أفضل/.test(low)) {
-    return "حاضر نقارن بذوق 🔍 ابعت اسمين منتجات أو قولي الاستخدام (ألعاب/تصوير/شغل) وميزانيتك وأقولك الأنسب.";
-  }
+  if (/شكرا|ميرسي|تسلم/.test(t)) return "العفو يا قمر 💕 لو احتجتي أي حاجة تاني نورة هنا.";
 
-  // generic with catalog hints
-  const top = list.slice(0, 3);
-  const hint = formatList(top);
-  return `${opener} قولي عايزة مساعدة في إيه: شنطة، ملابس، أحذية، ولا إكسسوار؟\nولو عندك ميزانية اكتبها وأنا أفلتر على طول.${hint ? `\n\nمن المميز عندنا:\n${hint}` : ""}`;
+  // generic help with catalog sample
+  if (list.length) {
+    const sample = list.slice(0, 4);
+    return "قولي بوضوح أكتر وأنا أساعدك 💡\nمثال: «شنطة بيج تحت 500» أو «عرض على الأحذية»\nمن المتاح حاليًا:\n" + formatList(sample);
+  }
+  return "أنا نورا مساعدة NEXORA ✨\nقولي: نوع المنتج + الميزانية (لو حابة) وأرشّحلكِ.\nأو تواصلي واتساب: 01064519541";
 }
+
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -156,7 +161,9 @@ export default async function handler(req, res) {
       ok: true,
       openai: Boolean(process.env.OPENAI_API_KEY),
       anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
-      grok: Boolean(process.env.XAI_API_KEY || process.env.GROK_API_KEY)
+      gemini: Boolean(process.env.GEMINI_API_KEY),
+      freeLocal: true,
+      mode: process.env.GEMINI_API_KEY ? "gemini-or-local" : "free-local"
     });
   }
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -179,18 +186,28 @@ export default async function handler(req, res) {
       system += `\n\nكتالوج مختصر من المتجر (استخدمه في الترشيح):\n${sample}`;
     }
 
-    try {
-      const result = await resilientChat(system, messages, 700);
-      return res.status(200).json({ reply: result.reply, provider: result.provider || "ai" });
-    } catch (aiError) {
-      console.error("AI providers failed:", aiError.message);
-      return res.status(200).json({
-        reply: localSmartReply(message, catalog),
-        provider: "local",
-        note: "fallback",
-        error: String(aiError.message || aiError).slice(0, 180)
-      });
+    // مجاني افتراضيًا: رد محلي ذكي بدون رصيد مدفوع
+    // لو حابة محركات خارجية مجانية (Gemini) خليه يحاول الأول لما المفتاح يكون موجود
+    const preferExternal = process.env.AI_PREFER_EXTERNAL === "1" || process.env.GEMINI_API_KEY;
+    if (preferExternal) {
+      try {
+        const result = await resilientChat(system, messages, 700);
+        return res.status(200).json({ reply: result.reply, provider: result.provider || "ai" });
+      } catch (aiError) {
+        console.error("AI providers failed:", aiError.message);
+        return res.status(200).json({
+          reply: localSmartReply(message, catalog, mode),
+          provider: "local",
+          note: "free-local",
+          error: String(aiError.message || aiError).slice(0, 180)
+        });
+      }
     }
+    return res.status(200).json({
+      reply: localSmartReply(message, catalog, mode),
+      provider: "local",
+      note: "free-local"
+    });
   } catch (e) {
     console.error(e);
     return res.status(200).json({
