@@ -1635,3 +1635,96 @@ a.product-link:hover { color:#c4b5fd; }
   from { opacity:0; transform:translateY(6px); }
   to { opacity:1; transform:none; }
 }
+
+
+/* ===== Floating AI + WhatsApp (always on top) ===== */
+.float-buttons {
+  position: fixed !important;
+  bottom: max(18px, env(safe-area-inset-bottom)) !important;
+  left: 14px ! 16px) !important;
+  right: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  z-index: 9990 !important;
+  pointer-events: none;
+}
+.float-buttons .float-btn {
+  pointer-events: auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid !important;
+  place-items: center;
+  border: 0;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+  color: #fff;
+  position: relative;
+}
+.float-btn:hover { transform: scale(1.08); }
+.float-btn.whatsapp { background: #25d366; }
+.float-btn.ai {
+  background: linear-gradient(135deg, #a78bfa 0%, #6366f1 50%, #8b5cf6 100%);
+  animation: aiPulse 2.4s ease-in-out infinite;
+}
+.float-btn.ai .ai-float-icon { font-size: 1.35rem; line-height: 1; }
+@keyframes aiPulse {
+  0%, 100% { box-shadow: 0 12px 32px rgba(99,102,241,.45); }
+  50% { box-shadow: 0 12px 40px rgba(167,139,250,.75), 0 0 0 8px rgba(167,139,250,.12); }
+}
+
+.ai-overlay {
+  position: fixed !important;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9995 !important;
+  opacity: 0;
+  visibility: hidden;
+  transition: .25s;
+}
+.ai-overlay.open { opacity: 1; visibility: visible; }
+
+/* Floating chat card above the FAB */
+.ai-panel {
+  position: fixed !important;
+  left: max(12px, env(safe-area-inset-left)) !important;
+  right: auto !important;
+  bottom: calc(86px + env(safe-area-inset-bottom)) !important;
+  width: min(380px, calc(100vw - 24px)) !important;
+  height: min(560px, calc(100vh - 120px)) !important;
+  max-height: calc(100dvh - 110px);
+  margin: 0 !important;
+  background: #0b141a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px !important;
+  z-index: 9998 !important;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(18px) scale(0.96);
+  transform-origin: bottom left;
+  transition: .28s cubic-bezier(.2,.8,.2,1);
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.ai-panel.open {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+@media (max-width: 520px) {
+  .ai-panel {
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+    height: min(70vh, 560px) !important;
+    border-radius: 18px !important;
+  }
+  .float-buttons { left: 12px !important; }
+  .float-buttons .float-btn { width: 52px; height: 52px; }
+}
