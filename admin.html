@@ -173,6 +173,37 @@
           <p class="hint" id="addTypeHint" style="margin-bottom:12px">أضيفي منتجًا عاديًا للمتجر.</p>
           <form id="addForm">
             <input type="hidden" id="pType" value="product" />
+
+            <div id="offerBuilder" style="display:none;margin-bottom:14px;padding:14px;border-radius:16px;border:1px solid rgba(167,139,250,.35);background:rgba(139,92,246,.08)">
+              <h4 style="margin:0 0 8px">بناء عرض من منتج موجود</h4>
+              <p class="hint" style="margin-bottom:10px">اختاري منتج من المتجر، وحددي خصم أو عرض قطع (٢ بسعر / ٣ بسعر).</p>
+              <label>المنتج الأساسي *
+                <select id="offerSourceProduct"><option value="">— اختاري منتج —</option></select>
+              </label>
+              <label style="margin-top:8px">نوع العرض
+                <select id="offerKind">
+                  <option value="discount">خصم على سعر القطعة</option>
+                  <option value="bundle">عروض الكمية (٢ / ٣ قطع)</option>
+                  <option value="both">خصم + عروض كمية</option>
+                </select>
+              </label>
+              <div class="form-grid" style="margin-top:8px">
+                <label>سعر القطعة بعد العرض *
+                  <input id="pPriceOffer" type="number" placeholder="مثال: 250" />
+                </label>
+                <label>السعر الأصلي (يتحدد تلقائي)
+                  <input id="pOldAuto" type="number" readonly />
+                </label>
+                <label>٢ قطع بسعر
+                  <input id="bundle2Price" type="number" placeholder="مثال: 450" />
+                </label>
+                <label>٣ قطع بسعر
+                  <input id="bundle3Price" type="number" placeholder="مثال: 600" />
+                </label>
+              </div>
+              <div id="offerPreview" class="hint" style="margin-top:10px;color:#c4b5fd"></div>
+            </div>
+
             <div class="form-grid">
               <label>اسم المنتج *<input id="pName" required /></label>
               <label>السعر *<input id="pPrice" type="number" required /></label>
@@ -665,12 +696,19 @@
     $("addForm").onsubmit = async (e) => {
       e.preventDefault();
       if ($("pType")?.value === "offer") {
-        const price = Number($("pPrice").value);
-        const oldP = Number($("pOld")?.value || 0);
-        if (!oldP || oldP <= price) {
-          alert("للعرض: اكتبي سعر قبل الخصم أكبر من السعر الحالي");
+        const srcId = $("offerSourceProduct")?.value;
+        if (!srcId) { alert("اختاري المنتج الأساسي للعرض"); return; }
+        const unit = Number($("pPriceOffer")?.value || $("pPrice")?.value || 0);
+        const b2 = Number($("bundle2Price")?.value || 0);
+        const b3 = Number($("bundle3Price")?.value || 0);
+        const oldP = Number($("pOldAuto")?.value || $("pOld")?.value || 0);
+        if (!unit && !b2 && !b3) { alert("حددي سعر القطعة أو عرض ٢/٣ قطع"); return; }
+        if (unit && oldP && unit >= oldP && !b2 && !b3) {
+          alert("سعر العرض لازم يكون أقل من السعر الأصلي، أو أضيفي عرض كمية");
           return;
         }
+        if (unit) $("pPrice").value = unit;
+        if (oldP) $("pOld").value = oldP;
       }
       const btn = $("addBtn");
       const msg = $("addMsg");
@@ -693,7 +731,11 @@
           description: $("pDesc").value.trim(),
           image: imageVal,
           isOffer: $("pType")?.value === "offer",
-          oldPrice: $("pOld")?.value || ""
+          oldPrice: $("pOld")?.value || $("pOldAuto")?.value || "",
+          sourceProductId: $("offerSourceProduct")?.value || "",
+          offerType: $("offerKind")?.value || "discount",
+          bundle2Price: $("bundle2Price")?.value || "",
+          bundle3Price: $("bundle3Price")?.value || ""
         };
         const r = await fetch("/api/product", {
           method: "POST",
@@ -1269,14 +1311,17 @@
       }
       if ($("addTypeHint")) {
         $("addTypeHint").textContent = isOffer
-          ? "أضيفي عرضًا: لازم سعر قبل الخصم والسعر الحالي. هيظهر في قسم العروض."
+          ? "اختاري منتج موجود وحددي خصم أو عرض ٢/٣ قطع. العرض يظهر في قسم العروض."
           : "أضيفي منتجًا عاديًا للمتجر.";
       }
       if ($("pBadge") && !$("pBadge").dataset.touched) {
         $("pBadge").value = isOffer ? "عرض" : "جديد";
       }
       const oldInp = $("pOld");
-      if (oldInp) oldInp.required = isOffer;
+      if (oldInp) oldInp.required = false;
+      const ob = $("offerBuilder");
+      if (ob) ob.style.display = isOffer ? "block" : "none";
+      if (isOffer) fillOfferProductSelect();
     }
     $("tabProduct")?.addEventListener("click", () => setAddType("product"));
     $("tabOffer")?.addEventListener("click", () => setAddType("offer"));
