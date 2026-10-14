@@ -108,11 +108,7 @@ export async function geminiChat(system, messages, maxTokens = 450) {
   const models = [
     process.env.GEMINI_MODEL,
     "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-latest",
-    "gemini-flash-latest",
-    "gemini-3.8-flash"
+    "gemini-1.5-flash"
   ].filter(Boolean);
   let lastErr = "Gemini failed";
   for (const model of models) {
