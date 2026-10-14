@@ -110,6 +110,7 @@
         <button data-panel="products">المنتجات</button>
         <button data-panel="add">إضافة منتج</button>
         <button data-panel="orders">الطلبات</button>
+        <button data-panel="ai">شات الذكاء الاصطناعي</button>
         <button data-panel="finance">الأرباح والمصروفات</button>
         <button data-panel="general">إعدادات الموقع</button>
         <button data-panel="brand">الاسم والأيقونة</button>
@@ -218,6 +219,28 @@
             <button class="btn btn-primary" type="submit" id="addBtn">نشر المنتج</button>
             <div class="msg" id="addMsg"></div>
           </form>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-ai">
+        <div class="card">
+          <h3>شات الذكاء الاصطناعي — مساعدة الإدارة</h3>
+          <p class="hint" style="margin-bottom:12px">اسألي عن إدارة المتجر، العروض، الطلبات، أو صياغة ردود للعملاء.</p>
+          <div id="adminAiMessages" style="height:min(52vh,420px);overflow:auto;border:1px solid var(--border);border-radius:16px;padding:14px;background:rgba(0,0,0,.25);margin-bottom:12px;display:flex;flex-direction:column;gap:10px">
+            <div style="align-self:flex-start;max-width:90%;background:rgba(139,92,246,.2);border:1px solid rgba(167,139,250,.35);border-radius:14px;padding:10px 12px;color:#efeaff;line-height:1.55">
+              أهلاً 👋 أنا مساعدة إدارة NEXORA. قولي عايزة مساعدة في إيه؟
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <button type="button" class="btn btn-ghost admin-ai-chip" data-q="ازاي أضيف عرض؟">إضافة عرض</button>
+            <button type="button" class="btn btn-ghost admin-ai-chip" data-q="ازاي أتابع الطلبات المسلّمة؟">الطلبات</button>
+            <button type="button" class="btn btn-ghost admin-ai-chip" data-q="اكتب رد مهذب لعميلة عن تأخير الشحن">رد للعميل</button>
+          </div>
+          <div style="display:flex;gap:8px">
+            <input id="adminAiInput" placeholder="اكتبي سؤالك هنا..." style="flex:1" />
+            <button type="button" class="btn btn-primary" id="adminAiSend">إرسال</button>
+          </div>
+          <div class="msg" id="adminAiStatus"></div>
         </div>
       </section>
 
@@ -1258,6 +1281,59 @@
     $("tabProduct")?.addEventListener("click", () => setAddType("product"));
     $("tabOffer")?.addEventListener("click", () => setAddType("offer"));
     $("pBadge")?.addEventListener("input", () => { if ($("pBadge")) $("pBadge").dataset.touched = "1"; });
+
+    
+    const adminAiHistory = [];
+    function adminAiAppend(role, text) {
+      const box = $("adminAiMessages");
+      if (!box) return;
+      const div = document.createElement("div");
+      const isUser = role === "user";
+      div.style.cssText = isUser
+        ? "align-self:flex-end;max-width:90%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px 12px;color:#fff;line-height:1.55;white-space:pre-wrap"
+        : "align-self:flex-start;max-width:90%;background:rgba(139,92,246,.2);border:1px solid rgba(167,139,250,.35);border-radius:14px;padding:10px 12px;color:#efeaff;line-height:1.55;white-space:pre-wrap";
+      div.textContent = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+    async function adminAiSend() {
+      const input = $("adminAiInput");
+      const text = (input?.value || "").trim();
+      if (!text) return;
+      if (input) input.value = "";
+      adminAiAppend("user", text);
+      adminAiHistory.push({ role: "user", content: text });
+      const st = $("adminAiStatus");
+      if (st) { st.className = "msg"; st.textContent = "جاري الرد..."; }
+      try {
+        const r = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, history: adminAiHistory.slice(-12), mode: "admin" })
+        });
+        const data = await r.json();
+        const reply = data.reply || "معلش حصل تأخير، جرّبي تاني.";
+        adminAiAppend("bot", reply);
+        adminAiHistory.push({ role: "assistant", content: reply });
+        if (st) {
+          st.className = "msg ok";
+          st.textContent = data.provider === "local" ? "رد محلي (فعّلي OPENAI على السيرفر لأقوى رد)" : ("مصدر الرد: " + (data.provider || "ai"));
+        }
+      } catch (e) {
+        adminAiAppend("bot", "تعذر الاتصال بالذكاء الاصطناعي الآن.");
+        if (st) { st.className = "msg err"; st.textContent = "خطأ شبكة"; }
+      }
+    }
+    $("adminAiSend")?.addEventListener("click", adminAiSend);
+    $("adminAiInput")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); adminAiSend(); }
+    });
+    document.querySelectorAll(".admin-ai-chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if ($("adminAiInput")) $("adminAiInput").value = btn.getAttribute("data-q") || btn.textContent;
+        adminAiSend();
+      });
+    });
 
     // auto login if secret saved
     (async () => {
