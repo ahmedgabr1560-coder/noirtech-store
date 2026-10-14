@@ -203,6 +203,9 @@ export default async function handler(req, res) {
       subcategory: subcategory || "",
       brand: brand || "",
       price: Math.round(price),
+      costPrice: body.costPrice != null && body.costPrice !== ""
+        ? Math.round(Number(String(body.costPrice).replace(/[^0-9.]/g, "")) || 0)
+        : 0,
       oldPrice: body.oldPrice ? Math.round(Number(String(body.oldPrice).replace(/[^0-9.]/g, "")) || 0) : null,
       image,
       description: description.slice(0, 2000),
