@@ -181,10 +181,42 @@ function normalizePhone(v) {
   const map = {"٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9"};
   return String(v || "").replace(/[٠-٩]/g, d => map[d] || d).replace(/[^0-9+]/g, "");
 }
+
+function dealPriceForQty(product, qty) {
+  qty = Math.max(1, Number(qty) || 1);
+  const unit = Number(product?.price || 0);
+  const meta = product?.offerMeta;
+  if (!meta || !Array.isArray(meta.tiers) || !meta.tiers.length) {
+    return { lineTotal: unit * qty, unitEffective: unit, dealLabel: "" };
+  }
+  const tiers = [...meta.tiers].filter(t => t.qty > 0 && t.price > 0).sort((a,b) => b.qty - a.qty);
+  let remaining = qty;
+  let total = 0;
+  let labelParts = [];
+  for (const t of tiers) {
+    const packs = Math.floor(remaining / t.qty);
+    if (packs > 0) {
+      total += packs * t.price;
+      remaining -= packs * t.qty;
+      labelParts.push(`${packs}×(${t.qty} بـ ${t.price})`);
+    }
+  }
+  total += remaining * unit;
+  return {
+    lineTotal: total,
+    unitEffective: qty ? total / qty : unit,
+    dealLabel: labelParts.join(" + ")
+  };
+}
+
 function cartLinePrice(i) {
-  if (i.price != null) return Number(i.price);
   const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
-  return p ? Number(p.price) : 0;
+  if (p && (p.isOffer || p.offerMeta)) {
+    const d = dealPriceForQty(p, i.qty);
+    return d.unitEffective;
+  }
+  if (i.price != null) return Number(i.price);
+  return p ? Number(p.price || 0) : 0;
 }
 
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
