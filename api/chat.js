@@ -25,6 +25,12 @@ const SYSTEM = `أنت «نورا» مساعدة NEXORA الذكية لمتجر 
 - متقولش إنك نموذج تجريبي.
 - لو سأل عن مقارنة، ادّي نقاط عملية قصيرة.`;
 
+const ADMIN_SYSTEM = `أنت مساعد إداري ذكي لمتجر NEXORA (موضة وأزياء في مصر).
+تساعد صاحب المتجر في: إدارة المنتجات، العروض، الطلبات، الألوان، المخزون، التسويق، والرد على العملاء.
+ردي بالعامية المصرية، واضح ومباشر، خطوات عملية.
+لو سألت عن شيء تقني في اللوحة: أشرحي أين يضغط (إضافة منتج / العروض / الطلبات / الإحصائيات).
+متختراعش أرقام مبيعات حقيقية لو مش متاحة.`;
+
 function money(n) {
   try { return Number(n).toLocaleString("ar-EG") + " ج.م"; } catch { return n + " ج.م"; }
 }
@@ -149,7 +155,7 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
-    const { message, history, catalog } = body;
+    const { message, history, catalog, mode } = body;
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "Message required" });
     }
@@ -159,7 +165,7 @@ export default async function handler(req, res) {
       { role: "user", content: message.slice(0, 2500) }
     ];
 
-    let system = SYSTEM;
+    let system = (mode === 'admin') ? ADMIN_SYSTEM : SYSTEM;
     if (Array.isArray(catalog) && catalog.length) {
       const sample = catalog.slice(0, 40).map(p => `#${p.id || ""} ${p.name} | ${p.category} | ${p.price}`).join("\n");
       system += `\n\nكتالوج مختصر من المتجر (استخدمه في الترشيح):\n${sample}`;
