@@ -69,34 +69,61 @@ function applyGeneralConfig(c) {
 function applyBrandConfig(c) {
   if (!c) return;
   const name = (c.siteName || "NEXORA").trim();
-  const mark = (c.logoMark || name.slice(0, 2) || "NX").trim().slice(0, 3).toUpperCase();
+  const mark = (c.logoMark || name.replace(/[^\p{L}\p{N}]/gu, "").slice(0, 2) || "NX").trim().slice(0, 3).toUpperCase();
   const tag = (c.siteTagline || "").trim();
   const fav = (c.favicon || "").trim();
+  window.__SITE_NAME__ = name;
+  window.__SITE_MARK__ = mark;
+
+  document.querySelectorAll("[data-site-name]").forEach(el => { el.textContent = name; });
+  document.querySelectorAll("[data-site-mark]").forEach(el => { el.textContent = mark; });
+  document.querySelectorAll("[data-site-tagline]").forEach(el => { if (tag) el.textContent = tag; });
+
   const logoName = document.getElementById("logoName");
   const logoMark = document.getElementById("logoMarkText");
   const docTitle = document.getElementById("docTitle");
   if (logoName) logoName.textContent = name;
   if (logoMark) logoMark.textContent = mark;
-  if (docTitle) docTitle.textContent = tag ? (name + " | " + tag) : name;
-  document.title = tag ? (name + " | " + tag) : name;
-  // favicon
-  let link = document.getElementById("siteFavicon");
-  if (!link) {
-    link = document.querySelector('link[rel="icon"]');
-  }
-  if (link && fav) {
-    link.href = fav + (fav.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
-    if (fav.endsWith(".svg")) link.type = "image/svg+xml";
-    else if (fav.endsWith(".png")) link.type = "image/png";
-    else if (fav.endsWith(".ico")) link.type = "image/x-icon";
-    else link.removeAttribute("type");
-  }
-  // footer logo text if any
-  document.querySelectorAll(".footer-logo .logo-text, .footer-logo #logoName").forEach(el => {
-    if (el.id === "logoName" || el.classList.contains("logo-text")) {
-      // skip if same as header id already updated
-    }
+  const title = tag ? (name + " | " + tag) : name;
+  if (docTitle) docTitle.textContent = title;
+  document.title = title;
+
+  // Footer copyright
+  const footCopy = document.getElementById("footerCopy");
+  if (footCopy) footCopy.textContent = "© " + new Date().getFullYear() + " " + name + " · جميع الحقوق محفوظة";
+
+  // Offers / new section blurbs
+  document.querySelectorAll("[data-site-blurb]").forEach(el => {
+    const kind = el.getAttribute("data-site-blurb");
+    if (kind === "offers") el.textContent = "خصومات وعروض حصرية من " + name;
+    if (kind === "new") el.textContent = "أحدث القطع في " + name;
   });
+
+  // AI header
+  const aiTitle = document.querySelector(".ai-head h4, #aiPanel h4");
+  if (aiTitle) aiTitle.textContent = "نورا · " + name;
+  const aiBubble = document.querySelector("#aiMessages .ai-msg.bot .ai-bubble");
+  if (aiBubble && /NEXORA|نورا/.test(aiBubble.textContent || "")) {
+    // only reset default bubble if still generic
+  }
+
+  // Auth brand marks
+  document.querySelectorAll(".auth-brand-mark").forEach(el => { el.textContent = mark; });
+  document.querySelectorAll(".auth-brand h2, .auth-brand .auth-title").forEach(el => {
+    if (el.id === "authBrandName" || el.hasAttribute("data-site-name")) el.textContent = name;
+  });
+  const memberLabel = document.querySelector("[data-member-label]");
+  if (memberLabel) memberLabel.textContent = "عضو " + name;
+
+  // Favicon
+  let link = document.getElementById("siteFavicon") || document.querySelector('link[rel="icon"]');
+  if (link && fav) {
+    link.href = fav;
+    link.setAttribute("href", fav);
+  }
+  // meta description
+  const meta = document.querySelector('meta[name="description"]');
+  if (meta) meta.setAttribute("content", name + " — متجر الموضة والأزياء");
 }
 
 async function loadHeroConfig() {
