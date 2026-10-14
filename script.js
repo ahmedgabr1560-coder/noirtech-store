@@ -650,6 +650,14 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
     if (!phone || phone.replace(/[^0-9]/g, "").length < 10) return toast("اكتب رقم هاتف صحيح");
     if (!address) return toast("اكتب عنوان التوصيل");
+    // اللون إجباري لو المنتج له ألوان
+    for (const i of cart) {
+      const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
+      const hasColors = p && Array.isArray(p.colors) && p.colors.length > 0;
+      if (hasColors && !(i.color || i.selectedColor)) {
+        return toast("اختاري لون لكل منتج قبل إتمام الطلب: " + (i.name || p.name || ""));
+      }
+    }
     const btn = $("#checkoutBtn");
     if (btn) { btn.disabled = true; btn.textContent = "جاري إرسال الطلب..."; }
     const orderId = "NX-" + Date.now().toString().slice(-8);
@@ -663,11 +671,15 @@ $("#checkoutBtn").addEventListener("click", async () => {
         image: i.image || (p && p.image) || "",
         category: i.category || (p && p.category) || "",
         description: i.description || (p && (p.description || p.desc)) || "",
+        color: i.color || i.selectedColor || "",
         specs: (p && p.specs) || {}
       };
     });
     const total = richItems.reduce((s, it) => s + it.price * it.qty, 0);
-    const lines = richItems.map(it => "• " + it.name + " × " + it.qty + " = " + Number(it.price * it.qty).toLocaleString("ar-EG") + " ج.م");
+    const lines = richItems.map(it => {
+      const col = it.color ? (" | اللون: " + it.color) : "";
+      return "• " + it.name + col + " × " + it.qty + " = " + Number(it.price * it.qty).toLocaleString("ar-EG") + " ج.م";
+    });
     const orderRecord = {
       id: orderId,
       at: new Date().toISOString(),
