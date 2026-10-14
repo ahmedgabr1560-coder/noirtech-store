@@ -85,44 +85,7 @@
     .sub-row .name{flex:1;min-width:120px;font-weight:700;font-size:.88rem}
     .busy{opacity:.6;pointer-events:none}
 
-  
-    /* Unified admin responsive */
-    html, body { overflow-x: hidden; max-width: 100vw; }
-    .layout { display:grid; grid-template-columns: 240px 1fr; min-height:100vh; }
-    .side { background:var(--panel); border-left:1px solid var(--border); padding:16px 12px; position:sticky; top:0; height:100vh; overflow:auto; }
-    .main { padding:18px; min-width:0; max-width:100%; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-bottom:16px; }
-    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .card { overflow:hidden; }
-    table { width:100%; border-collapse:collapse; font-size:.88rem; }
-    th, td { padding:10px 8px; text-align:right; border-bottom:1px solid var(--border); vertical-align:top; }
-    .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%; }
-    input, select, textarea, button { font-size:16px; max-width:100%; }
-    @media (max-width: 900px) {
-      .layout { grid-template-columns: 1fr; }
-      .side { position:relative; height:auto; border-left:0; border-bottom:1px solid var(--border); padding:12px; }
-      .nav { display:flex; overflow:auto; gap:6px; padding-bottom:6px; -webkit-overflow-scrolling:touch; }
-      .nav button { white-space:nowrap; width:auto; flex:0 0 auto; padding:10px 12px; font-size:.82rem; }
-      .form-grid { grid-template-columns:1fr; }
-      .main { padding:12px; }
-      .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-      .stat b { font-size:1.1rem; }
-      h1,h2,h3 { word-break: break-word; }
-      #ordersTable table, #prodTable table { min-width: 640px; }
-      #adminAiMessages { height: min(48vh, 360px) !important; }
-      .login-card { width:min(400px, 100%); margin: 12px; }
-    }
-    @media (max-width: 480px) {
-      .grid { grid-template-columns:1fr; }
-      .side-brand { font-size:.95rem; }
-      .btn { width: 100%; }
-      .nav button { font-size:.78rem; padding:9px 10px; }
-    }
-    @media (min-width: 901px) {
-      .nav button { width:100%; }
-    }
-
-    </style>
+  </style>
 </head>
 <body>
   <div class="login-wrap" id="loginView">
@@ -196,7 +159,7 @@
             <input type="search" id="prodSearch" placeholder="بحث في المنتجات..." />
             <select id="prodCatFilter"><option value="">كل الأقسام</option></select>
           </div>
-          <div id="prodTable" class="table-wrap">جاري التحميل...</div>
+          <div id="prodTable">جاري التحميل...</div>
         </div>
       </section>
 
@@ -243,11 +206,7 @@
 
             <div class="form-grid">
               <label>اسم المنتج *<input id="pName" required /></label>
-              <label>سعر البيع (يظهر في المتجر) *<input id="pPrice" type="number" required /></label>
-              <label>سعر الشراء / التكلفة (سري — مش بيظهر)
-                <input id="pCost" type="number" min="0" placeholder="سعر التكلفة الحقيقي" />
-              </label>
-              <p class="hint" id="pMarginHint" style="grid-column:1/-1">هامش الربح يتحسب تلقائي: سعر البيع − سعر الشراء</p>
+              <label>السعر *<input id="pPrice" type="number" required /></label>
                             <label>الماركة<input id="pBrand" list="brandList" /><datalist id="brandList"></datalist></label>
               <label>القسم الرئيسي *<select id="pCat" required></select></label>
               <label>القسم الفرعي *<select id="pSub" required></select></label>
@@ -323,7 +282,7 @@
             <button type="button" class="btn btn-ghost" id="clearOrdersBtn" style="border-color:rgba(248,113,113,.4);color:#fca5a5">حذف كل الطلبات السابقة</button>
           </div>
           <p class="hint" style="margin-bottom:10px">تقدري تحذفي طلب واحد من الجدول، أو تمسحي كل الطلبات القديمة مرة واحدة.</p>
-          <div id="ordersTable" class="table-wrap">جاري التحميل...</div>
+          <div id="ordersTable">جاري التحميل...</div>
           <div class="msg" id="ordersMsg"></div>
         </div>
       </section>
@@ -331,15 +290,8 @@
       <section class="panel" id="panel-finance">
         <div class="grid" id="finStats"></div>
         <div class="card">
-          <h3>رأس المال والمصروفات</h3>
-          <p class="hint" style="margin-bottom:10px">رأس المال منفصل عن المصروفات. الربح = (سعر البيع − سعر الشراء) للطلبات المسلّمة − المصروفات.</p>
+          <h3>تسجيل مصروف</h3>
           <div class="form-grid">
-            <label>النوع
-              <select id="exType">
-                <option value="expense">مصروف تشغيلي</option>
-                <option value="capital">رأس مال</option>
-              </select>
-            </label>
             <label>المبلغ<input id="exAmount" type="number" /></label>
             <label>التصنيف
               <select id="exCat">
@@ -768,7 +720,6 @@
           secret: SECRET,
           name: $("pName").value.trim(),
           price: $("pPrice").value,
-          costPrice: $("pCost")?.value || 0,
           oldPrice: $("pOld").value || null,
           brand: $("pBrand").value.trim(),
           category: $("pCat").value,
@@ -868,41 +819,20 @@
       const data = await api("list_expenses");
       if (!data.ok) return;
       const list = data.expenses || [];
-      const capital = list.filter(e => e.type === "capital").reduce((s, e) => s + Number(e.amount || 0), 0);
-      const ops = list.filter(e => e.type !== "capital").reduce((s, e) => s + Number(e.amount || 0), 0);
-      if ($("finStats")) {
-        $("finStats").innerHTML =
-          `<div class="stat"><span>رأس المال</span><b>${money(capital)}</b></div>` +
-          `<div class="stat"><span>المصروفات التشغيلية</span><b>${money(ops)}</b></div>`;
-      }
-      const box = $("exList") || $("expensesList") || document.querySelector("#panel-finance .card:last-child");
-      const tableHost = $("exTable") || $("expensesTable");
-      const host = tableHost || null;
-      const rows = list.slice(0, 80).map(e => {
-        const typ = e.type === "capital" ? "رأس مال" : "مصروف";
-        return `<tr><td>${typ}</td><td>${money(e.amount)}</td><td>${e.note || e.desc || e.description || "—"}</td><td>${e.at ? new Date(e.at).toLocaleString("ar-EG") : ""}</td></tr>`;
-      }).join("");
-      const html = list.length
-        ? `<table><thead><tr><th>النوع</th><th>المبلغ</th><th>البيان</th><th>التاريخ</th></tr></thead><tbody>${rows}</tbody></table>`
-        : `<p class="hint">لا مصروفات أو رأس مال بعد</p>`;
-      // try known containers
-      if ($("exList")) $("exList").innerHTML = html;
-      else if ($("expensesList")) $("expensesList").innerHTML = html;
-      else {
-        const cards = document.querySelectorAll("#panel-finance .card");
-        if (cards.length >= 2) {
-          const last = cards[cards.length - 1];
-          let box = last.querySelector("#exListAuto");
-          if (!box) { box = document.createElement("div"); box.id = "exListAuto"; last.appendChild(box); }
-          box.innerHTML = html;
-        }
-      }
+      const total = list.reduce((s,x)=>s+Number(x.amount||0),0);
+      $("finStats").innerHTML = `<div class="stat"><span>إجمالي المصروفات</span><b>${money(total)}</b></div>`;
+      $("exTable").innerHTML = list.length ? `<table><thead><tr><th>التاريخ</th><th>التصنيف</th><th>الوصف</th><th>المبلغ</th></tr></thead><tbody>
+        ${list.slice(0,50).map(x=>`<tr><td>${new Date(x.at).toLocaleString("ar-EG")}</td><td>${x.category}</td><td>${x.description||""}</td><td>${money(x.amount)}</td></tr>`).join("")}
+      </tbody></table>` : `<p class="hint">لا مصروفات بعد</p>`;
     }
     $("exBtn").onclick = async () => {
       const amount = Number($("exAmount").value);
-      const expType = $("exType")?.value || "expense";
       if (!amount) return alert("أدخل مبلغًا");
-      const data = await api("add_expense", { amount, type: expType, note: ($("exDesc")?.value || "").trim(), description: ($("exDesc")?.value || "").trim() });
+      const data = await api("add_expense", {
+        amount,
+        category: $("exCat").value,
+        description: $("exDesc").value.trim()
+      });
       $("exMsg").className = data.ok ? "msg ok" : "msg err";
       $("exMsg").textContent = data.ok ? "تم الحفظ" : (data.error||"فشل");
       if (data.ok) { $("exAmount").value=""; $("exDesc").value=""; await loadExpenses(); await loadStats(); }
@@ -1467,24 +1397,6 @@
       const top = document.getElementById("adminTopName");
       if (top) top.textContent = "لوحة تحكم " + name;
     }
-
-    
-    function updateMarginHint() {
-      const sell = Number($("pPrice")?.value || 0);
-      const cost = Number($("pCost")?.value || 0);
-      const el = $("pMarginHint");
-      if (!el) return;
-      if (sell > 0 && cost >= 0) {
-        const m = sell - cost;
-        el.textContent = m >= 0
-          ? (`هامش الربح المتوقع للقطعة: ${m.toLocaleString("ar-EG")} ج.م (يظهر في الأرباح بعد تأكيد التسليم)`)
-          : (`تحذير: سعر البيع أقل من التكلفة بـ ${Math.abs(m).toLocaleString("ar-EG")} ج.م`);
-      } else {
-        el.textContent = "هامش الربح يتحسب تلقائي: سعر البيع − سعر الشراء (سري ومش بيظهر في المتجر)";
-      }
-    }
-    $("pPrice")?.addEventListener("input", updateMarginHint);
-    $("pCost")?.addEventListener("input", updateMarginHint);
 
     // auto login if secret saved
     (async () => {
