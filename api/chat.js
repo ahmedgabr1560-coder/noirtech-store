@@ -143,9 +143,10 @@ export default async function handler(req, res) {
       }).join("\n");
     }
 
-    if (process.env.GEMINI_API_KEY) {
+    // رد محلي سريع وذكي أولاً (مستقر)، وGemini اختياري لو AI_PREFER_EXTERNAL=1
+    if (process.env.AI_PREFER_EXTERNAL === "1" && process.env.GEMINI_API_KEY) {
       try {
-        var result = await resilientChat(system, messages, 600);
+        var result = await resilientChat(system, messages, 500);
         if (result && result.reply) return res.status(200).json({ reply: String(result.reply).trim(), provider: result.provider || "ai" });
       } catch (err) {
         console.error(err);
