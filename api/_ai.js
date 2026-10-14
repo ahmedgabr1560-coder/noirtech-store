@@ -101,26 +101,50 @@ export async function openrouterSearchChat(system, messages, maxTokens = 650) {
 export async function geminiChat(system, messages, maxTokens = 450) {
   const key = providerKey("GEMINI_API_KEY");
   if (!key) throw new Error("GEMINI_API_KEY is not configured");
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const contents = messages.map(message => ({
     role: message.role === "assistant" ? "model" : "user",
     parts: [{ text: String(message.content || "") }]
   }));
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents,
-      generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85 }
-    })
-  });
-  const data = await r.json();
-  if (!r.ok) throw new Error(data.error?.message || `Gemini request failed (${model})`);
-  const text = (data.candidates?.[0]?.content?.parts || []).map(part => part.text || "").join("\n").trim();
-  if (!text) throw new Error("Gemini returned no text");
-  return text;
+  const models = [
+    process.env.GEMINI_MODEL,
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-flash-latest",
+    "gemini-3.8-flash"
+  ].filter(Boolean);
+  let lastErr = "Gemini failed";
+  for (const model of models) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents,
+          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.85 }
+        })
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        lastErr = data.error?.message || `Gemini ${model} failed`;
+        continue;
+      }
+      const text = (data.candidates || []).flatMap(c => c.content?.parts || []).map(p => p.text).filter(Boolean).join("
+").trim();
+      if (!text) {
+        lastErr = `Gemini ${model} returned empty`;
+        continue;
+      }
+      return text;
+    } catch (e) {
+      lastErr = String(e.message || e);
+    }
+  }
+  throw new Error(lastErr);
 }
+
 
 export async function resilientChat(system, messages, maxTokens = 450) {
   // ابدأ بالمحركات المتاحة عادةً للمتجر، حتى لا نضيع وقت الطلب في مفتاح OpenAI منتهي.
