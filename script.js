@@ -273,7 +273,7 @@ function renderAll() {
   renderShop();
   // default storefront to fashion
   if (typeof setShopFilter === "function" && CATEGORIES.some(c => c.id === "fashion")) {
-    try { setShopFilter("fashion", ""); } catch (e) {}
+    try { setShopFilter("fashion", "", { scroll: false }); } catch (e) {}
   }
 }
 
@@ -783,19 +783,29 @@ function sortedProducts(list) {
   else arr.sort((a,b) => Number(b.id) - Number(a.id));
   return arr;
 }
-function setShopFilter(cat, sub) {
+function setShopFilter(cat, sub, opts) {
+  opts = opts || {};
   activeCategory = cat || "";
   activeSubcategory = sub || "";
-  const c = getCat(activeCategory);
-  const s = getSub(activeCategory, activeSubcategory);
+  activeBrand = "";
+  try { renderSubcatsBar(); } catch (e) {}
+  try { renderShop(); } catch (e) {}
+  try { renderCatNav(); } catch (e) {}
   const title = document.getElementById("shopTitle");
   const subEl = document.getElementById("shopSubtitle");
-  if (title) title.textContent = s ? s.name_ar : (c ? c.name_ar : "تسوق");
-  if (subEl) subEl.textContent = s ? ((c ? c.name_ar + " / " : "") + s.name_ar) : (c ? c.name_ar : "كل المنتجات");
-  renderSubcatsBar();
-  renderShop();
-  const shop = document.getElementById("shop");
-  if (shop) shop.scrollIntoView({ behavior: "smooth", block: "start" });
+  const c = getCat(activeCategory);
+  if (title) {
+    if (c && activeSubcategory) {
+      const s = (c.subs || []).find(x => x.id === activeSubcategory);
+      title.textContent = (s && s.name_ar) || c.name_ar || "المتجر";
+    } else if (c) title.textContent = c.name_ar || "المتجر";
+    else title.textContent = "كل المنتجات";
+  }
+  if (subEl) subEl.textContent = activeCategory ? "تصفية حسب القسم" : "كل المنتجات";
+  if (opts.scroll) {
+    const shop = document.getElementById("shop");
+    if (shop) shop.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 function renderMegaMenu() {
   const menu = document.getElementById("megaMenu");
@@ -912,9 +922,8 @@ function bindCategoryUI() {
       const cat = catBtn.getAttribute("data-cat") || "";
       const sub = catBtn.getAttribute("data-sub") || "";
       if (catBtn.classList.contains("mega-link") || catBtn.classList.contains("mega-main") || catBtn.classList.contains("mega-sub") || catBtn.classList.contains("dir-sub") || catBtn.classList.contains("dir-main") || catBtn.classList.contains("cat-card") || catBtn.classList.contains("cat-pill") || catBtn.classList.contains("sub-chip")) {
-        setShopFilter(cat, sub);
+        setShopFilter(cat, sub, { scroll: true });
         if (menu) menu.hidden = true;
-        document.getElementById("shop")?.scrollIntoView({ behavior: "smooth" });
       }
     }
   });
@@ -1070,23 +1079,19 @@ async function loadProducts() {
 
 function ensureHomeOnStart() {
   try {
-    // close overlays
     ["authOverlay","authModal","profileOverlay","profileModal","cartOverlay","cartDrawer","aiOverlay","aiPanel","productOverlay","productModal"].forEach(id => {
       document.getElementById(id)?.classList.remove("open");
     });
     document.body.style.overflow = "";
-    // if deep link to product keep it; else go home
-    const path = location.pathname || "/";
-    const isHome = path === "/" || path.endsWith("/index.html") || path.endsWith("index.html") || path === "";
-    if (isHome) {
-      if (location.hash && location.hash !== "#home" && location.hash !== "#") {
-        // allow section anchors
-      } else {
-        history.replaceState({}, "", "/");
-        window.scrollTo(0, 0);
-        document.getElementById("home")?.scrollIntoView({ block: "start" });
-      }
+    // امسح هاش الأقسام عشان متعملش سكرول لتحت
+    if (location.hash === "#cats" || location.hash === "#categories" || location.hash === "#shop" || location.hash === "#best") {
+      history.replaceState({}, "", "/");
+    } else if (!location.hash || location.hash === "#" || location.hash === "#home") {
+      history.replaceState({}, "", "/");
     }
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   } catch (e) {}
 }
 
@@ -1101,15 +1106,20 @@ async function bootStore() {
   try { updateUserUI(); } catch (e) {}
   try {
     if (typeof setShopFilter === "function" && CATEGORIES.some(c => c.id === "fashion")) {
-      setShopFilter("fashion", "");
+      setShopFilter("fashion", "", { scroll: false });
     }
+  } catch (e) {}
+  try {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   } catch (e) {}
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", bootStore);
+  document.addEventListener("DOMContentLoaded", () => { bootStore().then(() => { window.scrollTo(0,0); setTimeout(() => window.scrollTo(0,0), 100); }); });
 } else {
-  bootStore();
+  bootStore().then(() => { window.scrollTo(0,0); setTimeout(() => window.scrollTo(0,0), 100); });
 }
 
 document.addEventListener("visibilitychange", () => {
