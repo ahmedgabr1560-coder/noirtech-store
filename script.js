@@ -308,12 +308,12 @@ function updateCartUI() {
         <h4>${name}</h4>
         <div class="price">${money(price)}</div>
         <div class="qty-controls">
-          <button type="button" data-dec="${i.id}">−</button>
+          <button type="button" data-dec="${i.id}" data-color="${i.color || ""}">−</button>
           <span>${i.qty}</span>
-          <button type="button" data-inc="${i.id}">+</button>
+          <button type="button" data-inc="${i.id}" data-color="${i.color || ""}">+</button>
         </div>
       </div>
-      <button type="button" class="icon-close" data-remove="${i.id}" style="width:30px;height:30px;font-size:1rem">×</button>
+      <button type="button" class="icon-close" data-remove="${i.id}" data-color="${i.color || ""}" style="width:30px;height:30px;font-size:1rem">×</button>
     </div>`;
   }).join("");
   const total = cart.reduce((s, i) => s + cartLinePrice(i) * (Number(i.qty) || 1), 0);
@@ -426,19 +426,22 @@ document.addEventListener("click", (e) => {
   }
   const inc = e.target.closest("[data-inc]");
   if (inc) {
-    const it = cart.find(x => x.id === Number(inc.dataset.inc));
+    const col = inc.dataset.color || "";
+    const it = cart.find(x => Number(x.id) === Number(inc.dataset.inc) && String(x.color || "") === String(col));
     if (it) { it.qty += 1; saveCart(); }
     return;
   }
   const dec = e.target.closest("[data-dec]");
   if (dec) {
     const id = Number(dec.dataset.dec);
-    const it = cart.find(x => x.id === id);
-    if (it) { it.qty -= 1; if (it.qty <= 0) cart = cart.filter(x => x.id !== id); saveCart(); }
+    const col = dec.dataset.color || "";
+    const it = cart.find(x => Number(x.id) === id && String(x.color || "") === String(col));
+    if (it) { it.qty -= 1; if (it.qty <= 0) cart = cart.filter(x => !(Number(x.id) === id && String(x.color || "") === String(col))); saveCart(); }
     return;
   }
   const rm = e.target.closest("[data-remove]");
-  if (rm) { cart = cart.filter(x => x.id !== Number(rm.dataset.remove)); saveCart(); }
+  if (rm) { const id = Number(rm.dataset.remove); const col = rm.dataset.color || "";
+    cart = cart.filter(x => !(Number(x.id) === id && String(x.color || "") === String(col))); saveCart(); }
 });
 
 const cartBtnEl = document.getElementById("cartBtn");
