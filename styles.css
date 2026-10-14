@@ -1728,3 +1728,117 @@ a.product-link:hover { color:#c4b5fd; }
   .float-buttons { left: 12px !important; }
   .float-buttons .float-btn { width: 52px; height: 52px; }
 }
+
+
+/* ===== AI Chat — contemporary site theme (dark + violet) ===== */
+.ai-overlay {
+  background: rgba(5, 5, 10, 0.62) !important;
+  backdrop-filter: blur(4px);
+  z-index: 9995 !important;
+}
+.ai-panel {
+  background: linear-gradient(180deg, rgba(18,16,28,0.98) 0%, rgba(10,10,16,0.98) 100%) !important;
+  border: 1px solid rgba(167, 139, 250, 0.22) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.03), 0 0 60px rgba(99,102,241,0.12) !important;
+  z-index: 9998 !important;
+}
+.ai-header, .ai-head {
+  background: linear-gradient(90deg, rgba(99,102,241,0.22), rgba(139,92,246,0.12), rgba(15,15,22,0.9)) !important;
+  border-bottom: 1px solid rgba(167,139,250,0.18) !important;
+}
+.ai-avatar {
+  background: linear-gradient(135deg, #a78bfa, #6366f1 55%, #8b5cf6) !important;
+  box-shadow: 0 0 0 2px rgba(167,139,250,0.28), 0 8px 20px rgba(99,102,241,0.35) !important;
+  color: #fff !important;
+}
+.ai-header h4, .ai-head h4 { color: #f3f0ff !important; }
+.ai-status { color: #c4b5fd !important; }
+.ai-status::before { content: none; }
+.ai-close, .ai-header .icon-close { color: #b7b7c5 !important; }
+.ai-close:hover { background: rgba(167,139,250,0.12) !important; color: #fff !important; }
+
+.ai-messages {
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(139,92,246,0.12), transparent 55%),
+    radial-gradient(ellipse at 85% 100%, rgba(99,102,241,0.10), transparent 50%),
+    linear-gradient(180deg, #0c0c12 0%, #09090f 100%) !important;
+}
+
+.ai-msg.bot .ai-bubble,
+.ai-msg.bot .ai-bubble {
+  background: rgba(28, 26, 40, 0.95) !important;
+  border: 1px solid rgba(167,139,250,0.18) !important;
+  color: #ece8ff !important;
+  border-radius: 14px 14px 14px 4px !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.ai-msg.user .ai-bubble {
+  background: linear-gradient(135deg, #6d28d9, #4f46e5) !important;
+  border: 1px solid rgba(196,181,253,0.25) !important;
+  color: #fff !important;
+  border-radius: 14px 14px 4px 14px !important;
+  box-shadow: 0 8px 22px rgba(79,70,229,0.28);
+}
+.ai-time { color: rgba(255,255,255,0.45) !important; }
+
+.ai-typing .ai-bubble {
+  background: rgba(28,26,40,0.95) !important;
+  border: 1px solid rgba(167,139,250,0.15);
+}
+.ai-typing span,
+.ai-typing .dot {
+  background: #a78bfa !important;
+}
+
+.ai-suggestions,
+.ai-chips {
+  background: rgba(12,12,18,0.95) !important;
+  border-top: 1px solid rgba(167,139,250,0.12) !important;
+}
+.ai-chip {
+  border: 1px solid rgba(167,139,250,0.35) !important;
+  background: rgba(139,92,246,0.10) !important;
+  color: #ddd6fe !important;
+}
+.ai-chip:hover,
+.ai-chip.ai-follow:hover {
+  background: rgba(139,92,246,0.22) !important;
+  border-color: #a78bfa !important;
+  color: #fff !important;
+}
+.ai-follow-chips .ai-chip {
+  border-color: rgba(167,139,250,0.3) !important;
+  color: #c4b5fd !important;
+}
+
+.ai-input-area, .ai-input-row {
+  background: rgba(16,16,24,0.98) !important;
+  border-top: 1px solid rgba(167,139,250,0.14) !important;
+}
+.ai-input-area input, .ai-input-row input {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(167,139,250,0.18) !important;
+  color: #f4f4f8 !important;
+}
+.ai-input-area input::placeholder, .ai-input-row input::placeholder {
+  color: #8b8b9a !important;
+}
+.ai-input-area input:focus, .ai-input-row input:focus {
+  border-color: rgba(167,139,250,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+}
+.ai-send-btn, #aiSend {
+  background: linear-gradient(135deg, #a78bfa, #6366f1) !important;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+}
+.ai-send-btn:hover, #aiSend:hover {
+  filter: brightness(1.08);
+}
+
+/* keep float AI matching */
+.float-btn.ai {
+  background: linear-gradient(135deg, #a78bfa 0%, #6366f1 55%, #8b5cf6 100%) !important;
+}
