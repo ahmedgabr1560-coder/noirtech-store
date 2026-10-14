@@ -240,6 +240,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    if (action === "list_accounts") {
+      // الحسابات محفوظة محليًا على المتصفح — لا يوجد ملف مركزي
+      return res.status(200).json({ ok: true, accounts: [], note: "accounts are localStorage-only on client" });
+    }
+
     if (action === "list_orders") {
       const f = await ghGet("orders.json");
       const orders = f ? JSON.parse(f.content) : [];
