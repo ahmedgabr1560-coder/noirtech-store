@@ -232,9 +232,9 @@
             </div>
             <label>صورة المنتج *
               <input id="pImageUrl" placeholder="رابط الصورة https://... (اختياري)" />
-              <input id="pImageFile" accept="image/*" type="file" accept="image/*" style="margin-top:8px" / multiple accept="image/*">
+              <input id="pImageFile" type="file" accept="image/*" multiple style="margin-top:8px" />
               <div id="pImgMultiPrev" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
-              <p class="hint">تقدري تختاري أكتر من صورة لنفس المنتج (حتى 8).</p>
+              <p class="hint">اختاري صورة أو أكتر (حتى 8). تقدري تضيفي دفعات متتالية. اضغطي × على صورة لحذفها.</p>
               <div id="imgPreviewWrap" style="margin-top:10px;display:none">
                 <img id="imgPreview" alt="معاينة" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.12)" />
               </div>
@@ -734,29 +734,7 @@
       if (src) { img.src = src; w.style.display = "block"; }
       else { w.style.display = "none"; img.removeAttribute("src"); }
     }
-    $("pImageFile").onchange = (e) => {
-      const f = e.target.files?.[0];
-      if (!f) return;
-      if (!f.type.startsWith("image/")) { alert("اختاري صورة"); return; }
-      if (f.size > 8 * 1024 * 1024) { alert("الصورة كبيرة — أقل من 8MB"); return; }
-      const r = new FileReader();
-      r.onload = () => {
-        // compress
-        const im = new Image();
-        im.onload = () => {
-          const max = 1200;
-          let w = im.width, h = im.height;
-          if (w > max || h > max) {
-            const ratio = Math.min(max / w, max / h);
-            w = Math.round(w * ratio); h = Math.round(h * ratio);
-          }
-          const c = document.createElement("canvas");
-          c.width = w; c.height = h;
-          c.getContext("2d").drawImage(im, 0, 0, w, h);
-          pendingImage = c.toDataURL("image/jpeg", 0.85);
-          showPreview(pendingImage);
-        };
-        im.src = r.result;
+            im.src = r.result;
       };
       r.readAsDataURL(f);
     };
@@ -766,7 +744,7 @@
     };
 
     
-    async function readFilesAsDataUrls(fileList) {
+    async async function readFilesAsDataUrls(fileList) {
       const files = [...(fileList || [])].slice(0, 8);
       const out = [];
       for (const f of files) {
@@ -792,9 +770,9 @@
       $("pImageFile").setAttribute("accept", "image/*");
       $("pImageFile").onchange = async (e) => {
         const list = await readFilesAsDataUrls(e.target.files);
-        if (!list.length) return;
-        pendingImages = list;
-        pendingImage = list[0];
+        if (!list.length) { alert('اختاري صور صحيحة'); return; }
+        pendingImages = [...(pendingImages||[]), ...list].slice(0, 8);
+        pendingImage = pendingImages[0];
         if (typeof showPreview === "function") showPreview(list[0]);
         renderMultiPrev();
       };
