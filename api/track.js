@@ -1,6 +1,6 @@
 const GH_OWNER = process.env.GH_OWNER || "ahmedgabr1560-coder";
 const GH_REPO = process.env.GH_REPO || "noirtech-store";
-const GH_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
+const GH_TOKEN = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
 
 async function ghGet(path) {
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
