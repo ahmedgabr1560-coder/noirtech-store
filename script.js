@@ -363,14 +363,20 @@ function updateCartUI() {
   box.innerHTML = cart.map(i => {
     const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
     const name = (i.name || (p && p.name) || ("منتج #" + i.id)) + (i.color ? (" — لون: " + i.color) : "");
-    const price = (i.price != null ? i.price : (p ? p.price : 0));
     const image = (i.image || (p && p.image) || "");
+    const deal = (p && (p.isOffer || p.offerMeta)) ? dealPriceForQty(p, i.qty) : null;
+    const lineTotal = deal ? deal.lineTotal : ((i.price != null ? Number(i.price) : (p ? Number(p.price) : 0)) * (Number(i.qty) || 1));
+    const dealHint = deal && deal.dealLabel ? `<div style="font-size:.75rem;color:#fdba74;margin-top:2px">🔥 ${deal.dealLabel}</div>` : "";
+    const tierHint = (p && p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length)
+      ? `<div style="font-size:.72rem;color:#c4b5fd;margin-top:2px">${p.offerMeta.tiers.map(t => t.qty + " بـ " + Number(t.price).toLocaleString("ar-EG")).join(" · ")}</div>`
+      : "";
     if (!name && !p) return "";
     return `<div class="cart-line">
       <img src="${image}" alt="" />
       <div>
         <h4>${name}</h4>
-        <div class="price">${money(price)}</div>
+        <div class="price">${money(lineTotal)}</div>
+        ${dealHint}${tierHint}
         <div class="qty-controls">
           <button type="button" data-dec="${i.id}" data-color="${i.color || ""}">−</button>
           <span>${i.qty}</span>
@@ -380,7 +386,11 @@ function updateCartUI() {
       <button type="button" class="icon-close" data-remove="${i.id}" data-color="${i.color || ""}" style="width:30px;height:30px;font-size:1rem">×</button>
     </div>`;
   }).join("");
-  const total = cart.reduce((s, i) => s + cartLinePrice(i) * (Number(i.qty) || 1), 0);
+  const total = cart.reduce((s, i) => {
+    const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
+    if (p && (p.isOffer || p.offerMeta)) return s + dealPriceForQty(p, i.qty).lineTotal;
+    return s + cartLinePrice(i) * (Number(i.qty) || 1);
+  }, 0);
   $("#cartTotal").textContent = money(total);
 }
 
