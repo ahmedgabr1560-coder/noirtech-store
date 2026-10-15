@@ -1168,6 +1168,7 @@ async function handleAiSend() {
       }));
     const res = await fetch("/api/chat", {
       method: "POST",
+      signal: (typeof AbortSignal !== "undefined" && AbortSignal.timeout) ? AbortSignal.timeout(12000) : undefined,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message: text,
@@ -1345,9 +1346,14 @@ function startHeroProductRotate(config) {
 
 async function bootStore() {
   try { ensureHomeOnStart(); } catch (e) {}
-  try { await loadHeroConfig(); } catch (e) { console.warn(e); }
-  try { await loadCatalog(); } catch (e) { console.warn(e); }
-  try { await loadProducts(); } catch (e) { console.warn(e); }
+  // تحميل متوازي أسرع تحت الضغط (CDN + Promise.all)
+  try {
+    await Promise.all([
+      loadHeroConfig().catch(e => console.warn(e)),
+      loadCatalog().catch(e => console.warn(e)),
+      loadProducts().catch(e => console.warn(e))
+    ]);
+  } catch (e) { console.warn(e); }
   try { startHeroProductRotate(window.__SITE_CONFIG__ || {}); } catch (e) {}
   try { renderAll(); } catch (e) { console.warn(e); }
   try { bindCategoryUI(); } catch (e) { console.warn(e); }
