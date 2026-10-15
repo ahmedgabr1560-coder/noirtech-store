@@ -1842,3 +1842,23 @@ a.product-link:hover { color:#c4b5fd; }
 .float-btn.ai {
   background: linear-gradient(135deg, #a78bfa 0%, #6366f1 55%, #8b5cf6 100%) !important;
 }
+
+
+/* Performance */
+.product-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 280px 360px;
+}
+.products-grid {
+  contain: layout style;
+}
+img {
+  content-visibility: auto;
+}
+.bg-stage {
+  contain: strict;
+  will-change: auto;
+}
+.ai-panel, .cart-drawer, .modal {
+  content-visibility: auto;
+}
