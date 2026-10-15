@@ -754,22 +754,31 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const orderId = "NX-" + Date.now().toString().slice(-8);
     const richItems = cart.map(i => {
       const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
+      const qty = Number(i.qty) || 1;
+      const unit = Number(i.price != null ? i.price : (p ? p.price : 0));
+      const deal = (p && (p.isOffer || p.offerMeta)) ? dealPriceForQty(p, qty) : null;
+      const lineTotal = deal ? deal.lineTotal : (unit * qty);
+      const unitEff = qty ? (lineTotal / qty) : unit;
       return {
         id: Number(i.id),
         name: i.name || (p && p.name) || ("منتج #" + i.id),
-        price: Number(i.price != null ? i.price : (p ? p.price : 0)),
-        qty: Number(i.qty) || 1,
+        price: unitEff,
+        lineTotal,
+        dealLabel: deal ? (deal.dealLabel || "") : "",
+        qty,
         image: i.image || (p && p.image) || "",
         category: i.category || (p && p.category) || "",
         description: i.description || (p && (p.description || p.desc)) || "",
         color: i.color || i.selectedColor || "",
-        specs: (p && p.specs) || {}
+        specs: (p && p.specs) || {},
+        offerMeta: (p && p.offerMeta) || null
       };
     });
-    const total = richItems.reduce((s, it) => s + it.price * it.qty, 0);
+    const total = richItems.reduce((s, it) => s + Number(it.lineTotal != null ? it.lineTotal : (it.price * it.qty)), 0);
     const lines = richItems.map(it => {
       const col = it.color ? (" | اللون: " + it.color) : "";
-      return "• " + it.name + col + " × " + it.qty + " = " + Number(it.price * it.qty).toLocaleString("ar-EG") + " ج.م";
+      const deal = it.dealLabel ? (" | عرض: " + it.dealLabel) : "";
+      return "• " + it.name + col + deal + " × " + it.qty + " = " + Number(it.lineTotal != null ? it.lineTotal : (it.price * it.qty)).toLocaleString("ar-EG") + " ج.م";
     });
     const orderRecord = {
       id: orderId,
