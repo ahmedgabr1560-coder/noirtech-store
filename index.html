@@ -74,7 +74,8 @@
           <div class="mega-menu" id="megaMenu" hidden></div>
         </div>
         <a href="#shop">تسوق</a>
-        <a href="#best">العروض</a>
+        <a href="#best">الخصومات</a>
+        <a href="#bundles">عروض القطعتين</a>
                 <a href="#contact">تواصل</a>
       </nav>
 <form class="search-box" id="searchForm" role="search">
@@ -155,18 +156,34 @@
 
     <!-- Categories -->
 
-    <!-- Best sellers -->
+    <!-- خصومات فقط -->
     <section class="section" id="best">
       <div class="container">
         <div class="section-head row">
           <div>
-            <h2>العروض</h2>
-            <p data-site-blurb="offers">خصومات وعروض حصرية من NEXORA</p>
+            <h2>الخصومات</h2>
+            <p data-site-blurb="offers">تخفيضات على السعر الأساسي</p>
           </div>
           <a href="#shop" class="link-more">عرض الكل ←</a>
         </div>
         <div class="products-grid" id="bestGrid">
           <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- عروض القطعتين / الكمية -->
+    <section class="section" id="bundles">
+      <div class="container">
+        <div class="section-head row">
+          <div>
+            <h2>عروض القطعتين</h2>
+            <p>٢ قطع أو ٣ قطع بسعر خاص — لوحدها في هذا القسم</p>
+          </div>
+          <a href="#shop" class="link-more">تسوقي المزيد ←</a>
+        </div>
+        <div class="products-grid" id="bundleGrid">
+          <div class="empty-state" id="bundleEmptyHint" style="display:none">لا توجد عروض قطعتين حاليًا. أضيفيها من لوحة التحكم ← عرض / خصم.</div>
         </div>
       </div>
     </section>
@@ -262,7 +279,7 @@
       <div>
         <h4>تسوقي</h4>
         <a href="#shop">كل المنتجات</a>
-        <a href="#best">العروض</a>
+        <a href="#bundles">عروض القطعتين</a>
         <a href="#new">وصل حديثًا</a>
               </div>
       <div>
