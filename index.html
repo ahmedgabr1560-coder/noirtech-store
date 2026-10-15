@@ -507,6 +507,14 @@
   </div>
 
   <script src="/script.js" defer></script>
+  <script>
+  // ريفرش/رجوع أسرع من كاش المتصفح
+  window.addEventListener("pageshow", function(e) {
+    if (e.persisted && typeof bootStore === "function") {
+      try { updateCartUI && updateCartUI(); } catch (err) {}
+    }
+  });
+  </script>
   <script src="/go-home-patch.js" defer></script>
   <script>
   // hero config applied from script.js
