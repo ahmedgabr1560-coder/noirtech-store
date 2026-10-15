@@ -763,18 +763,37 @@
       const box = $("pImgMultiPrev");
       if (!box) return;
       const all = pendingImages.length ? pendingImages : (pendingImage ? [pendingImage] : []);
-      box.innerHTML = all.map((src, i) => `<img src="${src}" alt="صورة ${i+1}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12)" />`).join("");
+      if (!all.length) { box.innerHTML = ""; return; }
+      box.innerHTML = all.map((src, i) => `
+        <div style="position:relative;width:72px;height:72px">
+          <img src="${src}" alt="صورة ${i+1}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12)" />
+          <button type="button" data-rm-img="${i}" title="حذف" style="position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:50%;border:0;background:#ef4444;color:#fff;font-size:14px;cursor:pointer;line-height:22px;padding:0">×</button>
+          <span style="position:absolute;bottom:2px;right:4px;font-size:10px;background:rgba(0,0,0,.55);color:#fff;padding:1px 4px;border-radius:4px">${i + 1}</span>
+        </div>`).join("");
+    }
+    if (!$("pImgMultiPrev")?.dataset.bound) {
+      $("pImgMultiPrev")?.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-rm-img]");
+        if (!btn) return;
+        const idx = Number(btn.getAttribute("data-rm-img"));
+        pendingImages = (pendingImages || []).filter((_, i) => i !== idx);
+        pendingImage = pendingImages[0] || "";
+        if (typeof showPreview === "function") showPreview(pendingImage || "");
+        renderMultiPrev();
+      });
+      if ($("pImgMultiPrev")) $("pImgMultiPrev").dataset.bound = "1";
     }
     if ($("pImageFile")) {
       $("pImageFile").setAttribute("multiple", "multiple");
       $("pImageFile").setAttribute("accept", "image/*");
       $("pImageFile").onchange = async (e) => {
         const list = await readFilesAsDataUrls(e.target.files);
-        if (!list.length) { alert('اختاري صور صحيحة'); return; }
-        pendingImages = [...(pendingImages||[]), ...list].slice(0, 8);
+        if (!list.length) { alert("اختاري صور صحيحة (jpg/png)"); return; }
+        pendingImages = [...(pendingImages || []), ...list].slice(0, 8);
         pendingImage = pendingImages[0];
-        if (typeof showPreview === "function") showPreview(list[0]);
+        if (typeof showPreview === "function") showPreview(pendingImages[0]);
         renderMultiPrev();
+        e.target.value = "";
       };
     }
 
