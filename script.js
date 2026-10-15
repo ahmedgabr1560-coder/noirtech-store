@@ -640,6 +640,19 @@ $("#registerForm").addEventListener("submit", async (e) => {
   const nl = String.fromCharCode(10);
   const msg = "حساب جديد على NEXORA" + nl + nl + "الاسم: " + name + nl + "الهاتف: " + phone + nl + "البريد: " + email + nl + "صورة: " + (avatar ? "نعم" : "لا") + nl + "الوقت: " + new Date().toLocaleString("ar-EG") + nl + "تم إنشاء الحساب";
   try { await notifyAdmin("register", msg); } catch (_) {}
+  try {
+    await fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "register_account",
+        name: name,
+        phone: phone,
+        email: email,
+        hasAvatar: !!avatar
+      })
+    });
+  } catch (_) {}
   setTimeout(function(){ openProfile(); }, 150);
 });
 
@@ -1343,6 +1356,58 @@ function startHeroProductRotate(config) {
   showPair();
   __heroRotateTimer = setInterval(showPair, secs * 1000);
 }
+
+
+
+/* ===== Visitor tracking (enter / leave / online) ===== */
+function nxSessionId() {
+  try {
+    let id = sessionStorage.getItem("nx_sid");
+    if (!id) {
+      id = "s_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      sessionStorage.setItem("nx_sid", id);
+    }
+    return id;
+  } catch (e) {
+    return "s_" + Date.now();
+  }
+}
+function nxTrack(action) {
+  try {
+    const payload = JSON.stringify({
+      action: action,
+      sessionId: nxSessionId(),
+      path: (location.pathname + location.search).slice(0, 120)
+    });
+    if (action === "leave" && navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: "application/json" });
+      navigator.sendBeacon("/api/track", blob);
+      return;
+    }
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: action === "leave"
+    }).catch(() => {});
+  } catch (e) {}
+}
+(function initVisitTrack() {
+  try {
+    if (!sessionStorage.getItem("nx_enter_sent")) {
+      sessionStorage.setItem("nx_enter_sent", "1");
+      nxTrack("enter");
+    } else {
+      nxTrack("ping");
+    }
+  } catch (e) { nxTrack("enter"); }
+  setInterval(() => nxTrack("ping"), 60000);
+  window.addEventListener("pagehide", () => nxTrack("leave"));
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") nxTrack("leave");
+    else nxTrack("ping");
+  });
+})();
 
 async function bootStore() {
   try { ensureHomeOnStart(); } catch (e) {}
