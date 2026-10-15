@@ -1327,8 +1327,8 @@ async function bootStore() {
   try { ensureHomeOnStart(); } catch (e) {}
   try { await loadHeroConfig(); } catch (e) { console.warn(e); }
   try { await loadCatalog(); } catch (e) { console.warn(e); }
-  try { await loadProducts();
-  try { startHeroProductRotate(window.__SITE_CONFIG__ || {}); } catch (e) {}; } catch (e) { console.warn(e); }
+  try { await loadProducts(); } catch (e) { console.warn(e); }
+  try { startHeroProductRotate(window.__SITE_CONFIG__ || {}); } catch (e) {}
   try { renderAll(); } catch (e) { console.warn(e); }
   try { bindCategoryUI(); } catch (e) { console.warn(e); }
   try { updateCartUI(); } catch (e) {}
