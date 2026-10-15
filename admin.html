@@ -492,9 +492,21 @@
     let PRODUCTS = [];
     let editingId = null;
 
+    function bustStoreCaches() {
+      try {
+        sessionStorage.removeItem("adm_list_products");
+        sessionStorage.removeItem("adm_list_orders");
+        sessionStorage.removeItem("nx_products");
+        sessionStorage.removeItem("nx_categories");
+        sessionStorage.removeItem("nx_config");
+        localStorage.setItem("nx_catalog_bump", String(Date.now()));
+      } catch (e) {}
+    }
+
+
     const $ = (id) => document.getElementById(id);
     
-    const ADMIN_CACHE_TTL = 30 * 1000;
+    const ADMIN_CACHE_TTL = 5 * 1000;
     function adminCacheGet(key) {
       try {
         const raw = sessionStorage.getItem("adm_" + key);
@@ -794,13 +806,13 @@
         del.disabled = true;
         const data = await api("delete_product", { id: Number(del.getAttribute("data-del-prod")) });
         if (!data.ok) alert(data.error||"فشل");
-        try { sessionStorage.removeItem("adm_list_products"); } catch (err) {}
+        try { bustStoreCaches(); } catch (err) {}
         await loadProducts();
       }
       if (hide) {
         hide.disabled = true;
         await api("toggle_product", { id: Number(hide.getAttribute("data-hide-prod")) });
-        try { sessionStorage.removeItem("adm_list_products"); } catch (err) {}
+        try { bustStoreCaches(); } catch (err) {}
         await loadProducts();
       }
     });
@@ -939,7 +951,7 @@
           if (!data.ok) throw new Error(data.error || "فشل التعديل");
           msg.className = "msg ok";
           msg.textContent = "تم حفظ تعديلات المنتج #" + editingId;
-          try { sessionStorage.removeItem("adm_list_products"); sessionStorage.removeItem("nx_products"); } catch (err) {}
+          try { bustStoreCaches(); } catch (err) {}
           clearEditMode();
         } else {
           const r = await fetch("/api/product", {
@@ -954,7 +966,7 @@
           e.target.reset(); pendingImage = ""; pendingImages = []; showPreview("");
           try { renderMultiPrev(); } catch (err) {}
         }
-        await loadProducts(); await loadStats();
+        bustStoreCaches(); await loadProducts(); await loadStats();
       } catch (err) {
         msg.className = "msg err";
         msg.textContent = err.message || "خطأ";
