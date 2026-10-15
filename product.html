@@ -211,11 +211,6 @@
               ${off ? `<span class="badge-off" style="position:static">-${off}%</span>` : ""}
             </div>
             ${Array.isArray(p.offerMeta?.tiers) && p.offerMeta.tiers.length ? `
-            <div class="bundle-actions" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px">
-              ${p.offerMeta.tiers.map(t => `<button type="button" class="btn btn-ghost" data-bundle-qty="${t.qty}" style="font-size:.85rem">أضيفي ${t.qty} قطع — ${money(t.price)}</button>`).join("")}
-            </div>
-            ` : ""}
-            ${Array.isArray(p.offerMeta?.tiers) && p.offerMeta.tiers.length ? `
             <div style="margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.35);color:#fdba74;font-weight:700;line-height:1.6">
               🔥 عروض الكمية:<br>
               ${p.offerMeta.tiers.map(t => `• ${t.qty} قطع بـ ${money(t.price)}`).join("<br>")}
