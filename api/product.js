@@ -140,6 +140,11 @@ export default async function handler(req, res) {
       };
     }
 
+    if ((!price || price <= 0) && offerMeta && offerMeta.tiers && offerMeta.tiers.length) {
+      const t2 = offerMeta.tiers.find(t => Number(t.qty) === 2);
+      if (t2) price = Math.round(Number(t2.price) / 2);
+      else price = Math.round(Number(offerMeta.tiers[0].price) / Math.max(1, Number(offerMeta.tiers[0].qty) || 1));
+    }
     if (!name || !price) return res.status(400).json({ ok: false, error: "الاسم والسعر مطلوبين" });
 
     const file = await ghGet("products.json");
@@ -167,6 +172,11 @@ export default async function handler(req, res) {
       }
     }
 
+    if ((!price || price <= 0) && offerMeta && offerMeta.tiers && offerMeta.tiers.length) {
+      const t2 = offerMeta.tiers.find(t => Number(t.qty) === 2);
+      if (t2) price = Math.round(Number(t2.price) / 2);
+      else price = Math.round(Number(offerMeta.tiers[0].price) / Math.max(1, Number(offerMeta.tiers[0].qty) || 1));
+    }
     if (!name || !price) return res.status(400).json({ ok: false, error: "الاسم والسعر مطلوبين" });
 
     // Upload phone/gallery image to GitHub if provided
