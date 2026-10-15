@@ -204,7 +204,36 @@ export default async function handler(req, res) {
       home: "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&h=800&fit=crop&q=80",
       accessories: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800&h=800&fit=crop&q=80"
     };
+    
+    // صور متعددة
+    let images = [];
+    if (Array.isArray(body.images)) {
+      for (let i = 0; i < body.images.length && images.length < 8; i++) {
+        const im = body.images[i];
+        if (!im) continue;
+        if (typeof im === "string" && /^https?:\/\//i.test(im)) {
+          images.push(im);
+          continue;
+        }
+        if (typeof im === "string" && im.startsWith("data:image/")) {
+          const parsed = parseDataUrl(im);
+          if (!parsed) continue;
+          const ext = parsed.mime.includes("png") ? "png" : (parsed.mime.includes("webp") ? "webp" : "jpg");
+          const imgPath = `product-images/${id}_${images.length + 1}.${ext}`;
+          const up = await ghPut(imgPath, null, `admin: product image ${id}_${images.length + 1}`, null, parsed.b64);
+          if (up.ok) {
+            images.push(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}?t=${Date.now()}`);
+          }
+        }
+      }
+    }
+    if (images.length && !image) image = images[0];
+    if (image && !images.includes(image)) images.unshift(image);
+    if (!images.length && image) images = [image];
+
     if (!image || !/^https?:\/\//i.test(image)) image = fallbackImages[category] || fallbackImages.fashion;
+    if (!images.length) images = [image];
+
 
     const product = {
       id,
@@ -218,6 +247,7 @@ export default async function handler(req, res) {
         : 0,
       oldPrice: body.oldPrice ? Math.round(Number(String(body.oldPrice).replace(/[^0-9.]/g, "")) || 0) : null,
       image,
+      images,
       description: description.slice(0, 2000),
       badge,
       stock,
