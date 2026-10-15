@@ -858,12 +858,12 @@ $("#contactForm").addEventListener("submit", async (e) => {
 
 async function loadCatalog() {
   const urls = [
-    "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/categories.json?t=" + Date.now(),
+    "/categories.json",
     "/categories.json"
   ];
   for (const url of urls) {
     try {
-      const r = await fetch(url, { cache: "no-store" });
+      const r = await fetch(url, { cache: "default" });
       if (!r.ok) continue;
       const data = await r.json();
       const allCats = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
@@ -1270,20 +1270,19 @@ fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d)
 
 
 async function loadProducts() {
-  const urls = [
-    "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json?t=" + Date.now(),
-    "/products.json"
-  ];
+  const urls = ["/products.json"];
   for (const url of urls) {
     try {
-      const r = await fetch(url, { cache: "no-store" });
+      const r = await fetch(url, { cache: "default" });
       if (!r.ok) continue;
       const data = await r.json();
       PRODUCTS = Array.isArray(data) ? data : (data.products || []);
       PRODUCTS = PRODUCTS.filter(p => p && !p.hidden);
-      break;
+      return PRODUCTS;
     } catch (e) {}
   }
+  PRODUCTS = PRODUCTS || [];
+  return PRODUCTS;
 }
 
 
