@@ -316,12 +316,29 @@ function discountPct(p) {
   return Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
 }
 
+
+function isBundleOffer(p) {
+  if (!p) return false;
+  const tiers = p.offerMeta && Array.isArray(p.offerMeta.tiers) ? p.offerMeta.tiers : [];
+  if (tiers.some(t => Number(t.qty) >= 2 && Number(t.price) > 0)) return true;
+  // offerType bundle/both without tiers still counts if flag
+  if (p.isOffer && (p.offerType === "bundle" || p.offerType === "both")) return true;
+  return false;
+}
+function isDiscountOffer(p) {
+  if (!p) return false;
+  if (isBundleOffer(p)) return false; // bundles لها قسم لوحدها
+  if (p.oldPrice && p.price && Number(p.oldPrice) > Number(p.price)) return true;
+  if (p.isOffer && !isBundleOffer(p)) return true;
+  return false;
+}
+
 function productCard(p) {
   const off = discountPct(p);
   return `<article class="product-card" data-id="${p.id}">
     <a class="product-media" href="/product.html?id=${p.id}" data-open="${p.id}">
       <img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />
-      ${off ? `<span class="badge-off">-${off}%</span>` : ""}
+      ${isBundleOffer(p) ? `<span class="badge-off" style="background:linear-gradient(135deg,#f97316,#ea580c)">عرض قطع</span>` : (off ? `<span class="badge-off">-${off}%</span>` : "")}
     </a>
     <div class="product-body">
       <h3 class="product-name"><a class="product-link" href="/product.html?id=${p.id}" data-open="${p.id}">${p.name}</a></h3>
@@ -359,8 +376,19 @@ function renderAll() {
   renderMegaMenu();
   renderCatNav();
   renderCatsDirectory();
-  renderGrid($("#bestGrid"), PRODUCTS.filter(p => p.isOffer || p.best || (p.oldPrice && p.price && p.oldPrice > p.price)).slice(0, 12));
-  renderGrid($("#newGrid"), PRODUCTS.filter(p => !p.isOffer && (p.newest || true)).slice(0, 12));
+  // خصومات فقط (من غير عروض ٢/٣ قطع)
+  renderGrid($("#bestGrid"), PRODUCTS.filter(p => isDiscountOffer(p) || (p.best && !isBundleOffer(p))).slice(0, 12));
+  // عروض القطعتين لوحدها
+  const bundles = PRODUCTS.filter(p => isBundleOffer(p)).slice(0, 24);
+  const bundleGrid = $("#bundleGrid");
+  if (bundleGrid) {
+    if (bundles.length) {
+      renderGrid(bundleGrid, bundles);
+    } else {
+      bundleGrid.innerHTML = `<div class="empty-state">لا توجد عروض قطعتين حاليًا.<br><small>من الأدمن: إضافة منتج → عرض / خصم → عروض الكمية (٢ / ٣ قطع)</small></div>`;
+    }
+  }
+  renderGrid($("#newGrid"), PRODUCTS.filter(p => !p.isOffer && !isBundleOffer(p)).slice(0, 12));
   renderShop();
   // default storefront to fashion
   if (typeof setShopFilter === "function" && CATEGORIES.some(c => c.id === "fashion")) {
