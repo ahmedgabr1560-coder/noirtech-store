@@ -202,6 +202,9 @@
             <div style="margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.35);color:#fdba74;font-weight:700;line-height:1.6">
               🔥 عروض الكمية:<br>
               ${p.offerMeta.tiers.map(t => `• ${t.qty} قطع بـ ${money(t.price)}`).join("<br>")}
+            </div>
+            <div class="bundle-actions" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px">
+              ${p.offerMeta.tiers.map(t => `<button type="button" class="btn btn-ghost" data-bundle-qty="${t.qty}" style="font-size:.85rem">أضيفي ${t.qty} قطع — ${money(t.price)}</button>`).join("")}
             </div>` : ""}
             <div class="stock-row ${available ? "in" : "out"}" id="stockRow">
               ${available
@@ -275,6 +278,14 @@
         const v = Math.min(maxQty, (Number(qtyInput.value) || 1) + 1);
         qtyInput.value = v;
       });
+      document.querySelectorAll("[data-bundle-qty]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const q = Math.max(1, Number(btn.getAttribute("data-bundle-qty") || 1));
+          if (qtyInput) qtyInput.value = String(Math.min(q, maxQty));
+          document.getElementById("ppAddCart")?.click();
+        });
+      });
+
       document.getElementById("ppAddCart")?.addEventListener("click", () => {
         if (!available) return;
         if (colors.length && !selectedColor) {
@@ -286,8 +297,14 @@
         if (stock > 0) qty = Math.min(qty, stock);
         const payload = Object.assign({}, p, { selectedColor, color: selectedColor });
         addLocalCart(payload, qty);
+        // show deal note if offer
+        let note = "تمت الإضافة ✓";
+        if (p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) {
+          const t = [...p.offerMeta.tiers].filter(x => x.qty > 0).sort((a,b)=>b.qty-a.qty).find(x => qty >= x.qty);
+          if (t) note = "تمت الإضافة ✓ (" + t.qty + " بـ " + money(t.price) + ")";
+        }
         const btn = document.getElementById("ppAddCart");
-        if (btn) { btn.textContent = "تمت الإضافة ✓"; setTimeout(() => { btn.textContent = "أضف للسلة"; }, 1500); }
+        if (btn) { btn.textContent = note; setTimeout(() => { btn.textContent = "أضف للسلة"; }, 1800); }
       });
 
     })();
