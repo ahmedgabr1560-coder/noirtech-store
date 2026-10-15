@@ -304,6 +304,7 @@ function productCard(p) {
         <span class="price">${money(p.price)}</span>
         ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
       </div>
+      ${(p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) ? `<div style="font-size:.72rem;color:#fdba74;margin-top:4px;font-weight:700">🔥 ${p.offerMeta.tiers.map(t => t.qty + " بـ " + Number(t.price).toLocaleString("ar-EG")).join(" · ")}</div>` : ""}
       <button type="button" class="add-btn" data-add="${p.id}">أضف للسلة</button>
     </div>
   </article>`;
