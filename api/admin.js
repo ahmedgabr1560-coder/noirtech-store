@@ -19,8 +19,12 @@ async function ghGet(path) {
   const data = await r.json();
   return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
-async function ghPut(path, content, message, sha) {
-  const body = { message, content: Buffer.from(content, "utf8").toString("base64"), branch: "main" };
+async function ghPut(path, content, message, sha, rawBase64) {
+  // rawBase64: optional already-base64 binary (for images); content used as utf8 text otherwise
+  const encoded = rawBase64
+    ? String(rawBase64)
+    : Buffer.from(content == null ? "" : content, "utf8").toString("base64");
+  const body = { message, content: encoded, branch: "main" };
   if (sha) body.sha = sha;
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
     method: "PUT",
