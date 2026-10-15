@@ -225,7 +225,9 @@
             </div>
             <label>صورة المنتج *
               <input id="pImageUrl" placeholder="رابط الصورة https://... (اختياري)" />
-              <input id="pImageFile" type="file" accept="image/*" style="margin-top:8px" />
+              <input id="pImageFile" accept="image/*" type="file" accept="image/*" style="margin-top:8px" / multiple accept="image/*">
+              <div id="pImgMultiPrev" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+              <p class="hint">تقدري تختاري أكتر من صورة لنفس المنتج (حتى 8).</p>
               <div id="imgPreviewWrap" style="margin-top:10px;display:none">
                 <img id="imgPreview" alt="معاينة" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.12)" />
               </div>
@@ -693,6 +695,7 @@
     });
 
     // image file to data url
+    let pendingImages = [];
     let pendingImage = "";
     function showPreview(src) {
       const w = $("imgPreviewWrap");
@@ -731,6 +734,41 @@
       const v = $("pImageUrl").value.trim();
       if (v && !pendingImage) showPreview(v);
     };
+
+    
+    async function readFilesAsDataUrls(fileList) {
+      const files = [...(fileList || [])].slice(0, 8);
+      const out = [];
+      for (const f of files) {
+        if (!f || !f.type || !f.type.startsWith("image/")) continue;
+        const data = await new Promise((resolve) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = () => resolve(null);
+          r.readAsDataURL(f);
+        });
+        if (data) out.push(data);
+      }
+      return out;
+    }
+    function renderMultiPrev() {
+      const box = $("pImgMultiPrev");
+      if (!box) return;
+      const all = pendingImages.length ? pendingImages : (pendingImage ? [pendingImage] : []);
+      box.innerHTML = all.map((src, i) => `<img src="${src}" alt="صورة ${i+1}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.12)" />`).join("");
+    }
+    if ($("pImageFile")) {
+      $("pImageFile").setAttribute("multiple", "multiple");
+      $("pImageFile").setAttribute("accept", "image/*");
+      $("pImageFile").onchange = async (e) => {
+        const list = await readFilesAsDataUrls(e.target.files);
+        if (!list.length) return;
+        pendingImages = list;
+        pendingImage = list[0];
+        if (typeof showPreview === "function") showPreview(list[0]);
+        renderMultiPrev();
+      };
+    }
 
     $("addForm").onsubmit = async (e) => {
       e.preventDefault();
@@ -784,6 +822,7 @@
           badge: $("pBadge").value.trim() || ($("pType")?.value === "offer" ? "عرض" : "جديد"),
           description: $("pDesc").value.trim(),
           image: imageVal,
+          images: (pendingImages && pendingImages.length) ? pendingImages : (imageVal ? [imageVal] : []),
           isOffer: $("pType")?.value === "offer",
           oldPrice: $("pOld")?.value || $("pOldAuto")?.value || "",
           sourceProductId: $("offerSourceProduct")?.value || "",
