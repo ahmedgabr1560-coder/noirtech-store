@@ -136,6 +136,8 @@ async function loadHeroConfig() {
     const c = await r.json();
     window.siteConfig = c;
     applyBrandConfig(c);
+    window.__SITE_CONFIG__ = c;
+    try { startHeroProductRotate(c); } catch (e) {}
     applyGeneralConfig(c);
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null && String(val).trim() !== "") el.textContent = val; };
     const setImg = (id, val) => {
@@ -1264,11 +1266,69 @@ function ensureHomeOnStart() {
   } catch (e) {}
 }
 
+
+
+/* Hero images rotate from products */
+let __heroRotateTimer = null;
+let __heroRotateIdx = 0;
+function stopHeroProductRotate() {
+  if (__heroRotateTimer) {
+    clearInterval(__heroRotateTimer);
+    __heroRotateTimer = null;
+  }
+}
+function startHeroProductRotate(config) {
+  stopHeroProductRotate();
+  if (!config || config.heroRotateFromProducts !== true) return;
+  const secs = Math.max(2, Math.min(60, Number(config.heroRotateSeconds) || 5));
+  const imgs = (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS) ? PRODUCTS : [])
+    .filter(p => p && !p.hidden && p.image && /^https?:\/\//i.test(String(p.image)))
+    .map(p => ({ src: p.image, name: p.name || "", id: p.id }));
+  if (imgs.length < 1) return;
+
+  const img1 = document.getElementById("heroImg1");
+  const img2 = document.getElementById("heroImg2");
+  const chipTitle = document.getElementById("heroChipTitle");
+  const chipSub = document.getElementById("heroChipSub");
+  if (!img1 && !img2) return;
+
+  function showPair() {
+    if (!imgs.length) return;
+    const a = imgs[__heroRotateIdx % imgs.length];
+    const b = imgs[(__heroRotateIdx + 1) % imgs.length];
+    if (img1) {
+      img1.style.opacity = "0.35";
+      setTimeout(() => { img1.src = a.src; img1.alt = a.name || "منتج"; img1.style.opacity = "1"; }, 180);
+    }
+    if (img2) {
+      img2.style.opacity = "0.35";
+      setTimeout(() => { img2.src = b.src; img2.alt = b.name || "منتج"; img2.style.opacity = "1"; }, 220);
+    }
+    if (chipTitle && a.name) chipTitle.textContent = a.name;
+    if (chipSub) chipSub.textContent = "من تشكيلتنا";
+    // click chip -> product
+    const chip = document.querySelector(".hero-chip");
+    if (chip && a.id != null) {
+      chip.setAttribute("href", "/product.html?id=" + encodeURIComponent(a.id));
+    }
+    __heroRotateIdx = (__heroRotateIdx + 1) % imgs.length;
+  }
+
+  // smooth transition css once
+  [img1, img2].forEach(el => {
+    if (el) el.style.transition = "opacity .25s ease";
+  });
+
+  showPair();
+  __heroRotateTimer = setInterval(showPair, secs * 1000);
+}
+
 async function bootStore() {
   try { ensureHomeOnStart(); } catch (e) {}
   try { await loadHeroConfig(); } catch (e) { console.warn(e); }
   try { await loadCatalog(); } catch (e) { console.warn(e); }
-  try { await loadProducts(); } catch (e) { console.warn(e); }
+  try { await loadProducts();
+  try { startHeroProductRotate(window.__SITE_CONFIG__ || {}); } catch (e) {}; } catch (e) { console.warn(e); }
   try { renderAll(); } catch (e) { console.warn(e); }
   try { bindCategoryUI(); } catch (e) { console.warn(e); }
   try { updateCartUI(); } catch (e) {}
