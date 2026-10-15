@@ -305,8 +305,12 @@ export default async function handler(req, res) {
       for (const k of textFields) {
         if (body[k] != null) config[k] = String(body[k]);
       }
-      for (const k of ["showFloatWhatsapp","showFloatTelegram","showFloatAI","showContact","showCategories"]) {
+      for (const k of ["showFloatWhatsapp","showFloatTelegram","showFloatAI","showContact","showCategories","heroRotateFromProducts"]) {
         if (body[k] != null) config[k] = body[k] === true || body[k] === "true" || body[k] === 1 || body[k] === "1";
+      }
+      if (body.heroRotateSeconds != null) {
+        const sec = Math.max(2, Math.min(60, Number(body.heroRotateSeconds) || 5));
+        config.heroRotateSeconds = sec;
       }
 
       async function saveImage(dataOrUrl, key) {
