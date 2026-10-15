@@ -241,8 +241,54 @@ export default async function handler(req, res) {
     }
 
     if (action === "list_accounts") {
-      // الحسابات محفوظة محليًا على المتصفح — لا يوجد ملف مركزي
-      return res.status(200).json({ ok: true, accounts: [], note: "accounts are localStorage-only on client" });
+      const f = await ghGet("accounts.json");
+      let accounts = [];
+      try { accounts = f ? JSON.parse(f.content) : []; } catch { accounts = []; }
+      if (!Array.isArray(accounts)) accounts = [];
+      return res.status(200).json({ ok: true, accounts });
+    }
+
+    if (action === "list_visitors") {
+      const f = await ghGet("visitors.json");
+      let data = { stats: {}, sessions: {}, recent: [] };
+      try { data = f ? JSON.parse(f.content) : data; } catch {}
+      const sessions = data.sessions || {};
+      const now = Date.now();
+      let online = 0;
+      const sessionList = Object.entries(sessions).map(([id, s]) => {
+        const last = new Date(s.lastSeen || 0).getTime();
+        const isOnline = s.status !== "left" && (now - last < 3 * 60 * 1000);
+        if (isOnline) online++;
+        return {
+          id: id.slice(0, 12) + "…",
+          path: s.path || "/",
+          status: isOnline ? "online" : (s.status || "left"),
+          firstSeen: s.firstSeen,
+          lastSeen: s.lastSeen,
+          enters: s.enters || 0,
+          leaves: s.leaves || 0
+        };
+      }).sort((a, b) => new Date(b.lastSeen || 0) - new Date(a.lastSeen || 0));
+      const stats = data.stats || {};
+      stats.onlineNow = online;
+      return res.status(200).json({
+        ok: true,
+        stats,
+        recent: Array.isArray(data.recent) ? data.recent.slice(0, 50) : [],
+        sessions: sessionList.slice(0, 100)
+      });
+    }
+
+    if (action === "delete_account") {
+      const email = String(body.email || "").toLowerCase().trim();
+      if (!email) return res.status(400).json({ ok: false, error: "email required" });
+      const f = await ghGet("accounts.json");
+      let accounts = [];
+      try { accounts = f ? JSON.parse(f.content) : []; } catch { accounts = []; }
+      accounts = (Array.isArray(accounts) ? accounts : []).filter(u => String(u.email || "").toLowerCase() !== email);
+      const put = await ghPut("accounts.json", JSON.stringify(accounts, null, 2), "admin: delete account", f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: put.data?.message || "fail" });
+      return res.status(200).json({ ok: true, accounts });
     }
 
     if (action === "list_orders") {
