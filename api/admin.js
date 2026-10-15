@@ -439,6 +439,19 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, expenses });
     }
 
+    if (action === "delete_expense") {
+      const id = String(body.id || "").trim();
+      if (!id) return res.status(400).json({ ok: false, error: "id required" });
+      const f = await ghGet("expenses.json");
+      let expenses = [];
+      try { expenses = f ? JSON.parse(f.content) : []; } catch { expenses = []; }
+      if (!Array.isArray(expenses)) expenses = [];
+      const next = expenses.filter( ex => String(ex.id) !== id);
+      const put = await ghPut("expenses.json", JSON.stringify(next, null, 2), `Admin: delete expense ${id}`, f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: put.data?.message || "فشل الحذف" });
+      return res.status(200).json({ ok: true, expenses: next });
+    }
+
     if (action === "add_expense") {
       const f = await ghGet("expenses.json");
       const expenses = f ? JSON.parse(f.content) : [];
