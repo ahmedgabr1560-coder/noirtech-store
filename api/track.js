@@ -83,7 +83,7 @@ function countOnline(sessions) {
   return n;
 }
 
-async function withRetry(mutator, path, message, tries = 3) {
+async function withRetry(mutator, path, message, tries = 2) {
   for (let i = 0; i < tries; i++) {
     const f = await ghGet(path);
     let data;
@@ -140,6 +140,14 @@ export default async function handler(req, res) {
 
     // زيارات
     if (action === "enter" || action === "leave" || action === "ping") {
+      // تحت الضغط العالي: تجاهل أغلب الـ ping لتقليل تعارض GitHub
+      if (action === "ping" && Math.random() > 0.15) {
+        return res.status(200).json({ ok: true, soft: true, skipped: true });
+      }
+      // leave يمكن أن يكون كثير simultaneous — نكتفي بنسبة
+      if (action === "leave" && Math.random() > 0.4) {
+        return res.status(200).json({ ok: true, soft: true, skipped: true });
+      }
       const sid = String(body.sessionId || "").slice(0, 64);
       if (!sid || sid.length < 8) return res.status(400).json({ ok: false, error: "sessionId" });
       const path = String(body.path || "/").slice(0, 120);
