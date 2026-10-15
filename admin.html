@@ -712,17 +712,32 @@
       if ($("pType")?.value === "offer") {
         const srcId = $("offerSourceProduct")?.value;
         if (!srcId) { alert("اختاري المنتج الأساسي للعرض"); return; }
-        const unit = Number($("pPriceOffer")?.value || $("pPrice")?.value || 0);
+        let unit = Number($("pPriceOffer")?.value || $("pPrice")?.value || 0);
         const b2 = Number($("bundle2Price")?.value || 0);
         const b3 = Number($("bundle3Price")?.value || 0);
         const oldP = Number($("pOldAuto")?.value || $("pOld")?.value || 0);
         if (!unit && !b2 && !b3) { alert("حددي سعر القطعة أو عرض ٢/٣ قطع"); return; }
+        // عرض كمية فقط: سعر القطعة = الأصلي لو فاضي
+        if (!unit && oldP) unit = oldP;
+        if (!unit && (b2 || b3)) {
+          // fallback من المنتج المختار
+          const src = (PRODUCTS || []).find(p => String(p.id) === String(srcId));
+          if (src && src.price) unit = Number(src.price);
+        }
         if (unit && oldP && unit >= oldP && !b2 && !b3) {
           alert("سعر العرض لازم يكون أقل من السعر الأصلي، أو أضيفي عرض كمية");
           return;
         }
-        if (unit) $("pPrice").value = unit;
+        if (unit) {
+          $("pPrice").value = unit;
+          if ($("pPriceOffer")) $("pPriceOffer").value = unit;
+        }
         if (oldP) $("pOld").value = oldP;
+        // لو صورة فاضيّة من المصدر
+        if (!$("pImageUrl")?.value && !pendingImage) {
+          const src = (PRODUCTS || []).find(p => String(p.id) === String(srcId));
+          if (src && src.image) $("pImageUrl").value = src.image;
+        }
       }
       const btn = $("addBtn");
       const msg = $("addMsg");
