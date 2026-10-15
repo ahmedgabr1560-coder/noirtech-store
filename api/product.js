@@ -1,6 +1,6 @@
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
-const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
+const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "nexora2026";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
