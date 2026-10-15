@@ -139,9 +139,11 @@ async function loadHeroConfig() {
     try { applyGeneralConfig(cached); } catch (e) {}
   }
   try {
-    const r = await fetch("/site-config.json", { cache: "default" });
+    let r = await fetch("/api/catalog?type=config&t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) r = await fetch("/site-config.json?t=" + Date.now(), { cache: "no-store" });
     if (!r.ok) return;
-    const c = await r.json();
+    const raw = await r.json();
+    const c = raw.config || raw;
     window.siteConfig = c;
     applyBrandConfig(c);
     window.__SITE_CONFIG__ = c;
@@ -211,7 +213,7 @@ let activeSort = "newest";
 /** Products loaded from products.json (bot-managed) */
 
 /* ===== Instant refresh cache (sessionStorage) ===== */
-const NX_CACHE_TTL = 10 * 60 * 1000; // 10 دقايق
+const NX_CACHE_TTL = 15 * 1000; // 15 ثانية — تحديث سريع من الأدمن
 function nxCacheGet(key) {
   try {
     const raw = sessionStorage.getItem(key);
@@ -915,15 +917,23 @@ async function loadCatalog() {
     CATEGORIES = (cached.categories || []).filter(c => c && c.visible !== false);
     BRANDS = Array.isArray(cached.brands) ? cached.brands : [];
   }
-  try {
-    const r = await fetch("/categories.json", { cache: "default" });
-    if (!r.ok) return;
-    const data = await r.json();
-    const allCats = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
-    CATEGORIES = allCats.filter(c => c && c.visible !== false);
-    BRANDS = Array.isArray(data.brands) ? data.brands : [];
-    nxCacheSet("nx_categories", { categories: allCats, brands: BRANDS });
-  } catch (e) {}
+  const urls = [
+    "/api/catalog?type=categories&t=" + Date.now(),
+    "/categories.json?t=" + Date.now()
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      const data = await r.json();
+      const allCats = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
+      if (!allCats.length) continue;
+      CATEGORIES = allCats.filter(c => c && c.visible !== false);
+      BRANDS = Array.isArray(data.brands) ? data.brands : [];
+      nxCacheSet("nx_categories", { categories: allCats, brands: BRANDS });
+      return;
+    } catch (e) {}
+  }
 }
 
 function getCat(id) {
@@ -1326,15 +1336,22 @@ async function loadProducts() {
   if (cached && Array.isArray(cached) && cached.length) {
     PRODUCTS = cached.filter(p => p && !p.hidden);
   }
-  try {
-    const r = await fetch("/products.json", { cache: "default" });
-    if (r.ok) {
+  const urls = [
+    "/api/catalog?type=products&t=" + Date.now(),
+    "/products.json?t=" + Date.now()
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
       const data = await r.json();
       const list = Array.isArray(data) ? data : (data.products || []);
+      if (!list.length && data && data.ok === false) continue;
       PRODUCTS = list.filter(p => p && !p.hidden);
       nxCacheSet("nx_products", PRODUCTS);
-    }
-  } catch (e) {}
+      return PRODUCTS;
+    } catch (e) {}
+  }
   PRODUCTS = PRODUCTS || [];
   return PRODUCTS;
 }
@@ -1528,3 +1545,29 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 setInterval(() => { loadHeroConfig(); }, 30000);
+
+// تحديث المتجر فورًا عند الرجوع للتاب (بعد تعديلات الأدمن)
+(function nxRevalidateOnFocus() {
+  let last = 0;
+  async function refresh() {
+    const now = Date.now();
+    if (now - last < 8000) return;
+    last = now;
+    try {
+      sessionStorage.removeItem("nx_products");
+      sessionStorage.removeItem("nx_categories");
+      sessionStorage.removeItem("nx_config");
+    } catch (e) {}
+    try {
+      if (typeof loadProducts === "function") await loadProducts();
+      if (typeof loadCatalog === "function") await loadCatalog();
+      if (typeof loadHeroConfig === "function") await loadHeroConfig();
+      if (typeof renderAll === "function") renderAll();
+      if (typeof updateCartUI === "function") updateCartUI();
+    } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") refresh();
+  });
+  window.addEventListener("focus", refresh);
+})();
