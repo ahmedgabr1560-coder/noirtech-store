@@ -147,6 +147,104 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, total: products.length });
     }
 
+    
+    if (action === "update_product") {
+      const id = Number(body.id);
+      if (!id) return res.status(400).json({ ok: false, error: "id required" });
+      const f = await ghGet("products.json");
+      if (!f) return res.status(404).json({ ok: false, error: "products missing" });
+      let products = [];
+      try { products = JSON.parse(f.content); } catch { products = []; }
+      if (!Array.isArray(products)) products = [];
+      const idx = products.findIndex(p => Number(p.id) === id);
+      if (idx < 0) return res.status(404).json({ ok: false, error: "product not found" });
+      const prev = products[idx] || {};
+      const name = String(body.name || prev.name || "").trim();
+      if (!name) return res.status(400).json({ ok: false, error: "name required" });
+      let price = Number(body.price);
+      if (!Number.isFinite(price)) price = Number(prev.price) || 0;
+      let oldPrice = body.oldPrice != null && body.oldPrice !== "" ? Number(body.oldPrice) : prev.oldPrice;
+      if (oldPrice != null && !Number.isFinite(Number(oldPrice))) oldPrice = prev.oldPrice;
+      let image = String(body.image || prev.image || "").trim();
+      let images = Array.isArray(body.images) ? body.images.filter(Boolean) : (prev.images || []);
+      // upload data-url images if any
+      const finalImages = [];
+      for (let i = 0; i < (images || []).length && finalImages.length < 8; i++) {
+        const im = images[i];
+        if (typeof im !== "string") continue;
+        if (im.startsWith("http://") || im.startsWith("https://")) {
+          finalImages.push(im);
+          continue;
+        }
+        if (im.startsWith("data:image/")) {
+          try {
+            const m = im.match(/^data:image\/(\w+);base64,(.+)$/);
+            if (!m) continue;
+            const ext = (m[1] === "jpeg" ? "jpg" : m[1]).replace("svg+xml", "svg");
+            const b64 = m[2];
+            const imgPath = `product-images/${id}_${finalImages.length + 1}.${ext}`;
+            const up = await ghPut(imgPath, null, `admin: update image ${id}`, null, b64);
+            if (up && up.ok) {
+              finalImages.push(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}?t=${Date.now()}`);
+            }
+          } catch (e) { console.error(e); }
+        }
+      }
+      if (finalImages.length) {
+        images = finalImages;
+        image = finalImages[0];
+      } else if (image && (!images || !images.length)) {
+        images = [image];
+      }
+      // colors
+      let colors = prev.colors || [];
+      if (Array.isArray(body.colors)) colors = body.colors;
+      else if (typeof body.colors === "string" && body.colors.trim()) {
+        colors = body.colors.split(/[,،]/).map(s => s.trim()).filter(Boolean).map(name => ({ name, code: "#888888" }));
+      }
+      const stock = body.stock != null && body.stock !== "" ? Number(body.stock) : prev.stock;
+      const available = body.available != null ? !!body.available : (prev.available !== false);
+      const updated = {
+        ...prev,
+        name,
+        price,
+        oldPrice: oldPrice != null && Number(oldPrice) > 0 ? Number(oldPrice) : (prev.oldPrice || null),
+        costPrice: body.costPrice != null && body.costPrice !== "" ? Number(body.costPrice) : prev.costPrice,
+        category: body.category != null ? String(body.category) : prev.category,
+        subcategory: body.subcategory != null ? String(body.subcategory) : prev.subcategory,
+        brand: body.brand != null ? String(body.brand) : prev.brand,
+        description: body.description != null ? String(body.description) : prev.description,
+        image: image || prev.image,
+        images: (images && images.length) ? images : (prev.images || (prev.image ? [prev.image] : [])),
+        colors,
+        stock: Number.isFinite(stock) ? stock : prev.stock,
+        available,
+        badge: body.badge != null ? String(body.badge) : prev.badge,
+        updatedAt: new Date().toISOString()
+      };
+      // offer fields if provided
+      if (body.isOffer != null) updated.isOffer = !!body.isOffer;
+      if (body.offerType) updated.offerType = String(body.offerType);
+      if (body.sourceProductId) updated.sourceProductId = body.sourceProductId;
+      if (body.offerMeta) updated.offerMeta = body.offerMeta;
+      else if (body.bundle2Price || body.bundle3Price) {
+        const tiers = [];
+        const b2 = Number(body.bundle2Price || 0);
+        const b3 = Number(body.bundle3Price || 0);
+        if (b2 > 0) tiers.push({ qty: 2, price: Math.round(b2) });
+        if (b3 > 0) tiers.push({ qty: 3, price: Math.round(b3) });
+        if (tiers.length) {
+          updated.offerMeta = { type: "bundle", tiers };
+          updated.isOffer = true;
+        }
+      }
+      products[idx] = updated;
+      const put = await ghPut("products.json", JSON.stringify(products, null, 2), `Admin: update product #${id}`, f.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: put.data?.message || "فشل الحفظ" });
+      return res.status(200).json({ ok: true, product: updated });
+    }
+
+
     if (action === "toggle_product") {
       const id = Number(body.id);
       const f = await ghGet("products.json");
