@@ -1,3 +1,4 @@
+function debounce(fn, ms){ let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), ms); }; }
 
 function paymentLabel(method) {
   const map = { cod: "عند الاستلام", vodafone: "فودافون كاش", instapay: "إنستا باي", transfer: "تحويل بنكي", card: "بطاقة" };
