@@ -363,7 +363,8 @@ function updateCartUI() {
   }
   box.innerHTML = cart.map(i => {
     const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
-    const name = (i.name || (p && p.name) || ("منتج #" + i.id)) + (i.color ? (" — لون: " + i.color) : "");
+    const colTxt = (Array.isArray(i.colors) && i.colors.length) ? i.colors.join("، ") : (i.color || "");
+    const name = (i.name || (p && p.name) || ("منتج #" + i.id)) + (colTxt ? (" — لون: " + colTxt) : "");
     const image = (i.image || (p && p.image) || "");
     const deal = (p && (p.isOffer || p.offerMeta)) ? dealPriceForQty(p, i.qty) : null;
     const lineTotal = deal ? deal.lineTotal : ((i.price != null ? Number(i.price) : (p ? Number(p.price) : 0)) * (Number(i.qty) || 1));
@@ -758,8 +759,10 @@ $("#checkoutBtn").addEventListener("click", async () => {
     for (const i of cart) {
       const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
       const hasColors = p && Array.isArray(p.colors) && p.colors.length > 0;
-      if (hasColors && !(i.color || i.selectedColor)) {
-        return toast("اختاري لون لكل منتج قبل إتمام الطلب: " + (i.name || p.name || ""));
+      const qty = Number(i.qty) || 1;
+      const picked = Array.isArray(i.colors) ? i.colors.filter(Boolean) : ((i.color || i.selectedColor) ? String(i.color || i.selectedColor).split(/،|,/).map(s=>s.trim()).filter(Boolean) : []);
+      if (hasColors && picked.length < qty) {
+        return toast("اختاري لون لكل قطعة قبل إتمام الطلب: " + (i.name || p.name || "") + " (مطلوب " + qty + " لون)");
       }
     }
     const btn = $("#checkoutBtn");
@@ -783,6 +786,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
         category: i.category || (p && p.category) || "",
         description: i.description || (p && (p.description || p.desc)) || "",
         color: i.color || i.selectedColor || "",
+        colors: Array.isArray(i.colors) ? i.colors : ((i.color || i.selectedColor) ? String(i.color || i.selectedColor).split(/،|,/).map(s=>s.trim()).filter(Boolean) : []),
         specs: (p && p.specs) || {},
         offerMeta: (p && p.offerMeta) || null
       };
