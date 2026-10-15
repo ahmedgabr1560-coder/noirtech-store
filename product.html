@@ -84,15 +84,27 @@
       let cart = [];
       try { cart = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
       const id = Number(p.id);
-      const color = p.selectedColor || p.color || "";
-      const item = cart.find(x => Number(x.id) === id && String(x.color || "") === String(color));
-      if (item) item.qty += qty;
-      else cart.push({
-        id, qty,
-        name: p.name, price: p.price, image: p.image,
-        category: p.category, description: p.description || "",
-        color
-      });
+      const colorList = Array.isArray(p.colors) && p.colors.length && typeof p.colors[0] === "string"
+        ? p.colors
+        : (p.selectedColor || p.color ? [p.selectedColor || p.color] : []);
+      const color = colorList.length ? colorList.join("، ") : (p.selectedColor || p.color || "");
+      // سطر منفصل لكل توليفة ألوان
+      const colorKey = colorList.join("|") || color;
+      const item = cart.find(x => Number(x.id) === id && String(x.colorKey || x.color || "") === String(colorKey));
+      if (item) {
+        item.qty += qty;
+        if (colorList.length) {
+          item.colors = (item.colors || []).concat(colorList);
+          item.color = item.colors.join("، ");
+        }
+      } else {
+        cart.push({
+          id, qty,
+          name: p.name, price: p.price, image: p.image || (p.images && p.images[0]) || "",
+          category: p.category, description: p.description || "",
+          color, colors: colorList.slice(), colorKey
+        });
+      }
       localStorage.setItem(key, JSON.stringify(cart));
     }
     (async function () {
@@ -176,8 +188,13 @@
       root.innerHTML = `
         <div class="pd-layout">
           <div class="pd-gallery">
-            <img class="pd-main-img" src="${p.image}" alt="${esc(p.name)}"
+            <img class="pd-main-img" id="pdMainImg" src="${(Array.isArray(p.images)&&p.images[0])||p.image}" alt="${esc(p.name)}"
               onerror="this.src='https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70'" />
+            ${(Array.isArray(p.images)&&p.images.length>1) ? `<div class="pd-thumbs" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+              ${p.images.map((src,i)=>`<button type="button" class="pd-thumb" data-src="${src}" style="padding:0;border:2px solid ${i===0?'#a78bfa':'transparent'};border-radius:10px;overflow:hidden;cursor:pointer;background:none">
+                <img src="${src}" alt="" style="width:56px;height:56px;object-fit:cover;display:block" />
+              </button>`).join("")}
+            </div>` : ""}
           </div>
           <div class="pd-info">
             <div class="pd-breadcrumb">
@@ -212,8 +229,8 @@
                 : `❌ غير متوفر حالياً`}
             </div>
             <div>
-              <div style="font-size:.85rem;color:#9a9aa3;margin-bottom:6px;font-weight:700">اللون</div>
-              <div class="color-row" id="colorRow">${colorBtns}</div>
+              <div style="font-size:.85rem;color:#9a9aa3;margin-bottom:6px;font-weight:700">اللون — لو الكمية أكتر من 1 اختاري لون لكل قطعة</div>
+              <div id="colorPickers"></div>
               <div id="selectedColorLabel" style="font-size:.82rem;color:#c4b5fd;min-height:1.2em"></div>
             </div>
             <div class="pd-desc">
@@ -249,53 +266,137 @@
         </div>` : ""}
       `;
 
-      let selectedColor = "";
-      const selLabel = document.getElementById("selectedColorLabel");
-      if (selLabel) {
-        selLabel.textContent = colors.length ? "⚠️ اختاري لونًا (إجباري)" : "";
-        selLabel.style.color = colors.length ? "#fbbf24" : "#c4b5fd";
-      }
-
-      document.getElementById("colorRow")?.addEventListener("click", (e) => {
-        const btn = e.target.closest(".color-swatch");
-        if (!btn) return;
-        document.querySelectorAll(".color-swatch").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedColor = btn.getAttribute("data-color") || "";
-        if (selLabel) {
-          selLabel.textContent = selectedColor ? ("اللون المختار: " + selectedColor) : "⚠️ اختاري لونًا (إجباري)";
-          selLabel.style.color = selectedColor ? "#c4b5fd" : "#fbbf24";
-        }
+      const galleryImgs = (Array.isArray(p.images) && p.images.length) ? p.images : (p.image ? [p.image] : []);
+      document.querySelectorAll(".pd-thumb").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const src = btn.getAttribute("data-src");
+          const main = document.getElementById("pdMainImg");
+          if (main && src) main.src = src;
+          document.querySelectorAll(".pd-thumb").forEach(b => b.style.borderColor = "transparent");
+          btn.style.borderColor = "#a78bfa";
+        });
       });
 
+      let selectedColors = []; // لون لكل قطعة حسب الكمية
+      const colorPickers = document.getElementById("colorPickers");
+      const selLabel = document.getElementById("selectedColorLabel");
       const qtyInput = document.getElementById("buyQty");
       const maxQty = Math.max(1, stock || 1);
+
+      function colorSwatchesHtml(activeName, unitIndex) {
+        if (!colors.length) return `<span style="color:#9a9aa3;font-size:.85rem">لا يوجد اختيار ألوان</span>`;
+        return colors.map((c, i) => {
+          const name = typeof c === "string" ? c : (c.name || c.label || ("لون " + (i+1)));
+          const code = typeof c === "string" ? "" : (c.code || c.hex || "");
+          const bg = code || "#888";
+          const active = activeName === name ? " active" : "";
+          return `<button type="button" class="color-swatch${active}" data-unit="${unitIndex}" data-color="${esc(name)}" data-code="${esc(code)}" style="background:${esc(bg)}" title="${esc(name)}"><span class="color-cap">${esc(name)}</span></button>`;
+        }).join("");
+      }
+
+      function renderColorPickers() {
+        if (!colorPickers) return;
+        const qty = Math.max(1, Number(qtyInput?.value) || 1);
+        // resize selectedColors
+        while (selectedColors.length < qty) selectedColors.push("");
+        selectedColors = selectedColors.slice(0, qty);
+        if (!colors.length) {
+          colorPickers.innerHTML = `<span style="color:#9a9aa3;font-size:.85rem">لا يوجد اختيار ألوان لهذا المنتج</span>`;
+          if (selLabel) selLabel.textContent = "";
+          return;
+        }
+        if (qty === 1) {
+          colorPickers.innerHTML = `<div class="color-row" data-unit="0">${colorSwatchesHtml(selectedColors[0], 0)}</div>`;
+        } else {
+          colorPickers.innerHTML = selectedColors.map((col, ui) => `
+            <div style="margin-bottom:10px">
+              <div style="font-size:.78rem;color:#c4b5fd;font-weight:700;margin-bottom:4px">لون القطعة ${ui + 1}</div>
+              <div class="color-row" data-unit="${ui}">${colorSwatchesHtml(col, ui)}</div>
+            </div>`).join("");
+        }
+        updateColorLabel();
+      }
+
+      function updateColorLabel() {
+        if (!selLabel || !colors.length) return;
+        const qty = Math.max(1, Number(qtyInput?.value) || 1);
+        const filled = selectedColors.slice(0, qty).filter(Boolean);
+        if (filled.length === qty) {
+          selLabel.textContent = qty === 1 ? ("اللون المختار: " + filled[0]) : ("الألوان: " + filled.join("، "));
+          selLabel.style.color = "#c4b5fd";
+        } else {
+          selLabel.textContent = qty === 1 ? "⚠️ اختاري لونًا (إجباري)" : ("⚠️ اختاري لون لكل قطعة (" + filled.length + "/" + qty + ")");
+          selLabel.style.color = "#fbbf24";
+        }
+      }
+
+      colorPickers?.addEventListener("click", (e) => {
+        const btn = e.target.closest(".color-swatch");
+        if (!btn) return;
+        const ui = Number(btn.getAttribute("data-unit") || 0);
+        const name = btn.getAttribute("data-color") || "";
+        selectedColors[ui] = name;
+        const row = btn.closest(".color-row");
+        row?.querySelectorAll(".color-swatch").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        updateColorLabel();
+      });
+
       document.getElementById("qtyMinus")?.addEventListener("click", () => {
         const v = Math.max(1, (Number(qtyInput.value) || 1) - 1);
         qtyInput.value = v;
+        renderColorPickers();
       });
       document.getElementById("qtyPlus")?.addEventListener("click", () => {
         const v = Math.min(maxQty, (Number(qtyInput.value) || 1) + 1);
         qtyInput.value = v;
+        renderColorPickers();
       });
+      qtyInput?.addEventListener("change", () => {
+        let v = Math.max(1, Number(qtyInput.value) || 1);
+        if (stock > 0) v = Math.min(v, stock);
+        qtyInput.value = v;
+        renderColorPickers();
+      });
+      renderColorPickers();
+
       document.querySelectorAll("[data-bundle-qty]").forEach(btn => {
         btn.addEventListener("click", () => {
           const q = Math.max(1, Number(btn.getAttribute("data-bundle-qty") || 1));
           if (qtyInput) qtyInput.value = String(Math.min(q, maxQty));
+          renderColorPickers();
           document.getElementById("ppAddCart")?.click();
         });
       });
 
       document.getElementById("ppAddCart")?.addEventListener("click", () => {
         if (!available) return;
-        if (colors.length && !selectedColor) {
-          if (selLabel) { selLabel.textContent = "⚠️ لازم تختاري لون قبل الإضافة للسلة"; selLabel.style.color = "#f87171"; }
-          alert("اختاري لون المنتج أولاً");
-          return;
-        }
         let qty = Math.max(1, Number(qtyInput?.value) || 1);
         if (stock > 0) qty = Math.min(qty, stock);
-        const payload = Object.assign({}, p, { selectedColor, color: selectedColor });
+        if (colors.length) {
+          const picks = selectedColors.slice(0, qty);
+          if (picks.some(x => !x) || picks.length < qty) {
+            if (selLabel) { selLabel.textContent = "⚠️ لازم تختاري لون لكل قطعة قبل الإضافة"; selLabel.style.color = "#f87171"; }
+            alert(qty === 1 ? "اختاري لون المنتج أولاً" : "اختاري لون لكل قطعة (مثلاً شنطتين = لونين)");
+            return;
+          }
+        }
+        const picks = colors.length ? selectedColors.slice(0, qty) : [];
+        const payload = Object.assign({}, p, {
+          selectedColor: picks[0] || "",
+          color: picks.length ? picks.join("، ") : "",
+          colors: picks
+        });
+        addLocalCart(payload, qty);
+        let note = "تمت الإضافة ✓";
+        if (picks.length) note += " | " + picks.join("، ");
+        if (p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) {
+          const t = [...p.offerMeta.tiers].filter(x => x.qty > 0).sort((a,b)=>b.qty-a.qty).find(x => qty >= x.qty);
+          if (t) note = "تمت الإضافة ✓ (" + t.qty + " بـ " + money(t.price) + ")";
+        }
+        const btn = document.getElementById("ppAddCart");
+        if (btn) { btn.textContent = note; setTimeout(() => { btn.textContent = "أضف للسلة"; }, 1800); }
+      });
         addLocalCart(payload, qty);
         // show deal note if offer
         let note = "تمت الإضافة ✓";
