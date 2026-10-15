@@ -409,16 +409,6 @@
         const btn = document.getElementById("ppAddCart");
         if (btn) { btn.textContent = note; setTimeout(() => { btn.textContent = "أضف للسلة"; }, 1800); }
       });
-        addLocalCart(payload, qty);
-        // show deal note if offer
-        let note = "تمت الإضافة ✓";
-        if (p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) {
-          const t = [...p.offerMeta.tiers].filter(x => x.qty > 0).sort((a,b)=>b.qty-a.qty).find(x => qty >= x.qty);
-          if (t) note = "تمت الإضافة ✓ (" + t.qty + " بـ " + money(t.price) + ")";
-        }
-        const btn = document.getElementById("ppAddCart");
-        if (btn) { btn.textContent = note; setTimeout(() => { btn.textContent = "أضف للسلة"; }, 1800); }
-      });
 
     })();
   </script>
