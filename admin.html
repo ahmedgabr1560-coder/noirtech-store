@@ -298,27 +298,31 @@
       </section>
 
       
-      <section class="panel" id="panel-visitors">
-        <h2>الزوار والحسابات</h2>
-        <p class="hint">متابعة من دخل الموقع، من خرج، والمتصلين الآن، والحسابات المسجّلة.</p>
-        <div class="cards" id="visitorCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:14px 0">
-          <div class="card"><div class="k">متصل الآن</div><div class="v" id="vOnline">—</div></div>
-          <div class="card"><div class="k">دخول اليوم</div><div class="v" id="vTodayIn">—</div></div>
-          <div class="card"><div class="k">خروج اليوم</div><div class="v" id="vTodayOut">—</div></div>
-          <div class="card"><div class="k">إجمالي الدخول</div><div class="v" id="vTotalIn">—</div></div>
-          <div class="card"><div class="k">إجمالي الخروج</div><div class="v" id="vTotalOut">—</div></div>
-          <div class="card"><div class="k">جلسات فريدة</div><div class="v" id="vUnique">—</div></div>
-          <div class="card"><div class="k">حسابات مسجّلة</div><div class="v" id="vAccounts">—</div></div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <section class="panel" id="panel-visitors">
+        <div class="card">
+          <h3>الزوار والحسابات</h3>
+          <p class="hint" style="margin-bottom:12px">ملخص بسيط لعدد الزوار والحسابات.</p>
+          <div class="cards" id="visitorCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px">
+            <div class="card" style="margin:0"><div class="k">متصل الآن</div><div class="v" id="vOnline">—</div></div>
+            <div class="card" style="margin:0"><div class="k">زيارات اليوم</div><div class="v" id="vTodayIn">—</div></div>
+            <div class="card" style="margin:0"><div class="k">إجمالي الزيارات</div><div class="v" id="vTotalIn">—</div></div>
+            <div class="card" style="margin:0"><div class="k">الحسابات</div><div class="v" id="vAccounts">—</div></div>
+          </div>
           <button type="button" class="btn btn-primary" id="btnRefreshVisitors">تحديث</button>
+          <h3 style="margin:18px 0 8px;font-size:1rem">آخر الحسابات</h3>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th></th></tr></thead>
+              <tbody id="accountsBody"><tr><td colspan="4">—</td></tr></tbody>
+            </table>
+          </div>
+          <!-- عناصر مخفية للتوافق مع السكربت القديم -->
+          <span id="vTodayOut" style="display:none">—</span>
+          <span id="vTotalOut" style="display:none">—</span>
+          <span id="vUnique" style="display:none">—</span>
+          <tbody id="recentVisitsBody" style="display:none"></tbody>
+          <tbody id="sessionsBody" style="display:none"></tbody>
         </div>
-        <h3 style="margin:16px 0 8px">آخر الأحداث</h3>
-        <div class="table-wrap"><table class="tbl"><thead><tr><th>النوع</th><th>الجلسة</th><th>الصفحة</th><th>الوقت</th></tr></thead><tbody id="recentVisitsBody"><tr><td colspan="4">جاري التحميل...</td></tr></tbody></table></div>
-        <h3 style="margin:20px 0 8px">الجلسات</h3>
-        <div class="table-wrap"><table class="tbl"><thead><tr><th>الحالة</th><th>الصفحة</th><th>دخول</th><th>خروج</th><th>آخر ظهور</th></tr></thead><tbody id="sessionsBody"><tr><td colspan="5">—</td></tr></tbody></table></div>
-        <h3 style="margin:20px 0 8px">الحسابات المسجّلة</h3>
-        <div class="table-wrap"><table class="tbl"><thead><tr><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>تاريخ التسجيل</th><th></th></tr></thead><tbody id="accountsBody"><tr><td colspan="5">—</td></tr></tbody></table></div>
       </section>
 
       <section class="panel" id="panel-finance">
@@ -859,10 +863,6 @@
     
     async function loadVisitorsPanel() {
       const fmt = (n) => (n == null ? "—" : Number(n).toLocaleString("ar-EG"));
-      const fmtTime = (t) => {
-        if (!t) return "—";
-        try { return new Date(t).toLocaleString("ar-EG"); } catch { return t; }
-      };
       try {
         const [vData, aData] = await Promise.all([
           api("list_visitors"),
@@ -872,43 +872,17 @@
         const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
         set("vOnline", fmt(st.onlineNow));
         set("vTodayIn", fmt(st.todayEnters));
-        set("vTodayOut", fmt(st.todayLeaves));
         set("vTotalIn", fmt(st.totalEnters));
-        set("vTotalOut", fmt(st.totalLeaves));
-        set("vUnique", fmt(st.uniqueSessions));
         const accounts = (aData && aData.accounts) || [];
         set("vAccounts", fmt(accounts.length || st.accountsTotal || 0));
-
-        const recent = (vData && vData.recent) || [];
-        const rb = $("recentVisitsBody");
-        if (rb) {
-          rb.innerHTML = recent.length ? recent.map(e => `<tr>
-            <td>${e.type === "enter" ? "🟢 دخول" : (e.type === "leave" ? "🔴 خروج" : e.type)}</td>
-            <td>${e.sessionId || "—"}</td>
-            <td>${e.path || "/"}</td>
-            <td>${fmtTime(e.at)}</td>
-          </tr>`).join("") : `<tr><td colspan="4">لا توجد أحداث بعد — افتحي المتجر مرة</td></tr>`;
-        }
-        const sessions = (vData && vData.sessions) || [];
-        const sb = $("sessionsBody");
-        if (sb) {
-          sb.innerHTML = sessions.length ? sessions.map(s => `<tr>
-            <td>${s.status === "online" ? "🟢 متصل" : "⚪ غادر"}</td>
-            <td>${s.path || "/"}</td>
-            <td>${s.enters || 0}</td>
-            <td>${s.leaves || 0}</td>
-            <td>${fmtTime(s.lastSeen)}</td>
-          </tr>`).join("") : `<tr><td colspan="5">لا جلسات بعد</td></tr>`;
-        }
         const ab = $("accountsBody");
         if (ab) {
-          ab.innerHTML = accounts.length ? accounts.map(u => `<tr>
+          ab.innerHTML = accounts.length ? accounts.slice(0, 30).map(u => `<tr>
             <td>${u.name || "—"}</td>
             <td>${u.phone || "—"}</td>
             <td>${u.email || "—"}</td>
-            <td>${fmtTime(u.createdAt)}</td>
             <td><button type="button" class="btn btn-ghost" data-del-acc="${(u.email || "").replace(/"/g,"")}" style="padding:4px 8px;font-size:.8rem">حذف</button></td>
-          </tr>`).join("") : `<tr><td colspan="5">لا حسابات مسجّلة على السيرفر بعد</td></tr>`;
+          </tr>`).join("") : `<tr><td colspan="4">لا حسابات بعد</td></tr>`;
         }
       } catch (e) {
         console.error(e);
@@ -998,10 +972,28 @@
       const list = data.expenses || [];
       const total = list.reduce((s,x)=>s+Number(x.amount||0),0);
       $("finStats").innerHTML = `<div class="stat"><span>إجمالي المصروفات</span><b>${money(total)}</b></div>`;
-      $("exTable").innerHTML = list.length ? `<table><thead><tr><th>التاريخ</th><th>التصنيف</th><th>الوصف</th><th>المبلغ</th></tr></thead><tbody>
-        ${list.slice(0,50).map(x=>`<tr><td>${new Date(x.at).toLocaleString("ar-EG")}</td><td>${x.category}</td><td>${x.description||""}</td><td>${money(x.amount)}</td></tr>`).join("")}
+      $("exTable").innerHTML = list.length ? `<table><thead><tr><th>التاريخ</th><th>التصنيف</th><th>الوصف</th><th>المبلغ</th><th></th></tr></thead><tbody>
+        ${list.slice(0,50).map(x=>`<tr>
+          <td>${new Date(x.at).toLocaleString("ar-EG")}</td>
+          <td>${x.category}</td>
+          <td>${x.description||""}</td>
+          <td>${money(x.amount)}</td>
+          <td><button type="button" class="btn btn-ghost" data-del-ex="${x.id}" style="padding:4px 8px;font-size:.8rem;color:#f87171">حذف</button></td>
+        </tr>`).join("")}
       </tbody></table>` : `<p class="hint">لا مصروفات بعد</p>`;
     }
+    
+    $("exTable")?.addEventListener("click", async (e) => {
+      const btn = e.target.closest("[data-del-ex]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-del-ex");
+      if (!id || !confirm("حذف هذا المصروف؟")) return;
+      const data = await api("delete_expense", { id });
+      if (!data.ok) return alert(data.error || "فشل الحذف");
+      await loadExpenses();
+      try { await loadStats(); } catch (err) {}
+    });
+
     $("exBtn").onclick = async () => {
       const amount = Number($("exAmount").value);
       if (!amount) return alert("أدخل مبلغًا");
