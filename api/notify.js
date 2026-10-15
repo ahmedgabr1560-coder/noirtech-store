@@ -1,7 +1,18 @@
-// /api/notify — رسائل طلبات مدمجة لتليجرام
+// /api/notify — تليجرام + واتساب (Twilio) عند توفر المفاتيح
+//
+// متغيرات Vercel المطلوبة للواتساب:
+// TWILIO_ACCOUNT_SID
+// TWILIO_AUTH_TOKEN
+// TWILIO_WHATSAPP_FROM   مثال: whatsapp:+14155238886  (رقم Twilio/Sandbox أو رقم معتمد)
+// TWILIO_WHATSAPP_TO     مثال: whatsapp:+201283431213 (رقمك لاستقبال إشعارات الطلبات)
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8737261045:AAGXsJDLKJAf0xsJzegLjWcBX3PUHZlzqow";
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
+
+const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID || "";
+const TWILIO_TOKEN = process.env.TWILIO_AUTH_TOKEN || "";
+const TWILIO_FROM = process.env.TWILIO_WHATSAPP_FROM || ""; // whatsapp:+1...
+const TWILIO_TO = process.env.TWILIO_WHATSAPP_TO || "";     // whatsapp:+20...
 
 async function tg(method, body) {
   const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
@@ -10,6 +21,34 @@ async function tg(method, body) {
     body: JSON.stringify(body)
   });
   return r.json();
+}
+
+function waEnabled() {
+  return !!(TWILIO_SID && TWILIO_TOKEN && TWILIO_FROM && TWILIO_TO);
+}
+
+async function sendWhatsApp(text) {
+  if (!waEnabled()) return { ok: false, skipped: true, reason: "twilio_not_configured" };
+  const body = new URLSearchParams();
+  body.set("From", TWILIO_FROM);
+  body.set("To", TWILIO_TO);
+  // واتساب عبر Twilio: حد طول معقول
+  body.set("Body", String(text || "").slice(0, 1500));
+  const auth = Buffer.from(`${TWILIO_SID}:${TWILIO_TOKEN}`).toString("base64");
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: body.toString()
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    console.error("Twilio WA error", r.status, data);
+    return { ok: false, status: r.status, data };
+  }
+  return { ok: true, sid: data.sid };
 }
 
 function money(n) {
@@ -71,6 +110,13 @@ export default async function handler(req, res) {
         disable_web_page_preview: true
       });
 
+      // واتساب Twilio (لو المفاتيح متضبطة على Vercel)
+      try {
+        const wa = await sendWhatsApp(text);
+        if (wa && wa.ok) console.log("WhatsApp sent", wa.sid);
+        else if (wa && !wa.skipped) console.warn("WhatsApp failed", wa);
+      } catch (e) { console.error("WhatsApp exception", e); }
+
       // صور المنتجات في رسالة واحدة إن أمكن (media group حتى 10)
       const media = [];
       for (let i = 0; i < order.items.length && media.length < 10; i++) {
@@ -94,18 +140,20 @@ export default async function handler(req, res) {
         await tg("sendMediaGroup", { chat_id: ADMIN_CHAT, media });
       }
 
-      return res.status(200).json({ ok: true, mode: "order-compact" });
+      return res.status(200).json({ ok: true, mode: "order-compact", whatsapp: waEnabled() });
     }
 
     // رسائل عامة (تسجيل / تواصل)
     if (message) {
       const prefix = type === "register" ? "👤 حساب جديد\n" : (type === "contact" ? "✉️ رسالة\n" : "");
+      const full = (prefix + message).slice(0, 4000);
       await tg("sendMessage", {
         chat_id: ADMIN_CHAT,
-        text: (prefix + message).slice(0, 4000),
+        text: full,
         disable_web_page_preview: true
       });
-      return res.status(200).json({ ok: true });
+      try { await sendWhatsApp(full); } catch (e) { console.error(e); }
+      return res.status(200).json({ ok: true, whatsapp: waEnabled() });
     }
 
     return res.status(400).json({ error: "message required" });
