@@ -1,15 +1,30 @@
 {
   "stats": {
-    "totalEnters": 1,
+    "totalEnters": 2,
     "totalLeaves": 0,
-    "uniqueSessions": 1,
-    "todayEnters": 1,
+    "uniqueSessions": 2,
+    "todayEnters": 2,
     "todayLeaves": 0,
     "todayDate": "2026-10-15",
     "accountsTotal": 0
   },
-  "sessions": {},
+  "sessions": {
+    "s_final_test_session_002": {
+      "firstSeen": "2026-10-15T00:36:57.478Z",
+      "lastSeen": "2026-10-15T00:36:57.478Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0
+    }
+  },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_final_te…",
+      "path": "/",
+      "at": "2026-10-15T00:36:57.478Z"
+    },
     {
       "type": "enter",
       "sessionId": "test",
