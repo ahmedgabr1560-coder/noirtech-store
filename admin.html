@@ -734,17 +734,12 @@
       if (src) { img.src = src; w.style.display = "block"; }
       else { w.style.display = "none"; img.removeAttribute("src"); }
     }
-            im.src = r.result;
-      };
-      r.readAsDataURL(f);
-    };
     $("pImageUrl").oninput = () => {
       const v = $("pImageUrl").value.trim();
       if (v && !pendingImage) showPreview(v);
     };
 
-    
-    async async function readFilesAsDataUrls(fileList) {
+    async function readFilesAsDataUrls(fileList) {
       const files = [...(fileList || [])].slice(0, 8);
       const out = [];
       for (const f of files) {
