@@ -100,7 +100,16 @@
       const root = document.getElementById("ppRoot");
       if (!id) {
         root.className = "pp-error";
-        root.innerHTML = "لم يتم تحديد منتج.<br><a href='/' style='color:#c4b5fd'>العودة للمتجر</a>";
+        root.onclick = function(ev) {
+        const btn = ev.target.closest("[data-bundle-qty]");
+        if (!btn) return;
+        const q = Math.max(1, Number(btn.getAttribute("data-bundle-qty")||1));
+        const qi = document.getElementById("ppQty") || document.getElementById("qtyInput");
+        if (qi) qi.value = String(q);
+        const add = document.getElementById("ppAdd");
+        if (add) add.click();
+      };
+      root.innerHTML = "لم يتم تحديد منتج.<br><a href='/' style='color:#c4b5fd'>العودة للمتجر</a>";
         return;
       }
       const [products, catalog] = await Promise.all([
@@ -117,7 +126,16 @@
       const p = list.find(x => Number(x.id) === id);
       if (!p) {
         root.className = "pp-error";
-        root.innerHTML = "المنتج غير موجود.<br><a href='/' style='color:#c4b5fd'>العودة للمتجر</a>";
+        root.onclick = function(ev) {
+        const btn = ev.target.closest("[data-bundle-qty]");
+        if (!btn) return;
+        const q = Math.max(1, Number(btn.getAttribute("data-bundle-qty")||1));
+        const qi = document.getElementById("ppQty") || document.getElementById("qtyInput");
+        if (qi) qi.value = String(q);
+        const add = document.getElementById("ppAdd");
+        if (add) add.click();
+      };
+      root.innerHTML = "المنتج غير موجود.<br><a href='/' style='color:#c4b5fd'>العودة للمتجر</a>";
         return;
       }
       document.title = p.name + " | NEXORA";
@@ -146,6 +164,15 @@
           }).join("")
         : `<span style="color:#9a9aa3;font-size:.85rem">لا يوجد اختيار ألوان لهذا المنتج</span>`;
 
+      root.onclick = function(ev) {
+        const btn = ev.target.closest("[data-bundle-qty]");
+        if (!btn) return;
+        const q = Math.max(1, Number(btn.getAttribute("data-bundle-qty")||1));
+        const qi = document.getElementById("ppQty") || document.getElementById("qtyInput");
+        if (qi) qi.value = String(q);
+        const add = document.getElementById("ppAdd");
+        if (add) add.click();
+      };
       root.innerHTML = `
         <div class="pd-layout">
           <div class="pd-gallery">
