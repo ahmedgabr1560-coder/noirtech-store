@@ -179,6 +179,7 @@
             <button type="button" class="btn btn-ghost" id="tabOffer" style="flex:1">② عرض / خصم</button>
           </div>
           <p class="hint" id="addTypeHint" style="margin-bottom:12px">أضيفي منتجًا عاديًا للمتجر.</p>
+          <div id="editBanner" class="msg" style="display:none;margin-bottom:12px;background:rgba(139,92,246,.15);border:1px solid rgba(167,139,250,.4);padding:10px 12px;border-radius:12px"></div>
           <form id="addForm">
             <input type="hidden" id="pType" value="product" />
 
@@ -489,6 +490,7 @@
     let SECRET = localStorage.getItem(SECRET_KEY) || "";
     let CATALOG = { categories: [], brands: [] };
     let PRODUCTS = [];
+    let editingId = null;
 
     const $ = (id) => document.getElementById(id);
     
@@ -675,6 +677,74 @@
       }
     });
 
+    
+    function clearEditMode() {
+      editingId = null;
+      pendingImage = "";
+      pendingImages = [];
+      try { renderMultiPrev(); showPreview(""); } catch (e) {}
+      if ($("addForm")) $("addForm").reset();
+      if ($("editBanner")) $("editBanner").style.display = "none";
+      if ($("addBtn")) $("addBtn").textContent = "حفظ ونشر المنتج";
+      if ($("pType")) setAddType("product");
+    }
+    function fillEditForm(p) {
+      if (!p) return;
+      editingId = p.id;
+      if ($("editBanner")) {
+        $("editBanner").style.display = "block";
+        $("editBanner").innerHTML = `جاري تعديل المنتج <strong>#${p.id}</strong> — ${p.name || ""} <button type="button" class="btn btn-ghost" id="cancelEditBtn" style="margin-right:8px;padding:4px 10px">إلغاء التعديل</button>`;
+        $("cancelEditBtn")?.addEventListener("click", clearEditMode);
+      }
+      if ($("addBtn")) $("addBtn").textContent = "حفظ التعديلات";
+      // type
+      if (p.isOffer) setAddType("offer"); else setAddType("product");
+      if ($("pName")) $("pName").value = p.name || "";
+      if ($("pPrice")) $("pPrice").value = p.price != null ? p.price : "";
+      if ($("pOld")) $("pOld").value = p.oldPrice != null ? p.oldPrice : "";
+      if ($("pOldAuto")) $("pOldAuto").value = p.oldPrice != null ? p.oldPrice : "";
+      if ($("pCost")) $("pCost").value = p.costPrice != null ? p.costPrice : "";
+      if ($("pBrand")) $("pBrand").value = p.brand || "";
+      if ($("pBadge")) $("pBadge").value = p.badge || "";
+      if ($("pDesc")) $("pDesc").value = p.description || "";
+      if ($("pStock")) $("pStock").value = p.stock != null ? p.stock : "";
+      if ($("pImageUrl")) $("pImageUrl").value = p.image || "";
+      if ($("pCat")) {
+        $("pCat").value = p.category || "";
+        try { $("pCat").dispatchEvent(new Event("change")); } catch (e) {}
+      }
+      if ($("pSub") && p.subcategory) {
+        setTimeout(() => { if ($("pSub")) $("pSub").value = p.subcategory; }, 80);
+      }
+      // colors
+      if ($("pColors")) {
+        const cols = Array.isArray(p.colors) ? p.colors.map(c => typeof c === "string" ? c : (c.name || "")).filter(Boolean) : [];
+        $("pColors").value = cols.join("، ");
+      }
+      // images
+      pendingImages = Array.isArray(p.images) && p.images.length ? p.images.slice() : (p.image ? [p.image] : []);
+      pendingImage = pendingImages[0] || "";
+      try { showPreview(pendingImage); renderMultiPrev(); } catch (e) {}
+      // offer
+      if (p.isOffer && p.offerMeta && Array.isArray(p.offerMeta.tiers)) {
+        const t2 = p.offerMeta.tiers.find(t => Number(t.qty) === 2);
+        const t3 = p.offerMeta.tiers.find(t => Number(t.qty) === 3);
+        if ($("bundle2Price") && t2) $("bundle2Price").value = t2.price;
+        if ($("bundle3Price") && t3) $("bundle3Price").value = t3.price;
+        if ($("offerKind")) $("offerKind").value = p.offerType || p.offerMeta.type || "bundle";
+      }
+      if (p.sourceProductId && $("offerSourceProduct")) {
+        fillOfferProductSelect().then(() => {
+          if ($("offerSourceProduct")) $("offerSourceProduct").value = String(p.sourceProductId);
+        }).catch(() => {});
+      }
+      // switch to add panel
+      document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("active", b.dataset.panel === "add"));
+      document.querySelectorAll(".panel").forEach(pnel => pnel.classList.toggle("active", pnel.id === "panel-add"));
+      try { $("pName")?.focus(); } catch (e) {}
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
     async function loadProducts() {
       const data = await (adminCacheGet("list_products") ? Promise.resolve(adminCacheGet("list_products")) : api("list_products").then(d => { if (d && d.ok) adminCacheSet("list_products", d); return d; }));
       if (!data.ok) return;
@@ -697,6 +767,7 @@
           <td>${money(p.price)}</td>
           <td><span class="badge ${p.hidden?"off":"on"}">${p.hidden?"مخفي":"منشور"}</span></td>
           <td class="row-actions">
+            <button class="btn btn-ghost" data-edit-prod="${p.id}">تعديل</button>
             <button class="btn btn-ghost" data-hide-prod="${p.id}">${p.hidden?"إظهار":"إخفاء"}</button>
             <button class="btn btn-danger" data-del-prod="${p.id}">حذف</button>
           </td>
@@ -710,16 +781,26 @@
     document.addEventListener("click", async (e) => {
       const del = e.target.closest("[data-del-prod]");
       const hide = e.target.closest("[data-hide-prod]");
+      const edit = e.target.closest("[data-edit-prod]");
+      if (edit) {
+        const id = Number(edit.getAttribute("data-edit-prod"));
+        const p = (PRODUCTS || []).find(x => Number(x.id) === id);
+        if (!p) { alert("المنتج غير موجود"); return; }
+        fillEditForm(p);
+        return;
+      }
       if (del) {
         if (!confirm("حذف المنتج نهائيًا؟")) return;
         del.disabled = true;
         const data = await api("delete_product", { id: Number(del.getAttribute("data-del-prod")) });
         if (!data.ok) alert(data.error||"فشل");
+        try { sessionStorage.removeItem("adm_list_products"); } catch (err) {}
         await loadProducts();
       }
       if (hide) {
         hide.disabled = true;
         await api("toggle_product", { id: Number(hide.getAttribute("data-hide-prod")) });
+        try { sessionStorage.removeItem("adm_list_products"); } catch (err) {}
         await loadProducts();
       }
     });
@@ -852,16 +933,27 @@
           bundle2Price: $("bundle2Price")?.value || "",
           bundle3Price: $("bundle3Price")?.value || ""
         };
-        const r = await fetch("/api/product", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-admin-secret": SECRET },
-          body: JSON.stringify(payload)
-        });
-        const data = await r.json();
-        if (!data.ok) throw new Error(data.error || "فشل الإضافة");
-        msg.className = "msg ok";
-        msg.textContent = "تم نشر المنتج #" + data.product.id + " — يظهر في المتجر حسب ظهور القسم";
-        e.target.reset(); pendingImage = ""; showPreview("");
+        let data;
+        if (editingId) {
+          data = await api("update_product", Object.assign({}, payload, { id: editingId }));
+          if (!data.ok) throw new Error(data.error || "فشل التعديل");
+          msg.className = "msg ok";
+          msg.textContent = "تم حفظ تعديلات المنتج #" + editingId;
+          try { sessionStorage.removeItem("adm_list_products"); sessionStorage.removeItem("nx_products"); } catch (err) {}
+          clearEditMode();
+        } else {
+          const r = await fetch("/api/product", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-admin-secret": SECRET },
+            body: JSON.stringify(payload)
+          });
+          data = await r.json();
+          if (!data.ok) throw new Error(data.error || "فشل الإضافة");
+          msg.className = "msg ok";
+          msg.textContent = "تم نشر المنتج #" + data.product.id + " — يظهر في المتجر حسب ظهور القسم";
+          e.target.reset(); pendingImage = ""; pendingImages = []; showPreview("");
+          try { renderMultiPrev(); } catch (err) {}
+        }
         await loadProducts(); await loadStats();
       } catch (err) {
         msg.className = "msg err";
