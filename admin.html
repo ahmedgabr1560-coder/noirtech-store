@@ -680,6 +680,9 @@
       if (!data.ok) return;
       PRODUCTS = data.products || [];
       renderProducts();
+      if ($("pType")?.value === "offer") {
+        try { fillOfferProductSelect(); } catch (e) {}
+      }
     }
     function renderProducts() {
       const q = ($("prodSearch").value || "").toLowerCase();
@@ -1499,6 +1502,79 @@
     });
 
     
+    
+    async function fillOfferProductSelect() {
+      const sel = $("offerSourceProduct");
+      if (!sel) return;
+      // تأكد إن المنتجات محمّلة
+      if (!PRODUCTS || !PRODUCTS.length) {
+        try { await loadProducts(); } catch (e) { console.warn(e); }
+      }
+      // لو لسه فاضية: حمّل من products.json مباشرة
+      if (!PRODUCTS || !PRODUCTS.length) {
+        try {
+          const r = await fetch("/products.json", { cache: "no-store" });
+          if (r.ok) {
+            const data = await r.json();
+            PRODUCTS = (Array.isArray(data) ? data : (data.products || [])).filter(p => p && !p.hidden);
+          }
+        } catch (e) { console.warn(e); }
+      }
+      const prev = sel.value;
+      const list = (PRODUCTS || []).filter(p => p && !p.hidden && !p.isOffer);
+      sel.innerHTML = `<option value="">— اختاري منتج —</option>` +
+        list.map(p => {
+          const price = Number(p.price || 0).toLocaleString("ar-EG");
+          const label = `${p.name || ("#" + p.id)} — ${price} ج.م`;
+          return `<option value="${p.id}">${label.replace(/</g, "&lt;")}</option>`;
+        }).join("");
+      if (prev && list.some(p => String(p.id) === String(prev))) sel.value = prev;
+      const prevBox = $("offerPreview");
+      if (prevBox && !list.length) {
+        prevBox.textContent = "لا توجد منتجات أساسية بعد. أضيفي منتج عادي أولًا ثم أنشئي العرض.";
+      } else if (prevBox) {
+        prevBox.textContent = list.length ? (`${list.length} منتج متاح للاختيار`) : "";
+      }
+    }
+
+    function applyOfferSourceProduct() {
+      const sel = $("offerSourceProduct");
+      if (!sel || !sel.value) return;
+      const src = (PRODUCTS || []).find(p => String(p.id) === String(sel.value));
+      if (!src) return;
+      if ($("pName") && !$("pName").value) $("pName").value = (src.name || "") + " (عرض)";
+      if ($("pName") && $("pType")?.value === "offer") {
+        // حدّث الاسم لو فاضي أو كان من مصدر سابق
+        if (!$("pName").dataset.locked) $("pName").value = (src.name || "") + " (عرض)";
+      }
+      if ($("pOldAuto")) $("pOldAuto").value = src.price || "";
+      if ($("pOld")) $("pOld").value = src.price || "";
+      if ($("pPrice") && !$("pPrice").value) $("pPrice").value = src.price || "";
+      if ($("pPriceOffer") && !$("pPriceOffer").value) $("pPriceOffer").value = "";
+      if ($("pBrand") && !$("pBrand").value) $("pBrand").value = src.brand || "";
+      if ($("pCat") && src.category) {
+        $("pCat").value = src.category;
+        try { $("pCat").dispatchEvent(new Event("change")); } catch (e) {}
+      }
+      if ($("pSub") && src.subcategory) {
+        setTimeout(() => { if ($("pSub")) $("pSub").value = src.subcategory; }, 50);
+      }
+      if ($("pDesc") && !$("pDesc").value) $("pDesc").value = src.description || src.desc || "";
+      if ($("pImageUrl") && src.image) {
+        $("pImageUrl").value = src.image;
+        if (typeof showPreview === "function") showPreview(src.image);
+      }
+      if ($("pColors") && Array.isArray(src.colors) && src.colors.length && !$("pColors").value) {
+        $("pColors").value = src.colors.map(c => typeof c === "string" ? c : (c.name || "")).filter(Boolean).join("، ");
+      }
+      if ($("pStock") && src.stock != null) $("pStock").value = src.stock;
+      const prevBox = $("offerPreview");
+      if (prevBox) {
+        prevBox.textContent = `المصدر: ${src.name} — السعر الأصلي ${Number(src.price||0).toLocaleString("ar-EG")} ج.م`;
+      }
+    }
+
+
     function setAddType(type) {
       const isOffer = type === "offer";
       if ($("pType")) $("pType").value = isOffer ? "offer" : "product";
@@ -1524,6 +1600,18 @@
     }
     $("tabProduct")?.addEventListener("click", () => setAddType("product"));
     $("tabOffer")?.addEventListener("click", () => setAddType("offer"));
+
+    document.querySelectorAll("#nav button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.panel === "add") {
+          loadProducts().then(() => {
+            if ($("pType")?.value === "offer") fillOfferProductSelect();
+          }).catch(() => {});
+        }
+      });
+    });
+
+    $("offerSourceProduct")?.addEventListener("change", applyOfferSourceProduct);
     $("pBadge")?.addEventListener("input", () => { if ($("pBadge")) $("pBadge").dataset.touched = "1"; });
 
     
