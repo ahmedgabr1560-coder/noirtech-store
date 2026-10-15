@@ -92,7 +92,7 @@ async function withRetry(mutator, path, message, tries = 3) {
     const next = mutator(data);
     const put = await ghPut(path, JSON.stringify(next, null, 2), message, f?.sha);
     if (put.ok) return { ok: true, data: next };
-    if (put.status !== 409 && put.status !== 422) return { ok: false, error: put.data?.message || "save failed" };
+    if (put.status !== 409 && put.status !== 422) return { ok: false, error: (put.data && (put.data.message || put.data.error)) || ("status " + put.status) };
   }
   return { ok: false, error: "conflict" };
 }
@@ -195,7 +195,7 @@ export default async function handler(req, res) {
         return v;
       }, "visitors.json", "track: " + action);
 
-      if (!result.ok) return res.status(200).json({ ok: true, soft: true }); // لا نكسر تجربة الزائر
+      if (!result.ok) return res.status(200).json({ ok: true, soft: true, error: result.error || "save failed" });
       const online = countOnline(result.data.sessions || {});
       return res.status(200).json({ ok: true, online });
     }
