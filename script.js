@@ -1571,3 +1571,18 @@ setInterval(() => { loadHeroConfig(); }, 30000);
   });
   window.addEventListener("focus", refresh);
 })();
+
+window.addEventListener("storage", (e) => {
+  if (e.key === "nx_catalog_bump") {
+    try {
+      sessionStorage.removeItem("nx_products");
+      sessionStorage.removeItem("nx_categories");
+      sessionStorage.removeItem("nx_config");
+    } catch (err) {}
+    if (typeof loadProducts === "function") loadProducts().then(() => {
+      if (typeof loadCatalog === "function") return loadCatalog();
+    }).then(() => {
+      if (typeof renderAll === "function") renderAll();
+    }).catch(() => {});
+  }
+});
