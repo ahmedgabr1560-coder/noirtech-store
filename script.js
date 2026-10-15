@@ -211,7 +211,7 @@ let activeSort = "newest";
 /** Products loaded from products.json (bot-managed) */
 
 /* ===== Instant refresh cache (sessionStorage) ===== */
-const NX_CACHE_TTL = 5 * 60 * 1000; // 5 دقايق
+const NX_CACHE_TTL = 10 * 60 * 1000; // 10 دقايق
 function nxCacheGet(key) {
   try {
     const raw = sessionStorage.getItem(key);
@@ -1403,6 +1403,7 @@ function nxSessionId() {
   }
 }
 function nxTrack(action) {
+  // تقليل الضغط على السيرفر
   try {
     const payload = JSON.stringify({
       action: action,
@@ -1431,7 +1432,7 @@ function nxTrack(action) {
       nxTrack("ping");
     }
   } catch (e) { nxTrack("enter"); }
-  setInterval(() => nxTrack("ping"), 60000);
+  setInterval(() => nxTrack("ping"), 120000);
   window.addEventListener("pagehide", () => nxTrack("leave"));
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") nxTrack("leave");
