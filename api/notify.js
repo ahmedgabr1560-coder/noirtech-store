@@ -1,4 +1,4 @@
-// /api/notify — order alerts to Telegram with product photos + full details
+// /api/notify — رسائل طلبات مدمجة لتليجرام
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8737261045:AAGXsJDLKJAf0xsJzegLjWcBX3PUHZlzqow";
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
@@ -17,23 +17,20 @@ function money(n) {
   catch { return String(n) + " ج.م"; }
 }
 
-function itemBlock(item, idx) {
-  const lines = [];
-  lines.push(`${idx}. ${item.name || "منتج"}`);
-  if (item.color) lines.push(`اللون: ${item.color}`);
-  if (item.qty) lines.push(`الكمية: ${item.qty}`);
-  if (item.price != null) lines.push(`السعر: ${money(item.price)}`);
-  if (item.qty && item.price != null) lines.push(`الإجمالي: ${money(item.price * item.qty)}`);
-  if (item.category) lines.push(`القسم: ${item.category}`);
-  if (item.description) lines.push(`الوصف: ${String(item.description).slice(0, 180)}`);
-  if (item.specs && typeof item.specs === "object") {
-    const specs = Object.entries(item.specs)
-      .slice(0, 8)
-      .map(([k, v]) => `• ${k}: ${v}`)
-      .join("\n");
-    if (specs) lines.push(`المواصفات:\n${specs}`);
-  }
-  return lines.join("\n");
+function colorsText(item) {
+  if (Array.isArray(item.colors) && item.colors.length) return item.colors.filter(Boolean).join("، ");
+  return item.color || item.selectedColor || "";
+}
+
+function compactItem(item, idx) {
+  const cols = colorsText(item);
+  const qty = Number(item.qty) || 1;
+  const line = item.lineTotal != null ? Number(item.lineTotal) : (Number(item.price || 0) * qty);
+  let s = `${idx}) ${item.name || "منتج"} ×${qty}`;
+  if (cols) s += ` | 🎨 ${cols}`;
+  s += ` = ${money(line)}`;
+  if (item.dealLabel) s += ` (${item.dealLabel})`;
+  return s;
 }
 
 export default async function handler(req, res) {
@@ -44,108 +41,76 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const body = req.body || {};
+    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const type = body.type || "info";
     const message = typeof body.message === "string" ? body.message : "";
     const order = body.order || null;
 
-    // Full order with items + images
     if (type === "order" && order && Array.isArray(order.items) && order.items.length) {
       const c = order.customer || {};
-      let summary =
-        `🛒 طلب جديد — NEXORA\n` +
-        `🆔 ${order.id || "—"}\n\n` +
+      const itemsText = order.items.map((it, i) => compactItem(it, i + 1)).join("\n");
+      const pay = order.paymentMethod ? `\n💳 الدفع: ${order.paymentMethod}` : "";
+      const note = c.note ? `\n📝 ${c.note}` : "";
+
+      // رسالة واحدة مدمجة
+      let text =
+        `🛒 طلب جديد\n` +
+        `🆔 ${order.id || "—"}\n` +
         `👤 ${c.name || "—"}\n` +
         `📞 ${c.phone || "—"}\n` +
-        `📧 ${c.email || "—"}\n` +
-        `📍 ${c.address || "—"}\n`;
-      if (c.note) summary += `📝 ${c.note}\n`;
-      summary += `\n📦 عدد المنتجات: ${order.items.length}\n`;
-      summary += `💰 الإجمالي: ${money(order.total || 0)}\n`;
-      summary += `\n—— تفاصيل المنتجات ——\n`;
+        `📍 ${c.address || "—"}${note}\n` +
+        `\n📦 المنتجات:\n${itemsText}\n` +
+        `\n💰 الإجمالي: ${money(order.total || 0)}${pay}\n` +
+        `✅ تواصل مع العميل للتأكيد`;
 
-      order.items.forEach((item, i) => {
-        summary += `\n${itemBlock(item, i + 1)}\n`;
+      if (text.length > 4000) text = text.slice(0, 3990) + "…";
+
+      await tg("sendMessage", {
+        chat_id: ADMIN_CHAT,
+        text,
+        disable_web_page_preview: true
       });
 
-      summary += `\n✅ تواصل مع العميل لتأكيد التوصيل والدفع`;
-
-      // Telegram message limit ~4096
-      const chunks = [];
-      let chunk = "";
-      for (const line of summary.split("\n")) {
-        if ((chunk + "\n" + line).length > 3500) {
-          chunks.push(chunk);
-          chunk = line;
-        } else {
-          chunk = chunk ? chunk + "\n" + line : line;
-        }
-      }
-      if (chunk) chunks.push(chunk);
-
-      for (const part of chunks) {
-        await tg("sendMessage", {
-          chat_id: ADMIN_CHAT,
-          text: part,
-          disable_web_page_preview: true
-        });
-      }
-
-      // Send each product photo with caption (name + specs)
-      for (let i = 0; i < order.items.length; i++) {
+      // صور المنتجات في رسالة واحدة إن أمكن (media group حتى 10)
+      const media = [];
+      for (let i = 0; i < order.items.length && media.length < 10; i++) {
         const item = order.items[i];
         const img = item.image;
         if (!img || !/^https?:\/\//i.test(String(img))) continue;
-
-        let caption = `${i + 1}) ${item.name || "منتج"}`;
-        if (item.qty) caption += `\nالكمية: ${item.qty}`;
-        if (item.price != null) caption += `\nالسعر: ${money(item.price)}`;
-        if (item.description) caption += `\n${String(item.description).slice(0, 120)}`;
-        if (item.specs && typeof item.specs === "object") {
-          const sp = Object.entries(item.specs)
-            .slice(0, 5)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join(" | ");
-          if (sp) caption += `\n${sp}`;
-        }
-        caption = caption.slice(0, 1000);
-
-        try {
-          await tg("sendPhoto", {
-            chat_id: ADMIN_CHAT,
-            photo: String(img),
-            caption
-          });
-        } catch (e) {
-          console.error("sendPhoto failed", item.name, e);
-        }
+        const cols = colorsText(item);
+        let cap = `${i + 1}) ${item.name || "منتج"} ×${item.qty || 1}`;
+        if (cols) cap += ` | ${cols}`;
+        media.push({
+          type: "photo",
+          media: String(img),
+          caption: media.length === 0 ? cap.slice(0, 1000) : undefined
+        });
+      }
+      if (media.length === 1) {
+        await tg("sendPhoto", { chat_id: ADMIN_CHAT, photo: media[0].media, caption: media[0].caption || "" });
+      } else if (media.length > 1) {
+        // first caption only for group
+        media[0].caption = media[0].caption || "صور الطلب";
+        await tg("sendMediaGroup", { chat_id: ADMIN_CHAT, media });
       }
 
-      return res.status(200).json({ ok: true, mode: "order+photos" });
+      return res.status(200).json({ ok: true, mode: "order-compact" });
     }
 
-    // Generic text notification
-    if (!message) return res.status(400).json({ error: "message required" });
-    const prefix = {
-      order: "🛒 طلب",
-      register: "🆕 حساب جديد",
-      login: "🔐 دخول",
-      contact: "✉️ تواصل",
-      profile: "👤 بروفايل"
-    }[type] || "🔔";
-
-    const result = await tg("sendMessage", {
-      chat_id: ADMIN_CHAT,
-      text: `${prefix}\n\n${message.slice(0, 3500)}`,
-      disable_web_page_preview: true
-    });
-
-    if (!result.ok) {
-      return res.status(500).json({ ok: false, error: result.description || "telegram failed" });
+    // رسائل عامة (تسجيل / تواصل)
+    if (message) {
+      const prefix = type === "register" ? "👤 حساب جديد\n" : (type === "contact" ? "✉️ رسالة\n" : "");
+      await tg("sendMessage", {
+        chat_id: ADMIN_CHAT,
+        text: (prefix + message).slice(0, 4000),
+        disable_web_page_preview: true
+      });
+      return res.status(200).json({ ok: true });
     }
-    return res.status(200).json({ ok: true });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ ok: false, error: "server error" });
+
+    return res.status(400).json({ error: "message required" });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, error: String(e.message || e) });
   }
 }
