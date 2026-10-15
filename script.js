@@ -132,7 +132,7 @@ function applyBrandConfig(c) {
 
 async function loadHeroConfig() {
   try {
-    const r = await fetch("/site-config.json?t=" + Date.now(), { cache: "no-store" });
+    const r = await fetch("/site-config.json", { cache: "default" });
     if (!r.ok) return;
     const c = await r.json();
     window.siteConfig = c;
@@ -295,7 +295,7 @@ function productCard(p) {
   const off = discountPct(p);
   return `<article class="product-card" data-id="${p.id}">
     <a class="product-media" href="/product.html?id=${p.id}" data-open="${p.id}">
-      <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />
+      <img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />
       ${off ? `<span class="badge-off">-${off}%</span>` : ""}
     </a>
     <div class="product-body">
@@ -859,7 +859,7 @@ $("#contactForm").addEventListener("submit", async (e) => {
 async function loadCatalog() {
   const urls = [
     "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/categories.json?t=" + Date.now(),
-    "/categories.json?t=" + Date.now()
+    "/categories.json"
   ];
   for (const url of urls) {
     try {
@@ -966,7 +966,7 @@ function renderCatsDirectory() {
     ).join("");
     return `<article class="dir-card">
       <button type="button" class="dir-main" data-cat="${c.id}">
-        <img src="${c.image || ""}" alt="" loading="lazy" onerror="this.style.display='none'" />
+        <img src="${c.image || ""}" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'" />
         <div><span class="dir-ico">${c.icon || ""}</span><h3>${c.name_ar}</h3><small>${c.name_en || ""}</small></div>
       </button>
       <div class="dir-subs">${subs}</div>
@@ -1272,7 +1272,7 @@ fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d)
 async function loadProducts() {
   const urls = [
     "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json?t=" + Date.now(),
-    "/products.json?t=" + Date.now()
+    "/products.json"
   ];
   for (const url of urls) {
     try {
@@ -1442,9 +1442,9 @@ async function bootStore() {
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => { bootStore().then(() => { window.scrollTo(0,0); setTimeout(() => window.scrollTo(0,0), 100); }); });
+  document.addEventListener("DOMContentLoaded", () => { bootStore().then(() => { window.scrollTo(0,0); }); });
 } else {
-  bootStore().then(() => { window.scrollTo(0,0); setTimeout(() => window.scrollTo(0,0), 100); });
+  bootStore().then(() => { window.scrollTo(0,0); });
 }
 
 document.addEventListener("visibilitychange", () => {
