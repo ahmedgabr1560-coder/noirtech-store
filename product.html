@@ -48,6 +48,9 @@
   </style>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="preload" href="/script.js" as="script" />
+  <link rel="preload" href="/products.json" as="fetch" crossorigin />
+  <link rel="preload" href="/styles.css" as="style" />
+  <meta http-equiv="x-dns-prefetch-control" content="on" />
 </head>
 <body>
   <div class="bg-stage" aria-hidden="true">
@@ -75,7 +78,7 @@
     async function loadJSON(urls) {
       for (const u of urls) {
         try {
-          const r = await fetch(u, { cache: "no-store" });
+          const r = await fetch(u, { cache: "default" });
           if (r.ok) return await r.json();
         } catch (e) {}
       }
@@ -128,8 +131,8 @@
       }
       const [products, catalog] = await Promise.all([
         loadJSON([
-          "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json?t=" + Date.now(),
-          "/products.json?t=" + Date.now()
+          "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json",
+          "/products.json"
         ]),
         loadJSON([
           "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/categories.json?t=" + Date.now(),
