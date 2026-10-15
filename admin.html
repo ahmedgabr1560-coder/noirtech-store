@@ -491,6 +491,22 @@
     let PRODUCTS = [];
 
     const $ = (id) => document.getElementById(id);
+    
+    const ADMIN_CACHE_TTL = 30 * 1000;
+    function adminCacheGet(key) {
+      try {
+        const raw = sessionStorage.getItem("adm_" + key);
+        if (!raw) return null;
+        const o = JSON.parse(raw);
+        if (!o || Date.now() - o.t > ADMIN_CACHE_TTL) return null;
+        return o.d;
+      } catch (e) { return null; }
+    }
+    function adminCacheSet(key, d) {
+      try { sessionStorage.setItem("adm_" + key, JSON.stringify({ t: Date.now(), d })); } catch (e) {}
+    }
+    const _apiOrig = typeof api === "function" ? api : null;
+
     async function api(action, payload = {}) {
       const r = await fetch("/api/admin", {
         method: "POST",
@@ -660,7 +676,7 @@
     });
 
     async function loadProducts() {
-      const data = await api("list_products");
+      const data = await (adminCacheGet("list_products") ? Promise.resolve(adminCacheGet("list_products")) : api("list_products").then(d => { if (d && d.ok) adminCacheSet("list_products", d); return d; }));
       if (!data.ok) return;
       PRODUCTS = data.products || [];
       renderProducts();
@@ -865,7 +881,7 @@
       const fmt = (n) => (n == null ? "—" : Number(n).toLocaleString("ar-EG"));
       try {
         const [vData, aData] = await Promise.all([
-          api("list_visitors"),
+          (adminCacheGet("list_visitors") ? Promise.resolve(adminCacheGet("list_visitors")) : api("list_visitors").then(d => { if (d && d.ok) adminCacheSet("list_visitors", d); return d; })),
           api("list_accounts")
         ]);
         const st = (vData && vData.stats) || {};
@@ -908,7 +924,7 @@
     });
 
     async function loadOrders() {
-      const data = await api("list_orders");
+      const data = await (adminCacheGet("list_orders") ? Promise.resolve(adminCacheGet("list_orders")) : api("list_orders").then(d => { if (d && d.ok) adminCacheSet("list_orders", d); return d; }));
       if (!data.ok) return;
       const orders = data.orders || [];
       if (!orders.length) {
