@@ -406,6 +406,20 @@
             <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة</button>
             <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">معاينة المتجر</a>
           </div>
+          
+          <div style="margin-top:14px;padding:14px;border-radius:14px;border:1px solid rgba(167,139,250,.3);background:rgba(139,92,246,.08)">
+            <h4 style="margin:0 0 8px">تدوير صور الواجهة من المنتجات</h4>
+            <p class="hint" style="margin:0 0 10px">لو مفعّل: صور الهيرو تتغيّر تلقائي من منتجات المتجر (منتج بعد منتج).</p>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+              <input type="checkbox" id="hRotateProducts" style="width:auto" />
+              <span>تفعيل تدوير الصور من المنتجات</span>
+            </label>
+            <label>كل كام ثانية؟
+              <input id="hRotateSeconds" type="number" min="2" max="60" value="5" style="max-width:120px" />
+            </label>
+            <p class="hint">الافتراضي 5 ثواني. بيغيّر الصورتين بالتناوب من كتالوج المنتجات.</p>
+          </div>
+
           <div class="msg" id="heroMsg"></div>
         </div>
         <div class="card">
@@ -887,6 +901,8 @@
       set("hImg2Url", c.heroImage2);
       setPrev("hImg1Prev", c.heroImage1);
       setPrev("hImg2Prev", c.heroImage2);
+      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
       if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
       if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
       if ($("payNote")) $("payNote").value = c.paymentNote || "";
@@ -905,6 +921,8 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
+          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
+          heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: partial.heroImage1 != null ? partial.heroImage1 : (pendingHero1 || $("hImg1Url")?.value.trim() || ""),
           heroImage2: partial.heroImage2 != null ? partial.heroImage2 : (pendingHero2 || $("hImg2Url")?.value.trim() || "")
         };
@@ -920,6 +938,8 @@
           pendingHero2 = "";
           if ($("hImg2Url")) $("hImg2Url").value = c.heroImage2;
           setPrev("hImg2Prev", c.heroImage2);
+      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
       if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
       if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
       if ($("payNote")) $("payNote").value = c.paymentNote || "";
@@ -989,6 +1009,8 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
+          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
+          heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: pendingHero1 || $("hImg1Url")?.value.trim() || "",
           heroImage2: pendingHero2 || $("hImg2Url")?.value.trim() || ""
         };
@@ -999,6 +1021,8 @@
         const c = data.config || {};
         if (c.heroImage1) { $("hImg1Url").value = c.heroImage1; setPrev("hImg1Prev", c.heroImage1); }
         if (c.heroImage2) { $("hImg2Url").value = c.heroImage2; setPrev("hImg2Prev", c.heroImage2);
+      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
       if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
       if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
       if ($("payNote")) $("payNote").value = c.paymentNote || ""; }
@@ -1049,6 +1073,8 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
+          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
+          heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: $("hImg1Url")?.value.trim() || "",
           heroImage2: $("hImg2Url")?.value.trim() || "",
           vodafoneCash: $("payVodafone")?.value.trim() || "",
