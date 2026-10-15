@@ -131,6 +131,13 @@ function applyBrandConfig(c) {
 }
 
 async function loadHeroConfig() {
+  const cached = nxCacheGet("nx_config");
+  if (cached && typeof cached === "object") {
+    window.siteConfig = cached;
+    window.__SITE_CONFIG__ = cached;
+    try { applyBrandConfig(cached); } catch (e) {}
+    try { applyGeneralConfig(cached); } catch (e) {}
+  }
   try {
     const r = await fetch("/site-config.json", { cache: "default" });
     if (!r.ok) return;
@@ -138,6 +145,7 @@ async function loadHeroConfig() {
     window.siteConfig = c;
     applyBrandConfig(c);
     window.__SITE_CONFIG__ = c;
+    nxCacheSet("nx_config", c);
     try { startHeroProductRotate(c); } catch (e) {}
     applyGeneralConfig(c);
     const setTxt = (id, val) => { const el = document.getElementById(id); if (el && val != null && String(val).trim() !== "") el.textContent = val; };
@@ -201,6 +209,23 @@ let activeSort = "newest";
 
 
 /** Products loaded from products.json (bot-managed) */
+
+/* ===== Instant refresh cache (sessionStorage) ===== */
+const NX_CACHE_TTL = 5 * 60 * 1000; // 5 دقايق
+function nxCacheGet(key) {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || obj.t == null) return null;
+    if (Date.now() - obj.t > NX_CACHE_TTL) return null;
+    return obj.d;
+  } catch (e) { return null; }
+}
+function nxCacheSet(key, data) {
+  try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch (e) {}
+}
+
 let PRODUCTS = [];
 
 let cart = JSON.parse(localStorage.getItem("nx_cart") || "[]");
@@ -857,21 +882,20 @@ $("#contactForm").addEventListener("submit", async (e) => {
 // Init — load products from JSON (Telegram bot can update them)
 
 async function loadCatalog() {
-  const urls = [
-    "/categories.json",
-    "/categories.json"
-  ];
-  for (const url of urls) {
-    try {
-      const r = await fetch(url, { cache: "default" });
-      if (!r.ok) continue;
-      const data = await r.json();
-      const allCats = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
-      CATEGORIES = allCats.filter(c => c && c.visible !== false);
-      BRANDS = Array.isArray(data.brands) ? data.brands : [];
-      if (CATEGORIES.length) break;
-    } catch (e) {}
+  const cached = nxCacheGet("nx_categories");
+  if (cached && Array.isArray(cached.categories)) {
+    CATEGORIES = (cached.categories || []).filter(c => c && c.visible !== false);
+    BRANDS = Array.isArray(cached.brands) ? cached.brands : [];
   }
+  try {
+    const r = await fetch("/categories.json", { cache: "default" });
+    if (!r.ok) return;
+    const data = await r.json();
+    const allCats = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
+    CATEGORIES = allCats.filter(c => c && c.visible !== false);
+    BRANDS = Array.isArray(data.brands) ? data.brands : [];
+    nxCacheSet("nx_categories", { categories: allCats, brands: BRANDS });
+  } catch (e) {}
 }
 
 function getCat(id) {
@@ -1270,17 +1294,19 @@ fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d)
 
 
 async function loadProducts() {
-  const urls = ["/products.json"];
-  for (const url of urls) {
-    try {
-      const r = await fetch(url, { cache: "default" });
-      if (!r.ok) continue;
-      const data = await r.json();
-      PRODUCTS = Array.isArray(data) ? data : (data.products || []);
-      PRODUCTS = PRODUCTS.filter(p => p && !p.hidden);
-      return PRODUCTS;
-    } catch (e) {}
+  const cached = nxCacheGet("nx_products");
+  if (cached && Array.isArray(cached) && cached.length) {
+    PRODUCTS = cached.filter(p => p && !p.hidden);
   }
+  try {
+    const r = await fetch("/products.json", { cache: "default" });
+    if (r.ok) {
+      const data = await r.json();
+      const list = Array.isArray(data) ? data : (data.products || []);
+      PRODUCTS = list.filter(p => p && !p.hidden);
+      nxCacheSet("nx_products", PRODUCTS);
+    }
+  } catch (e) {}
   PRODUCTS = PRODUCTS || [];
   return PRODUCTS;
 }
@@ -1415,6 +1441,27 @@ function nxTrack(action) {
 
 async function bootStore() {
   try { ensureHomeOnStart(); } catch (e) {}
+  // عرض فوري من كاش الجلسة قبل الشبكة (ريفرش أسرع)
+  try {
+    const cp = nxCacheGet("nx_products");
+    if (cp && Array.isArray(cp)) PRODUCTS = cp.filter(p => p && !p.hidden);
+    const cc = nxCacheGet("nx_categories");
+    if (cc && Array.isArray(cc.categories)) {
+      CATEGORIES = cc.categories.filter(c => c && c.visible !== false);
+      BRANDS = Array.isArray(cc.brands) ? cc.brands : [];
+    }
+    const cfg = nxCacheGet("nx_config");
+    if (cfg) {
+      window.siteConfig = cfg;
+      window.__SITE_CONFIG__ = cfg;
+      try { applyBrandConfig(cfg); } catch (e) {}
+      try { applyGeneralConfig(cfg); } catch (e) {}
+    }
+    if (PRODUCTS.length || CATEGORIES.length) {
+      try { renderAll(); } catch (e) {}
+      try { updateCartUI(); } catch (e) {}
+    }
+  } catch (e) {}
   // تحميل متوازي أسرع تحت الضغط (CDN + Promise.all)
   try {
     await Promise.all([
