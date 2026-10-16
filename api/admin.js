@@ -3,7 +3,7 @@
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
 const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
-const ADMIN_SECRET = process.env.ADMIN_SECRET || "nexora2026";
+const ADMIN_SECRET = process.env.ADMIN_SECRET || "";
 
 function parseDataUrl(dataUrl) {
   const m = String(dataUrl || "").match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
@@ -41,7 +41,7 @@ async function ghPut(path, content, message, sha, rawBase64) {
 
 function okAuth(req, body) {
   const secret = body.secret || req.headers["x-admin-secret"] || "";
-  return String(secret) === String(ADMIN_SECRET);
+  return Boolean(ADMIN_SECRET) && String(secret) === String(ADMIN_SECRET);
 }
 
 export default async function handler(req, res) {
@@ -55,15 +55,16 @@ export default async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const action = body.action || req.query?.action || "stats";
 
-    // Public-ish read for dashboard needs secret
-    if (!okAuth(req, body) && req.method !== "GET") {
+    const publicOrder = req.method === "POST" && action === "save_order";
+    // Public order creation is separate from protected admin actions.
+    if (!publicOrder && !okAuth(req, body) && req.method !== "GET") {
       return res.status(401).json({ ok: false, error: "غير مصرح" });
     }
     // GET with secret header
     if (req.method === "GET") {
       const secret = req.headers["x-admin-secret"] || "";
       if (String(secret) !== String(ADMIN_SECRET)) return res.status(401).json({ ok: false, error: "غير مصرح" });
-    } else if (!okAuth(req, body)) {
+    } else if (!publicOrder && !okAuth(req, body)) {
       return res.status(401).json({ ok: false, error: "غير مصرح" });
     }
 
@@ -333,6 +334,25 @@ export default async function handler(req, res) {
     if (action === "save_order") {
       const order = body.order;
       if (!order || !order.id) return res.status(400).json({ ok: false, error: "order required" });
+      if (publicOrder) {
+        const customer = order.customer || {};
+        const phone = String(customer.phone || "").replace(/\D/g, "");
+        if (!Array.isArray(order.items) || order.items.length < 1 || order.items.length > 50) {
+          return res.status(400).json({ ok: false, error: "invalid items" });
+        }
+        if (!/^\d{10,15}$/.test(phone) || !String(customer.address || "").trim()) {
+          return res.status(400).json({ ok: false, error: "customer phone and address required" });
+        }
+        order.id = String(order.id).slice(0, 64);
+        order.items = order.items.slice(0, 50).map(item => ({
+          id: Number(item.id) || 0,
+          name: String(item.name || "منتج").slice(0, 200),
+          qty: Math.max(1, Math.min(99, Number(item.qty) || 1)),
+          price: Math.max(0, Number(item.price) || 0),
+          lineTotal: Math.max(0, Number(item.lineTotal) || 0),
+          color: String(item.color || "").slice(0, 100)
+        }));
+      }
       const f = await ghGet("orders.json");
       const orders = f ? JSON.parse(f.content) : [];
       const idx = orders.findIndex(o => String(o.id) === String(order.id));

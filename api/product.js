@@ -1,9 +1,9 @@
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
 const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
-const ADMIN_SECRET = process.env.ADMIN_SECRET || "nexora2026";
+const ADMIN_SECRET = process.env.ADMIN_SECRET || "";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
+const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "");
 
 async function ghGet(path) {
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
@@ -66,7 +66,7 @@ export default async function handler(req, res) {
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const secret = body.secret || req.headers["x-admin-secret"] || "";
-    if (String(secret) !== String(ADMIN_SECRET)) {
+    if (!ADMIN_SECRET || String(secret) !== String(ADMIN_SECRET)) {
       return res.status(401).json({ ok: false, error: "غير مصرح — اكتب كلمة السر الصحيحة" });
     }
 

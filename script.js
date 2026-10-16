@@ -1046,7 +1046,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
       await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ secret: "nexora2026", action: "save_order", order: orderRecord })
+        body: JSON.stringify({ action: "save_order", order: orderRecord })
       });
     } catch (e) {}
     if (payMethod === "card") {
@@ -1519,20 +1519,23 @@ async function loadProducts(force) {
     "/api/catalog?type=products&t=" + Date.now(),
     "/products.json?t=" + Date.now()
   ];
-  let best = null;
-  for (const url of urls) {
+  const lists = await Promise.all(urls.map(async (url) => {
     try {
       const r = await fetch(url, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
-      if (!r.ok) continue;
+      if (!r.ok) return [];
       const data = await r.json();
       const list = Array.isArray(data) ? data : (data.products || []);
-      if (!list.length && data && data.ok === false) continue;
-      // فضّل مصدر فيه منتجات أكتر (الحي من GitHub عادة)
-      if (!best || list.length >= best.length) best = list;
-      // لو جاية من catalog API خلاص
-      if (url.indexOf("/api/catalog") === 0 && list.length) break;
-    } catch (e) {}
+      return Array.isArray(list) ? list : [];
+    } catch (e) { return []; }
+  }));
+  // دمج المصدرين: API هو الأحدث عند تعارض نفس الـID، والنسخة الثابتة fallback.
+  const merged = new Map();
+  for (const list of [...lists].reverse()) {
+    for (const product of list) {
+      if (product && product.id != null) merged.set(String(product.id), product);
+    }
   }
+  const best = [...merged.values()];
   if (best) {
     PRODUCTS = best.filter(p => p && !p.hidden);
     nxCacheSet("nx_products", PRODUCTS);

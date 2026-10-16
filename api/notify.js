@@ -6,8 +6,8 @@
 // TWILIO_WHATSAPP_FROM   مثال: whatsapp:+14155238886  (رقم Twilio/Sandbox أو رقم معتمد)
 // TWILIO_WHATSAPP_TO     مثال: whatsapp:+201283431213 (رقمك لاستقبال إشعارات الطلبات)
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8737261045:AAGXsJDLKJAf0xsJzegLjWcBX3PUHZlzqow";
-const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "6746972381");
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "");
 
 const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID || "";
 const TWILIO_TOKEN = process.env.TWILIO_AUTH_TOKEN || "";
@@ -15,6 +15,7 @@ const TWILIO_FROM = process.env.TWILIO_WHATSAPP_FROM || ""; // whatsapp:+1...
 const TWILIO_TO = process.env.TWILIO_WHATSAPP_TO || "";     // whatsapp:+20...
 
 async function tg(method, body) {
+  if (!BOT_TOKEN || !ADMIN_CHAT) return { ok: false, skipped: true, reason: "telegram_not_configured" };
   const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

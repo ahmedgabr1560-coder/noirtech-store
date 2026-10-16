@@ -116,7 +116,6 @@
           <p class="hero-desc" id="heroDescText">تسوقي أحدث الشنط والملابس والإكسسوارات الحريمي — قطع مختارة بعناية، جودة عالية، وتوصيل سريع لباب البيت.</p>
           <div class="hero-cta">
             <a href="#shop" class="btn btn-primary" id="heroBtnText">تسوقي الآن <span class="arrow">←</span></a>
-            <a href="#shop" class="btn btn-ghost">تسوقي الآن</a>
           </div>
           <div class="hero-trust">
             <div class="trust-item">
@@ -249,7 +248,7 @@
     <div id="stateHost" class="container" hidden></div>
 
     <!-- Contact -->
-    <section class="section contact" id="contact">
+  <section class="section contact" id="contact">
       <div class="container contact-grid">
         <div>
           <h2>تواصل معنا</h2>
@@ -266,6 +265,18 @@
           <textarea rows="3" placeholder="رسالتك" required></textarea>
           <button type="submit" class="btn btn-primary">إرسال</button>
         </form>
+      </div>
+    </section>
+    <section class="section trust-info" aria-label="سياسات المتجر">
+      <div class="container" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+        <article id="shippingInfo" class="promo-banner">
+          <h2>الشحن والتوصيل</h2>
+          <p>نوصل لكل المحافظات داخل مصر، وتظهر تكلفة الشحن حسب المحافظة والمركز عند إتمام الطلب.</p>
+        </article>
+        <article id="returnsInfo" class="promo-banner">
+          <h2>الإرجاع والاستبدال</h2>
+          <p>للاستفسار عن الاستبدال أو الإرجاع، تواصلي معنا من نموذج الدعم وسنرد عليك بأسرع وقت.</p>
+        </article>
       </div>
     </section>
   </main>
@@ -285,8 +296,8 @@
       <div>
         <h4>خدمة العملاء</h4>
         <a href="#contact">تواصل</a>
-        <a href="#">الشحن</a>
-        <a href="#">الإرجاع</a>
+        <a href="#shippingInfo">الشحن</a>
+        <a href="#returnsInfo">الإرجاع</a>
       </div>
     </div>
     <div class="footer-bottom">
