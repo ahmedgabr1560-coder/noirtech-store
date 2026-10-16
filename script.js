@@ -242,6 +242,32 @@ function normalizePhone(v) {
   return String(v || "").replace(/[٠-٩]/g, d => map[d] || d).replace(/[^0-9+]/g, "");
 }
 
+
+function getShippingConfig() {
+  const c = window.siteConfig || window.__SITE_CONFIG__ || {};
+  return {
+    enabled: c.shippingEnabled === true,
+    fee: Number(c.shippingFee) || 0,
+    freeAbove: Number(c.shippingFreeAbove) || 0,
+    note: c.shippingNote || "",
+    days: c.shippingDays || ""
+  };
+}
+function calcShipping(subtotal) {
+  const s = getShippingConfig();
+  if (!s.enabled) return { amount: 0, free: false, label: "بدون شحن", note: "" };
+  const sub = Number(subtotal) || 0;
+  if (s.freeAbove > 0 && sub >= s.freeAbove) {
+    return { amount: 0, free: true, label: "شحن مجاني", note: s.note || s.days || "" };
+  }
+  return {
+    amount: Math.max(0, s.fee),
+    free: false,
+    label: "الشحن",
+    note: [s.days, s.note].filter(Boolean).join(" — ")
+  };
+}
+
 function dealPriceForQty(product, qty) {
   qty = Math.max(1, Number(qty) || 1);
   const unit = Number(product?.price || 0);
@@ -406,6 +432,9 @@ function updateCartUI() {
   if (!cart.length) {
     box.innerHTML = `<div class="empty-cart">السلة فارغة<br><small>أضف منتجات ثم أتمم الطلب</small></div>`;
     $("#cartTotal").textContent = money(0);
+    if ($("#cartSubtotal")) $("#cartSubtotal").textContent = money(0);
+    if ($("#cartShipping")) $("#cartShipping").textContent = money(0);
+    if ($("#cartShippingHint")) { $("#cartShippingHint").style.display = "none"; $("#cartShippingHint").textContent = ""; }
     if (fields) fields.hidden = true;
     return;
   }
@@ -444,11 +473,28 @@ function updateCartUI() {
       <button type="button" class="icon-close" data-remove="${i.id}" data-color="${i.color || ""}" style="width:30px;height:30px;font-size:1rem">×</button>
     </div>`;
   }).join("");
-  const total = cart.reduce((s, i) => {
+  const subtotal = cart.reduce((s, i) => {
     const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
     if (p && (p.isOffer || p.offerMeta)) return s + dealPriceForQty(p, i.qty).lineTotal;
     return s + cartLinePrice(i) * (Number(i.qty) || 1);
   }, 0);
+  const ship = calcShipping(subtotal);
+  const total = subtotal + ship.amount;
+  if ($("#cartSubtotal")) $("#cartSubtotal").textContent = money(subtotal);
+  if ($("#cartShipping")) $("#cartShipping").textContent = ship.free ? "مجاني" : money(ship.amount);
+  if ($("#cartShippingLabel")) $("#cartShippingLabel").textContent = ship.free ? "الشحن" : "الشحن";
+  if ($("#cartShippingHint")) {
+    const h = $("#cartShippingHint");
+    if (ship.note || getShippingConfig().enabled) {
+      h.style.display = "";
+      h.textContent = ship.free
+        ? ("✓ شحن مجاني" + (ship.note ? (" — " + ship.note) : ""))
+        : (getShippingConfig().enabled ? (("الشحن: " + money(ship.amount)) + (ship.note ? (" — " + ship.note) : "")) : "");
+    } else {
+      h.style.display = "none";
+      h.textContent = "";
+    }
+  }
   $("#cartTotal").textContent = money(total);
 }
 
@@ -847,7 +893,10 @@ $("#checkoutBtn").addEventListener("click", async () => {
         offerMeta: (p && p.offerMeta) || null
       };
     });
-    const total = richItems.reduce((s, it) => s + Number(it.lineTotal != null ? it.lineTotal : (it.price * it.qty)), 0);
+    const subtotal = richItems.reduce((s, it) => s + Number(it.lineTotal != null ? it.lineTotal : (it.price * it.qty)), 0);
+    const shipInfo = calcShipping(subtotal);
+    const shipping = shipInfo.amount;
+    const total = subtotal + shipping;
     const lines = richItems.map(it => {
       const col = it.color ? (" | اللون: " + it.color) : "";
       const deal = it.dealLabel ? (" | عرض: " + it.dealLabel) : "";
