@@ -328,33 +328,34 @@
       </section>
 
       
-      <section class="panel" id="panel-shipping">
+            <section class="panel" id="panel-shipping">
         <div class="card">
-          <h3>إعدادات الشحن</h3>
-          <p class="hint" style="margin-bottom:14px">تحكّمي في مصاريف الشحن اللي بتضاف على إجمالي الطلب في المتجر.</p>
-          <label style="display:flex;align-items:center;gap:10px;flex-direction:row;margin-bottom:14px">
+          <h3>إعدادات الشحن — المحافظات والمراكز</h3>
+          <p class="hint" style="margin-bottom:14px">فعّلي الشحن، حددي السعر الافتراضي، وعدّلي سعر كل محافظة أو مركز. العميل يختار المحافظة ثم المركز عند الطلب.</p>
+          <label style="display:flex;align-items:center;gap:10px;flex-direction:row;margin-bottom:12px">
             <input type="checkbox" id="shipEnabled" style="width:auto" />
-            <span>تفعيل إضافة مصاريف الشحن على الطلب</span>
+            <span>تفعيل الشحن حسب المحافظة والمركز</span>
           </label>
           <div class="form-grid">
-            <label>قيمة الشحن (ج.م)
-              <input id="shipFee" type="number" min="0" step="1" placeholder="مثال: 50" dir="ltr" />
+            <label>سعر افتراضي (ج.م)<input id="shipFee" type="number" min="0" step="1" dir="ltr" /></label>
+            <label>شحن مجاني فوق (ج.م)<input id="shipFreeAbove" type="number" min="0" step="1" dir="ltr" placeholder="0 = معطّل" /></label>
+          </div>
+          <label>مدة التوصيل<input id="shipDays" placeholder="خلال 2–5 أيام عمل" /></label>
+          <label>ملاحظة<input id="shipNote" placeholder="تظهر للعميلة في السلة" /></label>
+          <div class="form-grid" style="margin-top:12px">
+            <label>المحافظة
+              <select id="shipGovSelect"><option value="">— اختاري محافظة —</option></select>
             </label>
-            <label>شحن مجاني فوق (ج.م) — اختياري
-              <input id="shipFreeAbove" type="number" min="0" step="1" placeholder="مثال: 500 (اتركيه 0 للتعطيل)" dir="ltr" />
+            <label>سعر شحن المحافظة (ج.م)
+              <input id="shipGovFee" type="number" min="0" step="1" dir="ltr" />
             </label>
           </div>
-          <label>مدة التوصيل (نص يظهر للعميلة)
-            <input id="shipDays" placeholder="مثال: خلال 2–5 أيام عمل" />
-          </label>
-          <label>ملاحظة الشحن
-            <input id="shipNote" placeholder="مثال: الشحن لجميع المحافظات — الدفع عند الاستلام" />
-          </label>
-          <div class="card" style="margin:14px 0;padding:12px;background:rgba(139,92,246,.08)">
-            <strong>معاينة سريعة</strong>
-            <p class="hint" id="shipPreview" style="margin:8px 0 0">—</p>
+          <button type="button" class="btn btn-ghost" id="shipApplyGovFee" style="margin:8px 0">تطبيق سعر المحافظة على كل مراكزها</button>
+          <h4 style="margin:14px 0 8px">مراكز / أحياء المحافظة</h4>
+          <div id="shipCentersBox" class="table-wrap" style="max-height:320px;overflow:auto">
+            <p class="hint">اختاري محافظة لعرض المراكز</p>
           </div>
-          <button type="button" class="btn btn-primary" id="saveShipBtn">حفظ إعدادات الشحن</button>
+          <button type="button" class="btn btn-primary" id="saveShipBtn" style="margin-top:14px">حفظ كل إعدادات الشحن</button>
           <div class="msg" id="shipMsg"></div>
         </div>
       </section>
@@ -1493,50 +1494,115 @@
 
     
     
-    function updateShipPreview() {
-      const en = !!$("shipEnabled")?.checked;
-      const fee = Number($("shipFee")?.value || 0);
-      const free = Number($("shipFreeAbove")?.value || 0);
-      const days = ($("shipDays")?.value || "").trim();
-      const note = ($("shipNote")?.value || "").trim();
-      const el = $("shipPreview");
-      if (!el) return;
-      if (!en) { el.textContent = "الشحن غير مفعّل — الإجمالي = سعر المنتجات فقط."; return; }
-      let t = `يُضاف ${fee.toLocaleString("ar-EG")} ج.م شحن على كل طلب`;
-      if (free > 0) t += ` · مجاني إذا تجاوزت المنتجات ${free.toLocaleString("ar-EG")} ج.م`;
-      if (days) t += ` · ${days}`;
-      if (note) t += ` · ${note}`;
-      el.textContent = t;
+    let SHIP_ZONES = { enabled: true, defaultFee: 50, freeAbove: 0, note: "", days: "", governorates: [] };
+
+    function renderShipCenters() {
+      const box = $("shipCentersBox");
+      const gid = $("shipGovSelect")?.value;
+      if (!box) return;
+      const gov = (SHIP_ZONES.governorates || []).find(g => String(g.id) === String(gid));
+      if (!gov) {
+        box.innerHTML = `<p class="hint">اختاري محافظة لعرض المراكز</p>`;
+        return;
+      }
+      if ($("shipGovFee")) $("shipGovFee").value = gov.fee != null ? gov.fee : "";
+      const centers = gov.centers || [];
+      box.innerHTML = centers.length ? `<table class="tbl"><thead><tr><th>المركز / الحي</th><th>سعر الشحن</th></tr></thead><tbody>
+        ${centers.map((c, i) => `<tr>
+          <td>${c.name}</td>
+          <td><input type="number" min="0" step="1" dir="ltr" data-center-fee="${c.id}" value="${c.fee != null ? c.fee : (gov.fee || 0)}" style="max-width:120px" /></td>
+        </tr>`).join("")}
+      </tbody></table>` : `<p class="hint">لا مراكز</p>`;
     }
+
+    function fillShipGovSelect() {
+      const sel = $("shipGovSelect");
+      if (!sel) return;
+      const prev = sel.value;
+      sel.innerHTML = `<option value="">— اختاري محافظة —</option>` +
+        (SHIP_ZONES.governorates || []).map(g => `<option value="${g.id}">${g.name} (${g.fee != null ? g.fee : "—"} ج.م)</option>`).join("");
+      if (prev) sel.value = prev;
+    }
+
     async function loadShippingSettings() {
       try {
-        const data = await api("get_config");
-        const c = (data && data.config) || {};
-        if ($("shipEnabled")) $("shipEnabled").checked = c.shippingEnabled === true;
-        if ($("shipFee")) $("shipFee").value = c.shippingFee != null ? c.shippingFee : "";
-        if ($("shipFreeAbove")) $("shipFreeAbove").value = c.shippingFreeAbove != null ? c.shippingFreeAbove : "";
-        if ($("shipDays")) $("shipDays").value = c.shippingDays || "";
-        if ($("shipNote")) $("shipNote").value = c.shippingNote || "";
-        updateShipPreview();
-      } catch (e) { console.warn(e); }
+        const data = await api("get_shipping_zones");
+        if (data && data.ok && data.zones) SHIP_ZONES = data.zones;
+        if ($("shipEnabled")) $("shipEnabled").checked = SHIP_ZONES.enabled === true;
+        if ($("shipFee")) $("shipFee").value = SHIP_ZONES.defaultFee != null ? SHIP_ZONES.defaultFee : "";
+        if ($("shipFreeAbove")) $("shipFreeAbove").value = SHIP_ZONES.freeAbove != null ? SHIP_ZONES.freeAbove : "";
+        if ($("shipDays")) $("shipDays").value = SHIP_ZONES.days || "";
+        if ($("shipNote")) $("shipNote").value = SHIP_ZONES.note || "";
+        fillShipGovSelect();
+        renderShipCenters();
+      } catch (e) {
+        console.warn(e);
+        alert("تعذر تحميل مناطق الشحن");
+      }
     }
-    ["shipEnabled","shipFee","shipFreeAbove","shipDays","shipNote"].forEach(id => {
-      $(id)?.addEventListener("input", updateShipPreview);
-      $(id)?.addEventListener("change", updateShipPreview);
+
+    $("shipGovSelect")?.addEventListener("change", () => {
+      // save previous center fees to memory first
+      syncCenterFeesFromUI();
+      renderShipCenters();
     });
+
+    function syncCenterFeesFromUI() {
+      const gid = $("shipGovSelect")?.value;
+      const gov = (SHIP_ZONES.governorates || []).find(g => String(g.id) === String(gid));
+      if (!gov) return;
+      if ($("shipGovFee") && $("shipGovFee").value !== "") gov.fee = Number($("shipGovFee").value) || 0;
+      document.querySelectorAll("[data-center-fee]").forEach(inp => {
+        const cid = inp.getAttribute("data-center-fee");
+        const c = (gov.centers || []).find(x => String(x.id) === String(cid));
+        if (c) c.fee = Number(inp.value) || 0;
+      });
+    }
+
+    $("shipApplyGovFee")?.addEventListener("click", () => {
+      syncCenterFeesFromUI();
+      const gid = $("shipGovSelect")?.value;
+      const gov = (SHIP_ZONES.governorates || []).find(g => String(g.id) === String(gid));
+      if (!gov) return alert("اختاري محافظة");
+      const fee = Number($("shipGovFee")?.value || gov.fee || 0);
+      gov.fee = fee;
+      (gov.centers || []).forEach(c => { c.fee = fee; });
+      renderShipCenters();
+      fillShipGovSelect();
+      if ($("shipGovSelect")) $("shipGovSelect").value = gid;
+    });
+
     $("saveShipBtn")?.addEventListener("click", async () => {
       const btn = $("saveShipBtn");
       const msg = $("shipMsg");
       if (btn) btn.disabled = true;
       if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
       try {
-        const data = await api("update_shipping", {
-          shippingEnabled: !!$("shipEnabled")?.checked,
-          shippingFee: Number($("shipFee")?.value || 0),
-          shippingFreeAbove: Number($("shipFreeAbove")?.value || 0),
-          shippingDays: $("shipDays")?.value.trim() || "",
-          shippingNote: $("shipNote")?.value.trim() || ""
-        });
+        syncCenterFeesFromUI();
+        SHIP_ZONES.enabled = !!$("shipEnabled")?.checked;
+        SHIP_ZONES.defaultFee = Number($("shipFee")?.value || 0);
+        SHIP_ZONES.freeAbove = Number($("shipFreeAbove")?.value || 0);
+        SHIP_ZONES.days = $("shipDays")?.value.trim() || "";
+        SHIP_ZONES.note = $("shipNote")?.value.trim() || "";
+        const data = await api("update_shipping_zones", { zones: SHIP_ZONES });
+        if (!data.ok) throw new Error(data.error || "فشل الحفظ");
+        // keep legacy site-config flags in sync
+        try {
+          await api("update_shipping", {
+            shippingEnabled: SHIP_ZONES.enabled,
+            shippingFee: SHIP_ZONES.defaultFee,
+            shippingFreeAbove: SHIP_ZONES.freeAbove,
+            shippingDays: SHIP_ZONES.days,
+            shippingNote: SHIP_ZONES.note
+          });
+        } catch (e) {}
+        bustStoreCaches();
+        try { sessionStorage.removeItem("nx_shipping_zones"); } catch (e) {}
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ الشحن لكل المحافظات والمراكز"; }
+      } catch (err) {
+        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
+      } finally { if (btn) btn.disabled = false; }
+    });
         if (!data.ok) throw new Error(data.error || "فشل الحفظ");
         bustStoreCaches();
         if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ الشحن — سيظهر في سلة المتجر فورًا"; }
