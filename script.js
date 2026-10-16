@@ -1637,3 +1637,30 @@ window.addEventListener("storage", (e) => {
     }).catch(() => {});
   }
 });
+
+
+// فتح السلة من صفحة المنتج: /?openCart=1
+(function openCartFromQuery() {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get("openCart") === "1") {
+      const run = () => {
+        try {
+          if (typeof updateCartUI === "function") updateCartUI();
+          if (typeof openCart === "function") openCart();
+        } catch (e) {}
+        // نظّف الرابط بدون ريفرش
+        try {
+          const u = new URL(location.href);
+          u.searchParams.delete("openCart");
+          history.replaceState({}, "", u.pathname + (u.search || "") + (u.hash || ""));
+        } catch (e) {}
+      };
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => setTimeout(run, 200));
+      } else {
+        setTimeout(run, 200);
+      }
+    }
+  } catch (e) {}
+})();
