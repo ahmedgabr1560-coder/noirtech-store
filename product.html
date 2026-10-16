@@ -713,5 +713,16 @@
   })();
   </script>
 
+  <script>
+    // فتح فوري مستقل عن تحميل بيانات الشحن أو بقية وظائف السلة.
+    document.addEventListener("click", function (event) {
+      const trigger = event.target.closest("#ppHeaderCart, #ppGoCart");
+      if (!trigger) return;
+      document.getElementById("cartDrawer")?.classList.add("open");
+      document.getElementById("cartOverlay")?.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }, true);
+  </script>
+
 </body>
 </html>
