@@ -119,6 +119,7 @@
         <button data-panel="orders">الطلبات</button>
         <button data-panel="visitors">الزوار والحسابات</button>
         <button data-panel="ai">شات الذكاء الاصطناعي</button>
+        <button data-panel="shipping">الشحن</button>
         <button data-panel="finance">الأرباح والمصروفات</button>
         <button data-panel="general">إعدادات الموقع</button>
         <button data-panel="brand">الاسم والأيقونة</button>
@@ -323,6 +324,38 @@
           <span id="vUnique" style="display:none">—</span>
           <tbody id="recentVisitsBody" style="display:none"></tbody>
           <tbody id="sessionsBody" style="display:none"></tbody>
+        </div>
+      </section>
+
+      
+      <section class="panel" id="panel-shipping">
+        <div class="card">
+          <h3>إعدادات الشحن</h3>
+          <p class="hint" style="margin-bottom:14px">تحكّمي في مصاريف الشحن اللي بتضاف على إجمالي الطلب في المتجر.</p>
+          <label style="display:flex;align-items:center;gap:10px;flex-direction:row;margin-bottom:14px">
+            <input type="checkbox" id="shipEnabled" style="width:auto" />
+            <span>تفعيل إضافة مصاريف الشحن على الطلب</span>
+          </label>
+          <div class="form-grid">
+            <label>قيمة الشحن (ج.م)
+              <input id="shipFee" type="number" min="0" step="1" placeholder="مثال: 50" dir="ltr" />
+            </label>
+            <label>شحن مجاني فوق (ج.م) — اختياري
+              <input id="shipFreeAbove" type="number" min="0" step="1" placeholder="مثال: 500 (اتركيه 0 للتعطيل)" dir="ltr" />
+            </label>
+          </div>
+          <label>مدة التوصيل (نص يظهر للعميلة)
+            <input id="shipDays" placeholder="مثال: خلال 2–5 أيام عمل" />
+          </label>
+          <label>ملاحظة الشحن
+            <input id="shipNote" placeholder="مثال: الشحن لجميع المحافظات — الدفع عند الاستلام" />
+          </label>
+          <div class="card" style="margin:14px 0;padding:12px;background:rgba(139,92,246,.08)">
+            <strong>معاينة سريعة</strong>
+            <p class="hint" id="shipPreview" style="margin:8px 0 0">—</p>
+          </div>
+          <button type="button" class="btn btn-primary" id="saveShipBtn">حفظ إعدادات الشحن</button>
+          <div class="msg" id="shipMsg"></div>
         </div>
       </section>
 
@@ -1019,6 +1052,7 @@
     document.querySelectorAll("#nav button").forEach(btn => {
       btn.addEventListener("click", () => {
         if (btn.dataset.panel === "visitors") loadVisitorsPanel();
+        if (btn.dataset.panel === "shipping") loadShippingSettings();
       });
     });
 
@@ -1458,6 +1492,59 @@
     });
 
     
+    
+    function updateShipPreview() {
+      const en = !!$("shipEnabled")?.checked;
+      const fee = Number($("shipFee")?.value || 0);
+      const free = Number($("shipFreeAbove")?.value || 0);
+      const days = ($("shipDays")?.value || "").trim();
+      const note = ($("shipNote")?.value || "").trim();
+      const el = $("shipPreview");
+      if (!el) return;
+      if (!en) { el.textContent = "الشحن غير مفعّل — الإجمالي = سعر المنتجات فقط."; return; }
+      let t = `يُضاف ${fee.toLocaleString("ar-EG")} ج.م شحن على كل طلب`;
+      if (free > 0) t += ` · مجاني إذا تجاوزت المنتجات ${free.toLocaleString("ar-EG")} ج.م`;
+      if (days) t += ` · ${days}`;
+      if (note) t += ` · ${note}`;
+      el.textContent = t;
+    }
+    async function loadShippingSettings() {
+      try {
+        const data = await api("get_config");
+        const c = (data && data.config) || {};
+        if ($("shipEnabled")) $("shipEnabled").checked = c.shippingEnabled === true;
+        if ($("shipFee")) $("shipFee").value = c.shippingFee != null ? c.shippingFee : "";
+        if ($("shipFreeAbove")) $("shipFreeAbove").value = c.shippingFreeAbove != null ? c.shippingFreeAbove : "";
+        if ($("shipDays")) $("shipDays").value = c.shippingDays || "";
+        if ($("shipNote")) $("shipNote").value = c.shippingNote || "";
+        updateShipPreview();
+      } catch (e) { console.warn(e); }
+    }
+    ["shipEnabled","shipFee","shipFreeAbove","shipDays","shipNote"].forEach(id => {
+      $(id)?.addEventListener("input", updateShipPreview);
+      $(id)?.addEventListener("change", updateShipPreview);
+    });
+    $("saveShipBtn")?.addEventListener("click", async () => {
+      const btn = $("saveShipBtn");
+      const msg = $("shipMsg");
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      try {
+        const data = await api("update_shipping", {
+          shippingEnabled: !!$("shipEnabled")?.checked,
+          shippingFee: Number($("shipFee")?.value || 0),
+          shippingFreeAbove: Number($("shipFreeAbove")?.value || 0),
+          shippingDays: $("shipDays")?.value.trim() || "",
+          shippingNote: $("shipNote")?.value.trim() || ""
+        });
+        if (!data.ok) throw new Error(data.error || "فشل الحفظ");
+        bustStoreCaches();
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ الشحن — سيظهر في سلة المتجر فورًا"; }
+      } catch (err) {
+        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
+      } finally { if (btn) btn.disabled = false; }
+    });
+
     // --- Product color picker ---
     const PRESET_COLORS = [
       { name: "أسود", code: "#111111" },
