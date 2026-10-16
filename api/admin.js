@@ -437,6 +437,31 @@ export default async function handler(req, res) {
     }
 
     
+    
+    if (action === "get_shipping_zones") {
+      const f = await ghGet("shipping-zones.json");
+      if (!f) return res.status(200).json({ ok: true, zones: { enabled: false, defaultFee: 50, freeAbove: 0, governorates: [] } });
+      let zones = {};
+      try { zones = JSON.parse(f.content); } catch { zones = {}; }
+      return res.status(200).json({ ok: true, zones });
+    }
+
+    if (action === "update_shipping_zones") {
+      const zones = body.zones;
+      if (!zones || typeof zones !== "object") return res.status(400).json({ ok: false, error: "zones required" });
+      // sanitize lightly
+      zones.enabled = zones.enabled === true || zones.enabled === "true";
+      zones.defaultFee = Math.max(0, Number(zones.defaultFee) || 0);
+      zones.freeAbove = Math.max(0, Number(zones.freeAbove) || 0);
+      zones.note = String(zones.note || "").slice(0, 300);
+      zones.days = String(zones.days || "").slice(0, 80);
+      if (!Array.isArray(zones.governorates)) zones.governorates = [];
+      let f = await ghGet("shipping-zones.json");
+      const put = await ghPut("shipping-zones.json", JSON.stringify(zones, null, 2), "Admin: update shipping zones", f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر حفظ مناطق الشحن", detail: put.data });
+      return res.status(200).json({ ok: true, zones });
+    }
+
     if (action === "update_shipping") {
       let f = await ghGet("site-config.json");
       if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
