@@ -226,7 +226,7 @@
           "/categories.json?t=" + Date.now()
         ])
       ]);
-      const list = Array.isArray(products) ? products : [];
+      const list = Array.isArray(products) ? products : (Array.isArray(products?.products) ? products.products : []);
       const p = list.find(x => Number(x.id) === id);
       if (!p) {
         root.className = "pp-error";
