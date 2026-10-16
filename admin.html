@@ -1603,13 +1603,6 @@
         if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
       } finally { if (btn) btn.disabled = false; }
     });
-        if (!data.ok) throw new Error(data.error || "فشل الحفظ");
-        bustStoreCaches();
-        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ الشحن — سيظهر في سلة المتجر فورًا"; }
-      } catch (err) {
-        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
-      } finally { if (btn) btn.disabled = false; }
-    });
 
     // --- Product color picker ---
     const PRESET_COLORS = [
