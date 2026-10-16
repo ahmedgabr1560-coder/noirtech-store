@@ -213,7 +213,7 @@ let activeSort = "newest";
 /** Products loaded from products.json (bot-managed) */
 
 /* ===== Instant refresh cache (sessionStorage) ===== */
-const NX_CACHE_TTL = 15 * 1000; // 15 ثانية — تحديث سريع من الأدمن
+const NX_CACHE_TTL = 8 * 1000; // 8 ثواني // 15 ثانية — تحديث سريع من الأدمن
 function nxCacheGet(key) {
   try {
     const raw = sessionStorage.getItem(key);
@@ -1506,26 +1506,36 @@ fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d)
 }).catch(function () {});
 
 
-async function loadProducts() {
-  const cached = nxCacheGet("nx_products");
-  if (cached && Array.isArray(cached) && cached.length) {
-    PRODUCTS = cached.filter(p => p && !p.hidden);
+async function loadProducts(force) {
+  if (!force) {
+    const cached = nxCacheGet("nx_products");
+    if (cached && Array.isArray(cached) && cached.length) {
+      PRODUCTS = cached.filter(p => p && !p.hidden);
+    }
+  } else {
+    try { sessionStorage.removeItem("nx_products"); } catch (e) {}
   }
   const urls = [
     "/api/catalog?type=products&t=" + Date.now(),
     "/products.json?t=" + Date.now()
   ];
+  let best = null;
   for (const url of urls) {
     try {
-      const r = await fetch(url, { cache: "no-store" });
+      const r = await fetch(url, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
       if (!r.ok) continue;
       const data = await r.json();
       const list = Array.isArray(data) ? data : (data.products || []);
       if (!list.length && data && data.ok === false) continue;
-      PRODUCTS = list.filter(p => p && !p.hidden);
-      nxCacheSet("nx_products", PRODUCTS);
-      return PRODUCTS;
+      // فضّل مصدر فيه منتجات أكتر (الحي من GitHub عادة)
+      if (!best || list.length >= best.length) best = list;
+      // لو جاية من catalog API خلاص
+      if (url.indexOf("/api/catalog") === 0 && list.length) break;
     } catch (e) {}
+  }
+  if (best) {
+    PRODUCTS = best.filter(p => p && !p.hidden);
+    nxCacheSet("nx_products", PRODUCTS);
   }
   PRODUCTS = PRODUCTS || [];
   return PRODUCTS;
@@ -1723,31 +1733,7 @@ document.addEventListener("visibilitychange", () => {
 });
 setInterval(() => { loadHeroConfig(); }, 30000);
 
-// تحديث المتجر فورًا عند الرجوع للتاب (بعد تعديلات الأدمن)
-(function nxRevalidateOnFocus() {
-  let last = 0;
-  async function refresh() {
-    const now = Date.now();
-    if (now - last < 8000) return;
-    last = now;
-    try {
-      sessionStorage.removeItem("nx_products");
-      sessionStorage.removeItem("nx_categories");
-      sessionStorage.removeItem("nx_config");
-    } catch (e) {}
-    try {
-      if (typeof loadProducts === "function") await loadProducts();
-      if (typeof loadCatalog === "function") await loadCatalog();
-      if (typeof loadHeroConfig === "function") await loadHeroConfig();
-      if (typeof renderAll === "function") renderAll();
-      if (typeof updateCartUI === "function") updateCartUI();
-    } catch (e) {}
-  }
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") refresh();
-  });
-  window.addEventListener("focus", refresh);
-})();
+
 
 window.addEventListener("storage", (e) => {
   if (e.key === "nx_catalog_bump") {
@@ -1789,4 +1775,32 @@ window.addEventListener("storage", (e) => {
       }
     }
   } catch (e) {}
+})();
+
+// تحديث المنتجات تلقائيًا كل ثوانٍ + عند الرجوع للتاب (بعد إضافة من الأدمن)
+(function nxLiveProductsRefresh() {
+  let last = 0;
+  async function refresh(force) {
+    const now = Date.now();
+    if (!force && now - last < 5000) return;
+    last = now;
+    try {
+      if (typeof loadProducts === "function") await loadProducts(true);
+      if (typeof loadCatalog === "function") await loadCatalog();
+      if (typeof loadHeroConfig === "function") await loadHeroConfig();
+      if (typeof renderAll === "function") renderAll();
+      if (typeof updateCartUI === "function") updateCartUI();
+    } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") refresh(true);
+  });
+  window.addEventListener("focus", () => refresh(true));
+  window.addEventListener("pageshow", () => refresh(true));
+  window.addEventListener("storage", (e) => {
+    if (e.key === "nx_catalog_bump") refresh(true);
+  });
+  setInterval(() => {
+    if (document.visibilityState === "visible") refresh(false);
+  }, 12000);
 })();
