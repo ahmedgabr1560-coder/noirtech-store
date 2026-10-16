@@ -179,23 +179,7 @@ export default async function handler(req, res) {
     }
     if (!name || !price) return res.status(400).json({ ok: false, error: "الاسم والسعر مطلوبين" });
 
-    // Upload phone/gallery image to GitHub if provided
-    if (imageBase64) {
-      const parsed = parseDataUrl(imageBase64);
-      if (parsed) {
-        const ext = parsed.mime.includes("png") ? "png" : (parsed.mime.includes("webp") ? "webp" : "jpg");
-        const imgPath = `product-images/${id}.${ext}`;
-        const up = await ghPut(imgPath, null, `admin: product image ${id}`, null, parsed.b64);
-        if (up.ok) {
-          image = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}?t=${Date.now()}`;
-        } else {
-          // fallback: keep data URL only if small (not ideal) — prefer error
-          console.error("image upload failed", up.data);
-        }
-      }
-    }
-
-    const fallbackImages = {
+        const fallbackImages = {
       fashion: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=80",
       electronics: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80",
       phones: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80",
@@ -204,38 +188,57 @@ export default async function handler(req, res) {
       home: "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&h=800&fit=crop&q=80",
       accessories: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800&h=800&fit=crop&q=80"
     };
-    
-    // صور متعددة
-    let images = [];
+
+    // رفع الصور على التوازي (أسرع)
+    const uploadJobs = [];
+    if (imageBase64) {
+      const parsed = parseDataUrl(imageBase64);
+      if (parsed) {
+        const ext = parsed.mime.includes("png") ? "png" : (parsed.mime.includes("webp") ? "webp" : "jpg");
+        const imgPath = `product-images/${id}.${ext}`;
+        uploadJobs.push(
+          ghPut(imgPath, null, `admin: product image ${id}`, null, parsed.b64).then(up => {
+            if (up.ok) return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}?t=${Date.now()}`;
+            return null;
+          })
+        );
+      }
+    }
+    const httpImages = [];
     if (Array.isArray(body.images)) {
-      for (let i = 0; i < body.images.length && images.length < 8; i++) {
+      let dataIdx = 0;
+      for (let i = 0; i < body.images.length && dataIdx + httpImages.length < 6; i++) {
         const im = body.images[i];
         if (!im) continue;
         if (typeof im === "string" && /^https?:\/\//i.test(im)) {
-          images.push(im);
+          httpImages.push(im);
           continue;
         }
         if (typeof im === "string" && im.startsWith("data:image/")) {
           const parsed = parseDataUrl(im);
           if (!parsed) continue;
+          dataIdx += 1;
           const ext = parsed.mime.includes("png") ? "png" : (parsed.mime.includes("webp") ? "webp" : "jpg");
-          const imgPath = `product-images/${id}_${images.length + 1}.${ext}`;
-          const up = await ghPut(imgPath, null, `admin: product image ${id}_${images.length + 1}`, null, parsed.b64);
-          if (up.ok) {
-            images.push(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}?t=${Date.now()}`);
-          }
+          const idx = dataIdx;
+          const imgPath = `product-images/${id}_${idx}.${ext}`;
+          uploadJobs.push(
+            ghPut(imgPath, null, `admin: product image ${id}_${idx}`, null, parsed.b64).then(up => {
+              if (up.ok) return `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${imgPath}?t=${Date.now()}`;
+              return null;
+            })
+          );
         }
       }
     }
+    const uploaded = (await Promise.all(uploadJobs)).filter(Boolean);
+    let images = [...httpImages, ...uploaded].slice(0, 6);
     if (images.length && !image) image = images[0];
-    if (image && !images.includes(image)) images.unshift(image);
-    if (!images.length && image) images = [image];
-
-    if (!image || !/^https?:\/\//i.test(image)) image = fallbackImages[category] || fallbackImages.fashion;
+    if (image && /^https?:\/\//i.test(image) && !images.includes(image)) images.unshift(image);
+    if (!images.length && image && /^https?:\/\//i.test(image)) images = [image];
+    if (!image || !/^https?:\/\//i.test(image)) image = images[0] || fallbackImages[category] || fallbackImages.fashion;
     if (!images.length) images = [image];
 
-
-    const product = {
+const product = {
       id,
       name: name.slice(0, 140),
       category,
@@ -266,14 +269,15 @@ export default async function handler(req, res) {
     };
     products.unshift(product);
 
-    const put = await ghPut("products.json", JSON.stringify(products, null, 2), `admin: add ${name}`, file.sha);
+    const put = await ghPut("products.json", JSON.stringify(products), `admin: add ${name}`, file.sha);
     if (!put.ok) return res.status(500).json({ ok: false, error: put.data?.message || "فشل الحفظ على GitHub" });
 
-    await notifyTelegram(
+    // لا ننتظر تليجرام — يرد أسرع للأدمن
+    notifyTelegram(
       `🆕 <b>منتج جديد</b>\n\n📦 ${product.name}\n💰 ${product.price} ج.م\n📂 ${product.category}\n🆔 #${product.id}`
     );
 
-    return res.status(200).json({ ok: true, product, total: products.length });
+    return res.status(200).json({ ok: true, product, total: products.length, fast: true });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ ok: false, error: String(e.message || e) });
