@@ -525,6 +525,7 @@
     let CATALOG = { categories: [], brands: [] };
     let PRODUCTS = [];
     let editingId = null;
+    const catalogChannel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("nexora-catalog") : null;
 
     function bustStoreCaches() {
       try {
@@ -537,6 +538,7 @@
         localStorage.setItem("nx_catalog_bump", String(Date.now()));
         // إشارة لتبويبات المتجر المفتوحة
         try { localStorage.setItem("nx_force_reload_products", String(Date.now())); } catch (e2) {}
+        try { catalogChannel?.postMessage({ type: "catalog-updated", at: Date.now() }); } catch (e3) {}
       } catch (e) {}
     }
 
@@ -564,7 +566,10 @@
         headers: { "Content-Type": "application/json", "x-admin-secret": SECRET },
         body: JSON.stringify({ secret: SECRET, action, ...payload })
       });
-      return r.json();
+      const data = await r.json();
+      const readOnly = /^(list_|get_|stats$)/.test(String(action || ""));
+      if (data && data.ok && !readOnly) bustStoreCaches();
+      return data;
     }
     function money(n){ return Number(n||0).toLocaleString("ar-EG") + " ج.م"; }
 

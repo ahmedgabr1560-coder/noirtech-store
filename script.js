@@ -1102,6 +1102,12 @@ async function loadCatalog() {
       if (!r.ok) continue;
       const data = await r.json();
       const allCats = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
+      if (url.indexOf("/api/catalog") === 0 && data.ok === true) {
+        CATEGORIES = allCats.filter(c => c && c.visible !== false);
+        BRANDS = Array.isArray(data.brands) ? data.brands : [];
+        nxCacheSet("nx_categories", { categories: allCats, brands: BRANDS });
+        return;
+      }
       if (!allCats.length) continue;
       CATEGORIES = allCats.filter(c => c && c.visible !== false);
       BRANDS = Array.isArray(data.brands) ? data.brands : [];
@@ -1519,23 +1525,20 @@ async function loadProducts(force) {
     "/api/catalog?type=products&t=" + Date.now(),
     "/products.json?t=" + Date.now()
   ];
-  const lists = await Promise.all(urls.map(async (url) => {
+  let best = null;
+  for (const url of urls) {
     try {
       const r = await fetch(url, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
-      if (!r.ok) return [];
+      if (!r.ok) continue;
       const data = await r.json();
       const list = Array.isArray(data) ? data : (data.products || []);
-      return Array.isArray(list) ? list : [];
-    } catch (e) { return []; }
-  }));
-  // دمج المصدرين: API هو الأحدث عند تعارض نفس الـID، والنسخة الثابتة fallback.
-  const merged = new Map();
-  for (const list of [...lists].reverse()) {
-    for (const product of list) {
-      if (product && product.id != null) merged.set(String(product.id), product);
-    }
+      if (url.indexOf("/api/catalog") === 0 && data.ok === true) {
+        best = Array.isArray(list) ? list : [];
+        break;
+      }
+      if (best === null && Array.isArray(list)) best = list;
+    } catch (e) {}
   }
-  const best = [...merged.values()];
   if (best) {
     PRODUCTS = best.filter(p => p && !p.hidden);
     nxCacheSet("nx_products", PRODUCTS);
@@ -1753,7 +1756,6 @@ window.addEventListener("storage", (e) => {
   }
 });
 
-
 // فتح السلة من صفحة المنتج: /?openCart=1
 (function openCartFromQuery() {
   try {
@@ -1795,6 +1797,21 @@ window.addEventListener("storage", (e) => {
       if (typeof updateCartUI === "function") updateCartUI();
     } catch (e) {}
   }
+  try {
+    if (typeof BroadcastChannel !== "undefined") {
+      const catalogChannel = new BroadcastChannel("nexora-catalog");
+      catalogChannel.addEventListener("message", (e) => {
+        if (e.data && e.data.type === "catalog-updated") {
+          try {
+            sessionStorage.removeItem("nx_products");
+            sessionStorage.removeItem("nx_categories");
+            sessionStorage.removeItem("nx_config");
+          } catch (err) {}
+          refresh(true);
+        }
+      });
+    }
+  } catch (e) {}
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") refresh(true);
   });
@@ -1805,5 +1822,5 @@ window.addEventListener("storage", (e) => {
   });
   setInterval(() => {
     if (document.visibilityState === "visible") refresh(false);
-  }, 12000);
+  }, 5000);
 })();
