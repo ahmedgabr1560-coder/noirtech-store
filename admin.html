@@ -696,7 +696,7 @@
         const id = catSw.getAttribute("data-cat-switch");
         const visible = !!catSw.checked;
         catSw.closest(".vis-card")?.classList.add("busy");
-        if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+        if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
         const data = await api("set_category_visible", { id, visible });
         catSw.closest(".vis-card")?.classList.remove("busy");
         if (!data.ok) {
@@ -713,7 +713,7 @@
         const subId = subSw.getAttribute("data-sub-switch");
         const visible = !!subSw.checked;
         subSw.closest(".vis-card")?.classList.add("busy");
-        if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+        if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
         const data = await api("set_subcategory_visible", { categoryId, subId, visible });
         subSw.closest(".vis-card")?.classList.remove("busy");
         if (!data.ok) {
@@ -869,8 +869,38 @@
       if (v && !pendingImage) showPreview(v);
     };
 
+    
+    function shrinkDataUrl(dataUrl, maxSide = 900, quality = 0.72) {
+      return new Promise((resolve) => {
+        try {
+          if (!dataUrl || !String(dataUrl).startsWith("data:image/")) return resolve(dataUrl);
+          const im = new Image();
+          im.onload = () => {
+            let w = im.width, h = im.height;
+            if (w > maxSide || h > maxSide) {
+              const r = Math.min(maxSide / w, maxSide / h);
+              w = Math.round(w * r); h = Math.round(h * r);
+            }
+            const c = document.createElement("canvas");
+            c.width = w; c.height = h;
+            c.getContext("2d").drawImage(im, 0, 0, w, h);
+            resolve(c.toDataURL("image/jpeg", quality));
+          };
+          im.onerror = () => resolve(dataUrl);
+          im.src = dataUrl;
+        } catch (e) { resolve(dataUrl); }
+      });
+    }
+    async function shrinkAllImages(list) {
+      const out = [];
+      for (const src of (list || []).slice(0, 5)) {
+        out.push(await shrinkDataUrl(src));
+      }
+      return out;
+    }
+
     async function readFilesAsDataUrls(fileList) {
-      const files = [...(fileList || [])].slice(0, 8);
+      const files = [...(fileList || [])].slice(0, 5);
       const out = [];
       for (const f of files) {
         if (!f || !f.type || !f.type.startsWith("image/")) continue;
@@ -974,7 +1004,7 @@
           badge: $("pBadge").value.trim() || ($("pType")?.value === "offer" ? "عرض" : "جديد"),
           description: $("pDesc").value.trim(),
           image: imageVal,
-          images: (pendingImages && pendingImages.length) ? pendingImages : (imageVal ? [imageVal] : []),
+          images: await shrinkAllImages((pendingImages && pendingImages.length) ? pendingImages : (imageVal ? [imageVal] : [])),
           isOffer: $("pType")?.value === "offer",
           oldPrice: $("pOld")?.value || $("pOldAuto")?.value || "",
           sourceProductId: $("offerSourceProduct")?.value || "",
@@ -1307,7 +1337,7 @@
       const btn = $("saveHeroBtn");
       const msg = $("heroMsg");
       if (btn) btn.disabled = true;
-      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
       try {
         const payload = {
           heroTitle: $("hTitle")?.value.trim() || "",
@@ -1371,7 +1401,7 @@
       const btn = $("savePayBtn");
       const msg = $("payMsg");
       if (btn) btn.disabled = true;
-      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
       try {
         const data = await api("update_hero", {
           heroTitle: $("hTitle")?.value.trim() || "",
@@ -1427,7 +1457,7 @@
       const btn = $("saveBrandBtn");
       const msg = $("brandMsg");
       if (btn) btn.disabled = true;
-      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
       try {
         const name = $("brandName")?.value.trim() || "NEXORA";
         const payload = {
@@ -1473,7 +1503,7 @@
       const btn = $("saveGeneralBtn");
       const msg = $("generalMsg");
       if (btn) btn.disabled = true;
-      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
       try {
         const data = await api("update_hero", {
           phone: $("gPhone")?.value.trim() || "",
@@ -1579,7 +1609,7 @@
       const btn = $("saveShipBtn");
       const msg = $("shipMsg");
       if (btn) btn.disabled = true;
-      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
       try {
         syncCenterFeesFromUI();
         SHIP_ZONES.enabled = !!$("shipEnabled")?.checked;
