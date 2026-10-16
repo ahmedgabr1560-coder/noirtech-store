@@ -142,8 +142,8 @@ async function loadHeroConfig() {
     try { applyGeneralConfig(cached); } catch (e) {}
   }
   try {
-    let r = await fetch("/api/catalog?type=config&t=" + Date.now(), { cache: "no-store" });
-    if (!r.ok) r = await fetch("/site-config.json?t=" + Date.now(), { cache: "no-store" });
+    let r = await fetch("/api/catalog?type=config", { cache: "default" });
+    if (!r.ok) r = await fetch("/site-config.json", { cache: "default" });
     if (!r.ok) return;
     const raw = await r.json();
     const c = raw.config || raw;
@@ -261,12 +261,12 @@ async function loadShippingZones(force) {
     }
   } catch (e) {}
   const urls = [
-    "/api/catalog?type=shipping&t=" + Date.now(),
-    "/shipping-zones.json?t=" + Date.now()
+    "/api/catalog?type=shipping",
+    "/shipping-zones.json"
   ];
   for (const url of urls) {
     try {
-      const r = await fetch(url, { cache: "no-store" });
+      const r = await fetch(url, { cache: "default" });
       if (!r.ok) continue;
       const data = await r.json();
       const zones = data.zones || data;
@@ -1096,12 +1096,12 @@ async function loadCatalog() {
     BRANDS = Array.isArray(cached.brands) ? cached.brands : [];
   }
   const urls = [
-    "/api/catalog?type=categories&t=" + Date.now(),
-    "/categories.json?t=" + Date.now()
+    "/api/catalog?type=categories",
+    "/categories.json"
   ];
   for (const url of urls) {
     try {
-      const r = await fetch(url, { cache: "no-store" });
+      const r = await fetch(url, { cache: "default" });
       if (!r.ok) continue;
       const data = await r.json();
       const allCats = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
@@ -1525,13 +1525,13 @@ async function loadProducts(force) {
     try { sessionStorage.removeItem("nx_products"); } catch (e) {}
   }
   const urls = [
-    "/api/catalog?type=products&t=" + Date.now(),
-    "/products.json?t=" + Date.now()
+    "/api/catalog?type=products",
+    "/products.json"
   ];
   let best = null;
   for (const url of urls) {
     try {
-      const r = await fetch(url, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
+      const r = await fetch(url, { cache: "default" });
       if (!r.ok) continue;
       const data = await r.json();
       const list = Array.isArray(data) ? data : (data.products || []);
@@ -1826,5 +1826,5 @@ window.addEventListener("storage", (e) => {
   });
   setInterval(() => {
     if (document.visibilityState === "visible") refresh(false);
-  }, 5000);
+  }, 2000);
 })();
