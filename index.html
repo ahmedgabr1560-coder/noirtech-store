@@ -317,8 +317,18 @@
           <label>رقم الهاتف *
             <input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" inputmode="tel" autocomplete="tel" />
           </label>
+          <label>المحافظة *
+            <select id="orderGov" required>
+              <option value="">— اختاري المحافظة —</option>
+            </select>
+          </label>
+          <label>المركز / الحي *
+            <select id="orderCenter" required disabled>
+              <option value="">— اختاري المركز —</option>
+            </select>
+          </label>
           <label>العنوان بالتفصيل *
-            <input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - الشارع" autocomplete="street-address" />
+            <input type="text" id="orderAddress" placeholder="الشارع - المبنى - علامة مميزة" autocomplete="street-address" />
           </label>
           <label>ملاحظات (اختياري)
             <input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" />
