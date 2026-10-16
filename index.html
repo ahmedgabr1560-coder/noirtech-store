@@ -304,7 +304,12 @@
     <div class="drawer-scroll">
       <div class="drawer-body" id="cartItems"></div>
       <div class="drawer-foot">
-        <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
+        <div class="cart-totals-break" id="cartTotalsBreak" style="display:grid;gap:6px;margin:8px 0 4px;font-size:.9rem">
+          <div class="cart-total-row" style="opacity:.9"><span>المنتجات</span><span id="cartSubtotal">0 ج.م</span></div>
+          <div class="cart-total-row" style="opacity:.9"><span id="cartShippingLabel">الشحن</span><span id="cartShipping">0 ج.م</span></div>
+          <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
+        </div>
+        <p id="cartShippingHint" class="checkout-hint" style="margin:0 0 8px;display:none"></p>
         <div id="checkoutFields" class="checkout-fields" hidden>
           <label>الاسم (اختياري)
             <input type="text" id="orderName" placeholder="اسم المستلم" autocomplete="name" />
