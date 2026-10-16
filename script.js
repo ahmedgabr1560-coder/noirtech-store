@@ -905,6 +905,8 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const orderRecord = {
       id: orderId,
       at: new Date().toISOString(),
+      subtotal,
+      shipping,
       customer: { name: name || "عميل", phone, email: (currentUser && currentUser.email) || "", address, note },
       items: richItems,
       total,
