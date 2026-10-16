@@ -533,7 +533,10 @@
         sessionStorage.removeItem("nx_products");
         sessionStorage.removeItem("nx_categories");
         sessionStorage.removeItem("nx_config");
+        sessionStorage.removeItem("nx_shipping_zones");
         localStorage.setItem("nx_catalog_bump", String(Date.now()));
+        // إشارة لتبويبات المتجر المفتوحة
+        try { localStorage.setItem("nx_force_reload_products", String(Date.now())); } catch (e2) {}
       } catch (e) {}
     }
 
@@ -996,7 +999,7 @@
           data = await r.json();
           if (!data.ok) throw new Error(data.error || "فشل الإضافة");
           msg.className = "msg ok";
-          msg.textContent = "تم نشر المنتج #" + data.product.id + " — يظهر في المتجر حسب ظهور القسم";
+          msg.textContent = "تم نشر المنتج #" + data.product.id + " — يظهر في المتجر خلال ثوانٍ (حدّثي المتجر إن لزم)";
           e.target.reset(); pendingImage = ""; pendingImages = []; showPreview("");
           try { renderMultiPrev(); } catch (err) {}
         }
