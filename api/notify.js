@@ -97,7 +97,7 @@ export default async function handler(req, res) {
         `🆔 ${order.id || "—"}\n` +
         `👤 ${c.name || "—"}\n` +
         `📞 ${c.phone || "—"}\n` +
-        `📍 ${c.address || "—"}${note}\n` +
+        `📍 ${(c.governorate || "")}${c.center ? " — " + c.center : ""}${c.address ? " — " + c.address : (c.governorate ? "" : "—")}${note}\n` +
         `\n📦 المنتجات:\n${itemsText}\n` +
         (order.subtotal != null ? `\n🧮 المنتجات: ${money(order.subtotal)}\n` : "") +
         (order.shipping != null ? `🚚 الشحن: ${Number(order.shipping) === 0 ? "مجاني" : money(order.shipping)}\n` : "") +
