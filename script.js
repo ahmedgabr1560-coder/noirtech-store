@@ -55,7 +55,7 @@ function applyGeneralConfig(c) {
   const tgEl = document.getElementById("floatTelegram") || document.querySelector('a[href*="t.me"]');
   if (tgEl) {
     if (tg) tgEl.href = "https://t.me/" + tg;
-    tgEl.style.display = c.showFloatTelegram === false ? "none" : "";
+    tgEl.style.display = "none";
   }
   // AI float
   const aiEl = document.getElementById("aiChatBtn") || document.getElementById("floatAiBtn");
