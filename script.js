@@ -243,30 +243,138 @@ function normalizePhone(v) {
 }
 
 
+let SHIPPING_ZONES = null;
+
+async function loadShippingZones(force) {
+  if (SHIPPING_ZONES && !force) return SHIPPING_ZONES;
+  try {
+    const cached = sessionStorage.getItem("nx_shipping_zones");
+    if (cached && !force) {
+      const o = JSON.parse(cached);
+      if (o && o.t && Date.now() - o.t < 60000 && o.d) {
+        SHIPPING_ZONES = o.d;
+        return SHIPPING_ZONES;
+      }
+    }
+  } catch (e) {}
+  const urls = [
+    "/api/catalog?type=shipping&t=" + Date.now(),
+    "/shipping-zones.json?t=" + Date.now()
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      const data = await r.json();
+      const zones = data.zones || data;
+      if (zones && (zones.governorates || zones.enabled != null)) {
+        SHIPPING_ZONES = zones;
+        try { sessionStorage.setItem("nx_shipping_zones", JSON.stringify({ t: Date.now(), d: zones })); } catch (e) {}
+        return SHIPPING_ZONES;
+      }
+    } catch (e) {}
+  }
+  SHIPPING_ZONES = SHIPPING_ZONES || { enabled: false, defaultFee: 0, freeAbove: 0, governorates: [] };
+  return SHIPPING_ZONES;
+}
+
 function getShippingConfig() {
+  const z = SHIPPING_ZONES || {};
   const c = window.siteConfig || window.__SITE_CONFIG__ || {};
   return {
-    enabled: c.shippingEnabled === true,
-    fee: Number(c.shippingFee) || 0,
-    freeAbove: Number(c.shippingFreeAbove) || 0,
-    note: c.shippingNote || "",
-    days: c.shippingDays || ""
+    enabled: z.enabled === true || c.shippingEnabled === true,
+    fee: Number(z.defaultFee != null ? z.defaultFee : c.shippingFee) || 0,
+    freeAbove: Number(z.freeAbove != null ? z.freeAbove : c.shippingFreeAbove) || 0,
+    note: z.note || c.shippingNote || "",
+    days: z.days || c.shippingDays || ""
   };
 }
-function calcShipping(subtotal) {
+
+function findGov(id) {
+  const list = (SHIPPING_ZONES && SHIPPING_ZONES.governorates) || [];
+  return list.find(g => String(g.id) === String(id));
+}
+function findCenter(gov, centerId) {
+  if (!gov || !Array.isArray(gov.centers)) return null;
+  return gov.centers.find(c => String(c.id) === String(centerId));
+}
+
+function calcShipping(subtotal, govId, centerId) {
   const s = getShippingConfig();
-  if (!s.enabled) return { amount: 0, free: false, label: "بدون شحن", note: "" };
+  if (!s.enabled) return { amount: 0, free: false, label: "بدون شحن", note: "", govName: "", centerName: "" };
   const sub = Number(subtotal) || 0;
   if (s.freeAbove > 0 && sub >= s.freeAbove) {
-    return { amount: 0, free: true, label: "شحن مجاني", note: s.note || s.days || "" };
+    return { amount: 0, free: true, label: "شحن مجاني", note: s.note || s.days || "", govName: "", centerName: "" };
+  }
+  let amount = s.fee;
+  let govName = "";
+  let centerName = "";
+  const gov = govId ? findGov(govId) : null;
+  if (gov) {
+    govName = gov.name || "";
+    amount = Number(gov.fee != null ? gov.fee : amount) || amount;
+    const center = centerId ? findCenter(gov, centerId) : null;
+    if (center) {
+      centerName = center.name || "";
+      if (center.fee != null && center.fee !== "") amount = Number(center.fee) || amount;
+    }
   }
   return {
-    amount: Math.max(0, s.fee),
+    amount: Math.max(0, amount),
     free: false,
     label: "الشحن",
-    note: [s.days, s.note].filter(Boolean).join(" — ")
+    note: [s.days, s.note].filter(Boolean).join(" — "),
+    govName,
+    centerName
   };
 }
+
+function populateGovSelect() {
+  const sel = document.getElementById("orderGov");
+  if (!sel) return;
+  const zones = SHIPPING_ZONES || {};
+  const list = zones.governorates || [];
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">— اختاري المحافظة —</option>` +
+    list.map(g => `<option value="${g.id}">${g.name}</option>`).join("");
+  if (prev) sel.value = prev;
+}
+
+function populateCenterSelect() {
+  const govSel = document.getElementById("orderGov");
+  const cenSel = document.getElementById("orderCenter");
+  if (!cenSel) return;
+  const gov = govSel && govSel.value ? findGov(govSel.value) : null;
+  if (!gov) {
+    cenSel.innerHTML = `<option value="">— اختاري المركز —</option>`;
+    cenSel.disabled = true;
+    return;
+  }
+  cenSel.disabled = false;
+  const prev = cenSel.value;
+  cenSel.innerHTML = `<option value="">— اختاري المركز / الحي —</option>` +
+    (gov.centers || []).map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  if (prev && (gov.centers || []).some(c => String(c.id) === String(prev))) cenSel.value = prev;
+}
+
+function bindShippingSelects() {
+  const govSel = document.getElementById("orderGov");
+  const cenSel = document.getElementById("orderCenter");
+  if (govSel && !govSel.dataset.bound) {
+    govSel.addEventListener("change", () => {
+      populateCenterSelect();
+      if (typeof updateCartUI === "function") updateCartUI();
+    });
+    govSel.dataset.bound = "1";
+  }
+  if (cenSel && !cenSel.dataset.bound) {
+    cenSel.addEventListener("change", () => {
+      if (typeof updateCartUI === "function") updateCartUI();
+    });
+    cenSel.dataset.bound = "1";
+  }
+}
+
 
 function dealPriceForQty(product, qty) {
   qty = Math.max(1, Number(qty) || 1);
@@ -478,7 +586,7 @@ function updateCartUI() {
     if (p && (p.isOffer || p.offerMeta)) return s + dealPriceForQty(p, i.qty).lineTotal;
     return s + cartLinePrice(i) * (Number(i.qty) || 1);
   }, 0);
-  const ship = calcShipping(subtotal);
+  const ship = calcShipping(subtotal, document.getElementById("orderGov")?.value, document.getElementById("orderCenter")?.value);
   const total = subtotal + ship.amount;
   if ($("#cartSubtotal")) $("#cartSubtotal").textContent = money(subtotal);
   if ($("#cartShipping")) $("#cartShipping").textContent = ship.free ? "مجاني" : money(ship.amount);
@@ -795,7 +903,13 @@ $("#profileForm").addEventListener("submit", async (e) => {
   const email = ($("#profEmail")?.value || "").trim().toLowerCase();
   const address = ($("#profAddress")?.value || "").trim();
   if (!name) return toast("اكتب الاسم");
-  if (!phone) return toast("اكتب رقم الهاتف");
+  const govId = (document.getElementById("orderGov")?.value || "").trim();
+    const centerId = (document.getElementById("orderCenter")?.value || "").trim();
+    if (getShippingConfig().enabled) {
+      if (!govId) { alert("اختاري المحافظة"); return; }
+      if (!centerId) { alert("اختاري المركز / الحي"); return; }
+    }
+    if (!phone) return toast("اكتب رقم الهاتف");
   if (!email) return toast("اكتب البريد");
   const oldEmail = currentUser.email;
   currentUser.name = name;
@@ -894,7 +1008,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
       };
     });
     const subtotal = richItems.reduce((s, it) => s + Number(it.lineTotal != null ? it.lineTotal : (it.price * it.qty)), 0);
-    const shipInfo = calcShipping(subtotal);
+    const shipInfo = calcShipping(subtotal, document.getElementById("orderGov")?.value, document.getElementById("orderCenter")?.value);
     const shipping = shipInfo.amount;
     const total = subtotal + shipping;
     const lines = richItems.map(it => {
@@ -907,7 +1021,17 @@ $("#checkoutBtn").addEventListener("click", async () => {
       at: new Date().toISOString(),
       subtotal,
       shipping,
-      customer: { name: name || "عميل", phone, email: (currentUser && currentUser.email) || "", address, note },
+      customer: {
+        name: name || "عميل",
+        phone,
+        email: (currentUser && currentUser.email) || "",
+        address,
+        note,
+        governorate: (typeof shipInfo !== "undefined" && shipInfo.govName) || (document.getElementById("orderGov")?.selectedOptions?.[0]?.text || ""),
+        center: (typeof shipInfo !== "undefined" && shipInfo.centerName) || (document.getElementById("orderCenter")?.selectedOptions?.[0]?.text || ""),
+        governorateId: document.getElementById("orderGov")?.value || "",
+        centerId: document.getElementById("orderCenter")?.value || ""
+      },
       items: richItems,
       total,
       status: "new",
@@ -1537,6 +1661,8 @@ function nxTrack(action) {
 })();
 
 async function bootStore() {
+  try { await loadShippingZones(); populateGovSelect(); bindShippingSelects(); } catch (e) {}
+
   try { ensureHomeOnStart(); } catch (e) {}
   // عرض فوري من كاش الجلسة قبل الشبكة (ريفرش أسرع)
   try {
