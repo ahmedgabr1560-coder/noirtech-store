@@ -436,6 +436,25 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, order: o });
     }
 
+    
+    if (action === "update_shipping") {
+      let f = await ghGet("site-config.json");
+      if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
+      let config = {};
+      try { config = JSON.parse(f.content); } catch { config = {}; }
+      config.shippingEnabled = body.shippingEnabled === true || body.shippingEnabled === "true" || body.shippingEnabled === 1 || body.shippingEnabled === "1";
+      const fee = Number(body.shippingFee);
+      config.shippingFee = Number.isFinite(fee) && fee >= 0 ? fee : 0;
+      const freeAbove = Number(body.shippingFreeAbove);
+      config.shippingFreeAbove = Number.isFinite(freeAbove) && freeAbove > 0 ? freeAbove : 0;
+      config.shippingNote = String(body.shippingNote || "").slice(0, 300);
+      config.shippingDays = String(body.shippingDays || "").slice(0, 80);
+      f = await ghGet("site-config.json");
+      const put = await ghPut("site-config.json", JSON.stringify(config, null, 2), "Admin: update shipping settings", f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر حفظ الشحن", detail: put.data });
+      return res.status(200).json({ ok: true, config });
+    }
+
     if (action === "get_config") {
       const f = await ghGet("site-config.json");
       const config = f ? JSON.parse(f.content) : {};
