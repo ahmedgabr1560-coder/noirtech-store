@@ -40,6 +40,12 @@ export default async function handler(req, res) {
       const data = JSON.parse(raw);
       return res.status(200).json({ ok: true, ...data, ts: Date.now() });
     }
+    if (type === "shipping") {
+      const raw = await ghGet("shipping-zones.json");
+      if (!raw) return res.status(200).json({ ok: true, zones: { enabled: false, governorates: [] } });
+      const data = JSON.parse(raw);
+      return res.status(200).json({ ok: true, zones: data, ts: Date.now() });
+    }
     if (type === "config") {
       const raw = await ghGet("site-config.json");
       if (!raw) return res.status(502).json({ ok: false, error: "config unavailable" });
