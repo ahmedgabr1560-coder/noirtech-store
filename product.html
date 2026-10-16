@@ -645,14 +645,12 @@
     document.getElementById("closeCart")?.addEventListener("click", closeCart);
     document.getElementById("cartOverlay")?.addEventListener("click", closeCart);
     document.getElementById("ppHeaderCart")?.addEventListener("click", function () {
-      openCart();
-      loadZones().then(renderCart).catch(() => {});
+      location.href = "/?openCart=1";
     });
     document.addEventListener("click", async function (e) {
       if (!e.target.closest("#ppGoCart")) return;
       e.preventDefault();
-      openCart();
-      loadZones().then(renderCart).catch(() => {});
+      location.href = "/?openCart=1";
     });
     document.getElementById("checkoutBtn")?.addEventListener("click", async function () {
       const cart = readCart();
@@ -714,13 +712,12 @@
   </script>
 
   <script>
-    // فتح فوري مستقل عن تحميل بيانات الشحن أو بقية وظائف السلة.
+    // الانتقال الفوري إلى سلة المتجر الرئيسية.
     document.addEventListener("click", function (event) {
       const trigger = event.target.closest("#ppHeaderCart, #ppGoCart");
       if (!trigger) return;
-      document.getElementById("cartDrawer")?.classList.add("open");
-      document.getElementById("cartOverlay")?.classList.add("open");
-      document.body.style.overflow = "hidden";
+      event.preventDefault();
+      location.href = "/?openCart=1";
     }, true);
   </script>
 
