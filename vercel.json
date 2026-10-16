@@ -1,5 +1,6 @@
 {
   "buildCommand": "node scripts/validate-site.mjs",
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/api/(.*)",
