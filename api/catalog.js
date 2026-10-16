@@ -4,7 +4,7 @@ const GH_REPO = "noirtech-store";
 const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
 
 async function ghGet(path) {
-  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?t=${Date.now()}`, {
     headers: {
       Authorization: GH_TOKEN ? `Bearer ${GH_TOKEN}` : undefined,
       Accept: "application/vnd.github+json",
@@ -21,7 +21,8 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   // short cache so CDN helps a bit but admin changes show within seconds
-  res.setHeader("Cache-Control", "public, max-age=5, s-maxage=5, stale-while-revalidate=30");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  res.setHeader("Pragma", "no-cache");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "GET") return res.status(405).json({ ok: false, error: "GET only" });
 
