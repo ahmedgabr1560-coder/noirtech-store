@@ -32,11 +32,11 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=604800, stale-while-revalidate=2592000"
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
         },
         {
           "key": "CDN-Cache-Control",
-          "value": "public, max-age=604800, stale-while-revalidate=2592000"
+          "value": "no-store, no-cache, max-age=0"
         }
       ]
     },
@@ -67,7 +67,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=120, s-maxage=300, stale-while-revalidate=1800"
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
         }
       ]
     },
@@ -76,7 +76,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=120, s-maxage=300, stale-while-revalidate=1800"
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
         }
       ]
     }
