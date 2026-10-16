@@ -57,6 +57,17 @@
     .cart-line{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
     .cart-line img{width:56px;height:56px;object-fit:cover;border-radius:10px}
     .icon-close{background:transparent;border:0;color:#fff;font-size:1.5rem;cursor:pointer}
+    .pp-top strong{color:#f5f3ff!important}
+    .pp-card{background:linear-gradient(145deg,rgba(21,18,32,.96),rgba(12,12,18,.96));border-color:rgba(167,139,250,.22);box-shadow:0 22px 70px rgba(0,0,0,.38)}
+    #ppHeaderCart,#ppGoCart{border-color:rgba(167,139,250,.55)!important;color:#e9ddff!important;background:rgba(139,92,246,.12)!important}
+    #ppHeaderCart:hover,#ppGoCart:hover{background:rgba(139,92,246,.28)!important;border-color:#a78bfa!important}
+    #ppAddCart,#checkoutBtn{background:linear-gradient(135deg,#8b5cf6,#6d4be8)!important;color:#fff!important;border:0!important;box-shadow:0 10px 28px rgba(109,75,232,.28)}
+    #ppAddCart:hover,#checkoutBtn:hover{background:linear-gradient(135deg,#a78bfa,#7c5cf0)!important}
+    #cartDrawer{background:linear-gradient(180deg,#171522,#0e0e14)!important;border-color:rgba(167,139,250,.24)!important}
+    #cartDrawer .drawer-head{border-color:rgba(167,139,250,.18)!important}
+    #cartDrawer input,#cartDrawer select{border-color:rgba(167,139,250,.22)!important;background:#0b0a10!important}
+    #cartDrawer input:focus,#cartDrawer select:focus{outline:2px solid rgba(167,139,250,.55);outline-offset:1px}
+    #cartDrawer .cart-line{border-color:rgba(167,139,250,.14)!important}
 
   </style>
   <link rel="preload" href="/styles.css" as="style" />
@@ -140,7 +151,7 @@
     async function loadJSON(urls) {
       for (const u of urls) {
         try {
-          const r = await fetch(u, { cache: "default" });
+          const r = await fetch(u, { cache: "no-store" });
           if (r.ok) return await r.json();
         } catch (e) {}
       }
@@ -204,11 +215,13 @@
         return;
       }
       const [products, catalog] = await Promise.all([
-        loadJSON([
+          loadJSON([
+          "/api/catalog?type=products",
           "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json",
           "/products.json"
         ]),
         loadJSON([
+          "/api/catalog?type=categories",
           "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/categories.json?t=" + Date.now(),
           "/categories.json?t=" + Date.now()
         ])
@@ -486,7 +499,21 @@
   <script>
     (async function(){
       try {
-        const r = await fetch("/site-config.json?t="+Date.now(),{cache:"no-store"});
+        let r = await fetch("/api/catalog?type=config&t="+Date.now(),{cache:"no-store"});
+        if (r.ok) {
+          const wrapped = await r.json();
+          const c = wrapped.config || wrapped;
+          const name = (c.siteName||"NEXORA").trim();
+          const mark = (c.logoMark||name.slice(0,2)||"NX").toString().slice(0,3).toUpperCase();
+          document.querySelectorAll("[data-site-name]").forEach(el=>el.textContent=name);
+          document.querySelectorAll("[data-site-mark]").forEach(el=>el.textContent=mark);
+          if (!location.search.includes("id=")) document.title = name;
+          else if (document.title.includes("NEXORA")) document.title = document.title.replace(/NEXORA/g, name);
+          const strong = document.querySelector(".pp-top strong");
+          if (strong) strong.textContent = name;
+          return;
+        }
+        r = await fetch("/site-config.json?t="+Date.now(),{cache:"no-store"});
         if (!r.ok) return;
         const c = await r.json();
         const name = (c.siteName||"NEXORA").trim();
@@ -576,7 +603,7 @@
       }
       box.innerHTML = cart.map(function (i, idx) {
         const col = Array.isArray(i.colors) && i.colors.length ? i.colors.join("، ") : (i.color || "");
-        return '<div class="cart-line"><img src="' + (i.image || "") + '" alt="" onerror="this.style.display=\\'none\\'" /><div style="flex:1"><div style="font-weight:700">' + (i.name || ("#" + i.id)) + '</div>' +
+        return '<div class="cart-line"><img src="' + (i.image || "") + '" alt="" onerror="this.style.display=\'none\'" /><div style="flex:1"><div style="font-weight:700">' + (i.name || ("#" + i.id)) + '</div>' +
           (col ? '<div style="font-size:.8rem;color:#c4b5fd">' + col + '</div>' : '') +
           '<div style="font-size:.85rem;opacity:.85">' + money(i.price) + ' × ' + (i.qty || 1) + '</div></div>' +
           '<button type="button" data-rm="' + idx + '" style="background:transparent;border:0;color:#f87171;cursor:pointer">حذف</button></div>';
@@ -617,15 +644,15 @@
     document.getElementById("orderCenter")?.addEventListener("change", renderCart);
     document.getElementById("closeCart")?.addEventListener("click", closeCart);
     document.getElementById("cartOverlay")?.addEventListener("click", closeCart);
-    document.getElementById("ppHeaderCart")?.addEventListener("click", async function () {
-      await loadZones();
+    document.getElementById("ppHeaderCart")?.addEventListener("click", function () {
       openCart();
+      loadZones().then(renderCart).catch(() => {});
     });
     document.addEventListener("click", async function (e) {
       if (!e.target.closest("#ppGoCart")) return;
       e.preventDefault();
-      await loadZones();
       openCart();
+      loadZones().then(renderCart).catch(() => {});
     });
     document.getElementById("checkoutBtn")?.addEventListener("click", async function () {
       const cart = readCart();
