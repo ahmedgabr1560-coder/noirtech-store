@@ -2,8 +2,12 @@
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
 const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
+const memoryCache = new Map();
+const MEMORY_CACHE_MS = 2000;
 
 async function ghGet(path) {
+  const cached = memoryCache.get(path);
+  if (cached && Date.now() - cached.at < MEMORY_CACHE_MS) return cached.value;
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?t=${Date.now()}`, {
     headers: {
       Authorization: GH_TOKEN ? `Bearer ${GH_TOKEN}` : undefined,
@@ -13,15 +17,17 @@ async function ghGet(path) {
   });
   if (!r.ok) return null;
   const data = await r.json();
-  return Buffer.from(data.content, "base64").toString("utf8");
+  const value = Buffer.from(data.content, "base64").toString("utf8");
+  memoryCache.set(path, { at: Date.now(), value });
+  return value;
 }
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  // short cache so CDN helps a bit but admin changes show within seconds
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  // كاش قصير جدًا: أسرع بكثير، مع انعكاس تغييرات الأدمن خلال ثانيتين كحد أقصى.
+  res.setHeader("Cache-Control", "public, max-age=2, s-maxage=2, stale-while-revalidate=5");
   res.setHeader("Pragma", "no-cache");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "GET") return res.status(405).json({ ok: false, error: "GET only" });

@@ -1680,7 +1680,8 @@ function nxTrack(action) {
 })();
 
 async function bootStore() {
-  try { await loadShippingZones(); populateGovSelect(); bindShippingSelects(); } catch (e) {}
+  // الشحن ليس مطلوبًا لرسم الصفحة الأولى؛ حمّله في الخلفية حتى يظهر المتجر فورًا.
+  loadShippingZones().then(() => { populateGovSelect(); bindShippingSelects(); }).catch(() => {});
 
   try { ensureHomeOnStart(); } catch (e) {}
   // عرض فوري من كاش الجلسة قبل الشبكة (ريفرش أسرع)
