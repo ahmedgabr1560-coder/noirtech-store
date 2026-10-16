@@ -128,8 +128,7 @@ export async function geminiChat(system, messages, maxTokens = 450) {
           }
           break;
         }
-        const text = (data.candidates || []).flatMap(c => c.content?.parts || []).map(p => p.text).filter(Boolean).join("
-").trim();
+        const text = (data.candidates || []).flatMap(c => c.content?.parts || []).map(p => p.text).filter(Boolean).join("\n").trim();
         if (!text) { lastErr = `Gemini ${model} empty`; break; }
         return text;
       } catch (e) {
