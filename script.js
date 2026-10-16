@@ -59,11 +59,14 @@ function applyGeneralConfig(c) {
   }
   // AI float
   const aiEl = document.getElementById("aiChatBtn") || document.getElementById("floatAiBtn");
-  if (aiEl) {
-    aiEl.style.display = ""; // الشات العائم يفضل ظاهر دائمًا
-  }
+  if (aiEl) aiEl.style.display = c.showFloatAI === false ? "none" : "";
   const fb = document.getElementById("floatButtons");
   if (fb) fb.style.display = "flex";
+  const contact = document.getElementById("contact");
+  if (contact) contact.style.display = c.showContact === false ? "none" : "";
+  const categories = document.getElementById("catsMenuBtn");
+  if (categories) categories.closest(".nav-drop")?.style.setProperty("display", c.showCategories === false ? "none" : "");
+  document.querySelectorAll("#about, [data-section='about']").forEach(el => { el.style.display = c.showAbout === false ? "none" : ""; });
 
   // contact anchors in page
   document.querySelectorAll('a[href^="tel:"]').forEach(a => { if (phone) a.href = "tel:" + phone; });
