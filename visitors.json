@@ -1,14 +1,22 @@
 {
   "stats": {
-    "totalEnters": 476,
+    "totalEnters": 477,
     "totalLeaves": 336,
-    "uniqueSessions": 474,
-    "todayEnters": 5,
+    "uniqueSessions": 475,
+    "todayEnters": 6,
     "todayLeaves": 0,
     "todayDate": "2026-10-17",
     "accountsTotal": 0
   },
   "sessions": {
+    "s_dnqjrz1rcpomvbnxab0": {
+      "firstSeen": "2026-10-17T00:32:52.839Z",
+      "lastSeen": "2026-10-17T00:32:52.839Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0
+    },
     "s_nxv89tdldqmvbn4glx": {
       "firstSeen": "2026-10-17T00:10:29.885Z",
       "lastSeen": "2026-10-17T00:10:29.885Z",
@@ -3200,17 +3208,15 @@
       "status": "online",
       "enters": 1,
       "leaves": 0
-    },
-    "s_8e3sluu7uetmva62amb": {
-      "firstSeen": "2026-10-15T23:25:09.184Z",
-      "lastSeen": "2026-10-15T23:25:09.184Z",
-      "path": "/",
-      "status": "online",
-      "enters": 1,
-      "leaves": 0
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_dnqjrz1r…",
+      "path": "/",
+      "at": "2026-10-17T00:32:52.839Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_nxv89tdl…",
@@ -3684,12 +3690,6 @@
       "sessionId": "s_gqg3b23j…",
       "path": "/",
       "at": "2026-10-16T20:21:27.164Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_xtz6c20z…",
-      "path": "/",
-      "at": "2026-10-16T20:20:43.224Z"
     }
   ]
 }
