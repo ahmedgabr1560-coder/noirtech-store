@@ -535,6 +535,13 @@ function renderAll() {
   }
 }
 
+function getCouponCode() {
+  try { return String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); } catch (e) { return ""; }
+}
+function couponDiscount(subtotal) {
+  return getCouponCode() ? Math.min(20, Math.max(0, Number(subtotal) || 0)) : 0;
+}
+
 function updateCartUI() {
   const count = cart.reduce((s, i) => s + i.qty, 0);
   $("#cartCount").textContent = count;
@@ -545,6 +552,7 @@ function updateCartUI() {
     $("#cartTotal").textContent = money(0);
     if ($("#cartSubtotal")) $("#cartSubtotal").textContent = money(0);
     if ($("#cartShipping")) $("#cartShipping").textContent = money(0);
+    if ($("#cartDiscountRow")) $("#cartDiscountRow").hidden = true;
     if ($("#cartShippingHint")) { $("#cartShippingHint").style.display = "none"; $("#cartShippingHint").textContent = ""; }
     if (fields) fields.hidden = true;
     return;
@@ -590,9 +598,12 @@ function updateCartUI() {
     return s + cartLinePrice(i) * (Number(i.qty) || 1);
   }, 0);
   const ship = calcShipping(subtotal, document.getElementById("orderGov")?.value, document.getElementById("orderCenter")?.value);
-  const total = subtotal + ship.amount;
+  const discount = couponDiscount(subtotal);
+  const total = subtotal - discount + ship.amount;
   if ($("#cartSubtotal")) $("#cartSubtotal").textContent = money(subtotal);
   if ($("#cartShipping")) $("#cartShipping").textContent = ship.free ? "مجاني" : money(ship.amount);
+  if ($("#cartDiscount")) $("#cartDiscount").textContent = "- " + money(discount);
+  if ($("#cartDiscountRow")) $("#cartDiscountRow").hidden = discount <= 0;
   if ($("#cartShippingLabel")) $("#cartShippingLabel").textContent = ship.free ? "الشحن" : "الشحن";
   if ($("#cartShippingHint")) {
     const h = $("#cartShippingHint");
@@ -1013,7 +1024,8 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const subtotal = richItems.reduce((s, it) => s + Number(it.lineTotal != null ? it.lineTotal : (it.price * it.qty)), 0);
     const shipInfo = calcShipping(subtotal, document.getElementById("orderGov")?.value, document.getElementById("orderCenter")?.value);
     const shipping = shipInfo.amount;
-    const total = subtotal + shipping;
+    const discount = couponDiscount(subtotal);
+    const total = subtotal - discount + shipping;
     const lines = richItems.map(it => {
       const col = it.color ? (" | اللون: " + it.color) : "";
       const deal = it.dealLabel ? (" | عرض: " + it.dealLabel) : "";
@@ -1023,6 +1035,8 @@ $("#checkoutBtn").addEventListener("click", async () => {
       id: orderId,
       at: new Date().toISOString(),
       subtotal,
+      discount,
+      coupon: getCouponCode(),
       shipping,
       customer: {
         name: name || "عميل",
@@ -1062,7 +1076,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
     }
     let orderMsg = "🆔 " + orderId + "\\n👤 " + (name || "عميل") + "\\n📞 " + phone + "\\n📍 " + address + "\\n";
     if (note) orderMsg += "📝 " + note + "\\n";
-    orderMsg += "\\n📦 المنتجات:\\n" + lines.join("\\n") + "\\n\\n💰 الإجمالي: " + Number(total).toLocaleString("ar-EG") + " ج.م";
+    orderMsg += "\\n📦 المنتجات:\\n" + lines.join("\\n") + "\\n🎟️ الخصم: -" + Number(discount).toLocaleString("ar-EG") + " ج.م\\n\\n💰 الإجمالي: " + Number(total).toLocaleString("ar-EG") + " ج.م";
     try { await notifyAdmin("order", orderMsg, { order: orderRecord }); } catch (e) {}
     cart = []; saveCart(); closeCart();
     if ($("#orderNote")) $("#orderNote").value = "";

@@ -108,6 +108,7 @@
       <div class="drawer-foot">
         <div style="display:flex;justify-content:space-between;margin-bottom:8px;opacity:.9"><span>المنتجات</span><span id="cartSubtotal">0 ج.م</span></div>
         <div style="display:flex;justify-content:space-between;margin-bottom:8px;opacity:.9"><span>الشحن</span><span id="cartShipping">—</span></div>
+        <div id="cartDiscountRow" style="display:none;justify-content:space-between;margin-bottom:8px;color:#86efac"><span>الخصم</span><span id="cartDiscount">- 0 ج.م</span></div>
         <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-weight:800"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
         <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
         <div id="checkoutFields">
@@ -605,6 +606,8 @@
         box.innerHTML = '<div style="text-align:center;padding:24px;color:#9a9aa3">السلة فارغة</div>';
         const ss = document.getElementById("cartSubtotal");
         if (ss) ss.textContent = money(0);
+        const dr = document.getElementById("cartDiscountRow");
+        if (dr) dr.style.display = "none";
         const tt = document.getElementById("cartTotal");
         if (tt) tt.textContent = money(0);
         return;
@@ -618,11 +621,18 @@
       }).join("");
       const sub = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
       const ship = calcShip(sub);
-      const total = sub + ship.amount;
+      let coupon = "";
+      try { coupon = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); } catch (e) {}
+      const discount = coupon ? Math.min(20, Math.max(0, sub)) : 0;
+      const total = sub - discount + ship.amount;
       const ss = document.getElementById("cartSubtotal");
       if (ss) ss.textContent = money(sub);
       const sh = document.getElementById("cartShipping");
       if (sh) sh.textContent = ship.free ? "مجاني" : money(ship.amount);
+      const dr = document.getElementById("cartDiscountRow");
+      if (dr) dr.style.display = discount > 0 ? "flex" : "none";
+      const dd = document.getElementById("cartDiscount");
+      if (dd) dd.textContent = "- " + money(discount);
       const tt = document.getElementById("cartTotal");
       if (tt) tt.textContent = money(total);
     }
@@ -677,6 +687,9 @@
       if (!address) return alert("أدخلي العنوان");
       const sub = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
       const ship = calcShip(sub);
+      let coupon = "";
+      try { coupon = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); } catch (e) {}
+      const discount = coupon ? Math.min(20, Math.max(0, sub)) : 0;
       const order = {
         id: "NX-" + Date.now().toString().slice(-8),
         at: new Date().toISOString(),
@@ -693,8 +706,10 @@
           lineTotal: (Number(i.price) || 0) * (Number(i.qty) || 1)
         })),
         subtotal: sub,
+        discount,
+        coupon,
         shipping: ship.amount,
-        total: sub + ship.amount,
+        total: sub - discount + ship.amount,
         status: "new",
         paymentMethod: "cod"
       };
