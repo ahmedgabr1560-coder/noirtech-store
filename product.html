@@ -745,22 +745,19 @@
   </script>
 
   <script>
-    (function () {
+    // صفحة المنتج ترسم الخانة ديناميكيًا؛ لذلك نستخدم حدثًا مفوضًا.
+    document.addEventListener("click", function (event) {
+      if (!event.target.closest("#applyProductCoupon")) return;
       const input = document.getElementById("productCouponCode");
-      const button = document.getElementById("applyProductCoupon");
       const message = document.getElementById("productCouponMsg");
-      if (!input || !button) return;
-      try { input.value = localStorage.getItem("nx_coupon_code") || ""; } catch (e) {}
-      button.addEventListener("click", function () {
-        const code = String(input.value || "").trim().toUpperCase();
-        if (!code) {
-          if (message) message.textContent = "اكتبي كود الخصم أولًا";
-          return;
-        }
-        try { localStorage.setItem("nx_coupon_code", code); } catch (e) {}
-        if (message) message.textContent = "تم حفظ كود الخصم ✓ وسيظهر مع الطلب";
-      });
-    })();
+      const code = String(input?.value || "").trim().toUpperCase();
+      if (!code) {
+        if (message) message.textContent = "اكتبي كود الخصم أولًا";
+        return;
+      }
+      try { localStorage.setItem("nx_coupon_code", code); } catch (e) {}
+      if (message) message.textContent = "تم حفظ كود الخصم ✓ وسيظهر مع الطلب";
+    });
   </script>
 
 </body>
