@@ -326,7 +326,7 @@
               <p>${esc(desc)}</p>
             </div>
             <div class="product-coupon" style="margin-top:16px;padding:12px;border:1px solid rgba(167,139,250,.3);border-radius:12px;background:rgba(124,92,255,.08)">
-              <label for="productCouponCode" style="display:block;margin-bottom:7px;font-weight:700;color:#e9d5ff">كود الخصم</label>
+              <label for="productCouponCode" style="display:block;margin-bottom:7px;font-weight:700;color:#e9d5ff">كود الخصم — خصم 10%</label>
               <div style="display:flex;gap:8px;align-items:center">
                 <input type="text" id="productCouponCode" placeholder="اكتبي كود الخصم" autocomplete="off" dir="ltr" style="flex:1;min-width:0" />
                 <button type="button" class="btn btn-ghost" id="applyProductCoupon">تطبيق</button>
@@ -623,7 +623,8 @@
       const ship = calcShip(sub);
       let coupon = "";
       try { coupon = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); } catch (e) {}
-      const discount = coupon ? Math.min(20, Math.max(0, sub)) : 0;
+      const discount = ["NEXORA10", "WELCOME10", "FIRST10", "SAVE10", "EGYPT10"].includes(coupon)
+        ? Math.round(Math.max(0, sub) * 0.10 * 100) / 100 : 0;
       const total = sub - discount + ship.amount;
       const ss = document.getElementById("cartSubtotal");
       if (ss) ss.textContent = money(sub);
@@ -689,7 +690,8 @@
       const ship = calcShip(sub);
       let coupon = "";
       try { coupon = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); } catch (e) {}
-      const discount = coupon ? Math.min(20, Math.max(0, sub)) : 0;
+      const discount = ["NEXORA10", "WELCOME10", "FIRST10", "SAVE10", "EGYPT10"].includes(coupon)
+        ? Math.round(Math.max(0, sub) * 0.10 * 100) / 100 : 0;
       const order = {
         id: "NX-" + Date.now().toString().slice(-8),
         at: new Date().toISOString(),
@@ -751,12 +753,18 @@
       const input = document.getElementById("productCouponCode");
       const message = document.getElementById("productCouponMsg");
       const code = String(input?.value || "").trim().toUpperCase();
+      const validCodes = ["NEXORA10", "WELCOME10", "FIRST10", "SAVE10", "EGYPT10"];
       if (!code) {
         if (message) message.textContent = "اكتبي كود الخصم أولًا";
         return;
       }
+      if (!validCodes.includes(code)) {
+        try { localStorage.removeItem("nx_coupon_code"); } catch (e) {}
+        if (message) message.textContent = "كود الخصم غير صالح";
+        return;
+      }
       try { localStorage.setItem("nx_coupon_code", code); } catch (e) {}
-      if (message) message.textContent = "تم حفظ كود الخصم ✓ وسيظهر مع الطلب";
+      if (message) message.textContent = "تم تطبيق خصم 10% ✓ وسيظهر مع الطلب";
     });
   </script>
 

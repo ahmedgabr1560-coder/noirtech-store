@@ -535,11 +535,25 @@ function renderAll() {
   }
 }
 
+const COUPON_CODES = Object.freeze({
+  NEXORA10: 10,
+  WELCOME10: 10,
+  FIRST10: 10,
+  SAVE10: 10,
+  EGYPT10: 10
+});
 function getCouponCode() {
-  try { return String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); } catch (e) { return ""; }
+  try {
+    const code = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+    return Object.prototype.hasOwnProperty.call(COUPON_CODES, code) ? code : "";
+  } catch (e) { return ""; }
+}
+function couponPercent(code = getCouponCode()) {
+  return COUPON_CODES[code] || 0;
 }
 function couponDiscount(subtotal) {
-  return getCouponCode() ? Math.min(20, Math.max(0, Number(subtotal) || 0)) : 0;
+  const amount = Math.max(0, Number(subtotal) || 0);
+  return Math.round(amount * couponPercent() ) / 100;
 }
 
 function updateCartUI() {
