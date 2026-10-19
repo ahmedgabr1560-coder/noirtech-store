@@ -8,16 +8,12 @@ const MEMORY_CACHE_MS = 2000;
 async function ghGet(path) {
   const cached = memoryCache.get(path);
   if (cached && Date.now() - cached.at < MEMORY_CACHE_MS) return cached.value;
-  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?t=${Date.now()}`, {
-    headers: {
-      Authorization: GH_TOKEN ? `Bearer ${GH_TOKEN}` : undefined,
-      Accept: "application/vnd.github+json",
-      "User-Agent": "NEXORA-Catalog"
-    }
+  // GitHub Contents API omits `content` for files larger than 1 MB.
+  const r = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
+    headers: { "User-Agent": "NEXORA-Catalog" }
   });
   if (!r.ok) return null;
-  const data = await r.json();
-  const value = Buffer.from(data.content, "base64").toString("utf8");
+  const value = await r.text();
   memoryCache.set(path, { at: Date.now(), value });
   return value;
 }

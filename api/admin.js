@@ -17,7 +17,19 @@ async function ghGet(path) {
   });
   if (!r.ok) return null;
   const data = await r.json();
-  return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
+  // GitHub does not return `content` for files larger than 1 MB. Use the raw
+  // endpoint as a fallback so large products.json files remain manageable.
+  let content = "";
+  if (typeof data.content === "string") {
+    content = Buffer.from(data.content, "base64").toString("utf8");
+  } else {
+    const raw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
+      headers: { "User-Agent": "NEXORA-Admin" },
+    });
+    if (!raw.ok) return null;
+    content = await raw.text();
+  }
+  return { content, sha: data.sha };
 }
 async function ghPut(path, content, message, sha, rawBase64) {
   // rawBase64: optional already-base64 binary (for images); content used as utf8 text otherwise
