@@ -20,7 +20,7 @@ async function ghGet(path) {
   // GitHub does not return `content` for files larger than 1 MB. Use the raw
   // endpoint as a fallback so large products.json files remain manageable.
   let content = "";
-  if (typeof data.content === "string") {
+  if (typeof data.content === "string" && data.content.trim()) {
     content = Buffer.from(data.content, "base64").toString("utf8");
   } else {
     const raw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
