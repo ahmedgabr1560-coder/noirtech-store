@@ -566,7 +566,19 @@
         headers: { "Content-Type": "application/json", "x-admin-secret": SECRET },
         body: JSON.stringify({ secret: SECRET, action, ...payload })
       });
-      const data = await r.json();
+      const text = await r.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (e) {}
+      if (!data || typeof data !== "object") {
+        return {
+          ok: false,
+          error: r.status === 401
+            ? "كلمة المرور غير صحيحة أو انتهت صلاحيتها"
+            : `تعذر الاتصال بالخادم (${r.status || "بدون استجابة"})`
+        };
+      }
       const readOnly = /^(list_|get_|stats$)/.test(String(action || ""));
       if (data && data.ok && !readOnly) bustStoreCaches();
       return data;
