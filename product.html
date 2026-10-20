@@ -598,13 +598,22 @@
     }
     async function loadZones() {
       if (ZONES) return ZONES;
-      try {
-        const r = await fetch("/api/catalog?type=shipping&t=" + Date.now(), { cache: "no-store" });
-        if (r.ok) {
+      const urls = [
+        "/api/catalog?type=shipping&t=" + Date.now(),
+        "/shipping-zones.json?t=" + Date.now()
+      ];
+      for (const url of urls) {
+        try {
+          const r = await fetch(url, { cache: "no-store" });
+          if (!r.ok) continue;
           const d = await r.json();
-          ZONES = d.zones || d;
-        }
-      } catch (e) {}
+          const zones = d.zones || d;
+          if (zones && (Array.isArray(zones.governorates) && zones.governorates.length || zones.enabled != null)) {
+            ZONES = zones;
+            if (Array.isArray(ZONES.governorates) && ZONES.governorates.length) break;
+          }
+        } catch (e) {}
+      }
       ZONES = ZONES || { enabled: false, defaultFee: 0, governorates: [] };
       const sel = document.getElementById("orderGov");
       if (sel && sel.options.length <= 1) {
@@ -644,6 +653,8 @@
         if (sh) sh.textContent = money(0);
         const dr = document.getElementById("cartDiscountRow");
         if (dr) dr.style.display = "none";
+        const hint = document.getElementById("cartShippingHint");
+        if (hint) { hint.style.display = "none"; hint.textContent = ""; }
         const tt = document.getElementById("cartTotal");
         if (tt) tt.textContent = money(0);
         return;
@@ -677,6 +688,14 @@
       if (dd) dd.textContent = "- " + money(discount);
       const tt = document.getElementById("cartTotal");
       if (tt) tt.textContent = money(total);
+      const hint = document.getElementById("cartShippingHint");
+      if (hint) {
+        const enabled = ZONES && ZONES.enabled === true;
+        hint.style.display = enabled ? "block" : "none";
+        hint.textContent = ship.free
+          ? "✓ شحن مجاني"
+          : (enabled ? "الشحن حسب المحافظة والمركز — " + money(ship.amount) : "");
+      }
     }
     document.getElementById("cartItems")?.addEventListener("click", function (e) {
       const inc = e.target.closest("[data-inc]");
