@@ -661,13 +661,18 @@
     document.getElementById("orderCenter")?.addEventListener("change", renderCart);
     document.getElementById("closeCart")?.addEventListener("click", closeCart);
     document.getElementById("cartOverlay")?.addEventListener("click", closeCart);
-    document.getElementById("ppHeaderCart")?.addEventListener("click", function () {
-      location.href = "/?openCart=1";
-    });
-    document.addEventListener("click", async function (e) {
+    function openCheckoutFromProduct(e) {
+      e?.preventDefault();
+      openCart();
+      loadZones().then(() => {
+        renderCart();
+        document.getElementById("checkoutFields")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    }
+    document.getElementById("ppHeaderCart")?.addEventListener("click", openCheckoutFromProduct);
+    document.addEventListener("click", function (e) {
       if (!e.target.closest("#ppGoCart")) return;
-      e.preventDefault();
-      location.href = "/?openCart=1";
+      openCheckoutFromProduct(e);
     });
     document.getElementById("checkoutBtn")?.addEventListener("click", async function () {
       const cart = readCart();
