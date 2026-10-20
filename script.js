@@ -245,6 +245,49 @@ function normalizePhone(v) {
   return String(v || "").replace(/[٠-٩]/g, d => map[d] || d).replace(/[^0-9+]/g, "");
 }
 
+const CHECKOUT_DRAFT_KEY = "nx_checkout_draft";
+function readCheckoutDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(CHECKOUT_DRAFT_KEY) || "null");
+    return draft && typeof draft === "object" ? draft : {};
+  } catch (e) { return {}; }
+}
+function saveCheckoutDraft() {
+  try {
+    const get = id => document.getElementById(id)?.value || "";
+    localStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify({
+      name: get("orderName").trim(),
+      phone: get("orderPhone").trim(),
+      address: get("orderAddress").trim(),
+      note: get("orderNote").trim(),
+      governorate: document.getElementById("orderGov")?.value || "",
+      center: document.getElementById("orderCenter")?.value || ""
+    }));
+  } catch (e) {}
+}
+function restoreCheckoutDraft() {
+  const draft = readCheckoutDraft();
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if (el && value && !el.value) el.value = value;
+  };
+  set("orderName", draft.name);
+  set("orderPhone", draft.phone);
+  set("orderAddress", draft.address);
+  set("orderNote", draft.note);
+  const gov = document.getElementById("orderGov");
+  if (gov && draft.governorate) gov.value = draft.governorate;
+  const cen = document.getElementById("orderCenter");
+  if (cen && draft.center) cen.value = draft.center;
+}
+function bindCheckoutDraft() {
+  ["orderName", "orderPhone", "orderAddress", "orderNote", "orderGov", "orderCenter"].forEach(id => {
+    document.getElementById(id)?.addEventListener("input", saveCheckoutDraft);
+    document.getElementById(id)?.addEventListener("change", saveCheckoutDraft);
+  });
+  restoreCheckoutDraft();
+}
+
 
 let SHIPPING_ZONES = null;
 
@@ -1708,8 +1751,14 @@ function nxTrack(action) {
 })();
 
 async function bootStore() {
+  bindCheckoutDraft();
   // الشحن ليس مطلوبًا لرسم الصفحة الأولى؛ حمّله في الخلفية حتى يظهر المتجر فورًا.
-  loadShippingZones().then(() => { populateGovSelect(); bindShippingSelects(); }).catch(() => {});
+  loadShippingZones().then(() => {
+    populateGovSelect();
+    bindShippingSelects();
+    restoreCheckoutDraft();
+    populateCenterSelect();
+  }).catch(() => {});
 
   try { ensureHomeOnStart(); } catch (e) {}
   // عرض فوري من كاش الجلسة قبل الشبكة (ريفرش أسرع)
