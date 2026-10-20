@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 1142,
-    "totalLeaves": 494,
+    "totalLeaves": 495,
     "uniqueSessions": 1139,
     "todayEnters": 132,
-    "todayLeaves": 23,
+    "todayLeaves": 24,
     "todayDate": "2026-10-20",
     "accountsTotal": 0,
     "uniqueDevices": 55,
@@ -17,6 +17,15 @@
     }
   },
   "sessions": {
+    "s_5r8eixoblgkmvh0g9zs": {
+      "firstSeen": "2026-10-20T18:22:27.706Z",
+      "lastSeen": "2026-10-20T18:22:53.774Z",
+      "path": "/?fbclid=IwZXh0bgNhZW0CMTEAcGRvZgRzcnRjBmFwcF9pZAwyNTYyODEwNDA1NTgAAR7Pk_E0_lsFjHlezuXwXspMmzqAOL9ZxRFth9qICCODzkfMmu4Rh",
+      "status": "left",
+      "enters": 1,
+      "leaves": 1,
+      "deviceId": "d_7c2j5g4relhmvh0g9zt"
+    },
     "s_qi9xv18qxemvh0g9ph": {
       "firstSeen": "2026-10-20T18:22:52.077Z",
       "lastSeen": "2026-10-20T18:22:52.077Z",
@@ -34,15 +43,6 @@
       "enters": 0,
       "leaves": 1,
       "deviceId": "d_nlkjn7begjmvh0ga48"
-    },
-    "s_5r8eixoblgkmvh0g9zs": {
-      "firstSeen": "2026-10-20T18:22:27.706Z",
-      "lastSeen": "2026-10-20T18:22:27.706Z",
-      "path": "/?fbclid=IwZXh0bgNhZW0CMTEAcGRvZgRzcnRjBmFwcF9pZAwyNTYyODEwNDA1NTgAAR7Pk_E0_lsFjHlezuXwXspMmzqAOL9ZxRFth9qICCODzkfMmu4Rh",
-      "status": "online",
-      "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_7c2j5g4relhmvh0g9zt"
     },
     "s_gqrs5vu6i8lmvh0g9wt": {
       "firstSeen": "2026-10-20T18:22:27.431Z",
@@ -3366,6 +3366,12 @@
   "recent": [
     {
       "type": "leave",
+      "sessionId": "s_5r8eixob…",
+      "path": "/",
+      "at": "2026-10-20T18:22:53.774Z"
+    },
+    {
+      "type": "leave",
       "sessionId": "s_femfq4l5…",
       "path": "/",
       "at": "2026-10-20T18:22:51.847Z"
@@ -3837,15 +3843,13 @@
       "sessionId": "s_n4i3olgf…",
       "path": "/",
       "at": "2026-10-20T10:09:14.594Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_n4i3olgf…",
-      "path": "/",
-      "at": "2026-10-20T10:09:13.774Z"
     }
   ],
   "devices": {
+    "d_7c2j5g4relhmvh0g9zt": {
+      "firstSeen": "2026-10-20T18:22:27.706Z",
+      "lastSeen": "2026-10-20T18:22:53.774Z"
+    },
     "d_0rbpe0s75nhnmvh0g9ph": {
       "firstSeen": "2026-10-20T18:22:52.077Z",
       "lastSeen": "2026-10-20T18:22:52.077Z"
@@ -3853,10 +3857,6 @@
     "d_nlkjn7begjmvh0ga48": {
       "firstSeen": "2026-10-20T18:22:51.847Z",
       "lastSeen": "2026-10-20T18:22:51.847Z"
-    },
-    "d_7c2j5g4relhmvh0g9zt": {
-      "firstSeen": "2026-10-20T18:22:27.706Z",
-      "lastSeen": "2026-10-20T18:22:27.706Z"
     },
     "d_dp2nm4n8a3mvh0g9wt": {
       "firstSeen": "2026-10-20T18:22:27.431Z",
