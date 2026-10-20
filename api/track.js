@@ -32,6 +32,21 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function maskIp(value) {
+  const raw = String(value || "").split(",")[0].trim();
+  if (!raw) return "غير متاح";
+  if (raw.includes(".")) {
+    const p = raw.split(".");
+    return p.length === 4 ? p.slice(0, 3).join(".") + ".xxx" : "غير متاح";
+  }
+  if (raw.includes(":")) return raw.split(":").slice(0, 4).join(":") + ":xxxx";
+  return "غير متاح";
+}
+
+function requestIp(req) {
+  return req.headers?.["x-forwarded-for"] || req.headers?.["x-real-ip"] || "";
+}
+
 function emptyVisitors() {
   return {
     stats: {
@@ -165,6 +180,7 @@ export default async function handler(req, res) {
       if (!sid || sid.length < 8) return res.status(400).json({ ok: false, error: "sessionId" });
       const path = String(body.path || "/").slice(0, 120);
       const now = new Date().toISOString();
+      const ipMasked = maskIp(requestIp(req));
 
       const result = await withRetry((v) => {
         if (!v || typeof v !== "object") v = emptyVisitors();
@@ -181,7 +197,7 @@ export default async function handler(req, res) {
         const allowedTypes = new Set(["android", "iphone", "ipad", "desktop", "other"]);
         const deviceType = allowedTypes.has(String(body.deviceType || "")) ? String(body.deviceType) : "other";
         if (deviceId) {
-          v.devices[deviceId] = { firstSeen: v.devices[deviceId]?.firstSeen || now, lastSeen: now, type: deviceType };
+          v.devices[deviceId] = { firstSeen: v.devices[deviceId]?.firstSeen || now, lastSeen: now, type: deviceType, ipMasked };
           if (isNewDevice) {
             v.stats.uniqueDevices = (v.stats.uniqueDevices || 0) + 1;
             v.stats.deviceTypes[deviceType] = (v.stats.deviceTypes[deviceType] || 0) + 1;
@@ -195,7 +211,11 @@ export default async function handler(req, res) {
           enters: 0,
           leaves: 0
         };
-        if (deviceId) prev.deviceId = deviceId;
+        if (deviceId) {
+          prev.deviceId = deviceId;
+          prev.deviceType = deviceType;
+          prev.ipMasked = ipMasked;
+        }
 
         if (action === "enter") {
           if (isNew) {

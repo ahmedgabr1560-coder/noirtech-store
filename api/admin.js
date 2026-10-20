@@ -400,7 +400,9 @@ export default async function handler(req, res) {
           firstSeen: s.firstSeen,
           lastSeen: s.lastSeen,
           enters: s.enters || 0,
-          leaves: s.leaves || 0
+          leaves: s.leaves || 0,
+          deviceType: s.deviceType || "other",
+          ipMasked: s.ipMasked || "غير متاح"
         };
       }).sort((a, b) => new Date(b.lastSeen || 0) - new Date(a.lastSeen || 0));
       const stats = data.stats || {};

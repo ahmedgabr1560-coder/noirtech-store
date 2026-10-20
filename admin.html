@@ -323,6 +323,13 @@
               <tbody id="accountsBody"><tr><td colspan="4">—</td></tr></tbody>
             </table>
           </div>
+          <h3 style="margin:18px 0 8px;font-size:1rem">آخر الأجهزة الزائرة</h3>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead><tr><th>نوع الجهاز</th><th>IP مقنّع</th><th>آخر ظهور</th><th>الحالة</th></tr></thead>
+              <tbody id="devicesBody"><tr><td colspan="4">—</td></tr></tbody>
+            </table>
+          </div>
           <!-- عناصر مخفية للتوافق مع السكربت القديم -->
           <span id="vTodayOut" style="display:none">—</span>
           <span id="vTotalOut" style="display:none">—</span>
@@ -1094,6 +1101,15 @@
             <td><button type="button" class="btn btn-ghost" data-del-acc="${(u.email || "").replace(/"/g,"")}" style="padding:4px 8px;font-size:.8rem">حذف</button></td>
           </tr>`).join("") : `<tr><td colspan="4">لا حسابات بعد</td></tr>`;
         }
+        const db = $("#devicesBody");
+        const labels = { android: "أندرويد", iphone: "آيفون", ipad: "آيباد", desktop: "كمبيوتر", other: "أخرى" };
+        const sessions = (vData && vData.sessions) || [];
+        if (db) db.innerHTML = sessions.length ? sessions.slice(0, 30).map(s => `<tr>
+          <td>${labels[s.deviceType] || labels.other}</td>
+          <td dir="ltr">${s.ipMasked || "غير متاح"}</td>
+          <td>${s.lastSeen ? new Date(s.lastSeen).toLocaleString("ar-EG") : "—"}</td>
+          <td>${s.status === "online" ? "متصل" : "غادر"}</td>
+        </tr>`).join("") : `<tr><td colspan="4">لا توجد زيارات مسجلة بعد</td></tr>`;
       } catch (e) {
         console.error(e);
         alert("تعذر تحميل الزوار: " + (e.message || e));
