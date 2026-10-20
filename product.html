@@ -128,7 +128,7 @@
           <div class="cart-summary-row total"><span>الإجمالي النهائي</span><strong id="cartTotal">0 ج.م</strong></div>
         </div>
         <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
-        <div id="checkoutFields">
+        <div id="checkoutFields" hidden>
           <label style="display:block;margin-bottom:8px">الاسم
             <input type="text" id="orderName" placeholder="اسم المستلم" style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff" />
           </label>
@@ -152,7 +152,7 @@
             <input type="text" id="orderNote" style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff" />
           </label>
         </div>
-        <button type="button" class="btn btn-primary" id="checkoutBtn" style="width:100%">إتمام الطلب الآن</button>
+        <button type="button" class="btn btn-primary" id="checkoutBtn" hidden style="width:100%">إتمام الطلب الآن</button>
       </div>
     </div>
   </aside>
@@ -623,6 +623,10 @@
       if (!box) return;
       if (!cart.length) {
         box.innerHTML = '<div class="cart-empty"><div><div class="cart-empty-icon">🛒</div><strong>السلة فارغة</strong><span>أضيفي منتجًا للبدء في إتمام طلبك</span></div></div>';
+        const fields = document.getElementById("checkoutFields");
+        if (fields) fields.hidden = true;
+        const checkout = document.getElementById("checkoutBtn");
+        if (checkout) checkout.hidden = true;
         const ss = document.getElementById("cartSubtotal");
         if (ss) ss.textContent = money(0);
         const sh = document.getElementById("cartShipping");
@@ -633,6 +637,10 @@
         if (tt) tt.textContent = money(0);
         return;
       }
+      const fields = document.getElementById("checkoutFields");
+      if (fields) fields.hidden = false;
+      const checkout = document.getElementById("checkoutBtn");
+      if (checkout) checkout.hidden = false;
       box.innerHTML = cart.map(function (i, idx) {
         const col = Array.isArray(i.colors) && i.colors.length ? i.colors.join("، ") : (i.color || "");
         return '<div class="cart-line"><img src="' + (i.image || "") + '" alt="" onerror="this.style.display=\'none\'" /><div><h4>' + (i.name || ("#" + i.id)) + '</h4>' +
