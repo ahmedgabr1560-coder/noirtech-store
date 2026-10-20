@@ -1,3 +1,4 @@
+document.documentElement.classList.toggle("android-device", /Android/i.test(navigator.userAgent || ""));
 function debounce(fn, ms){ let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), ms); }; }
 
 function paymentLabel(method) {

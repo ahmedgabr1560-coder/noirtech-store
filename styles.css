@@ -770,6 +770,13 @@ button, input, select, textarea { font-family: inherit; }
 }
 @media (max-width: 400px) {
   .products-grid { grid-template-columns: 1fr; }
+  html.android-device .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  html.android-device .product-card { border-radius: 14px; }
+  html.android-device .product-body { padding: 9px; gap: 4px; }
+  html.android-device .product-name { font-size: 0.78rem; }
+  html.android-device .price { font-size: 0.9rem; }
+  html.android-device .old-price { font-size: 0.68rem; }
+  html.android-device .add-btn { padding: 8px 6px; border-radius: 10px; font-size: 0.78rem; }
 }
 
 
