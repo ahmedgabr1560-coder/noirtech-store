@@ -1724,6 +1724,14 @@ function nxDeviceId() {
     return "d_" + Date.now();
   }
 }
+function nxDeviceType() {
+  const ua = navigator.userAgent || "";
+  if (/iPad|Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return "ipad";
+  if (/iPhone|iPod/.test(ua)) return "iphone";
+  if (/Android/i.test(ua)) return "android";
+  if (/Windows|Macintosh|Linux|CrOS/i.test(ua)) return "desktop";
+  return "other";
+}
 function nxTrack(action) {
   // تقليل الضغط على السيرفر
   try {
@@ -1731,6 +1739,7 @@ function nxTrack(action) {
       action: action,
       sessionId: nxSessionId(),
       deviceId: nxDeviceId(),
+      deviceType: nxDeviceType(),
       path: (location.pathname + location.search).slice(0, 120)
     });
     if (action === "leave" && navigator.sendBeacon) {

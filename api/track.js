@@ -42,7 +42,8 @@ function emptyVisitors() {
       todayLeaves: 0,
       todayDate: todayStr(),
       accountsTotal: 0,
-      uniqueDevices: 0
+      uniqueDevices: 0,
+      deviceTypes: { android: 0, iphone: 0, ipad: 0, desktop: 0, other: 0 }
     },
     sessions: {},
     devices: {},
@@ -168,6 +169,7 @@ export default async function handler(req, res) {
       const result = await withRetry((v) => {
         if (!v || typeof v !== "object") v = emptyVisitors();
         if (!v.stats) v.stats = emptyVisitors().stats;
+        if (!v.stats.deviceTypes) v.stats.deviceTypes = { android: 0, iphone: 0, ipad: 0, desktop: 0, other: 0 };
         if (!v.sessions) v.sessions = {};
         if (!v.devices) v.devices = {};
         if (!Array.isArray(v.recent)) v.recent = [];
@@ -176,9 +178,14 @@ export default async function handler(req, res) {
         const isNew = !v.sessions[sid];
         const deviceId = String(body.deviceId || "").slice(0, 80);
         const isNewDevice = deviceId && !v.devices[deviceId];
+        const allowedTypes = new Set(["android", "iphone", "ipad", "desktop", "other"]);
+        const deviceType = allowedTypes.has(String(body.deviceType || "")) ? String(body.deviceType) : "other";
         if (deviceId) {
-          v.devices[deviceId] = { firstSeen: v.devices[deviceId]?.firstSeen || now, lastSeen: now };
-          if (isNewDevice) v.stats.uniqueDevices = (v.stats.uniqueDevices || 0) + 1;
+          v.devices[deviceId] = { firstSeen: v.devices[deviceId]?.firstSeen || now, lastSeen: now, type: deviceType };
+          if (isNewDevice) {
+            v.stats.uniqueDevices = (v.stats.uniqueDevices || 0) + 1;
+            v.stats.deviceTypes[deviceType] = (v.stats.deviceTypes[deviceType] || 0) + 1;
+          }
         }
         const prev = v.sessions[sid] || {
           firstSeen: now,
