@@ -263,6 +263,16 @@
           <label>رقم الهاتف *
             <input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" inputmode="tel" autocomplete="tel" />
           </label>
+          <label>المحافظة *
+            <select id="orderGov" autocomplete="address-level1">
+              <option value="">— اختاري المحافظة —</option>
+            </select>
+          </label>
+          <label>المركز / الحي *
+            <select id="orderCenter" autocomplete="address-level2" disabled>
+              <option value="">— اختاري المركز / الحي —</option>
+            </select>
+          </label>
           <label>العنوان بالتفصيل *
             <input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - الشارع" autocomplete="street-address" />
           </label>
@@ -279,7 +289,7 @@
             <div id="payInstructions" class="pay-instructions" hidden></div>
           </div>
         </div>
-        <button type="button" class="btn btn-primary btn-block" id="checkoutBtn">إتمام الطلب الآن</button>
+        <button type="button" class="btn btn-primary btn-block" id="checkoutBtn" hidden>إتمام الطلب الآن</button>
         <p class="checkout-hint">أكملي البيانات ثم أكّدي الطلب</p>
       </div>
     </div>

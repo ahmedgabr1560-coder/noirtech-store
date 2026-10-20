@@ -73,14 +73,17 @@
     #ppHeaderCart:hover,#ppGoCart:hover{background:rgba(139,92,246,.28)!important;border-color:#a78bfa!important}
     #ppAddCart,#checkoutBtn{background:linear-gradient(135deg,#8b5cf6,#6d4be8)!important;color:#fff!important;border:0!important;box-shadow:0 10px 28px rgba(109,75,232,.28)}
     #ppAddCart:hover,#checkoutBtn:hover{background:linear-gradient(135deg,#a78bfa,#7c5cf0)!important}
-    #cartDrawer{background:linear-gradient(180deg,#171522,#0e0e14)!important;border-color:rgba(167,139,250,.24)!important}
-    #cartDrawer .drawer-head{border-color:rgba(167,139,250,.18)!important}
-    #cartDrawer input,#cartDrawer select{border-color:rgba(167,139,250,.22)!important;background:#0b0a10!important}
+    #cartDrawer{width:min(380px,100%);background:#0a0a0c!important;border-color:rgba(255,255,255,.08)!important}
+    #cartDrawer .drawer-head{padding:12px 14px;border-color:rgba(255,255,255,.08)!important;background:#0a0a0c!important}
+    #cartDrawer .drawer-body{padding:10px 12px}
+    #cartDrawer .drawer-foot{padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:#0a0a0c!important;border-color:rgba(255,255,255,.08)!important}
+    #cartDrawer .cart-summary{display:grid;gap:10px;margin:0;padding:0;border:0;background:transparent}
+    #cartDrawer input,#cartDrawer select{border-color:rgba(255,255,255,.1)!important;background:rgba(255,255,255,.04)!important}
     #cartDrawer input:focus,#cartDrawer select:focus{outline:2px solid rgba(167,139,250,.55);outline-offset:1px}
-    #cartDrawer .cart-line{border-color:rgba(167,139,250,.14)!important}
+    #cartDrawer .cart-line{border-color:rgba(255,255,255,.08)!important}
     #cartDrawer .drawer-foot label{font-size:.78rem;color:#c9c6d5;font-weight:700}
     #cartDrawer #checkoutBtn{margin-top:4px;padding:13px;border-radius:13px;font-weight:900}
-    @media (max-width:460px){#cartDrawer{width:100%}.drawer-head,.drawer-body,.drawer-foot{padding-left:15px;padding-right:15px}.cart-line{grid-template-columns:62px 1fr auto}.cart-line img{width:62px;height:62px}}
+    @media (max-width:460px){#cartDrawer{width:100%}.drawer-head,.drawer-body,.drawer-foot{padding-left:12px;padding-right:12px}.cart-line{grid-template-columns:52px 1fr auto}.cart-line img{width:52px;height:52px}}
 
   </style>
   <link rel="preload" href="/styles.css" as="style" />
@@ -122,10 +125,10 @@
       <div class="drawer-body" id="cartItems"></div>
       <div class="drawer-foot">
         <div class="cart-summary">
-          <div class="cart-summary-row"><span>المنتجات</span><strong id="cartSubtotal">0 ج.م</strong></div>
-          <div class="cart-summary-row"><span>الشحن</span><strong id="cartShipping">—</strong></div>
-          <div id="cartDiscountRow" class="cart-summary-row" style="display:none;color:#86efac"><span>الخصم</span><strong id="cartDiscount">- 0 ج.م</strong></div>
-          <div class="cart-summary-row total"><span>الإجمالي النهائي</span><strong id="cartTotal">0 ج.م</strong></div>
+          <div class="cart-total-row"><span>المنتجات</span><strong id="cartSubtotal">0 ج.م</strong></div>
+          <div class="cart-total-row"><span>الشحن</span><strong id="cartShipping">—</strong></div>
+          <div id="cartDiscountRow" class="cart-total-row" style="display:none;color:#86efac"><span>الخصم</span><strong id="cartDiscount">- 0 ج.م</strong></div>
+          <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
         </div>
         <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
         <div id="checkoutFields" hidden>
@@ -151,6 +154,14 @@
           <label style="display:block;margin-bottom:10px">ملاحظات
             <input type="text" id="orderNote" style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff" />
           </label>
+          <div class="pay-methods" style="display:grid;gap:7px;margin:8px 0 10px">
+            <div style="font-weight:800;color:#c9c6d5;font-size:.8rem">طريقة الدفع</div>
+            <label><input type="radio" name="payMethod" value="cod" checked /> عند الاستلام</label>
+            <label><input type="radio" name="payMethod" value="vodafone" /> فودافون كاش</label>
+            <label><input type="radio" name="payMethod" value="instapay" /> إنستا باي (InstaPay)</label>
+            <label><input type="radio" name="payMethod" value="transfer" /> تحويل بنكي</label>
+            <label><input type="radio" name="payMethod" value="card" /> بطاقة ائتمان</label>
+          </div>
         </div>
         <button type="button" class="btn btn-primary" id="checkoutBtn" hidden style="width:100%">إتمام الطلب الآن</button>
       </div>
@@ -645,7 +656,8 @@
         const col = Array.isArray(i.colors) && i.colors.length ? i.colors.join("، ") : (i.color || "");
         return '<div class="cart-line"><img src="' + (i.image || "") + '" alt="" onerror="this.style.display=\'none\'" /><div><h4>' + (i.name || ("#" + i.id)) + '</h4>' +
           (col ? '<div style="font-size:.8rem;color:#c4b5fd">' + col + '</div>' : '') +
-          '<div class="price">' + money(i.price) + ' × ' + (i.qty || 1) + '</div></div>' +
+          '<div class="price">' + money((Number(i.price) || 0) * (Number(i.qty) || 1)) + '</div>' +
+          '<div class="qty-controls"><button type="button" data-dec="' + i.id + '" data-color="' + (i.color || '') + '">−</button><span>' + (i.qty || 1) + '</span><button type="button" data-inc="' + i.id + '" data-color="' + (i.color || '') + '">+</button></div></div>' +
           '<button type="button" class="cart-remove" data-rm="' + idx + '" aria-label="حذف المنتج">×</button></div>';
       }).join("");
       const sub = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
@@ -667,6 +679,22 @@
       if (tt) tt.textContent = money(total);
     }
     document.getElementById("cartItems")?.addEventListener("click", function (e) {
+      const inc = e.target.closest("[data-inc]");
+      const dec = e.target.closest("[data-dec]");
+      if (inc || dec) {
+        const btn = inc || dec;
+        const id = Number(btn.getAttribute(inc ? "data-inc" : "data-dec"));
+        const color = btn.getAttribute("data-color") || "";
+        const cart = readCart();
+        const item = cart.find(i => Number(i.id) === id && String(i.color || "") === color);
+        if (item) {
+          item.qty = (Number(item.qty) || 1) + (inc ? 1 : -1);
+          if (item.qty <= 0) cart.splice(cart.indexOf(item), 1);
+          writeCart(cart);
+          renderCart();
+        }
+        return;
+      }
       const btn = e.target.closest("[data-rm]");
       if (!btn) return;
       const cart = readCart();
@@ -712,6 +740,7 @@
       const address = (document.getElementById("orderAddress")?.value || "").trim();
       const name = (document.getElementById("orderName")?.value || "").trim();
       const note = (document.getElementById("orderNote")?.value || "").trim();
+      const payMethod = document.querySelector('input[name="payMethod"]:checked')?.value || "cod";
       const govSel = document.getElementById("orderGov");
       const cenSel = document.getElementById("orderCenter");
       if (ZONES && ZONES.enabled) {
@@ -747,7 +776,7 @@
         shipping: ship.amount,
         total: sub - discount + ship.amount,
         status: "new",
-        paymentMethod: "cod"
+        paymentMethod: payMethod
       };
       try {
         const r = await fetch("/api/notify", {

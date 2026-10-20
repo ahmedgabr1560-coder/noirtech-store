@@ -613,6 +613,8 @@ function updateCartUI() {
     if ($("#cartDiscountRow")) $("#cartDiscountRow").hidden = true;
     if ($("#cartShippingHint")) { $("#cartShippingHint").style.display = "none"; $("#cartShippingHint").textContent = ""; }
     if (fields) fields.hidden = true;
+    const checkout = $("#checkoutBtn");
+    if (checkout) checkout.hidden = true;
     return;
   }
   if (fields) {
@@ -623,6 +625,8 @@ function updateCartUI() {
       if ($("#orderAddress") && !$("#orderAddress").value) $("#orderAddress").value = currentUser.address || "";
     }
   }
+  const checkout = $("#checkoutBtn");
+  if (checkout) checkout.hidden = false;
   box.innerHTML = cart.map(i => {
     const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
     const colTxt = (Array.isArray(i.colors) && i.colors.length) ? i.colors.join("، ") : (i.color || "");

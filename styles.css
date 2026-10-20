@@ -636,6 +636,10 @@ button, input, select, textarea { font-family: inherit; }
   padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border);
   background: rgba(255,255,255,0.04); color: var(--text);
 }
+.checkout-fields select {
+  padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04); color: var(--text);
+}
 
 .modal {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.96);
@@ -875,6 +879,7 @@ button, input, select, textarea { font-family: inherit; }
   text-align: center; color: #8e8e98; padding: 36px 12px; font-size: 0.92rem;
 }
 .checkout-fields { display: grid; gap: 8px; }
+.checkout-fields[hidden], #checkoutBtn[hidden] { display: none !important; }
 .checkout-fields label {
   display: grid; gap: 4px;
   font-size: 0.78rem; color: #9a9aa3; font-weight: 600;
