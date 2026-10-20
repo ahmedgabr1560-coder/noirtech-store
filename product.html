@@ -740,16 +740,6 @@
   </script>
 
   <script>
-    // الانتقال الفوري إلى سلة المتجر الرئيسية.
-    document.addEventListener("click", function (event) {
-      const trigger = event.target.closest("#ppHeaderCart, #ppGoCart");
-      if (!trigger) return;
-      event.preventDefault();
-      location.href = "/?openCart=1";
-    }, true);
-  </script>
-
-  <script>
     // صفحة المنتج ترسم الخانة ديناميكيًا؛ لذلك نستخدم حدثًا مفوضًا.
     document.addEventListener("click", function (event) {
       if (!event.target.closest("#applyProductCoupon")) return;
