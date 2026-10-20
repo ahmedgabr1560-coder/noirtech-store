@@ -41,9 +41,11 @@ function emptyVisitors() {
       todayEnters: 0,
       todayLeaves: 0,
       todayDate: todayStr(),
-      accountsTotal: 0
+      accountsTotal: 0,
+      uniqueDevices: 0
     },
     sessions: {},
+    devices: {},
     recent: []
   };
 }
@@ -81,6 +83,16 @@ function countOnline(sessions) {
     if (now - t < 3 * 60 * 1000) n++;
   }
   return n;
+}
+
+function pruneDevices(devices) {
+  const now = Date.now();
+  const entries = Object.entries(devices || {}).filter(([, d]) => {
+    const t = new Date(d.lastSeen || 0).getTime();
+    return now - t < 30 * 24 * 60 * 60 * 1000;
+  });
+  entries.sort((a, b) => new Date(b[1].lastSeen || 0) - new Date(a[1].lastSeen || 0));
+  return Object.fromEntries(entries.slice(0, 5000));
 }
 
 async function withRetry(mutator, path, message, tries = 2) {
@@ -157,10 +169,17 @@ export default async function handler(req, res) {
         if (!v || typeof v !== "object") v = emptyVisitors();
         if (!v.stats) v.stats = emptyVisitors().stats;
         if (!v.sessions) v.sessions = {};
+        if (!v.devices) v.devices = {};
         if (!Array.isArray(v.recent)) v.recent = [];
         v.stats = rollDay(v.stats);
 
         const isNew = !v.sessions[sid];
+        const deviceId = String(body.deviceId || "").slice(0, 80);
+        const isNewDevice = deviceId && !v.devices[deviceId];
+        if (deviceId) {
+          v.devices[deviceId] = { firstSeen: v.devices[deviceId]?.firstSeen || now, lastSeen: now };
+          if (isNewDevice) v.stats.uniqueDevices = (v.stats.uniqueDevices || 0) + 1;
+        }
         const prev = v.sessions[sid] || {
           firstSeen: now,
           lastSeen: now,
@@ -169,6 +188,7 @@ export default async function handler(req, res) {
           enters: 0,
           leaves: 0
         };
+        if (deviceId) prev.deviceId = deviceId;
 
         if (action === "enter") {
           if (isNew) {
@@ -199,6 +219,7 @@ export default async function handler(req, res) {
 
         v.sessions[sid] = prev;
         v.sessions = pruneSessions(v.sessions);
+        v.devices = pruneDevices(v.devices);
         v.recent = v.recent.slice(0, 80);
         return v;
       }, "visitors.json", "track: " + action);

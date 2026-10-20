@@ -1712,12 +1712,25 @@ function nxSessionId() {
     return "s_" + Date.now();
   }
 }
+function nxDeviceId() {
+  try {
+    let id = localStorage.getItem("nx_device_id");
+    if (!id) {
+      id = "d_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("nx_device_id", id);
+    }
+    return id;
+  } catch (e) {
+    return "d_" + Date.now();
+  }
+}
 function nxTrack(action) {
   // تقليل الضغط على السيرفر
   try {
     const payload = JSON.stringify({
       action: action,
       sessionId: nxSessionId(),
+      deviceId: nxDeviceId(),
       path: (location.pathname + location.search).slice(0, 120)
     });
     if (action === "leave" && navigator.sendBeacon) {

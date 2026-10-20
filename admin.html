@@ -308,6 +308,7 @@
             <div class="card" style="margin:0"><div class="k">متصل الآن</div><div class="v" id="vOnline">—</div></div>
             <div class="card" style="margin:0"><div class="k">زيارات اليوم</div><div class="v" id="vTodayIn">—</div></div>
             <div class="card" style="margin:0"><div class="k">إجمالي الزيارات</div><div class="v" id="vTotalIn">—</div></div>
+            <div class="card" style="margin:0"><div class="k">الزوار حسب الهاتف</div><div class="v" id="vDevices">—</div></div>
             <div class="card" style="margin:0"><div class="k">الحسابات</div><div class="v" id="vAccounts">—</div></div>
           </div>
           <button type="button" class="btn btn-primary" id="btnRefreshVisitors">تحديث</button>
@@ -1072,6 +1073,7 @@
         set("vOnline", fmt(st.onlineNow));
         set("vTodayIn", fmt(st.todayEnters));
         set("vTotalIn", fmt(st.totalEnters));
+        set("vDevices", fmt(st.uniqueDevices || 0));
         const accounts = (aData && aData.accounts) || [];
         set("vAccounts", fmt(accounts.length || st.accountsTotal || 0));
         const ab = $("accountsBody");
