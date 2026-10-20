@@ -138,6 +138,7 @@ export default async function handler(req, res) {
           grossProfit,
           capital: capitalTotal,
           expenses: expTotal,
+          netProfit: sales - expTotal,
           profit,
           lowStock: products.filter(p => Number(p.stock || 999) < 5).length
         },

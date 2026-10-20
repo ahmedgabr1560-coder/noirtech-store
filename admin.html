@@ -650,6 +650,7 @@
         ["مبيعات المسلّم", money(s.sales)],
         ["قيد التنفيذ", money(s.pendingSales || 0)],
         ["المصروفات", money(s.expenses)],
+        ["صافي الربح", money(s.netProfit)],
         ["صافي تقديري", money(s.profit)],
       ].map(([k,v]) => `<div class="stat"><span>${k}</span><b>${v}</b></div>`).join("");
       const rec = data.recentOrders || [];
