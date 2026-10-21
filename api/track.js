@@ -47,6 +47,16 @@ function requestIp(req) {
   return req.headers?.["x-forwarded-for"] || req.headers?.["x-real-ip"] || "";
 }
 
+function classifyDevice(userAgent, hint) {
+  const ua = String(userAgent || "");
+  if (/iPad/i.test(ua) || (/Macintosh/i.test(ua) && /Mobile/i.test(ua))) return "ipad";
+  if (/iPhone|iPod/i.test(ua)) return "iphone";
+  if (/Android/i.test(ua)) return "android";
+  if (/Windows|Macintosh|Linux|CrOS/i.test(ua)) return "desktop";
+  const allowed = new Set(["android", "iphone", "ipad", "desktop", "other"]);
+  return allowed.has(String(hint || "")) ? String(hint) : "other";
+}
+
 function emptyVisitors() {
   return {
     stats: {
@@ -194,12 +204,16 @@ export default async function handler(req, res) {
         const isNew = !v.sessions[sid];
         const deviceId = String(body.deviceId || "").slice(0, 80);
         const isNewDevice = deviceId && !v.devices[deviceId];
-        const allowedTypes = new Set(["android", "iphone", "ipad", "desktop", "other"]);
-        const deviceType = allowedTypes.has(String(body.deviceType || "")) ? String(body.deviceType) : "other";
+        // لا نعتمد على تصنيف الواجهة وحده؛ User-Agent يمنع تسجيل هواتف ككمبيوتر.
+        const deviceType = classifyDevice(req.headers?.["user-agent"], body.deviceType);
         if (deviceId) {
+          const previousType = v.devices[deviceId]?.type || "other";
           v.devices[deviceId] = { firstSeen: v.devices[deviceId]?.firstSeen || now, lastSeen: now, type: deviceType, ipMasked };
           if (isNewDevice) {
             v.stats.uniqueDevices = (v.stats.uniqueDevices || 0) + 1;
+            v.stats.deviceTypes[deviceType] = (v.stats.deviceTypes[deviceType] || 0) + 1;
+          } else if (previousType !== deviceType) {
+            v.stats.deviceTypes[previousType] = Math.max(0, (v.stats.deviceTypes[previousType] || 0) - 1);
             v.stats.deviceTypes[deviceType] = (v.stats.deviceTypes[deviceType] || 0) + 1;
           }
         }
