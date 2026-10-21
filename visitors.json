@@ -1,9 +1,9 @@
 {
   "stats": {
-    "totalEnters": 1204,
+    "totalEnters": 1205,
     "totalLeaves": 502,
-    "uniqueSessions": 1201,
-    "todayEnters": 29,
+    "uniqueSessions": 1202,
+    "todayEnters": 30,
     "todayLeaves": 0,
     "todayDate": "2026-10-21",
     "accountsTotal": 0,
@@ -17,6 +17,15 @@
     }
   },
   "sessions": {
+    "s_2wsrr716dfkmvhxbxga": {
+      "firstSeen": "2026-10-21T09:42:40.293Z",
+      "lastSeen": "2026-10-21T09:42:40.293Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_prj4zqj0adsmvgzlwec"
+    },
     "s_m9w14y8ew3gmvhke6ag": {
       "firstSeen": "2026-10-21T03:40:41.675Z",
       "lastSeen": "2026-10-21T03:40:41.675Z",
@@ -3513,17 +3522,15 @@
       "status": "left",
       "enters": 1,
       "leaves": 1
-    },
-    "s_vla4akuxesqmvdykzsi": {
-      "firstSeen": "2026-10-18T15:06:49.817Z",
-      "lastSeen": "2026-10-18T15:06:49.817Z",
-      "path": "/",
-      "status": "online",
-      "enters": 1,
-      "leaves": 0
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_2wsrr716…",
+      "path": "/",
+      "at": "2026-10-21T09:42:40.293Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_m9w14y8e…",
@@ -3997,15 +4004,13 @@
       "sessionId": "s_05xn5x4r…",
       "path": "/",
       "at": "2026-10-20T18:05:21.871Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_dsq4a3ct…",
-      "path": "/",
-      "at": "2026-10-20T18:05:21.381Z"
     }
   ],
   "devices": {
+    "d_prj4zqj0adsmvgzlwec": {
+      "firstSeen": "2026-10-20T17:58:38.773Z",
+      "lastSeen": "2026-10-21T09:42:40.293Z"
+    },
     "d_1yh4syghu7gjmvhke6ag": {
       "firstSeen": "2026-10-21T03:40:41.675Z",
       "lastSeen": "2026-10-21T03:40:41.675Z",
@@ -4173,10 +4178,6 @@
       "lastSeen": "2026-10-21T03:38:34.079Z",
       "type": "desktop",
       "ipMasked": "54.183.149.xxx"
-    },
-    "d_prj4zqj0adsmvgzlwec": {
-      "firstSeen": "2026-10-20T17:58:38.773Z",
-      "lastSeen": "2026-10-21T03:38:19.566Z"
     },
     "d_s2br4oeu3vmvh7z6y9": {
       "firstSeen": "2026-10-20T21:53:07.309Z",
