@@ -588,7 +588,9 @@ const COUPON_CODES = Object.freeze({
 });
 function getCouponCode() {
   try {
-    const code = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+    // الكوبون مؤقت للجلسة الحالية فقط؛ لا نرث خصمًا من اختبار أو طلب سابق.
+    localStorage.removeItem("nx_coupon_code");
+    const code = String(sessionStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
     return Object.prototype.hasOwnProperty.call(COUPON_CODES, code) ? code : "";
   } catch (e) { return ""; }
 }
