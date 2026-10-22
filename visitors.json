@@ -1,22 +1,33 @@
 {
   "stats": {
-    "totalEnters": 1356,
+    "totalEnters": 1357,
     "totalLeaves": 519,
-    "uniqueSessions": 1353,
-    "todayEnters": 40,
+    "uniqueSessions": 1354,
+    "todayEnters": 41,
     "todayLeaves": 0,
     "todayDate": "2026-10-22",
     "accountsTotal": 0,
-    "uniqueDevices": 252,
+    "uniqueDevices": 253,
     "deviceTypes": {
       "android": 3,
       "iphone": 1,
       "ipad": 0,
-      "desktop": 229,
+      "desktop": 230,
       "other": 0
     }
   },
   "sessions": {
+    "s_vxax06u8c4emvje8u96": {
+      "firstSeen": "2026-10-22T10:24:07.489Z",
+      "lastSeen": "2026-10-22T10:24:07.489Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_oxy5j8zrxermvje8u96",
+      "deviceType": "desktop",
+      "ipMasked": "54.183.149.xxx"
+    },
     "s_eqiopt4xygbmvje8u96": {
       "firstSeen": "2026-10-22T10:24:07.066Z",
       "lastSeen": "2026-10-22T10:24:07.066Z",
@@ -3967,17 +3978,15 @@
       "status": "left",
       "enters": 1,
       "leaves": 3
-    },
-    "s_ui6ticg87fmvf79umf": {
-      "firstSeen": "2026-10-19T11:57:51.718Z",
-      "lastSeen": "2026-10-19T12:51:12.732Z",
-      "path": "/",
-      "status": "left",
-      "enters": 1,
-      "leaves": 2
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_vxax06u8…",
+      "path": "/",
+      "at": "2026-10-22T10:24:07.489Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_eqiopt4x…",
@@ -4451,15 +4460,15 @@
       "sessionId": "s_v8w9m9xs…",
       "path": "/",
       "at": "2026-10-21T17:53:05.529Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_v8w9m9xs…",
-      "path": "/",
-      "at": "2026-10-21T17:53:04.947Z"
     }
   ],
   "devices": {
+    "d_oxy5j8zrxermvje8u96": {
+      "firstSeen": "2026-10-22T10:24:07.489Z",
+      "lastSeen": "2026-10-22T10:24:07.489Z",
+      "type": "desktop",
+      "ipMasked": "54.183.149.xxx"
+    },
     "d_gyqn1xx7zi5mvje8u96": {
       "firstSeen": "2026-10-22T10:24:07.066Z",
       "lastSeen": "2026-10-22T10:24:07.066Z",
