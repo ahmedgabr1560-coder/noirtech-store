@@ -1,22 +1,33 @@
 {
   "stats": {
-    "totalEnters": 1552,
+    "totalEnters": 1553,
     "totalLeaves": 564,
-    "uniqueSessions": 1549,
-    "todayEnters": 174,
+    "uniqueSessions": 1550,
+    "todayEnters": 175,
     "todayLeaves": 42,
     "todayDate": "2026-10-23",
     "accountsTotal": 0,
-    "uniqueDevices": 434,
+    "uniqueDevices": 435,
     "deviceTypes": {
       "android": 17,
       "iphone": 6,
       "ipad": 0,
-      "desktop": 393,
+      "desktop": 394,
       "other": 0
     }
   },
   "sessions": {
+    "s_bpi011ud5ttmvlmh0d9": {
+      "firstSeen": "2026-10-23T23:49:57.941Z",
+      "lastSeen": "2026-10-23T23:49:57.941Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_h1ujonm49sfmvlmh0d9",
+      "deviceType": "desktop",
+      "ipMasked": "54.183.149.xxx"
+    },
     "s_mj6ppwb9kdcmvlmh0d5": {
       "firstSeen": "2026-10-23T23:49:57.568Z",
       "lastSeen": "2026-10-23T23:49:57.568Z",
@@ -4389,18 +4400,15 @@
       "deviceId": "d_unqq3fdpoptmvh2ihzz",
       "deviceType": "desktop",
       "ipMasked": "54.183.149.xxx"
-    },
-    "s_rxognjks4rmvh2fjac": {
-      "firstSeen": "2026-10-20T19:17:52.375Z",
-      "lastSeen": "2026-10-20T19:17:52.375Z",
-      "path": "/",
-      "status": "online",
-      "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_9u8vm1uag34mvgkeeg3"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_bpi011ud…",
+      "path": "/",
+      "at": "2026-10-23T23:49:57.941Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_mj6ppwb9…",
@@ -4874,15 +4882,15 @@
       "sessionId": "s_ktk22gcr…",
       "path": "/",
       "at": "2026-10-23T19:58:21.852Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_rlv3ddkx…",
-      "path": "/",
-      "at": "2026-10-23T19:57:54.691Z"
     }
   ],
   "devices": {
+    "d_h1ujonm49sfmvlmh0d9": {
+      "firstSeen": "2026-10-23T23:49:57.941Z",
+      "lastSeen": "2026-10-23T23:49:57.941Z",
+      "type": "desktop",
+      "ipMasked": "54.183.149.xxx"
+    },
     "d_6gldxwsv61hmvlmh0d5": {
       "firstSeen": "2026-10-23T23:49:57.568Z",
       "lastSeen": "2026-10-23T23:49:57.568Z",
