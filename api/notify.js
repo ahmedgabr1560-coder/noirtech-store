@@ -148,7 +148,7 @@ export default async function handler(req, res) {
 
     // رسائل عامة (تسجيل / تواصل)
     if (message) {
-      const prefix = type === "register" ? "👤 حساب جديد\n" : (type === "contact" ? "✉️ رسالة\n" : "");
+      const prefix = type === "register" ? "👤 حساب جديد\n" : (type === "contact" ? "✉️ رسالة\n" : (type === "feedback" ? "💬 رأي عميل جديد\n" : ""));
       const full = (prefix + message).slice(0, 4000);
       await tg("sendMessage", {
         chat_id: ADMIN_CHAT,
