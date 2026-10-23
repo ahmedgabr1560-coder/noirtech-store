@@ -1,22 +1,33 @@
 {
   "stats": {
-    "totalEnters": 1556,
+    "totalEnters": 1557,
     "totalLeaves": 564,
-    "uniqueSessions": 1553,
-    "todayEnters": 178,
+    "uniqueSessions": 1554,
+    "todayEnters": 179,
     "todayLeaves": 42,
     "todayDate": "2026-10-23",
     "accountsTotal": 0,
-    "uniqueDevices": 438,
+    "uniqueDevices": 439,
     "deviceTypes": {
       "android": 17,
       "iphone": 6,
       "ipad": 0,
-      "desktop": 397,
+      "desktop": 398,
       "other": 0
     }
   },
   "sessions": {
+    "s_rhyiy8pxp6kmvlmhm85": {
+      "firstSeen": "2026-10-23T23:50:25.843Z",
+      "lastSeen": "2026-10-23T23:50:25.843Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_wihlv1bv0btmvlmhm85",
+      "deviceType": "desktop",
+      "ipMasked": "13.57.148.xxx"
+    },
     "s_glajutqi9umvlmheof": {
       "firstSeen": "2026-10-23T23:50:16.517Z",
       "lastSeen": "2026-10-23T23:50:16.517Z",
@@ -4393,18 +4404,15 @@
       "enters": 1,
       "leaves": 0,
       "deviceId": "d_9u8vm1uag34mvgkeeg3"
-    },
-    "s_c46d7sq0y2mvh2k51b": {
-      "firstSeen": "2026-10-20T19:21:26.670Z",
-      "lastSeen": "2026-10-20T19:21:32.140Z",
-      "path": "/",
-      "status": "left",
-      "enters": 1,
-      "leaves": 1,
-      "deviceId": "d_9u8vm1uag34mvgkeeg3"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_rhyiy8px…",
+      "path": "/",
+      "at": "2026-10-23T23:50:25.843Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_glajutqi…",
@@ -4878,15 +4886,15 @@
       "sessionId": "s_ktk22gcr…",
       "path": "/",
       "at": "2026-10-23T19:59:17.304Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_ktk22gcr…",
-      "path": "/",
-      "at": "2026-10-23T19:58:31.518Z"
     }
   ],
   "devices": {
+    "d_wihlv1bv0btmvlmhm85": {
+      "firstSeen": "2026-10-23T23:50:25.843Z",
+      "lastSeen": "2026-10-23T23:50:25.843Z",
+      "type": "desktop",
+      "ipMasked": "13.57.148.xxx"
+    },
     "d_g2nat0hoba5mvlmheof": {
       "firstSeen": "2026-10-23T23:50:16.517Z",
       "lastSeen": "2026-10-23T23:50:16.517Z",
