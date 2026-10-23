@@ -1733,7 +1733,11 @@ function nxDeviceId() {
 }
 function nxDeviceType() {
   const ua = navigator.userAgent || "";
-  if (/iPad|Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return "ipad";
+  const platform = navigator.platform || "";
+  const uaData = navigator.userAgentData;
+  if (/iPhone|iPod/i.test(ua) || /iPhone|iPod/i.test(platform)) return "iphone";
+  if (/iPad/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) || /iPad/i.test(platform)) return "ipad";
+  if (uaData && uaData.mobile === true) return /Android/i.test(ua) ? "android" : "other";
   if (/iPhone|iPod/.test(ua)) return "iphone";
   if (/Android/i.test(ua)) return "android";
   if (/Windows|Macintosh|Linux|CrOS/i.test(ua)) return "desktop";

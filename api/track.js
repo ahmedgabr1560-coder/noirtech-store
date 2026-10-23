@@ -49,12 +49,15 @@ function requestIp(req) {
 
 function classifyDevice(userAgent, hint) {
   const ua = String(userAgent || "");
+  const hinted = String(hint || "");
+  // تصنيف الهاتف المرسل من المتصفح يتغلب على وضع Desktop Mode.
+  if (["android", "iphone", "ipad"].includes(hinted)) return hinted;
   if (/iPad/i.test(ua) || (/Macintosh/i.test(ua) && /Mobile/i.test(ua))) return "ipad";
   if (/iPhone|iPod/i.test(ua)) return "iphone";
   if (/Android/i.test(ua)) return "android";
   if (/Windows|Macintosh|Linux|CrOS/i.test(ua)) return "desktop";
   const allowed = new Set(["android", "iphone", "ipad", "desktop", "other"]);
-  return allowed.has(String(hint || "")) ? String(hint) : "other";
+  return allowed.has(hinted) ? hinted : "other";
 }
 
 function emptyVisitors() {
