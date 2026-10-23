@@ -1,22 +1,33 @@
 {
   "stats": {
-    "totalEnters": 1539,
+    "totalEnters": 1540,
     "totalLeaves": 560,
-    "uniqueSessions": 1536,
-    "todayEnters": 161,
+    "uniqueSessions": 1537,
+    "todayEnters": 162,
     "todayLeaves": 38,
     "todayDate": "2026-10-23",
     "accountsTotal": 0,
-    "uniqueDevices": 422,
+    "uniqueDevices": 423,
     "deviceTypes": {
       "android": 15,
       "iphone": 5,
       "ipad": 0,
-      "desktop": 384,
+      "desktop": 385,
       "other": 0
     }
   },
   "sessions": {
+    "s_vgmguu5lxpfmvlhuqjp": {
+      "firstSeen": "2026-10-23T21:40:39.869Z",
+      "lastSeen": "2026-10-23T21:40:39.869Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_8r76he16ur3mvlhuqjp",
+      "deviceType": "desktop",
+      "ipMasked": "54.183.149.xxx"
+    },
     "s_4lfoyij2p7pmvlhugln": {
       "firstSeen": "2026-10-23T21:40:27.128Z",
       "lastSeen": "2026-10-23T21:40:27.128Z",
@@ -4373,18 +4384,15 @@
       "enters": 0,
       "leaves": 1,
       "deviceId": "d_0rbpe0s75nhnmvh0g9ph"
-    },
-    "s_femfq4l5r8mvh0ga48": {
-      "firstSeen": "2026-10-20T18:22:51.847Z",
-      "lastSeen": "2026-10-20T18:22:51.847Z",
-      "path": "/",
-      "status": "left",
-      "enters": 0,
-      "leaves": 1,
-      "deviceId": "d_nlkjn7begjmvh0ga48"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_vgmguu5l…",
+      "path": "/",
+      "at": "2026-10-23T21:40:39.869Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_4lfoyij2…",
@@ -4858,15 +4866,15 @@
       "sessionId": "s_3f9udqni…",
       "path": "/",
       "at": "2026-10-23T19:42:52.786Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_xka53mpg…",
-      "path": "/",
-      "at": "2026-10-23T19:42:52.437Z"
     }
   ],
   "devices": {
+    "d_8r76he16ur3mvlhuqjp": {
+      "firstSeen": "2026-10-23T21:40:39.869Z",
+      "lastSeen": "2026-10-23T21:40:39.869Z",
+      "type": "desktop",
+      "ipMasked": "54.183.149.xxx"
+    },
     "d_bxrlelepkqkmvlhuglo": {
       "firstSeen": "2026-10-23T21:40:27.128Z",
       "lastSeen": "2026-10-23T21:40:27.128Z",
