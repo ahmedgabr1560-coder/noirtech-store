@@ -1,15 +1,15 @@
 {
   "stats": {
-    "totalEnters": 1709,
+    "totalEnters": 1710,
     "totalLeaves": 599,
-    "uniqueSessions": 1705,
-    "todayEnters": 152,
-    "todayLeaves": 35,
-    "todayDate": "2026-10-24",
+    "uniqueSessions": 1706,
+    "todayEnters": 1,
+    "todayLeaves": 0,
+    "todayDate": "2026-10-25",
     "accountsTotal": 0,
-    "uniqueDevices": 575,
+    "uniqueDevices": 576,
     "deviceTypes": {
-      "android": 29,
+      "android": 30,
       "iphone": 7,
       "ipad": 1,
       "desktop": 520,
@@ -17,6 +17,17 @@
     }
   },
   "sessions": {
+    "s_56nqq0tsqtumvn6e94b": {
+      "firstSeen": "2026-10-25T01:55:27.856Z",
+      "lastSeen": "2026-10-25T01:55:27.856Z",
+      "path": "/?fbclid=PAZXh0bgNhZW0CMTEAcGRvZgJzcnRjBmFwcF9pZA85MDU1OTM4NTMxNTA3NTQAAaenHUHNagUFTvZt7-mj2qAKwugd3yOmwzbZ-CqK8XZXRu3j9",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_fp5dctkhnulmvn6e94c",
+      "deviceType": "android",
+      "ipMasked": "104.28.163.xxx"
+    },
     "s_55zd7pihcbwmvmvcf9o": {
       "firstSeen": "2026-10-24T20:46:06.592Z",
       "lastSeen": "2026-10-24T20:46:06.592Z",
@@ -4405,20 +4416,15 @@
       "deviceId": "d_9u8vm1uag34mvgkeeg3",
       "deviceType": "iphone",
       "ipMasked": "156.203.235.xxx"
-    },
-    "s_dku3vnatnmamvimo1y0": {
-      "firstSeen": "2026-10-21T21:32:08.053Z",
-      "lastSeen": "2026-10-21T21:32:08.053Z",
-      "path": "/",
-      "status": "online",
-      "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_wxjwhzs1j2qmvimo1y0",
-      "deviceType": "desktop",
-      "ipMasked": "13.57.148.xxx"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_56nqq0ts…",
+      "path": "/?fbclid=PAZXh0bgNhZW0CMTEAcGRvZgJzcnRjBmFwcF9pZA85MDU1OTM4NTMxNTA3NTQAAaenHUHNagUFTvZt7-mj2qAKwugd3yOmwzbZ-CqK8XZXRu3j9",
+      "at": "2026-10-25T01:55:27.856Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_55zd7pih…",
@@ -4892,15 +4898,15 @@
       "sessionId": "s_1atecb9n…",
       "path": "/",
       "at": "2026-10-24T13:28:14.705Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_uullm6gc…",
-      "path": "/",
-      "at": "2026-10-24T13:28:05.493Z"
     }
   ],
   "devices": {
+    "d_fp5dctkhnulmvn6e94c": {
+      "firstSeen": "2026-10-25T01:55:27.856Z",
+      "lastSeen": "2026-10-25T01:55:27.856Z",
+      "type": "android",
+      "ipMasked": "104.28.163.xxx"
+    },
     "d_znau1ovpeomvmvcf9p": {
       "firstSeen": "2026-10-24T20:46:06.592Z",
       "lastSeen": "2026-10-24T20:46:06.592Z",
