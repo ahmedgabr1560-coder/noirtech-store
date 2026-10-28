@@ -349,14 +349,31 @@ export default async function handler(req, res) {
       if (!order || !order.id) return res.status(400).json({ ok: false, error: "order required" });
       if (publicOrder) {
         const customer = order.customer || {};
-        const phone = String(customer.phone || "").replace(/\D/g, "");
+        let phone = String(customer.phone || "").replace(/\D/g, "");
+        if (phone.startsWith("20") && phone.length >= 12) phone = phone.slice(2);
         if (!Array.isArray(order.items) || order.items.length < 1 || order.items.length > 50) {
           return res.status(400).json({ ok: false, error: "invalid items" });
         }
-        if (!/^\d{10,15}$/.test(phone) || !String(customer.address || "").trim()) {
-          return res.status(400).json({ ok: false, error: "customer phone and address required" });
+        if (!/^\d{10,15}$/.test(phone)) {
+          return res.status(400).json({ ok: false, error: "customer phone required" });
+        }
+        if (!String(customer.address || "").trim()) {
+          return res.status(400).json({ ok: false, error: "customer address required" });
         }
         order.id = String(order.id).slice(0, 64);
+        order.status = order.status || "new";
+        order.at = order.at || new Date().toISOString();
+        order.customer = {
+          name: String(customer.name || "عميل").slice(0, 120),
+          phone,
+          email: String(customer.email || "").slice(0, 120),
+          address: String(customer.address || "").slice(0, 400),
+          note: String(customer.note || "").slice(0, 400),
+          governorate: String(customer.governorate || "").slice(0, 80),
+          center: String(customer.center || "").slice(0, 80),
+          governorateId: String(customer.governorateId || "").slice(0, 40),
+          centerId: String(customer.centerId || "").slice(0, 40)
+        };
         order.items = order.items.slice(0, 50).map(item => {
           const colors = Array.isArray(item.colors)
             ? item.colors.map(c => String(c).slice(0, 80)).filter(Boolean).slice(0, 20)
@@ -374,16 +391,29 @@ export default async function handler(req, res) {
           };
         });
       }
-      const f = await ghGet("orders.json");
-      const orders = f ? JSON.parse(f.content) : [];
-      const idx = orders.findIndex(o => String(o.id) === String(order.id));
-      if (idx >= 0) orders[idx] = order; else orders.unshift(order);
-      const put = await ghPut("orders.json", JSON.stringify(orders.slice(0, 300), null, 2), `Order ${order.id}`, f?.sha);
-      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed" });
-      return res.status(200).json({ ok: true });
+
+      let put = { ok: false, data: { message: "not attempted" } };
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const f = await ghGet("orders.json");
+        let orders = [];
+        try { orders = f ? JSON.parse(f.content) : []; } catch { orders = []; }
+        if (!Array.isArray(orders)) orders = [];
+        const idx = orders.findIndex(o => String(o.id) === String(order.id));
+        if (idx >= 0) orders[idx] = { ...orders[idx], ...order };
+        else orders.unshift(order);
+        // keep last 500
+        if (orders.length > 500) orders = orders.slice(0, 500);
+        put = await ghPut("orders.json", JSON.stringify(orders, null, 2), `Order ${order.id}`, f?.sha);
+        if (put.ok) break;
+        const msg = String(put.data?.message || put.data?.error || "");
+        if (!/conflict|sha|does not match/i.test(msg) && put.data?.status !== 409) break;
+        await new Promise(r => setTimeout(r, 250 * (attempt + 1)));
+      }
+      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر حفظ الطلب", detail: put.data });
+      return res.status(200).json({ ok: true, id: order.id });
     }
 
-    if (action === "list_accounts") {
+    if (action ===if (action === "list_accounts") {
       const f = await ghGet("accounts.json");
       let accounts = [];
       try { accounts = f ? JSON.parse(f.content) : []; } catch { accounts = []; }
