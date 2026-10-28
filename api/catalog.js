@@ -43,13 +43,6 @@ export default async function handler(req, res) {
       const data = JSON.parse(raw);
       return res.status(200).json({ ok: true, ...data, ts: Date.now() });
     }
-    if (type === "coupons") {
-      const raw = await ghGet("coupons.json");
-      if (!raw) return res.status(200).json({ ok: true, codes: [] });
-      const data = JSON.parse(raw);
-      const codes = Array.isArray(data.codes) ? data.codes : [];
-      return res.status(200).json({ ok: true, codes, ts: Date.now() });
-    }
     if (type === "shipping") {
       const raw = await ghGet("shipping-zones.json");
       if (!raw) return res.status(200).json({ ok: true, zones: { enabled: false, governorates: [] } });
