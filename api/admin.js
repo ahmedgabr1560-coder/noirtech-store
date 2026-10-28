@@ -61,6 +61,9 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-secret");
   if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method === "POST" && !String(ADMIN_SECRET || "").trim()) {
+    return res.status(503).json({ ok: false, error: "ADMIN_SECRET غير مضبوط على السيرفر" });
+  }
   if (!GH_TOKEN) return res.status(500).json({ ok: false, error: "GITHUB_TOKEN missing" });
 
   try {
