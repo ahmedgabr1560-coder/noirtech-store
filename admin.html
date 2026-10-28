@@ -120,6 +120,7 @@
         <button data-panel="visitors">الزوار والحسابات</button>
         <button data-panel="ai">شات الذكاء الاصطناعي</button>
         <button data-panel="shipping">الشحن</button>
+        <button data-panel="coupons">أكواد الخصم</button>
         <button data-panel="finance">الأرباح والمصروفات</button>
         <button data-panel="general">إعدادات الموقع</button>
         <button data-panel="brand">الاسم والأيقونة</button>
@@ -340,7 +341,19 @@
       </section>
 
       
-            <section class="panel" id="panel-shipping">
+            
+      <section class="panel" id="panel-coupons">
+        <div class="card">
+          <h3>أكواد الخصم</h3>
+          <p class="hint" style="margin-bottom:12px">أضيفي أو عدّلي أكواد الخصم. النسبة من 0 إلى 90%. الكود غير المفعّل مش بيشتغل في المتجر.</p>
+          <div id="couponsList"></div>
+          <button type="button" class="btn btn-ghost" id="addCouponRow" style="margin-top:10px">+ إضافة كود</button>
+          <button type="button" class="btn btn-primary" id="saveCouponsBtn" style="margin-top:12px;margin-right:8px">حفظ الأكواد</button>
+          <div class="msg" id="couponsMsg"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-shipping">
         <div class="card">
           <h3>إعدادات الشحن — المحافظات والمراكز</h3>
           <p class="hint" style="margin-bottom:14px">فعّلي الشحن، حددي السعر الافتراضي، وعدّلي سعر كل محافظة أو مركز. العميل يختار المحافظة ثم المركز عند الطلب.</p>
@@ -1132,6 +1145,7 @@
       btn.addEventListener("click", () => {
         if (btn.dataset.panel === "visitors") loadVisitorsPanel();
         if (btn.dataset.panel === "shipping") loadShippingSettings();
+        if (btn.dataset.panel === "coupons") loadCouponsPanel();
       });
     });
 
@@ -1681,6 +1695,91 @@
         if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
       } finally { if (btn) btn.disabled = false; }
     });
+
+    
+    let COUPON_ROWS = [];
+
+    function renderCouponRows() {
+      const box = $("couponsList");
+      if (!box) return;
+      if (!COUPON_ROWS.length) {
+        box.innerHTML = `<p class="hint">لا أكواد بعد — اضغطي «إضافة كود»</p>`;
+        return;
+      }
+      box.innerHTML = `<div class="table-wrap"><table class="tbl"><thead><tr>
+        <th>الكود</th><th>النسبة %</th><th>مفعّل</th><th>ملاحظة</th><th></th>
+      </tr></thead><tbody>
+      ${COUPON_ROWS.map((r, i) => `<tr>
+        <td><input data-c="code" data-i="${i}" value="${String(r.code||"").replace(/"/g,"&quot;")}" dir="ltr" style="text-transform:uppercase;max-width:140px" /></td>
+        <td><input type="number" min="0" max="90" data-c="percent" data-i="${i}" value="${r.percent!=null?r.percent:0}" dir="ltr" style="max-width:90px" /></td>
+        <td style="text-align:center"><input type="checkbox" data-c="active" data-i="${i}" ${r.active!==false?"checked":""} style="width:auto" /></td>
+        <td><input data-c="note" data-i="${i}" value="${String(r.note||"").replace(/"/g,"&quot;")}" placeholder="اختياري" /></td>
+        <td><button type="button" class="btn btn-ghost" data-del-coupon="${i}" style="color:#f87171">حذف</button></td>
+      </tr>`).join("")}
+      </tbody></table></div>`;
+    }
+
+    function syncCouponRowsFromUI() {
+      document.querySelectorAll("#couponsList [data-c]").forEach(el => {
+        const i = Number(el.getAttribute("data-i"));
+        const k = el.getAttribute("data-c");
+        if (!COUPON_ROWS[i]) return;
+        if (k === "active") COUPON_ROWS[i].active = !!el.checked;
+        else if (k === "percent") COUPON_ROWS[i].percent = Number(el.value) || 0;
+        else COUPON_ROWS[i][k] = el.value;
+      });
+    }
+
+    async function loadCouponsPanel() {
+      try {
+        const data = await api("get_coupons");
+        COUPON_ROWS = (data && data.codes) ? data.codes.map(c => ({...c})) : [];
+        if (!COUPON_ROWS.length) {
+          COUPON_ROWS = [
+            {code:"NEXORA10",percent:10,active:true,note:""},
+            {code:"WELCOME10",percent:10,active:true,note:""}
+          ];
+        }
+        renderCouponRows();
+      } catch (e) {
+        alert("تعذر تحميل الأكواد");
+      }
+    }
+
+    $("addCouponRow")?.addEventListener("click", () => {
+      syncCouponRowsFromUI();
+      COUPON_ROWS.push({ code: "", percent: 10, active: true, note: "" });
+      renderCouponRows();
+    });
+
+    $("couponsList")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-del-coupon]");
+      if (!btn) return;
+      syncCouponRowsFromUI();
+      const i = Number(btn.getAttribute("data-del-coupon"));
+      COUPON_ROWS.splice(i, 1);
+      renderCouponRows();
+    });
+
+    $("saveCouponsBtn")?.addEventListener("click", async () => {
+      const btn = $("saveCouponsBtn");
+      const msg = $("couponsMsg");
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      try {
+        syncCouponRowsFromUI();
+        const data = await api("update_coupons", { codes: COUPON_ROWS });
+        if (!data.ok) throw new Error(data.error || "فشل");
+        COUPON_ROWS = data.codes || COUPON_ROWS;
+        renderCouponRows();
+        if (typeof bustStoreCaches === "function") bustStoreCaches();
+        try { sessionStorage.removeItem("nx_coupons"); } catch (e) {}
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ أكواد الخصم"; }
+      } catch (err) {
+        if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
+      } finally { if (btn) btn.disabled = false; }
+    });
+
 
     // --- Product color picker ---
     const PRESET_COLORS = [
