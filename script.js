@@ -1104,12 +1104,21 @@ $("#checkoutBtn").addEventListener("click", async () => {
   try {
     if (!cart.length) return toast("السلة فارغة");
     const name = ($("#orderName")?.value || "").trim();
-    const phone = normalizePhone($("#orderPhone")?.value || "");
+    const phoneRaw = normalizePhone($("#orderPhone")?.value || "");
+    const phone = phoneRaw.replace(/[^0-9]/g, "");
     const address = ($("#orderAddress")?.value || "").trim();
     const note = ($("#orderNote")?.value || "").trim();
     const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
-    if (!phone || phone.replace(/[^0-9]/g, "").length < 10) return toast("اكتب رقم هاتف صحيح");
+    const govId = (document.getElementById("orderGov")?.value || "").trim();
+    const centerId = (document.getElementById("orderCenter")?.value || "").trim();
+    if (!phone || phone.length < 10 || phone.length > 15) return toast("اكتب رقم هاتف صحيح");
     if (!address) return toast("اكتب عنوان التوصيل");
+    try {
+      if (typeof getShippingConfig === "function" && getShippingConfig().enabled) {
+        if (!govId) return toast("اختاري المحافظة");
+        if (!centerId) return toast("اختاري المركز / الحي");
+      }
+    } catch (e) {}
     // اللون إجباري لو المنتج له ألوان
     for (const i of cart) {
       const p = PRODUCTS.find(x => Number(x.id) === Number(i.id));
@@ -1185,12 +1194,24 @@ $("#checkoutBtn").addEventListener("click", async () => {
       localStorage.setItem("nx_orders", JSON.stringify(orders.slice(0, 50)));
     } catch (e) {}
     try {
-      await fetch("/api/admin", {
+      const saveRes = await fetch("/api/admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "save_order", order: orderRecord })
       });
-    } catch (e) {}
+      let saveData = null;
+      try { saveData = await saveRes.json(); } catch (e2) { saveData = null; }
+      if (!saveRes.ok || !saveData || saveData.ok === false) {
+        const err = (saveData && saveData.error) || ("HTTP " + saveRes.status);
+        toast("تعذر حفظ الطلب: " + err);
+        if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+        return;
+      }
+    } catch (e) {
+      toast("تعذر الاتصال لحفظ الطلب — حاول مرة أخرى");
+      if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+      return;
+    }
     if (payMethod === "card") {
       try {
         const payRes = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ method: "card", order: orderRecord }) });
