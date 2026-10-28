@@ -89,23 +89,56 @@ export default async function handler(req, res) {
     if (type === "order" && order && Array.isArray(order.items) && order.items.length) {
       const c = order.customer || {};
       const itemsText = order.items.map((it, i) => compactItem(it, i + 1)).join("\n");
-      const pay = order.paymentMethod ? `\n💳 الدفع: ${order.paymentMethod}` : "";
-      const note = c.note ? `\n📝 ${c.note}` : "";
+      const payMap = {
+        cod: "عند الاستلام",
+        vodafone: "فودافون كاش",
+        instapay: "إنستا باي",
+        transfer: "تحويل بنكي",
+        card: "بطاقة"
+      };
+      const payRaw = order.paymentMethod || order.payment || "";
+      const payLabel = payMap[payRaw] || payRaw || "—";
+      const coupon = order.coupon || order.couponCode || c.coupon || "";
+      const discount = order.discount != null ? Number(order.discount) : 0;
+      const email = c.email || order.email || "";
+      const lines = [];
+      lines.push("🛒 طلب جديد");
+      lines.push("🆔 " + (order.id || "—"));
+      if (order.at) lines.push("🕒 " + order.at);
+      lines.push("👤 " + (c.name || "—"));
+      lines.push("📞 " + (c.phone || "—"));
+      if (email) lines.push("✉️ " + email);
+      const loc = [c.governorate, c.center, c.address].filter(Boolean).join(" — ");
+      lines.push("📍 " + (loc || "—"));
+      if (c.note) lines.push("📝 ملاحظة: " + c.note);
+      if (c.governorateId) lines.push("🏷️ كود محافظة: " + c.governorateId);
+      if (c.centerId) lines.push("🏷️ كود مركز: " + c.centerId);
+      lines.push("");
+      lines.push("📦 المنتجات:");
+      lines.push(itemsText || "—");
+      lines.push("");
+      if (order.subtotal != null) lines.push("🧮 المنتجات: " + money(order.subtotal));
+      if (coupon) lines.push("🏷️ كود الخصم: " + String(coupon).toUpperCase());
+      if (discount > 0) lines.push("💸 قيمة الخصم: " + money(discount));
+      if (order.shipping != null) lines.push("🚚 الشحن: " + (Number(order.shipping) === 0 ? "مجاني" : money(order.shipping)));
+      lines.push("💳 الدفع: " + payLabel);
+      lines.push("💰 الإجمالي: " + money(order.total || 0));
+      // أي حقول إضافية على الطلب
+      const known = new Set(["id","at","subtotal","discount","coupon","couponCode","shipping","customer","items","total","status","paymentMethod","payment","shippingFree","shippingLabel"]);
+      Object.keys(order || {}).forEach((k) => {
+        if (known.has(k)) return;
+        const v = order[k];
+        if (v == null || v === "") return;
+        if (typeof v === "object") {
+          try { lines.push("➕ " + k + ": " + JSON.stringify(v)); } catch (e) {}
+        } else {
+          lines.push("➕ " + k + ": " + String(v));
+        }
+      });
+      lines.push("✅ تواصل مع العميل للتأكيد");
+      let text = lines.join("\n");
 
-      // رسالة واحدة مدمجة
-      let text =
-        `🛒 طلب جديد\n` +
-        `🆔 ${order.id || "—"}\n` +
-        `👤 ${c.name || "—"}\n` +
-        `📞 ${c.phone || "—"}\n` +
-        `📍 ${(c.governorate || "")}${c.center ? " — " + c.center : ""}${c.address ? " — " + c.address : (c.governorate ? "" : "—")}${note}\n` +
-        `\n📦 المنتجات:\n${itemsText}\n` +
-        (order.subtotal != null ? `\n🧮 المنتجات: ${money(order.subtotal)}\n` : "") +
-        (order.shipping != null ? `🚚 الشحن: ${Number(order.shipping) === 0 ? "مجاني" : money(order.shipping)}\n` : "") +
-        `\n💰 الإجمالي: ${money(order.total || 0)}${pay}\n` +
-        `✅ تواصل مع العميل للتأكيد`;
-
-      if (text.length > 4000) text = text.slice(0, 3990) + "…";
+if (text.length > 4000) text = text.slice(0, 3990) + "…";
 
       await tg("sendMessage", {
         chat_id: ADMIN_CHAT,
