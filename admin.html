@@ -1150,9 +1150,15 @@
     });
 
     async function loadOrders() {
-      const data = await (adminCacheGet("list_orders") ? Promise.resolve(adminCacheGet("list_orders")) : api("list_orders").then(d => { if (d && d.ok) adminCacheSet("list_orders", d); return d; }));
-      if (!data.ok) return;
-      const orders = data.orders || [];
+      try { sessionStorage.removeItem("adm_list_orders"); } catch (e) {}
+      const box = $("ordersTable");
+      if (box) box.innerHTML = `<p class="hint">جاري تحميل الطلبات...</p>`;
+      const data = await api("list_orders");
+      if (!data || !data.ok) {
+        if (box) box.innerHTML = `<p class="hint" style="color:#fca5a5">تعذر تحميل الطلبات${data && data.error ? ": " + data.error : ""}</p>`;
+        return;
+      }
+      const orders = (data.orders || []).slice().sort((a,b) => new Date(b.at||0) - new Date(a.at||0));
       if (!orders.length) {
         $("ordersTable").innerHTML = `<p class="hint">لا توجد طلبات حاليًا.</p>`;
         return;
