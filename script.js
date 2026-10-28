@@ -579,16 +579,57 @@ function renderAll() {
   }
 }
 
-const COUPON_CODES = Object.freeze({
+let COUPON_CODES = {
   NEXORA10: 10,
   WELCOME10: 10,
   FIRST10: 10,
   SAVE10: 10,
   EGYPT10: 10
-});
+};
+
+async function loadCoupons(force) {
+  try {
+    if (!force) {
+      const cached = sessionStorage.getItem("nx_coupons");
+      if (cached) {
+        const o = JSON.parse(cached);
+        if (o && o.t && Date.now() - o.t < 60000 && o.map) {
+          COUPON_CODES = o.map;
+          return COUPON_CODES;
+        }
+      }
+    }
+  } catch (e) {}
+  const urls = [
+    "/api/catalog?type=coupons&t=" + Date.now(),
+    "/coupons.json?t=" + Date.now()
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      const data = await r.json();
+      const list = Array.isArray(data.codes) ? data.codes : [];
+      const map = {};
+      list.forEach(row => {
+        const code = String(row.code || "").trim().toUpperCase();
+        const pct = Number(row.percent);
+        if (!code || !Number.isFinite(pct) || pct <= 0) return;
+        if (row.active === false) return;
+        map[code] = Math.min(90, Math.round(pct));
+      });
+      if (Object.keys(map).length || data.ok) {
+        COUPON_CODES = Object.keys(map).length ? map : COUPON_CODES;
+        try { sessionStorage.setItem("nx_coupons", JSON.stringify({ t: Date.now(), map: COUPON_CODES })); } catch (e) {}
+        return COUPON_CODES;
+      }
+    } catch (e) {}
+  }
+  return COUPON_CODES;
+}
+
 function getCouponCode() {
   try {
-    // الكوبون مؤقت للجلسة الحالية فقط؛ لا نرث خصمًا من اختبار أو طلب سابق.
     localStorage.removeItem("nx_coupon_code");
     const code = String(sessionStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
     return Object.prototype.hasOwnProperty.call(COUPON_CODES, code) ? code : "";
@@ -599,7 +640,27 @@ function couponPercent(code = getCouponCode()) {
 }
 function couponDiscount(subtotal) {
   const amount = Math.max(0, Number(subtotal) || 0);
-  return Math.round(amount * couponPercent() ) / 100;
+  return Math.round(amount * couponPercent()) / 100;
+}
+function applyCouponFromInput() {
+  const input = document.getElementById("couponInput");
+  const msg = document.getElementById("couponMsg");
+  const raw = String(input?.value || "").trim().toUpperCase();
+  if (!raw) {
+    try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
+    if (msg) msg.textContent = "اكتبي كود الخصم";
+    if (typeof updateCartUI === "function") updateCartUI();
+    return;
+  }
+  if (!COUPON_CODES[raw]) {
+    try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
+    if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";
+    if (typeof updateCartUI === "function") updateCartUI();
+    return;
+  }
+  try { sessionStorage.setItem("nx_coupon_code", raw); } catch (e) {}
+  if (msg) msg.textContent = "تم تطبيق الخصم " + COUPON_CODES[raw] + "% ✓";
+  if (typeof updateCartUI === "function") updateCartUI();
 }
 
 function updateCartUI() {
@@ -1784,6 +1845,8 @@ function nxTrack(action) {
 })();
 
 async function bootStore() {
+  try { await loadCoupons(); } catch (e) {}
+
   bindCheckoutDraft();
   // الشحن ليس مطلوبًا لرسم الصفحة الأولى؛ حمّله في الخلفية حتى يظهر المتجر فورًا.
   loadShippingZones().then(() => {
@@ -1938,3 +2001,8 @@ window.addEventListener("storage", (e) => {
     if (document.visibilityState === "visible") refresh(false);
   }, 2000);
 })();
+
+document.getElementById("applyCouponBtn")?.addEventListener("click", applyCouponFromInput);
+document.getElementById("couponInput")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); applyCouponFromInput(); }
+});
