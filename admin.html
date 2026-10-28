@@ -291,6 +291,7 @@
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
             <h3 style="margin:0">الطلبات</h3>
+            <button type="button" class="btn btn-ghost" id="refreshOrdersBtn">تحديث الطلبات</button>
             <button type="button" class="btn btn-ghost" id="clearOrdersBtn" style="border-color:rgba(248,113,113,.4);color:#fca5a5">حذف كل الطلبات السابقة</button>
           </div>
           <p class="hint" style="margin-bottom:10px">تقدري تحذفي طلب واحد من الجدول، أو تمسحي كل الطلبات القديمة مرة واحدة.</p>
@@ -1135,63 +1136,100 @@
       });
     });
 
-    async function loadOrders() {
-      const data = await (adminCacheGet("list_orders") ? Promise.resolve(adminCacheGet("list_orders")) : api("list_orders").then(d => { if (d && d.ok) adminCacheSet("list_orders", d); return d; }));
-      if (!data.ok) return;
-      const orders = data.orders || [];
-      if (!orders.length) {
-        $("ordersTable").innerHTML = `<p class="hint">لا توجد طلبات حاليًا.</p>`;
-        return;
+    async function loadOrders(force) {
+      const box = $("ordersTable");
+      const msg = $("ordersMsg");
+      if (box) box.innerHTML = `<p class="hint">جاري تحميل الطلبات...</p>`;
+      try {
+        if (force) {
+          try { sessionStorage.removeItem("adm_list_orders"); } catch (e) {}
+        }
+        const data = await api("list_orders");
+        if (!data || !data.ok) {
+          if (box) box.innerHTML = `<p class="hint" style="color:#fca5a5">تعذر تحميل الطلبات. ${data && data.error ? data.error : "أعد تسجيل الدخول أو حدّث الصفحة."}</p>`;
+          if (msg) { msg.className = "msg err"; msg.textContent = (data && data.error) || "فشل تحميل الطلبات"; }
+          return;
+        }
+        let orders = Array.isArray(data.orders) ? data.orders.slice() : [];
+        orders.sort((a, b) => {
+          const ta = new Date(a.at || a.updatedAt || 0).getTime();
+          const tb = new Date(b.at || b.updatedAt || 0).getTime();
+          return tb - ta;
+        });
+        if (!orders.length) {
+          if (box) box.innerHTML = `<p class="hint">لا توجد طلبات حاليًا.</p>`;
+          return;
+        }
+        if (box) box.innerHTML = `<div class="table-wrap"><table><thead><tr>
+          <th>الطلب</th><th>العميل</th><th>العنوان</th><th>المنتجات</th><th>الإجمالي</th>
+          <th>التسليم</th><th>الحالة</th><th>حذف</th>
+        </tr></thead><tbody>
+          ${orders.slice(0,150).map(o => {
+            const items = (o.items || []).map(it => {
+              const col = (Array.isArray(it.colors) && it.colors.length) ? it.colors.join("، ") : (it.color || "");
+              return (it.name || "منتج") + " ×" + (it.qty || 1) + (col ? (" (" + col + ")") : "");
+            }).join("<br>") || "—";
+            const c = o.customer || {};
+            const cust = (c.name || c.phone)
+              ? ((c.name || "—") + "<br><small dir=\"ltr\">" + (c.phone || "") + "</small>")
+              : "—";
+            const addr = [c.governorate, c.center, c.address].filter(Boolean).join(" — ") || (c.address || "—");
+            const st = o.status || "new";
+            const delivered = st === "delivered" || st === "completed";
+            const escId = String(o.id || "").replace(/"/g, "&quot;");
+            return `<tr>
+              <td><b>${o.id || ""}</b><br><small>${o.at ? new Date(o.at).toLocaleString("ar-EG") : ""}</small></td>
+              <td>${cust}</td>
+              <td style="font-size:.8rem;max-width:160px">${addr}</td>
+              <td style="font-size:.8rem">${items}</td>
+              <td>${money(o.total)}</td>
+              <td style="min-width:140px">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <button type="button" class="btn btn-ghost" data-deliver="${escId}" data-status="delivered"
+                    style="padding:6px 10px;${delivered ? "background:rgba(34,197,94,.25);border-color:rgba(34,197,94,.5);color:#86efac" : ""}">
+                    ${delivered ? "✅ تم التسليم" : "تأكيد التسليم"}
+                  </button>
+                  <button type="button" class="btn btn-ghost" data-deliver="${escId}" data-status="processing"
+                    style="padding:6px 10px;${!delivered ? "background:rgba(251,191,36,.15);border-color:rgba(251,191,36,.4);color:#fde68a" : "opacity:.7"}">
+                    ${!delivered ? "⏳ لم يُستلم بعد" : "إرجاع لـ لم يُستلم"}
+                  </button>
+                </div>
+              </td>
+              <td>
+                <select data-order-status="${escId}">
+                  <option value="new" ${st==="new"?"selected":""}>جديد</option>
+                  <option value="processing" ${st==="processing"?"selected":""}>قيد التنفيذ</option>
+                  <option value="shipped" ${st==="shipped"?"selected":""}>تم الشحن</option>
+                  <option value="delivered" ${st==="delivered"?"selected":""}>تم التسليم</option>
+                  <option value="cancelled" ${st==="cancelled"?"selected":""}>ملغي</option>
+                </select>
+              </td>
+              <td><button type="button" class="btn btn-ghost" data-del-order="${escId}" style="color:#fca5a5;padding:6px 10px">حذف</button></td>
+            </tr>`;
+          }).join("")}
+        </tbody></table></div>`;
+      } catch (err) {
+        if (box) box.innerHTML = `<p class="hint" style="color:#fca5a5">خطأ: ${err.message || err}</p>`;
       }
-      $("ordersTable").innerHTML = `<table><thead><tr>
-        <th>الطلب</th><th>العميل</th><th>المنتجات</th><th>الإجمالي</th>
-        <th>التسليم</th><th>الحالة</th><th>حذف</th>
-      </tr></thead><tbody>
-        ${orders.slice(0,100).map(o => {
-          const items = (o.items || []).map(it => (it.name || "") + " ×" + (it.qty || 1)).join("<br>") || "—";
-          const cust = (o.customer && (o.customer.name || o.customer.phone))
-            ? ((o.customer.name || "") + "<br>" + (o.customer.phone || ""))
-            : "—";
-          const st = o.status || "new";
-          const delivered = st === "delivered" || st === "completed";
-          return `<tr>
-            <td><b>${o.id || ""}</b><br><small>${o.at ? new Date(o.at).toLocaleString("ar-EG") : ""}</small></td>
-            <td>${cust}</td>
-            <td style="font-size:.8rem">${items}</td>
-            <td>${money(o.total)}</td>
-            <td style="min-width:140px">
-              <div style="display:flex;flex-direction:column;gap:6px">
-                <button type="button" class="btn btn-ghost" data-deliver="${o.id}" data-status="delivered"
-                  style="padding:6px 10px;${delivered ? "background:rgba(34,197,94,.25);border-color:rgba(34,197,94,.5);color:#86efac" : ""}">
-                  ${delivered ? "✅ تم التسليم" : "تأكيد التسليم"}
-                </button>
-                <button type="button" class="btn btn-ghost" data-deliver="${o.id}" data-status="processing"
-                  style="padding:6px 10px;${!delivered ? "background:rgba(251,191,36,.15);border-color:rgba(251,191,36,.4);color:#fde68a" : "opacity:.7"}">
-                  ${!delivered ? "⏳ لم يُستلم بعد" : "إرجاع لـ لم يُستلم"}
-                </button>
-              </div>
-            </td>
-            <td>
-              <select data-order-status="${o.id}">
-                <option value="new" ${st==="new"?"selected":""}>جديد</option>
-                <option value="processing" ${st==="processing"?"selected":""}>قيد التنفيذ</option>
-                <option value="shipped" ${st==="shipped"?"selected":""}>تم الشحن</option>
-                <option value="delivered" ${st==="delivered"?"selected":""}>تم التسليم</option>
-                <option value="cancelled" ${st==="cancelled"?"selected":""}>ملغي</option>
-              </select>
-            </td>
-            <td><button type="button" class="btn btn-ghost" data-del-order="${o.id}" style="color:#fca5a5;padding:6px 10px">حذف</button></td>
-          </tr>`;
-        }).join("")}
-      </tbody></table>`;
     }
 
 
     document.addEventListener("change", async (e) => {
       const sel = e.target.closest("[data-order-status]");
       if (!sel) return;
-      await api("update_order_status", { id: sel.getAttribute("data-order-status"), status: sel.value });
-      await loadStats();
+      const id = sel.getAttribute("data-order-status");
+      const status = sel.value;
+      const data = await api("update_order_status", { id, status });
+      const msg = $("ordersMsg");
+      if (msg) {
+        msg.className = data && data.ok ? "msg ok" : "msg err";
+        msg.textContent = data && data.ok ? "تم تحديث حالة الطلب" : ((data && data.error) || "فشل التحديث");
+      }
+      try { sessionStorage.removeItem("adm_list_orders"); } catch (err) {}
+      if (data && data.ok) {
+        await loadOrders(true);
+        await loadStats();
+      }
     });
 
     async function loadExpenses() {
@@ -1792,6 +1830,10 @@
       }
       if (data.ok) await loadOrders();
     });
+    $("refreshOrdersBtn")?.addEventListener("click", async () => {
+      try { sessionStorage.removeItem("adm_list_orders"); } catch (e) {}
+      await loadOrders(true);
+    });
     $("clearOrdersBtn")?.addEventListener("click", async () => {
       if (!confirm("هل تريدين حذف كل الطلبات السابقة نهائيًا؟")) return;
       if (!confirm("تأكيد أخير: مسح كل الطلبات؟")) return;
@@ -1818,7 +1860,7 @@
             ? (status === "delivered" ? "تم تأكيد تسليم الطلب ✅" : "تم تحديث الطلب: لم يُستلم بعد")
             : (data.error || "فشل التحديث");
         }
-        if (data.ok) await loadOrders();
+        if (data.ok) await loadOrders(true);
         return;
       }
     });
