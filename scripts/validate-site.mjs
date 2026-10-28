@@ -32,9 +32,8 @@ try {
 }
 
 if (errors.length) {
-  console.error("SITE VALIDATION WARNINGS");
+  console.error("SITE VALIDATION FAILED");
   for (const error of errors) console.error(`- ${error}`);
-  console.error("Continuing deploy despite warnings.");
-  process.exit(0);
+  process.exit(1);
 }
 console.log("SITE VALIDATION PASSED: HTML, JavaScript, and Vercel configuration are intact.");
