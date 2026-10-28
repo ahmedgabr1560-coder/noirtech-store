@@ -136,7 +136,8 @@ export default async function handler(req, res) {
         }
       });
       lines.push("✅ تواصل مع العميل للتأكيد");
-      let text = lines.join("\n");
+      let text = lines.join("
+");
 
 if (text.length > 4000) text = text.slice(0, 3990) + "…";
 
