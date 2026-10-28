@@ -357,21 +357,14 @@ export default async function handler(req, res) {
           return res.status(400).json({ ok: false, error: "customer phone and address required" });
         }
         order.id = String(order.id).slice(0, 64);
-        order.items = order.items.slice(0, 50).map(item => {
-          const colors = Array.isArray(item.colors)
-            ? item.colors.map(c => String(c).slice(0, 80)).filter(Boolean).slice(0, 20)
-            : [];
-          const color = String(item.color || (colors[0] || "")).slice(0, 100);
-          return {
-            id: Number(item.id) || 0,
-            name: String(item.name || "منتج").slice(0, 200),
-            qty: Math.max(1, Math.min(99, Number(item.qty) || 1)),
-            price: Math.max(0, Number(item.price) || 0),
-            lineTotal: Math.max(0, Number(item.lineTotal) || 0),
-            color,
-            colors
-          };
-        });
+        order.items = order.items.slice(0, 50).map(item => ({
+          id: Number(item.id) || 0,
+          name: String(item.name || "منتج").slice(0, 200),
+          qty: Math.max(1, Math.min(99, Number(item.qty) || 1)),
+          price: Math.max(0, Number(item.price) || 0),
+          lineTotal: Math.max(0, Number(item.lineTotal) || 0),
+          color: String(item.color || "").slice(0, 100)
+        }));
       }
       const f = await ghGet("orders.json");
       const orders = f ? JSON.parse(f.content) : [];
@@ -437,11 +430,8 @@ export default async function handler(req, res) {
 
     if (action === "list_orders") {
       const f = await ghGet("orders.json");
-      let orders = [];
-      try { orders = f ? JSON.parse(f.content) : []; } catch { orders = []; }
-      if (!Array.isArray(orders)) orders = [];
-      orders.sort((a, b) => new Date(b.at || b.updatedAt || 0) - new Date(a.at || a.updatedAt || 0));
-      return res.status(200).json({ ok: true, orders, total: orders.length });
+      const orders = f ? JSON.parse(f.content) : [];
+      return res.status(200).json({ ok: true, orders });
     }
 
     if (action === "delete_order") {
