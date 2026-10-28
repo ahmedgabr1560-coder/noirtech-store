@@ -61,9 +61,6 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-secret");
   if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method === "POST" && !String(ADMIN_SECRET || "").trim()) {
-    return res.status(503).json({ ok: false, error: "ADMIN_SECRET غير مضبوط على السيرفر" });
-  }
   if (!GH_TOKEN) return res.status(500).json({ ok: false, error: "GITHUB_TOKEN missing" });
 
   try {
@@ -476,42 +473,6 @@ export default async function handler(req, res) {
 
     
     
-    
-    if (action === "get_coupons") {
-      const f = await ghGet("coupons.json");
-      if (!f) return res.status(200).json({ ok: true, codes: [] });
-      let data = {};
-      try { data = JSON.parse(f.content); } catch { data = {}; }
-      return res.status(200).json({ ok: true, codes: Array.isArray(data.codes) ? data.codes : [] });
-    }
-
-    if (action === "update_coupons") {
-      let codes = body.codes;
-      if (!Array.isArray(codes)) return res.status(400).json({ ok: false, error: "codes array required" });
-      const cleaned = [];
-      const seen = new Set();
-      for (const row of codes) {
-        const code = String(row.code || "").trim().toUpperCase().replace(/\s+/g, "");
-        if (!code || code.length < 2) continue;
-        if (seen.has(code)) continue;
-        seen.add(code);
-        let percent = Number(row.percent);
-        if (!Number.isFinite(percent)) percent = 0;
-        percent = Math.max(0, Math.min(90, Math.round(percent)));
-        cleaned.push({
-          code,
-          percent,
-          active: row.active === true || row.active === "true" || row.active === 1 || row.active === "1",
-          note: String(row.note || "").slice(0, 120)
-        });
-      }
-      const payload = { codes: cleaned };
-      let f = await ghGet("coupons.json");
-      const putR = await ghPut("coupons.json", JSON.stringify(payload, null, 2), "Admin: update coupon codes", f?.sha);
-      if (!putR.ok) return res.status(500).json({ ok: false, error: "تعذر حفظ الأكواد", detail: putR.data });
-      return res.status(200).json({ ok: true, codes: cleaned });
-    }
-
     if (action === "get_shipping_zones") {
       const f = await ghGet("shipping-zones.json");
       if (!f) return res.status(200).json({ ok: true, zones: { enabled: false, defaultFee: 50, freeAbove: 0, governorates: [] } });
