@@ -256,6 +256,11 @@
         <div class="cart-total-row"><span id="cartShippingLabel">الشحن</span><strong id="cartShipping">—</strong></div>
         <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
         <div class="cart-total-row" id="cartDiscountRow" hidden><span>الخصم</span><strong id="cartDiscount">0 ج.م</strong></div>
+        <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center">
+          <input type="text" id="couponInput" placeholder="كود الخصم" dir="ltr" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff;text-transform:uppercase" />
+          <button type="button" class="btn btn-ghost" id="applyCouponBtn">تطبيق</button>
+        </div>
+        <p id="couponMsg" style="font-size:.8rem;margin:0 0 8px;color:#c4b5fd;min-height:1.2em"></p>
         <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
         <div id="checkoutFields" class="checkout-fields" hidden>
           <label>الاسم (اختياري)
