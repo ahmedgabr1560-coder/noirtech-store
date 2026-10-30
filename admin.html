@@ -434,11 +434,14 @@
           <div class="msg" id="generalMsg"></div>
         </div>
         <div class="card">
-          <h3>خريطة التحكم</h3>
+          <h3>خريطة السيطرة الكاملة</h3>
+          <p class="hint">• فتح/إغلاق المتجر من هنا</p>
           <p class="hint">• الاسم والأيقونة — اسم المتجر والشعار</p>
           <p class="hint">• الواجهة — صور ونصوص أول صفحة + الدفع</p>
-          <p class="hint">• الأقسام — إظهار/إخفاء</p>
-          <p class="hint">• المنتجات والطلبات والأرباح</p>
+          <p class="hint">• الأقسام — إظهار/إخفاء أي قسم أو فرع</p>
+          <p class="hint">• المنتجات — إضافة / تعديل / إخفاء / حذف</p>
+          <p class="hint">• الطلبات — متابعة وتأكيد التسليم</p>
+          <p class="hint">• أكواد الخصم والشحن والأرباح</p>
         </div>
       </section>
 
@@ -1553,6 +1556,8 @@
       const c = data.config || {};
       const set = (id, v) => { const el = $(id); if (el) el.value = v || ""; };
       set("gPhone", c.phone);
+      const so = $("gStoreOpen"); if (so) so.checked = c.storeOpen !== false;
+      set("gStoreClosedMsg", c.storeClosedMessage || "المتجر متوقف مؤقتًا للتحديث. رجّعوا لنا بعد قليل.");
       set("gWhatsapp", c.whatsapp);
       set("gEmail", c.email);
       set("gAddress", c.address);
@@ -1581,7 +1586,9 @@
           aboutText: $("gAbout")?.value.trim() || "",
           showFloatWhatsapp: !!$("gShowWa")?.checked,
           showFloatTelegram: !!$("gShowTg")?.checked,
-          showFloatAI: !!$("gShowAi")?.checked
+          showFloatAI: !!$("gShowAi")?.checked,
+          storeOpen: !!$("gStoreOpen")?.checked,
+          storeClosedMessage: $("gStoreClosedMsg")?.value.trim() || "المتجر متوقف مؤقتًا للتحديث. رجّعوا لنا بعد قليل."
         });
         if (!data.ok) throw new Error(data.error || "فشل");
         if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ إعدادات الموقع — حدّثي المتجر"; }
