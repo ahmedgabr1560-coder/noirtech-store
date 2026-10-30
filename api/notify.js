@@ -12,7 +12,59 @@ const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "");
 const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID || "";
 const TWILIO_TOKEN = process.env.TWILIO_AUTH_TOKEN || "";
 const TWILIO_FROM = process.env.TWILIO_WHATSAPP_FROM || ""; // whatsapp:+1...
-const TWILIO_TO = process.env.TWILIO_WHATSAPP_TO || "";     // whatsapp:+20...
+const TWILIO_TO = process.env.TWILIO_WHATSAPP_TO || "";
+
+const GH_OWNER = "ahmedgabr1560-coder";
+const GH_REPO = "noirtech-store";
+const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
+
+async function persistOrderFromNotify(order) {
+  if (!GH_TOKEN || !order || !order.id) return { ok: false };
+  try {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const gr = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/orders.json`, {
+        headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Notify" }
+      });
+      let sha = null, orders = [];
+      if (gr.ok) {
+        const gd = await gr.json();
+        sha = gd.sha;
+        try {
+          const content = Buffer.from(gd.content || "", "base64").toString("utf8");
+          orders = JSON.parse(content);
+        } catch { orders = []; }
+      }
+      if (!Array.isArray(orders)) orders = [];
+      const idx = orders.findIndex(o => String(o.id) === String(order.id));
+      if (idx >= 0) orders[idx] = { ...orders[idx], ...order };
+      else orders.unshift(order);
+      if (orders.length > 500) orders = orders.slice(0, 500);
+      const body = {
+        message: `Order ${order.id} (notify backup)`,
+        content: Buffer.from(JSON.stringify(orders, null, 2), "utf8").toString("base64"),
+        branch: "main"
+      };
+      if (sha) body.sha = sha;
+      const pr = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/orders.json`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${GH_TOKEN}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json",
+          "User-Agent": "NEXORA-Notify"
+        },
+        body: JSON.stringify(body)
+      });
+      if (pr.ok) return { ok: true };
+      const pd = await pr.json().catch(() => ({}));
+      if (!/conflict|sha/i.test(String(pd.message || ""))) break;
+      await new Promise(r => setTimeout(r, 250 * (attempt + 1)));
+    }
+  } catch (e) { console.error("persistOrder", e); }
+  return { ok: false };
+}
+
+     // whatsapp:+20...
 
 async function tg(method, body) {
   if (!BOT_TOKEN || !ADMIN_CHAT) return { ok: false, skipped: true, reason: "telegram_not_configured" };
@@ -145,6 +197,7 @@ export default async function handler(req, res) {
     const order = body.order || null;
 
     if (type === "order" && order && Array.isArray(order.items) && order.items.length) {
+      try { await persistOrderFromNotify(order); } catch (e) {}
       const text = formatOrderMessage(order);
 
       await tg("sendMessage", {
