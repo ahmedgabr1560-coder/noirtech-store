@@ -468,8 +468,11 @@ export default async function handler(req, res) {
 
     if (action === "list_orders") {
       const f = await ghGet("orders.json");
-      const orders = f ? JSON.parse(f.content) : [];
-      return res.status(200).json({ ok: true, orders });
+      let orders = [];
+      try { orders = f ? JSON.parse(f.content) : []; } catch { orders = []; }
+      if (!Array.isArray(orders)) orders = [];
+      orders.sort((a, b) => new Date(b.at || b.updatedAt || 0) - new Date(a.at || a.updatedAt || 0));
+      return res.status(200).json({ ok: true, orders, total: orders.length });
     }
 
     if (action === "delete_order") {
