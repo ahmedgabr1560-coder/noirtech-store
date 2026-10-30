@@ -1,3 +1,27 @@
+
+function applyStoreOpenState(cfg) {
+  try {
+    cfg = cfg || window.siteConfig || {};
+    let bar = document.getElementById("storeClosedBar");
+    if (cfg.storeOpen === false) {
+      if (!bar) {
+        bar = document.createElement("div");
+        bar.id = "storeClosedBar";
+        bar.style.cssText = "position:sticky;top:0;z-index:90;background:linear-gradient(90deg,#7f1d1d,#991b1b);color:#fff;text-align:center;padding:10px 14px;font-size:.9rem;font-weight:700";
+        document.body.prepend(bar);
+      }
+      bar.textContent = cfg.storeClosedMessage || "المتجر متوقف مؤقتًا";
+      bar.hidden = false;
+      const btn = document.getElementById("checkoutBtn");
+      if (btn) { btn.disabled = true; btn.title = "المتجر مغلق"; }
+    } else if (bar) {
+      bar.hidden = true;
+      const btn = document.getElementById("checkoutBtn");
+      if (btn) { btn.disabled = false; btn.title = ""; }
+    }
+  } catch (e) {}
+}
+
 document.documentElement.classList.toggle("android-device", /Android/i.test(navigator.userAgent || ""));
 function debounce(fn, ms){ let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), ms); }; }
 
@@ -1105,6 +1129,12 @@ document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeO
 $("#checkoutBtn").addEventListener("click", async () => {
   try {
     if (!cart.length) return toast("السلة فارغة");
+    try {
+      const cfg = window.siteConfig || {};
+      if (cfg.storeOpen === false) {
+        return toast(cfg.storeClosedMessage || "المتجر متوقف مؤقتًا");
+      }
+    } catch (e0) {}
     const name = ($("#orderName")?.value || "").trim();
     const phoneRaw = normalizePhone($("#orderPhone")?.value || "");
     const phone = phoneRaw.replace(/[^0-9]/g, "");
@@ -2041,3 +2071,10 @@ document.getElementById("applyCouponBtn")?.addEventListener("click", applyCoupon
 document.getElementById("couponInput")?.addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); applyCouponFromInput(); }
 });
+
+try {
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => applyStoreOpenState(window.siteConfig), 400);
+    setTimeout(() => applyStoreOpenState(window.siteConfig), 1500);
+  });
+} catch (e) {}
