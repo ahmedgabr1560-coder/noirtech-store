@@ -1237,10 +1237,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
         toast(payData.error || "الدفع بالبطاقة غير متاح — جرّب عند الاستلام");
       } catch (e) { toast("تعذر فتح الدفع بالبطاقة"); }
     }
-    let orderMsg = "🆔 " + orderId + "\\n👤 " + (name || "عميل") + "\\n📞 " + phone + "\\n📍 " + address + "\\n";
-    if (note) orderMsg += "📝 " + note + "\\n";
-    orderMsg += "\\n📦 المنتجات:\\n" + lines.join("\\n") + "\\n🎟️ الخصم: -" + Number(discount).toLocaleString("ar-EG") + " ج.م\\n\\n💰 الإجمالي: " + Number(total).toLocaleString("ar-EG") + " ج.م";
-    try { await notifyAdmin("order", orderMsg, { order: orderRecord }); } catch (e) {}
+    try { await notifyAdmin("order", "", { order: orderRecord }); } catch (e) {}
     cart = []; saveCart(); closeCart();
     if ($("#orderNote")) $("#orderNote").value = "";
     showOrderSuccess(orderId);
