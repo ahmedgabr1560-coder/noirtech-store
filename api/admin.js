@@ -413,7 +413,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, id: order.id });
     }
 
-    if (action ===if (action === "list_accounts") {
+    if (action === "list_accounts") {
       const f = await ghGet("accounts.json");
       let accounts = [];
       try { accounts = f ? JSON.parse(f.content) : []; } catch { accounts = []; }
