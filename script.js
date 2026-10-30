@@ -1088,7 +1088,9 @@ $("#logoutBtn").addEventListener("click", () => {
 
 function showOrderSuccess(orderId) {
   const idEl = document.getElementById("orderSuccessId");
-  if (idEl) idEl.textContent = orderId;
+  if (idEl) idEl.textContent = orderId || "—";
+  const msg = document.getElementById("orderSuccessMsg");
+  if (msg) msg.innerHTML = "شكرًا لطلبكِ من NEXORA.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.";
   document.getElementById("orderSuccessOverlay")?.classList.add("open");
   document.getElementById("orderSuccessModal")?.classList.add("open");
 }
@@ -1242,7 +1244,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
     cart = []; saveCart(); closeCart();
     if ($("#orderNote")) $("#orderNote").value = "";
     showOrderSuccess(orderId);
-    toast("تم تأكيد طلبك — رقم " + orderId);
+    toast("تم تأكيد طلبك بنجاح");
     if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
   } catch (err) {
     console.error(err);
