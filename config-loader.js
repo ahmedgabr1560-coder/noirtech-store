@@ -3,7 +3,7 @@
     const r = await fetch("/site-config.json?t=" + Date.now());
     if (!r.ok) return;
     const c = await r.json();
-    window.siteConfig = c;
+    window.siteConfig = c; try { if (typeof applyStoreOpenState === 'function') applyStoreOpenState(c); } catch(e) {};
     const root = document.documentElement;
     const text = (sel, val) => { const el = document.querySelector(sel); if (el && val != null) el.textContent = val; };
 
