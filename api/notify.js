@@ -66,11 +66,69 @@ function compactItem(item, idx) {
   const cols = colorsText(item);
   const qty = Number(item.qty) || 1;
   const line = item.lineTotal != null ? Number(item.lineTotal) : (Number(item.price || 0) * qty);
-  let s = `${idx}) ${item.name || "منتج"} ×${qty}`;
-  if (cols) s += ` | 🎨 ${cols}`;
-  s += ` = ${money(line)}`;
-  if (item.dealLabel) s += ` (${item.dealLabel})`;
+  let s = `${idx}) ${item.name || "منتج"}`;
+  s += `\n   الكمية: ${qty}`;
+  if (cols) s += `\n   اللون: ${cols}`;
+  if (item.dealLabel) s += `\n   العرض: ${item.dealLabel}`;
+  s += `\n   السعر: ${money(line)}`;
   return s;
+}
+
+function payLabel(method) {
+  const m = String(method || "cod").toLowerCase();
+  const map = {
+    cod: "الدفع عند الاستلام",
+    cash: "الدفع عند الاستلام",
+    vodafone: "فودافون كاش",
+    vf: "فودافون كاش",
+    instapay: "إنستا باي",
+    insta: "إنستا باي",
+    bank: "تحويل بنكي",
+    card: "بطاقة ائتمان",
+    stripe: "بطاقة ائتمان"
+  };
+  return map[m] || String(method || "—");
+}
+
+function formatOrderMessage(order) {
+  const c = order.customer || {};
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemsText = items.map((it, i) => compactItem(it, i + 1)).join("\n\n") || "—";
+  const addrParts = [c.governorate, c.center, c.address].filter(Boolean);
+  const address = addrParts.length ? addrParts.join(" — ") : (c.address || "—");
+  const coupon = String(order.coupon || "").trim();
+  const discount = Number(order.discount) || 0;
+  const subtotal = order.subtotal != null ? Number(order.subtotal) : null;
+  const shipping = order.shipping != null ? Number(order.shipping) : null;
+  const total = Number(order.total) || 0;
+  const when = order.at ? new Date(order.at).toLocaleString("ar-EG") : new Date().toLocaleString("ar-EG");
+
+  let text = "";
+  text += "═══════════════════\n";
+  text += "🛒 طلب جديد — NEXORA\n";
+  text += "═══════════════════\n\n";
+  text += `🆔 رقم الطلب: ${order.id || "—"}\n`;
+  text += `🕒 التاريخ: ${when}\n`;
+  text += `📌 الحالة: ${order.status || "new"}\n\n`;
+  text += "👤 بيانات العميل\n";
+  text += `• الاسم: ${c.name || "—"}\n`;
+  text += `• الهاتف: ${c.phone || "—"}\n`;
+  if (c.email) text += `• البريد: ${c.email}\n`;
+  text += `• العنوان: ${address}\n`;
+  if (c.note) text += `• ملاحظات: ${c.note}\n`;
+  text += "\n📦 المنتجات\n";
+  text += itemsText + "\n";
+  text += "\n💳 الدفع والملخص\n";
+  text += `• طريقة الدفع: ${payLabel(order.paymentMethod)}\n`;
+  if (subtotal != null) text += `• مجموع المنتجات: ${money(subtotal)}\n`;
+  if (coupon) text += `• كود الخصم: ${coupon}\n`;
+  if (discount > 0) text += `• قيمة الخصم: -${money(discount)}\n`;
+  else text += `• قيمة الخصم: لا يوجد\n`;
+  if (shipping != null) text += `• الشحن: ${shipping === 0 ? "مجاني" : money(shipping)}\n`;
+  text += `• الإجمالي النهائي: ${money(total)}\n`;
+  text += "\n✅ يُرجى التواصل مع العميل لتأكيد الطلب.";
+  if (text.length > 4000) text = text.slice(0, 3990) + "…";
+  return text;
 }
 
 export default async function handler(req, res) {
@@ -87,25 +145,7 @@ export default async function handler(req, res) {
     const order = body.order || null;
 
     if (type === "order" && order && Array.isArray(order.items) && order.items.length) {
-      const c = order.customer || {};
-      const itemsText = order.items.map((it, i) => compactItem(it, i + 1)).join("\n");
-      const pay = order.paymentMethod ? `\n💳 الدفع: ${order.paymentMethod}` : "";
-      const note = c.note ? `\n📝 ${c.note}` : "";
-
-      // رسالة واحدة مدمجة
-      let text =
-        `🛒 طلب جديد\n` +
-        `🆔 ${order.id || "—"}\n` +
-        `👤 ${c.name || "—"}\n` +
-        `📞 ${c.phone || "—"}\n` +
-        `📍 ${(c.governorate || "")}${c.center ? " — " + c.center : ""}${c.address ? " — " + c.address : (c.governorate ? "" : "—")}${note}\n` +
-        `\n📦 المنتجات:\n${itemsText}\n` +
-        (order.subtotal != null ? `\n🧮 المنتجات: ${money(order.subtotal)}\n` : "") +
-        (order.shipping != null ? `🚚 الشحن: ${Number(order.shipping) === 0 ? "مجاني" : money(order.shipping)}\n` : "") +
-        `\n💰 الإجمالي: ${money(order.total || 0)}${pay}\n` +
-        `✅ تواصل مع العميل للتأكيد`;
-
-      if (text.length > 4000) text = text.slice(0, 3990) + "…";
+      const text = formatOrderMessage(order);
 
       await tg("sendMessage", {
         chat_id: ADMIN_CHAT,
