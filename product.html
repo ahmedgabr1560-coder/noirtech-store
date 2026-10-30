@@ -804,13 +804,36 @@
         paymentMethod: payMethod
       };
       try {
-        const r = await fetch("/api/notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "order", order })
-        });
-        const d = await r.json().catch(function () { return {}; });
-        if (!r.ok && !d.ok) throw new Error(d.error || "فشل إرسال الطلب");
+        // 1) حفظ الطلب في قاعدة الطلبات (ضروري لظهوره في الأدمن)
+        let saved = false;
+        try {
+          const sr = await fetch("/api/order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order })
+          });
+          const sd = await sr.json().catch(function () { return {}; });
+          if (sr.ok && sd && sd.ok) saved = true;
+          if (!saved) {
+            const sr2 = await fetch("/api/admin", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "save_order", order })
+            });
+            const sd2 = await sr2.json().catch(function () { return {}; });
+            if (sr2.ok && sd2 && sd2.ok) saved = true;
+          }
+        } catch (eSave) {}
+        if (!saved) throw new Error("تعذر حفظ الطلب في لوحة التحكم — حاول مرة أخرى");
+
+        // 2) إشعار التليجرام
+        try {
+          await fetch("/api/notify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "order", order })
+          });
+        } catch (eN) {}
         writeCart([]);
         renderCart();
         try {
