@@ -353,35 +353,7 @@
               <h4>الوصف</h4>
               <p>${esc(desc)}</p>
             </div>
-            <div class="product-coupon" style="margin-top:16px;padding:12px;border:1px solid rgba(167,139,250,.3);border-radius:12px;background:rgba(124,92,255,.08)">
-              <label for="productCouponCode" style="display:block;margin-bottom:7px;font-weight:700;color:#e9d5ff">كود الخصم — خصم 10%</label>
-              <div style="display:flex;gap:8px;align-items:center">
-                <input type="text" id="productCouponCode" placeholder="اكتبي كود الخصم" autocomplete="off" dir="ltr" style="flex:1;min-width:0" />
-                <button type="button" class="btn btn-ghost" id="applyProductCoupon">تطبيق</button>
-              </div>
-              <small id="productCouponMsg" style="display:block;margin-top:6px;color:#c4b5fd" aria-live="polite"></small>
-            </div>
-            ${specRows ? `<div class="pd-specs"><h4>المواصفات</h4><table>${specRows}</table></div>` : ""}
-            <div class="pd-actions" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-              <div class="qty-pick">
-                <button type="button" id="qtyMinus">−</button>
-                <input type="number" id="buyQty" value="1" min="1" max="${Math.max(1, stock || 1)}" />
-                <button type="button" id="qtyPlus">+</button>
-              </div>
-              <button type="button" class="btn btn-primary" id="ppAddCart" ${available ? "" : "disabled"} style="${available ? "" : "opacity:.5;cursor:not-allowed"}">
-                ${available ? "أضف للسلة" : "غير متوفر"}
-              </button>
-              <a class="btn btn-ghost" href="/">متابعة التسوق</a>
-              <button type="button" class="btn btn-ghost" id="ppGoCart" title="السلة" aria-label="فتح السلة" style="display:inline-flex;align-items:center;gap:6px;padding:10px 14px">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="9" cy="21" r="1"></circle>
-                  <circle cx="20" cy="21" r="1"></circle>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                </svg>
-                <span>السلة</span>
-              </button>
-            </div>
-          </div>
+
         </div>
         ${related.length ? `
         <div style="margin-top:28px">
@@ -866,25 +838,7 @@
 
   <script>
     // صفحة المنتج ترسم الخانة ديناميكيًا؛ لذلك نستخدم حدثًا مفوضًا.
-    document.addEventListener("click", function (event) {
-      if (!event.target.closest("#applyProductCoupon")) return;
-      const input = document.getElementById("productCouponCode");
-      const message = document.getElementById("productCouponMsg");
-      const code = String(input?.value || "").trim().toUpperCase();
-      const validCodes = ["NEXORA10", "WELCOME10", "FIRST10", "SAVE10", "EGYPT10"];
-      if (!code) {
-        if (message) message.textContent = "اكتبي كود الخصم أولًا";
-        return;
-      }
-      if (!validCodes.includes(code)) {
-        try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
-        if (message) message.textContent = "كود الخصم غير صالح";
-        return;
-      }
-      try { sessionStorage.setItem("nx_coupon_code", code); } catch (e) {}
-      if (message) message.textContent = "تم تطبيق خصم 10% ✓ وسيظهر مع الطلب";
-    });
-  </script>
+</script>
 
 </body>
 </html>
