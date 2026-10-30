@@ -643,8 +643,21 @@
         document.querySelectorAll("#nav button").forEach(b => b.classList.remove("active"));
         document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
         btn.classList.add("active");
-        $("panel-" + btn.dataset.panel).classList.add("active");
+        const panelId = btn.dataset.panel;
+        const panel = $("panel-" + panelId);
+        if (panel) panel.classList.add("active");
         $("pageTitle").textContent = btn.textContent;
+        // تحميل بيانات القسم عند فتحه
+        try {
+          if (panelId === "orders") loadOrders();
+          else if (panelId === "products") loadProducts();
+          else if (panelId === "categories") loadCategories();
+          else if (panelId === "dash") loadStats();
+          else if (panelId === "finance") loadExpenses();
+          else if (panelId === "visitors") { if (typeof loadVisitors === "function") loadVisitors(); }
+          else if (panelId === "coupons") { if (typeof loadCouponsPanel === "function") loadCouponsPanel(); }
+          else if (panelId === "shipping") { if (typeof loadShippingSettings === "function") loadShippingSettings(); }
+        } catch (e) { console.warn(e); }
       };
     });
 
