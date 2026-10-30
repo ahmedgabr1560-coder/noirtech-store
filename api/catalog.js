@@ -34,7 +34,8 @@ export default async function handler(req, res) {
       const raw = await ghGet("products.json");
       if (!raw) return res.status(502).json({ ok: false, error: "products unavailable" });
       const data = JSON.parse(raw);
-      const list = Array.isArray(data) ? data : (data.products || []);
+      let list = Array.isArray(data) ? data : (data.products || []);
+      list = (list || []).filter(p => p && p.hidden !== true && p.active !== false);
       return res.status(200).json({ ok: true, products: list, ts: Date.now() });
     }
     if (type === "categories") {
