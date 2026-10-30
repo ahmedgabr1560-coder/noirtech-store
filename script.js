@@ -683,7 +683,7 @@ function applyCouponFromInput() {
     return;
   }
   try { sessionStorage.setItem("nx_coupon_code", raw); } catch (e) {}
-  if (msg) msg.textContent = "تم تطبيق الكود بنجاح ✓";
+  if (msg) msg.textContent = "تم تطبيق الخصم ✓";
   if (typeof updateCartUI === "function") updateCartUI();
 }
 
@@ -751,8 +751,8 @@ function updateCartUI() {
   const total = subtotal - discount + ship.amount;
   if ($("#cartSubtotal")) $("#cartSubtotal").textContent = money(subtotal);
   if ($("#cartShipping")) $("#cartShipping").textContent = ship.free ? "مجاني" : money(ship.amount);
-  if ($("#cartDiscount")) $("#cartDiscount").textContent = "";
-  if ($("#cartDiscountRow")) { $("#cartDiscountRow").hidden = true; $("#cartDiscountRow").style.display = "none"; }
+  if ($("#cartDiscount")) $("#cartDiscount").textContent = discount > 0 ? ("- " + money(discount)) : "";
+  if ($("#cartDiscountRow")) { $("#cartDiscountRow").hidden = discount <= 0; $("#cartDiscountRow").style.display = discount > 0 ? "flex" : "none"; }
   if ($("#cartShippingLabel")) $("#cartShippingLabel").textContent = ship.free ? "الشحن" : "الشحن";
   if ($("#cartShippingHint")) {
     const h = $("#cartShippingHint");
