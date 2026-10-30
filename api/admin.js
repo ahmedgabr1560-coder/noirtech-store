@@ -605,11 +605,11 @@ export default async function handler(req, res) {
       let config = {};
       try { config = JSON.parse(f.content); } catch { config = {}; }
 
-      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email","siteName","siteTagline","logoMark","favicon","address","footerText","aboutText","ownerName","telegramBot"];
+      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email","siteName","siteTagline","logoMark","favicon","address","footerText","aboutText","ownerName","telegramBot","storeClosedMessage"];
       for (const k of textFields) {
         if (body[k] != null) config[k] = String(body[k]);
       }
-      for (const k of ["showFloatWhatsapp","showFloatTelegram","showFloatAI","showContact","showCategories","heroRotateFromProducts"]) {
+      for (const k of ["showFloatWhatsapp","showFloatTelegram","showFloatAI","showContact","showCategories","heroRotateFromProducts","storeOpen"]) {
         if (body[k] != null) config[k] = body[k] === true || body[k] === "true" || body[k] === 1 || body[k] === "1";
       }
       if (body.heroRotateSeconds != null) {
