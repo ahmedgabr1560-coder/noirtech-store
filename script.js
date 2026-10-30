@@ -1194,15 +1194,30 @@ $("#checkoutBtn").addEventListener("click", async () => {
       localStorage.setItem("nx_orders", JSON.stringify(orders.slice(0, 50)));
     } catch (e) {}
     try {
-      const saveRes = await fetch("/api/admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "save_order", order: orderRecord })
-      });
       let saveData = null;
-      try { saveData = await saveRes.json(); } catch (e2) { saveData = null; }
-      if (!saveRes.ok || !saveData || saveData.ok === false) {
-        const err = (saveData && saveData.error) || ("HTTP " + saveRes.status);
+      let saveRes = null;
+      // 1) مسار حفظ الطلب المخصص
+      try {
+        saveRes = await fetch("/api/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order: orderRecord })
+        });
+        try { saveData = await saveRes.json(); } catch (e2) { saveData = null; }
+      } catch (e1) { saveRes = null; saveData = null; }
+      // 2) احتياطي: api/admin
+      if (!saveRes || !saveRes.ok || !saveData || saveData.ok === false) {
+        try {
+          saveRes = await fetch("/api/admin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "save_order", order: orderRecord })
+          });
+          try { saveData = await saveRes.json(); } catch (e3) { saveData = null; }
+        } catch (e4) { saveRes = null; saveData = null; }
+      }
+      if (!saveRes || !saveRes.ok || !saveData || saveData.ok === false) {
+        const err = (saveData && saveData.error) || (saveRes ? ("HTTP " + saveRes.status) : "network");
         toast("تعذر حفظ الطلب: " + err);
         if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
         return;
