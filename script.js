@@ -524,6 +524,71 @@ function discountPct(p) {
 }
 
 
+
+let activeBundleSec = "all";
+function bundleSectionOf(p) {
+  if (!p) return "other";
+  const t = String(p.offerType || (p.offerMeta && p.offerMeta.type) || "").toLowerCase();
+  if (t === "mixed_bundle" || (p.offerMeta && Array.isArray(p.offerMeta.productIds) && p.offerMeta.productIds.length >= 2)) {
+    return "mixed";
+  }
+  if (t === "bundle" || t === "both" || isBundleOffer(p)) {
+    // bags vs other by category/sub
+    const cat = String(p.category || p.cat || "").toLowerCase();
+    const sub = String(p.subcategory || p.sub || "").toLowerCase();
+    const name = String(p.name || "");
+    if (cat.includes("bag") || sub.includes("bag") || /شنط|حقيبة|bag/i.test(name) || cat === "fashion" && sub === "bags") {
+      // still same-product bundle, classified under same + bags filter
+      return "same";
+    }
+    return "same";
+  }
+  return "other";
+}
+function isBagsProduct(p) {
+  const cat = String(p.category || "").toLowerCase();
+  const sub = String(p.subcategory || "").toLowerCase();
+  const name = String(p.name || "");
+  return cat.includes("bag") || sub.includes("bag") || sub === "bags" || /شنط|حقيبة|bag/i.test(name);
+}
+function getBundleProducts() {
+  return (PRODUCTS || []).filter(p => isBundleOffer(p) || (p.isOffer && (p.offerType === "mixed_bundle" || p.offerType === "bundle" || p.offerType === "both")));
+}
+function filterBundlesBySec(list, sec) {
+  sec = sec || "all";
+  if (sec === "all") return list;
+  if (sec === "mixed") return list.filter(p => bundleSectionOf(p) === "mixed" || String(p.offerType) === "mixed_bundle");
+  if (sec === "same") return list.filter(p => {
+    if (String(p.offerType) === "mixed_bundle") return false;
+    return isBundleOffer(p) || p.offerType === "bundle" || p.offerType === "both";
+  });
+  if (sec === "bags") return list.filter(isBagsProduct);
+  if (sec === "other") return list.filter(p => !isBagsProduct(p));
+  return list;
+}
+
+document.addEventListener("click", function(e) {
+  const tab = e.target.closest && e.target.closest(".bundle-tab");
+  if (!tab) return;
+  activeBundleSec = tab.getAttribute("data-bundle-sec") || "all";
+  renderBundleSection();
+});
+
+function renderBundleSection() {
+  const bundleGrid = $("#bundleGrid");
+  if (!bundleGrid) return;
+  const all = getBundleProducts().slice(0, 48);
+  const bundles = filterBundlesBySec(all, activeBundleSec);
+  if (bundles.length) {
+    renderGrid(bundleGrid, bundles);
+  } else {
+    bundleGrid.innerHTML = `<div class="empty-state">لا توجد عروض قطع في هذا القسم حاليًا.<br><small>من الأدمن: إضافة منتج → عرض / خصم</small></div>`;
+  }
+  document.querySelectorAll(".bundle-tab").forEach(function(btn) {
+    btn.classList.toggle("active", btn.getAttribute("data-bundle-sec") === activeBundleSec);
+  });
+}
+
 function isBundleOffer(p) {
   if (!p) return false;
   const tiers = p.offerMeta && Array.isArray(p.offerMeta.tiers) ? p.offerMeta.tiers : [];
@@ -585,16 +650,8 @@ function renderAll() {
   renderCatsDirectory();
   // خصومات فقط (من غير عروض ٢/٣ قطع)
   renderGrid($("#bestGrid"), PRODUCTS.filter(p => isDiscountOffer(p) || (p.best && !isBundleOffer(p))).slice(0, 12));
-  // عروض القطع لوحدها
-  const bundles = PRODUCTS.filter(p => isBundleOffer(p)).slice(0, 24);
-  const bundleGrid = $("#bundleGrid");
-  if (bundleGrid) {
-    if (bundles.length) {
-      renderGrid(bundleGrid, bundles);
-    } else {
-      bundleGrid.innerHTML = `<div class="empty-state">لا توجد عروض قطع حاليًا.<br><small>من الأدمن: إضافة منتج → عرض / خصم → عروض القطع (٢ / ٣ قطع)</small></div>`;
-    }
-  }
+  // عروض القطع — بأقسام
+  renderBundleSection();
   renderGrid($("#newGrid"), PRODUCTS.filter(p => !p.isOffer && !isBundleOffer(p)).slice(0, 12));
   renderShop();
   // default storefront to fashion
