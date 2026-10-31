@@ -467,8 +467,35 @@
           if (Math.abs(dx) < 40) return;
           if (dx > 0) showGalleryImage(galleryIndex - 1);
           else showGalleryImage(galleryIndex + 1);
+          restartGalleryAuto();
         }, { passive: true });
       })();
+
+      // تنقّل تلقائي بين الصور
+      let galleryAutoTimer = null;
+      function stopGalleryAuto() {
+        if (galleryAutoTimer) { clearInterval(galleryAutoTimer); galleryAutoTimer = null; }
+      }
+      function restartGalleryAuto() {
+        stopGalleryAuto();
+        if (galleryImgs.length < 2) return;
+        galleryAutoTimer = setInterval(function() {
+          showGalleryImage(galleryIndex + 1);
+        }, 3500);
+      }
+      // إيقاف مؤقت عند التفاعل اليدوي
+      ["pdPrev", "pdNext"].forEach(function(id) {
+        document.getElementById(id)?.addEventListener("click", function() { restartGalleryAuto(); });
+      });
+      document.querySelectorAll(".pd-thumb").forEach(function(btn) {
+        btn.addEventListener("click", function() { restartGalleryAuto(); });
+      });
+      const galleryWrap = document.getElementById("pdGalleryWrap");
+      if (galleryWrap) {
+        galleryWrap.addEventListener("mouseenter", stopGalleryAuto);
+        galleryWrap.addEventListener("mouseleave", restartGalleryAuto);
+      }
+      restartGalleryAuto();
 
       let selectedColors = []; // لون لكل قطعة حسب الكمية
       const colorPickers = document.getElementById("colorPickers");
