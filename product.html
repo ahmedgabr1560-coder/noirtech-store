@@ -745,6 +745,9 @@
       openCheckoutFromProduct(e);
     });
     document.getElementById("checkoutBtn")?.addEventListener("click", async function () {
+      const btn = document.getElementById("checkoutBtn");
+      if (btn && (btn.disabled || btn.dataset.submitting === "1")) return;
+      if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "جاري تنفيذ الطلب..."; }
       const cart = readCart();
       if (!cart.length) return alert("السلة فارغة");
       const phone = (document.getElementById("orderPhone")?.value || "").trim();
@@ -825,6 +828,7 @@
         } catch (eN) {}
         writeCart([]);
         renderCart();
+        if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "تم إرسال الطلب"; }
         try {
           if (typeof showOrderSuccess === "function") showOrderSuccess(order.id);
           else {
@@ -845,6 +849,7 @@
         } catch (e) {}
         closeCart();
       } catch (err) {
+        if (btn) { btn.disabled = false; btn.dataset.submitting = ""; btn.textContent = "إتمام الطلب الآن"; }
         alert(err.message || "تعذر إتمام الطلب");
       }
     });
