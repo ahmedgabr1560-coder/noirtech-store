@@ -615,12 +615,62 @@ function isDiscountOffer(p) {
   return false;
 }
 
+
+function isMixedBundle(p) {
+  if (!p) return false;
+  if (String(p.offerType || "") === "mixed_bundle") return true;
+  if (p.offerMeta && String(p.offerMeta.type || "") === "mixed_bundle") return true;
+  const ids = (p.offerMeta && (p.offerMeta.productIds || p.offerMeta.sourceProductIds)) || [];
+  if (Array.isArray(ids) && ids.length >= 2) return true;
+  if (p.sourceProductId && p.sourceProductId2) return true;
+  return false;
+}
+function resolveProductImage(prod) {
+  if (!prod) return "";
+  if (Array.isArray(prod.images) && prod.images[0]) return prod.images[0];
+  return prod.image || "";
+}
+function getMixedOfferImages(p) {
+  const out = [];
+  if (!p) return out;
+  let ids = [];
+  if (p.offerMeta) {
+    ids = p.offerMeta.productIds || p.offerMeta.sourceProductIds || [];
+  }
+  if ((!ids || ids.length < 2) && p.sourceProductId) {
+    ids = [p.sourceProductId, p.sourceProductId2].filter(Boolean);
+  }
+  const pool = (typeof PRODUCTS !== "undefined" && PRODUCTS) ? PRODUCTS : [];
+  ids.forEach(function(id) {
+    const src = pool.find(function(x) { return String(x.id) === String(id); });
+    const img = resolveProductImage(src);
+    if (img) out.push(img);
+  });
+  // fallback: own images
+  if (out.length < 2 && Array.isArray(p.images)) {
+    p.images.forEach(function(img) {
+      if (img && out.indexOf(img) < 0) out.push(img);
+    });
+  }
+  if (out.length < 2 && p.image && out.indexOf(p.image) < 0) out.push(p.image);
+  // still need 2: duplicate last
+  if (out.length === 1) out.push(out[0]);
+  return out.slice(0, 2);
+}
+
 function productCard(p) {
   const off = discountPct(p);
   return `<article class="product-card" data-id="${p.id}">
-    <a class="product-media" href="/product.html?id=${p.id}" data-open="${p.id}">
-      <img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />
-      ${isBundleOffer(p) ? `<span class="badge-off" style="background:linear-gradient(135deg,#f97316,#ea580c)">عرض قطع</span>` : (off ? `<span class="badge-off">-${off}%</span>` : "")}
+    <a class="product-media ${isMixedBundle(p) ? "mixed-split" : ""}" href="/product.html?id=${p.id}" data-open="${p.id}">
+      ${isMixedBundle(p) ? (function(){
+          const imgs = getMixedOfferImages(p);
+          const a = imgs[0] || p.image || "";
+          const b = imgs[1] || a;
+          return `<span class="mixed-tri mixed-tri-a" style="background-image:url('${a}')"></span>
+      <span class="mixed-tri mixed-tri-b" style="background-image:url('${b}')"></span>
+      <span class="mixed-split-line"></span>`;
+        })() : `<img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />`}
+      ${isBundleOffer(p) || isMixedBundle(p) ? `<span class="badge-off" style="background:linear-gradient(135deg,#f97316,#ea580c)">عرض قطع</span>` : (off ? `<span class="badge-off">-${off}%</span>` : "")}
     </a>
     <div class="product-body">
       <h3 class="product-name"><a class="product-link" href="/product.html?id=${p.id}" data-open="${p.id}">${p.name}</a></h3>
