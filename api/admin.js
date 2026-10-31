@@ -728,6 +728,29 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, expense: item });
     }
 
+    
+    if (action === "mark_label_printed") {
+      const ids = Array.isArray(body.ids) ? body.ids.map(String) : (body.id ? [String(body.id)] : []);
+      if (!ids.length) return res.status(400).json({ ok: false, error: "ids required" });
+      const f = await ghGet("orders.json");
+      let orders = [];
+      try { orders = f ? JSON.parse(f.content) : []; } catch { orders = []; }
+      if (!Array.isArray(orders)) orders = [];
+      const now = new Date().toISOString();
+      let n = 0;
+      for (const o of orders) {
+        if (ids.includes(String(o.id))) {
+          o.labelPrinted = true;
+          o.labelPrintedAt = now;
+          o.labelPrintCount = (Number(o.labelPrintCount) || 0) + 1;
+          n++;
+        }
+      }
+      const put = await ghPut("orders.json", JSON.stringify(orders, null, 2), `Labels printed: ${ids.slice(0,5).join(",")}`, f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+      return res.status(200).json({ ok: true, updated: n });
+    }
+
     return res.status(400).json({ ok: false, error: "unknown action" });
   } catch (e) {
     console.error(e);
