@@ -208,7 +208,7 @@
       const n = Math.round(Number(r) || 0);
       return "★".repeat(Math.min(5, n)) + "☆".repeat(Math.max(0, 5 - Math.min(5, n)));
     };
-    function esc(t) {
+    async function esc(t) {
       return String(t || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
     async function loadJSON(urls) {
@@ -351,9 +351,43 @@
         if (/قطعتين|2 قطعه|2 قطعة|عرض القطع/i.test(String(p.name||""))) return 2;
         return 1;
       })();
-      const galleryImgs = (Array.isArray(p.images) && p.images.length)
+      let galleryImgs = (Array.isArray(p.images) && p.images.length)
         ? p.images.filter(Boolean)
-        : (p.image ? [p.image] : ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70"]);
+        : (p.image ? [p.image] : []);
+      // عرض منتجين مختلفين: اجلب صور المنتجين المصدر
+      try {
+        const mixed = (p.offerType === "mixed_bundle") || (p.offerMeta && p.offerMeta.type === "mixed_bundle") || (p.sourceProductId && p.sourceProductId2);
+        if (mixed) {
+          let ids = (p.offerMeta && (p.offerMeta.productIds || p.offerMeta.sourceProductIds)) || [];
+          if ((!ids || ids.length < 2) && p.sourceProductId) ids = [p.sourceProductId, p.sourceProductId2].filter(Boolean);
+          const more = [];
+          // try products.json / catalog cache
+          let pool = [];
+          try {
+            const cached = sessionStorage.getItem("nx_products");
+            if (cached) pool = JSON.parse(cached) || [];
+          } catch (e0) {}
+          if (!pool.length) {
+            try {
+              const rr = await fetch("/products.json?t=" + Date.now(), { cache: "no-store" });
+              if (rr.ok) {
+                const dd = await rr.json();
+                pool = Array.isArray(dd) ? dd : (dd.products || []);
+              }
+            } catch (e1) {}
+          }
+          ids.forEach(function(id) {
+            const src = (pool || []).find(function(x) { return String(x.id) === String(id); });
+            if (!src) return;
+            if (Array.isArray(src.images) && src.images.length) src.images.forEach(function(im){ if (im) more.push(im); });
+            else if (src.image) more.push(src.image);
+          });
+          if (more.length) galleryImgs = more;
+        }
+      } catch (eMix) {}
+      if (!galleryImgs.length) galleryImgs = ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70"];
+      // unique
+      galleryImgs = galleryImgs.filter(function(v, i, a) { return v && a.indexOf(v) === i; });
       let galleryIndex = 0;
 
       root.innerHTML = `
