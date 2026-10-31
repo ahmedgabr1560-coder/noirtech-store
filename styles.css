@@ -1,10 +1,39 @@
 /* NEXORA — Exact NovaMart cinematic match */
 :root {
   --bg: #000000;
+  --bg-section: #0a0a0c;
+  --bg-card: #0f0f14;
   --text: #f5f5f7;
+  --text-heading: #ffffff;
   --muted: #8e8e98;
   --violet: #a78bfa;
+  --primary: #a78bfa;
+  --secondary: #c9a227;
   --border: rgba(255,255,255,0.08);
+  --border-solid: #2a2a32;
+  --link: #c4b5fd;
+  --btn-primary-bg: #8b5cf6;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #1a1a22;
+  --btn-secondary-text: #f5f5f7;
+  --btn-hover: #7c5cf0;
+  --header-bg: #0a0a0c;
+  --footer-bg: #07070a;
+  --nav-bg: #0a0a0c;
+  --price: #f0b429;
+  --price-old: #9898a6;
+  --badge: #f97316;
+  --cart-icon: #a78bfa;
+  --input-bg: #0c0c12;
+  --input-border: #2a2a32;
+  --success: #16a34a;
+  --error: #ef4444;
+  --gold: #f0b429;
+  --gold-light: #ffd666;
+  --gold-dark: #d4920a;
+  --accent: #7c5cff;
+  --shadow: rgba(0,0,0,0.45);
+  --radius: 14px;
   --font: "Cairo", system-ui, -apple-system, sans-serif;
 }
 
@@ -1885,3 +1914,18 @@ img {
 .ai-panel, .cart-drawer, .modal {
   content-visibility: auto;
 }
+
+
+/* Theme bridges — controlled via admin colors */
+body { background: var(--bg); color: var(--text); }
+.site-header, header.site-header { background: var(--header-bg) !important; }
+.site-footer, footer.site-footer { background: var(--footer-bg) !important; }
+.product-card, .pp-card, .card { background: var(--bg-card); border-color: var(--border-solid); border-radius: var(--radius); }
+.price { color: var(--price) !important; }
+.old-price { color: var(--price-old) !important; }
+.badge-off, .badge { background: var(--badge) !important; }
+.btn-primary, button.btn-primary { background: var(--btn-primary-bg) !important; color: var(--btn-primary-text) !important; border-radius: var(--radius); }
+.btn-primary:hover, button.btn-primary:hover { background: var(--btn-hover) !important; }
+.btn-ghost, button.btn-ghost { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
+a { color: var(--link); }
+input, select, textarea { background: var(--input-bg); border-color: var(--input-border); color: var(--text); border-radius: calc(var(--radius) - 2px); }
