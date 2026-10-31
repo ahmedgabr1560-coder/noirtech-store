@@ -585,14 +585,14 @@ function renderAll() {
   renderCatsDirectory();
   // خصومات فقط (من غير عروض ٢/٣ قطع)
   renderGrid($("#bestGrid"), PRODUCTS.filter(p => isDiscountOffer(p) || (p.best && !isBundleOffer(p))).slice(0, 12));
-  // عروض القطعتين لوحدها
+  // عروض القطع لوحدها
   const bundles = PRODUCTS.filter(p => isBundleOffer(p)).slice(0, 24);
   const bundleGrid = $("#bundleGrid");
   if (bundleGrid) {
     if (bundles.length) {
       renderGrid(bundleGrid, bundles);
     } else {
-      bundleGrid.innerHTML = `<div class="empty-state">لا توجد عروض قطعتين حاليًا.<br><small>من الأدمن: إضافة منتج → عرض / خصم → عروض الكمية (٢ / ٣ قطع)</small></div>`;
+      bundleGrid.innerHTML = `<div class="empty-state">لا توجد عروض قطعتين حاليًا.<br><small>من الأدمن: إضافة منتج → عرض / خصم → عروض القطع (٢ / ٣ قطع)</small></div>`;
     }
   }
   renderGrid($("#newGrid"), PRODUCTS.filter(p => !p.isOffer && !isBundleOffer(p)).slice(0, 12));
@@ -1759,7 +1759,7 @@ function minOrderQty(p) {
   }
   if (p.isOffer) return 2;
   const n = String(p.name || "");
-  if (/قطعتين|2 قطعه|2 قطعة|عرض القطعتين/i.test(n)) return 2;
+  if (/قطعتين|2 قطعه|2 قطعة|عرض القطع/i.test(n)) return 2;
   return 1;
 }
 
