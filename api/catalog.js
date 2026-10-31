@@ -23,7 +23,8 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   // كاش قصير جدًا: أسرع بكثير، مع انعكاس تغييرات الأدمن خلال ثانيتين كحد أقصى.
-  res.setHeader("Cache-Control", "public, max-age=2, s-maxage=2, stale-while-revalidate=5");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  res.setHeader("CDN-Cache-Control", "no-store");
   res.setHeader("Pragma", "no-cache");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "GET") return res.status(405).json({ ok: false, error: "GET only" });
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
       if (!raw) return res.status(502).json({ ok: false, error: "products unavailable" });
       const data = JSON.parse(raw);
       let list = Array.isArray(data) ? data : (data.products || []);
-      list = (list || []).filter(p => p && p.hidden !== true && p.active !== false);
+      list = (list || []).filter(p => p && p.hidden !== true && p.active !== false); // hidden من الأدمن فقط
       return res.status(200).json({ ok: true, products: list, ts: Date.now() });
     }
     if (type === "categories") {
