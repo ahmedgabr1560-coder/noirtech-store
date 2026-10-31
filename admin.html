@@ -242,6 +242,7 @@
                 <input id="pOld" type="number" placeholder="يظهر كسعر مشطوب" />
               </label>
             </div>
+            <p class="hint" style="margin:-8px 0 12px">«متوفر للبيع» يخص حالة المخزون والشراء. ظهور المنتج في المتجر يتحكم به زر «إظهار/إخفاء» في قائمة المنتجات؛ المنتج المخفي لا يظهر للزبائن.</p>
             <label>صورة المنتج *
               <input id="pImageUrl" placeholder="رابط الصورة https://... (اختياري)" />
               <input id="pImageFile" type="file" accept="image/*" multiple style="margin-top:8px" />
@@ -2088,9 +2089,22 @@
       }
       if (hide) {
         hide.disabled = true;
-        await api("toggle_product", { id: Number(hide.getAttribute("data-hide-prod")) });
-        try { bustStoreCaches(); } catch (err) {}
+        let result;
+        try {
+          result = await api("toggle_product", { id: Number(hide.getAttribute("data-hide-prod")) });
+        } catch (err) {
+          hide.disabled = false;
+          alert("تعذر الاتصال بالخادم؛ لم يتم تأكيد تغيير ظهور المنتج.");
+          return;
+        }
+        if (!result?.ok) {
+          hide.disabled = false;
+          alert(`لم يتم حفظ تغيير ظهور المنتج.${result?.error ? `\n${result.error}` : ""}`);
+          return;
+        }
         await loadProducts();
+        renderProducts();
+        return;
       }
     });
 
