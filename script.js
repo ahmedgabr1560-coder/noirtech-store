@@ -241,7 +241,7 @@ let activeSort = "newest";
 /** Products loaded from products.json (bot-managed) */
 
 /* ===== Instant refresh cache (sessionStorage) ===== */
-const NX_CACHE_TTL = 8 * 1000; // 8 ثواني // 15 ثانية — تحديث سريع من الأدمن
+const NX_CACHE_TTL = 3 * 1000; // 8 ثواني // 15 ثانية — تحديث سريع من الأدمن
 function nxCacheGet(key) {
   try {
     const raw = sessionStorage.getItem(key);
@@ -1873,39 +1873,81 @@ function minOrderQty(p) {
 }
 
 async function loadProducts(force) {
-  if (!force) {
+  // مزامنة مع الأدمن: لا تعتمد على كاش قديم عند force أو إشارة bust
+  let mustFresh = !!force;
+  try {
+    const bust = localStorage.getItem("nx_catalog_bust");
+    if (bust) mustFresh = true;
+  } catch (e) {}
+  if (mustFresh) {
+    try { sessionStorage.removeItem("nx_products"); } catch (e) {}
+  } else {
     const cached = nxCacheGet("nx_products");
     if (cached && Array.isArray(cached) && cached.length) {
-      PRODUCTS = dedupeProducts(cached.filter(p => p && !p.hidden));
+      PRODUCTS = dedupeProducts(cached.filter(p => p && !p.hidden && p.active !== false));
     }
-  } else {
-    try { sessionStorage.removeItem("nx_products"); } catch (e) {}
   }
+  const t = Date.now();
   const urls = [
-    "/api/catalog?type=products",
-    "/products.json"
+    "/api/catalog?type=products&t=" + t,
+    "/products.json?t=" + t
   ];
   let best = null;
   for (const url of urls) {
     try {
-      const r = await fetch(url, { cache: "default" });
+      const r = await fetch(url, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
       if (!r.ok) continue;
       const data = await r.json();
-      const list = Array.isArray(data) ? data : (data.products || []);
-      if (url.indexOf("/api/catalog") === 0 && data.ok === true) {
-        best = Array.isArray(list) ? list : [];
-        break;
+      let list = Array.isArray(data) ? data : (data.products || []);
+      if (!Array.isArray(list)) continue;
+      list = list.filter(p => p && p.hidden !== true && p.active !== false);
+      // خذ أكبر قائمة ناجحة (catalog قد يفلتر أكثر)
+      if (!best || list.length >= best.length) {
+        best = list;
+        if (url.indexOf("/api/catalog") === 0 && data.ok === true && list.length) {
+          // لا نكسر الحلقة — نكمّل products.json لو أطول
+        }
       }
-      if (best === null && Array.isArray(list)) best = list;
     } catch (e) {}
   }
-  if (best) {
-    PRODUCTS = dedupeProducts(best.filter(p => p && !p.hidden));
+  if (best && best.length) {
+    PRODUCTS = dedupeProducts(best);
     nxCacheSet("nx_products", PRODUCTS);
+    try { window.__ATHAR_PRODUCTS = PRODUCTS; } catch (e) {}
   }
   PRODUCTS = PRODUCTS || [];
   return PRODUCTS;
 }
+
+// عند رجوع التبويب أو إشارة من الأدمن — حدّث المنتجات فورًا
+(function bindStoreAdminSync() {
+  let lastBust = "";
+  try { lastBust = localStorage.getItem("nx_catalog_bust") || ""; } catch (e) {}
+  async function softRefresh() {
+    try {
+      const bust = localStorage.getItem("nx_catalog_bust") || "";
+      if (bust && bust !== lastBust) {
+        lastBust = bust;
+        await loadProducts(true);
+        try {
+          if (typeof renderShop === "function") renderShop();
+          else if (typeof renderHome === "function") renderHome();
+          else if (typeof renderBundleSection === "function") renderBundleSection();
+        } catch (e2) {}
+        try { if (typeof startHeroProductRotate === "function") startHeroProductRotate(window.siteConfig || {}); } catch (e3) {}
+      }
+    } catch (e) {}
+  }
+  window.addEventListener("storage", function(ev) {
+    if (ev && (ev.key === "nx_catalog_bust" || ev.key === "nx_products_tick")) softRefresh();
+  });
+  document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === "visible") softRefresh();
+  });
+  window.addEventListener("focus", softRefresh);
+  setInterval(softRefresh, 12000);
+})();
+
 
 
 function ensureHomeOnStart() {
