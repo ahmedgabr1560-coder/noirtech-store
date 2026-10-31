@@ -127,7 +127,6 @@
         <div class="cart-summary">
           <div class="cart-total-row"><span>المنتجات</span><strong id="cartSubtotal">0 ج.م</strong></div>
           <div class="cart-total-row"><span>الشحن</span><strong id="cartShipping">—</strong></div>
-          <div id="cartDiscountRow" class="cart-total-row" style="display:none;color:#86efac"><span>الخصم</span><strong id="cartDiscount">- 0 ج.م</strong></div>
           <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
         </div>
         <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
@@ -668,7 +667,7 @@
       const sh = document.getElementById("cartShipping");
       if (sh) sh.textContent = ship.free ? "مجاني" : money(ship.amount);
       const dr = document.getElementById("cartDiscountRow");
-      if (dr) dr.style.display = discount > 0 ? "flex" : "none";
+      if (dr) dr.style.display = "none";
       const dd = document.getElementById("cartDiscount");
       if (dd) dd.textContent = "- " + money(discount);
       const tt = document.getElementById("cartTotal");
