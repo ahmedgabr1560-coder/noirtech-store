@@ -3,6 +3,14 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/return-policy",
+      "destination": "/return-policy.html"
+    },
+    {
+      "source": "/return-policy/",
+      "destination": "/return-policy.html"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     }
