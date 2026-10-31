@@ -888,6 +888,42 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, log });
     }
 
+    
+    if (action === "get_label_templates") {
+      const f = await ghGet("label-templates.json");
+      let data = { defaultId: "default", templates: [] };
+      try { data = f ? JSON.parse(f.content) : data; } catch {}
+      if (!data.templates || !data.templates.length) {
+        data = { defaultId: "default", templates: [] };
+      }
+      return res.status(200).json({ ok: true, ...data, rawSha: f?.sha || null });
+    }
+
+    if (action === "save_label_templates") {
+      const templates = Array.isArray(body.templates) ? body.templates : null;
+      if (!templates) return res.status(400).json({ ok: false, error: "templates required" });
+      const clean = {
+        defaultId: String(body.defaultId || (templates.find(t => t.isDefault)?.id) || templates[0]?.id || "default").slice(0, 80),
+        templates: templates.slice(0, 20).map(t => ({
+          id: String(t.id || ("tpl-" + Date.now())).slice(0, 80),
+          name: String(t.name || "قالب").slice(0, 120),
+          isDefault: !!t.isDefault,
+          size: String(t.size || "10x15").slice(0, 20),
+          customW: Math.max(50, Math.min(300, Number(t.customW) || 100)),
+          customH: Math.max(50, Math.min(400, Number(t.customH) || 150)),
+          styles: t.styles && typeof t.styles === "object" ? t.styles : {},
+          fields: Array.isArray(t.fields) ? t.fields.slice(0, 40) : [],
+          customTexts: Array.isArray(t.customTexts) ? t.customTexts.slice(0, 20) : [],
+          showBorder: t.showBorder !== false,
+          showDivider: t.showDivider !== false
+        }))
+      };
+      const f = await ghGet("label-templates.json");
+      const put = await ghPut("label-templates.json", JSON.stringify(clean, null, 2), "Save label templates", f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+      return res.status(200).json({ ok: true });
+    }
+
     return res.status(400).json({ ok: false, error: "unknown action" });
   } catch (e) {
     console.error(e);
