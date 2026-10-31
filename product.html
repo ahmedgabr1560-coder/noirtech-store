@@ -349,6 +349,16 @@
               <div id="colorPickers"></div>
               <div id="selectedColorLabel" style="font-size:.82rem;color:#c4b5fd;min-height:1.2em"></div>
             </div>
+            <div class="pd-buy-row" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:16px 0 8px">
+              <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:6px 10px">
+                <button type="button" id="qtyMinus" class="btn btn-ghost" style="min-width:36px;padding:6px 10px" ${available ? "" : "disabled"}>-</button>
+                <input type="number" id="buyQty" min="1" max="${Math.max(1, stock || 1)}" value="1" dir="ltr" style="width:56px;text-align:center;font-size:16px;background:transparent;border:0;color:#fff;font-weight:800" ${available ? "" : "disabled"} />
+                <button type="button" id="qtyPlus" class="btn btn-ghost" style="min-width:36px;padding:6px 10px" ${available ? "" : "disabled"}>+</button>
+              </div>
+              <button type="button" id="ppAddCart" class="btn btn-primary" style="flex:1;min-width:160px;padding:12px 18px;font-weight:800" ${available ? "" : "disabled"}>
+                ${available ? "أضف للسلة" : "غير متوفر"}
+              </button>
+            </div>
             <div class="pd-desc">
               <h4>الوصف</h4>
               <p>${esc(desc)}</p>
