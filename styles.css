@@ -401,7 +401,7 @@ button, input, select, textarea { font-family: inherit; }
 /* Floating phones — clean like reference */
 .hero-visual {
   position: relative;
-  min-height: 440px;
+  min-height: calc(440px * var(--hero-scale, 1));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -420,8 +420,9 @@ button, input, select, textarea { font-family: inherit; }
 }
 .phones-stack {
   position: relative;
-  width: min(100%, 400px);
-  height: 420px;
+  width: min(100%, calc(400px * var(--hero-scale, 1)));
+  height: calc(420px * var(--hero-scale, 1));
+  margin: 0 auto;
 }
 .phones-stack .phone {
   position: absolute;
@@ -1929,3 +1930,43 @@ body { background: var(--bg); color: var(--text); }
 .btn-ghost, button.btn-ghost { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
 a { color: var(--link); }
 input, select, textarea { background: var(--input-bg); border-color: var(--input-border); color: var(--text); border-radius: calc(var(--radius) - 2px); }
+
+
+/* Hero visual size — controllable via admin (--hero-scale / --hero-scale-mobile) */
+@media (max-width: 900px) {
+  .hero-visual {
+    min-height: calc(260px * var(--hero-scale-mobile, 0.72)) !important;
+    margin-bottom: 4px;
+  }
+  .phones-stack {
+    width: min(68vw, calc(240px * var(--hero-scale-mobile, 0.72))) !important;
+    height: calc(250px * var(--hero-scale-mobile, 0.72)) !important;
+  }
+  .phones-stack .phone {
+    border-radius: 18px !important;
+    width: 48% !important;
+  }
+  .phones-stack .phone img {
+    aspect-ratio: 9/16;
+  }
+  .hero-chip {
+    min-width: 120px !important;
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    bottom: 6px !important;
+    right: 4% !important;
+    border-radius: 12px !important;
+    transform: scale(calc(0.9 * var(--hero-scale-mobile, 0.72) / 0.72));
+  }
+  .hero-chip strong { font-size: 0.78rem; }
+  .hero-chip span { font-size: 0.68rem; }
+}
+@media (max-width: 480px) {
+  .hero-visual {
+    min-height: calc(220px * var(--hero-scale-mobile, 0.68)) !important;
+  }
+  .phones-stack {
+    width: min(62vw, calc(210px * var(--hero-scale-mobile, 0.68))) !important;
+    height: calc(220px * var(--hero-scale-mobile, 0.68)) !important;
+  }
+}
