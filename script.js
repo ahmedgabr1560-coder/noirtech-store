@@ -1842,21 +1842,13 @@ fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d)
 }).catch(function () {});
 
 
-async 
 function dedupeProducts(list) {
   const arr = Array.isArray(list) ? list : [];
-  const sourceIds = new Set();
-  arr.forEach(function(p) {
-    if (!p || p.hidden) return;
-    const sid = p.offerMeta && p.offerMeta.sourceProductId;
-    if (sid != null) sourceIds.add(String(sid));
-  });
   const seenIds = new Set();
   const seenNames = new Set();
   const out = [];
   arr.forEach(function(p) {
     if (!p || p.hidden) return;
-    if (sourceIds.has(String(p.id)) && !p.isOffer && !(p.offerMeta && p.offerMeta.tiers)) return;
     const id = String(p.id);
     if (seenIds.has(id)) return;
     const name = String(p.name || "").trim().toLowerCase().replace(/\s+/g, " ");
