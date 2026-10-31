@@ -23,7 +23,7 @@ async function persistOrderFromNotify(order) {
   try {
     for (let attempt = 0; attempt < 4; attempt++) {
       const gr = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/orders.json`, {
-        headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Notify" }
+        headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "ATHAR | أثر-Notify" }
       });
       let sha = null, orders = [];
       if (gr.ok) {
@@ -51,7 +51,7 @@ async function persistOrderFromNotify(order) {
           Authorization: `Bearer ${GH_TOKEN}`,
           Accept: "application/vnd.github+json",
           "Content-Type": "application/json",
-          "User-Agent": "NEXORA-Notify"
+          "User-Agent": "ATHAR | أثر-Notify"
         },
         body: JSON.stringify(body)
       });
@@ -157,7 +157,7 @@ function formatOrderMessage(order) {
 
   let text = "";
   text += "═══════════════════\n";
-  text += "🛒 طلب جديد — NEXORA\n";
+  text += "🛒 طلب جديد — ATHAR | أثر\n";
   text += "═══════════════════\n\n";
   text += `🆔 رقم الطلب: ${order.id || "—"}\n`;
   text += `🕒 التاريخ: ${when}\n`;
