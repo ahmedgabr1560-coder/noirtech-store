@@ -118,6 +118,7 @@
         <button data-panel="add">إضافة منتج</button>
         <button data-panel="orders">الطلبات</button>
         <button data-panel="labels">طباعة الملصقات</button>
+        <button data-panel="policy">إدارة السياسات</button>
         <button data-panel="visitors">الزوار والحسابات</button>
         <button data-panel="ai">شات الذكاء الاصطناعي</button>
         <button data-panel="shipping">الشحن</button>
@@ -343,6 +344,38 @@
             <button type="button" class="btn btn-ghost" id="lblRefresh">تحديث</button>
           </div>
           <div id="labelsTable"><p class="hint">جاري التحميل...</p></div>
+        </div>
+      </section>
+
+
+      <section class="panel" id="panel-policy">
+        <div class="card">
+          <h3>إدارة السياسات — الاستبدال والاسترجاع</h3>
+          <p class="hint">عدّلي المحتوى ثم احفظي. الصفحة العامة: <a href="/return-policy" target="_blank" style="color:#c4b5fd">/return-policy</a></p>
+          <div class="form-grid">
+            <label>عنوان الصفحة<input id="polTitle" /></label>
+            <label>العنوان الإنجليزي<input id="polTitleEn" /></label>
+            <label>تاريخ آخر تحديث<input id="polUpdated" placeholder="2026-10-31" /></label>
+            <label>هاتف المكالمات<input id="polPhone" dir="ltr" /></label>
+            <label>واتساب فقط<input id="polWhatsapp" dir="ltr" /></label>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;margin:10px 0">
+            <input type="checkbox" id="polShowFooter" style="width:auto" /> إظهار الرابط في الفوتر
+          </label>
+          <label>المقدمة
+            <textarea id="polIntro" rows="4" style="width:100%;min-height:90px"></textarea>
+          </label>
+          <label>الخاتمة
+            <textarea id="polClosing" rows="2" style="width:100%"></textarea>
+          </label>
+          <label>محتوى الأقسام (JSON — عنوان + نص لكل قسم)
+            <textarea id="polSections" rows="14" style="width:100%;min-height:220px;font-family:monospace;font-size:.85rem;direction:ltr;text-align:left"></textarea>
+          </label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+            <button type="button" class="btn btn-primary" id="polSave">حفظ ونشر السياسة</button>
+            <a class="btn btn-ghost" href="/return-policy" target="_blank" style="text-decoration:none">معاينة الصفحة</a>
+          </div>
+          <div class="msg" id="polMsg"></div>
         </div>
       </section>
 
@@ -696,6 +729,7 @@
         try {
           if (panelId === "orders") loadOrders();
           else if (panelId === "labels") loadLabelsPanel();
+          else if (panelId === "policy") loadPolicyPanel();
           else if (panelId === "products") loadProducts();
           else if (panelId === "categories") loadCategories();
           else if (panelId === "dash") loadStats();
