@@ -155,17 +155,25 @@
     <!-- Categories -->
 
     <!-- عروض القطع / الكمية -->
-    <section class="section" id="bundles">
+        <section class="section" id="bundles">
       <div class="container">
         <div class="section-head row">
           <div>
             <h2>عروض القطع</h2>
-            <p>٢ قطع أو ٣ قطع بسعر خاص — لوحدها في هذا القسم</p>
+            <p>عروض الكمية والمنتجات المشتركة — مقسّمة لأقسام واضحة</p>
           </div>
           <a href="#shop" class="link-more">تسوقي المزيد ←</a>
         </div>
+        <div class="bundle-tabs" id="bundleTabs" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px">
+          <button type="button" class="chip bundle-tab active" data-bundle-sec="all">الكل</button>
+          <button type="button" class="chip bundle-tab" data-bundle-sec="same">نفس المنتج (٢ / ٣ قطع)</button>
+          <button type="button" class="chip bundle-tab" data-bundle-sec="mixed">منتجين مختلفين</button>
+          <button type="button" class="chip bundle-tab" data-bundle-sec="bags">شنط</button>
+          <button type="button" class="chip bundle-tab" data-bundle-sec="other">أخرى</button>
+        </div>
         <div class="products-grid" id="bundleGrid">
-          <div class="empty-state" id="bundleEmptyHint" style="display:none">لا توجد عروض القطع حاليًا. أضيفيها من لوحة التحكم ← عرض / خصم.</div>
+          <div class="empty-state" id="bundleEmptyHint" style="display:none">لا توجد عروض قطع في هذا القسم حاليًا.</div>
+        </div>
         </div>
       </div>
     </section>
