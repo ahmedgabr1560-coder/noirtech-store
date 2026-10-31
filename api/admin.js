@@ -924,6 +924,35 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    
+    if (action === "update_theme") {
+      let f = await ghGet("site-config.json");
+      if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
+      let config = {};
+      try { config = JSON.parse(f.content); } catch { config = {}; }
+      if (body.colors && typeof body.colors === "object") {
+        config.colors = { ...(config.colors || {}), ...body.colors };
+      }
+      if (body.colorsDraft && typeof body.colorsDraft === "object") {
+        config.colorsDraft = body.colorsDraft;
+      }
+      if (body.publish === true && config.colorsDraft) {
+        config.colors = { ...(config.colors || {}), ...config.colorsDraft };
+      }
+      if (body.clearDraft === true) {
+        delete config.colorsDraft;
+      }
+      if (body.themePreset) config.themePreset = String(body.themePreset).slice(0, 40);
+      if (body.defaultMode) config.defaultMode = String(body.defaultMode).slice(0, 10);
+      if (body.radius != null) {
+        config.colors = config.colors || {};
+        config.colors.radius = String(body.radius);
+      }
+      const put = await ghPut("site-config.json", JSON.stringify(config, null, 2), "Update store theme colors", f.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+      return res.status(200).json({ ok: true, colors: config.colors, colorsDraft: config.colorsDraft || null });
+    }
+
     return res.status(400).json({ ok: false, error: "unknown action" });
   } catch (e) {
     console.error(e);
