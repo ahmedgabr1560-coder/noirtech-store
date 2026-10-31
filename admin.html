@@ -191,13 +191,18 @@
             <div id="offerBuilder" style="display:none;margin-bottom:14px;padding:14px;border-radius:16px;border:1px solid rgba(167,139,250,.35);background:rgba(139,92,246,.08)">
               <h4 style="margin:0 0 8px">بناء عرض من منتج موجود</h4>
               <p class="hint" style="margin-bottom:10px">اختاري منتج من المتجر، وحددي خصم أو عرض قطع (٢ بسعر / ٣ بسعر).</p>
-              <label>المنتج الأساسي *
+              <label>المنتج الأول *
                 <select id="offerSourceProduct"><option value="">— اختاري منتج —</option></select>
               </label>
+              <label style="margin-top:8px">المنتج الثاني (لعرض منتجين مختلفين)
+                <select id="offerSourceProduct2"><option value="">— اختياري: منتج ثاني مختلف —</option></select>
+              </label>
+              <p class="hint" id="mixedBundleHint" style="margin:6px 0 0">لاختيار منتجين مختلفين في عرض واحد: حددي المنتج الأول والثاني، ونوع العرض «منتجين مختلفين»، وسعر العرض للاثنين معًا.</p>
               <label style="margin-top:8px">نوع العرض
                 <select id="offerKind">
                   <option value="discount">خصم على سعر القطعة</option>
-                  <option value="bundle">عروض الكمية (٢ / ٣ قطع)</option>
+                  <option value="bundle">عروض الكمية (نفس المنتج ٢ / ٣ قطع)</option>
+                  <option value="mixed_bundle">منتجين مختلفين (عرض مشترك)</option>
                   <option value="both">خصم + عروض كمية</option>
                 </select>
               </label>
@@ -2181,6 +2186,14 @@
       if ($("pType")?.value === "offer") {
         const srcId = $("offerSourceProduct")?.value;
         if (!srcId) { alert("اختاري المنتج الأساسي للعرض"); return; }
+        const kind = $("offerKind")?.value || "";
+        const srcId2 = $("offerSourceProduct2")?.value || "";
+        if (kind === "mixed_bundle") {
+          if (!srcId2) { alert("اختاري المنتج الثاني للعرض المشترك"); return; }
+          if (String(srcId2) === String(srcId)) { alert("اختاري منتجين مختلفين"); return; }
+          const b2 = Number($("bundle2Price")?.value || $("pPriceOffer")?.value || $("pPrice")?.value || 0);
+          if (!b2) { alert("أدخلي سعر العرض للمنتجين معًا (٢ قطع بسعر)"); return; }
+        }
         let unit = Number($("pPriceOffer")?.value || $("pPrice")?.value || 0);
         const b2 = Number($("bundle2Price")?.value || 0);
         const b3 = Number($("bundle3Price")?.value || 0);
@@ -2232,6 +2245,7 @@
           isOffer: $("pType")?.value === "offer",
           oldPrice: $("pOld")?.value || $("pOldAuto")?.value || "",
           sourceProductId: $("offerSourceProduct")?.value || "",
+          sourceProductId2: $("offerSourceProduct2")?.value || "",
           offerType: $("offerKind")?.value || "discount",
           bundle2Price: $("bundle2Price")?.value || "",
           bundle3Price: $("bundle3Price")?.value || ""
@@ -3117,6 +3131,7 @@
     
     async function fillOfferProductSelect() {
       const sel = $("offerSourceProduct");
+      const sel2 = $("offerSourceProduct2");
       if (!sel) return;
       // تأكد إن المنتجات محمّلة
       if (!PRODUCTS || !PRODUCTS.length) {
@@ -3146,6 +3161,39 @@
         prevBox.textContent = "لا توجد منتجات أساسية بعد. أضيفي منتج عادي أولًا ثم أنشئي العرض.";
       } else if (prevBox) {
         prevBox.textContent = list.length ? (`${list.length} منتج متاح للاختيار`) : "";
+      }
+    
+      if (sel2) {
+        const cur2 = sel2.value;
+        const opts = Array.from(sel.options).map(function(o){ return o.outerHTML; }).join("");
+        sel2.innerHTML = opts.replace("— اختاري منتج —", "— اختياري: منتج ثاني —").replace("اختاري منتج", "منتج ثاني");
+        // rebuild simply
+        sel2.innerHTML = sel.innerHTML;
+        const first = sel2.querySelector("option");
+        if (first) first.textContent = "— اختياري: منتج ثاني مختلف —";
+        if (cur2) sel2.value = cur2;
+      }
+    }
+
+    
+    function applyMixedBundleNames() {
+      const id1 = $("offerSourceProduct")?.value;
+      const id2 = $("offerSourceProduct2")?.value;
+      const kind = $("offerKind")?.value;
+      if (kind === "mixed_bundle" && id1 && id2 && id1 !== id2) {
+        const p1 = (PRODUCTS || []).find(p => String(p.id) === String(id1));
+        const p2 = (PRODUCTS || []).find(p => String(p.id) === String(id2));
+        if (p1 && p2 && $("pName")) {
+          $("pName").value = "عرض: " + (p1.name || "") + " + " + (p2.name || "");
+        }
+        if ($("offerKind")) $("offerKind").value = "mixed_bundle";
+        const b2 = $("bundle2Price");
+        const price = $("pPrice");
+        const po = $("pPriceOffer");
+        if (b2 && b2.value && price && !price.value) price.value = b2.value;
+        if (b2 && b2.value && po) po.value = b2.value;
+        const prev = $("offerPreview");
+        if (prev) prev.textContent = "عرض مشترك: " + (p1?.name || id1) + " + " + (p2?.name || id2) + (b2 && b2.value ? (" — السعر للاثنين: " + b2.value + " ج.م") : "");
       }
     }
 
@@ -3223,7 +3271,10 @@
       });
     });
 
-    $("offerSourceProduct")?.addEventListener("change", applyOfferSourceProduct);
+    $("offerSourceProduct")?.addEventListener("change", function(){ applyOfferSourceProduct(); applyMixedBundleNames(); });
+    $("offerSourceProduct2")?.addEventListener("change", applyMixedBundleNames);
+    $("offerKind")?.addEventListener("change", applyMixedBundleNames);
+    $("bundle2Price")?.addEventListener("input", applyMixedBundleNames);
     $("pBadge")?.addEventListener("input", () => { if ($("pBadge")) $("pBadge").dataset.touched = "1"; });
 
     
