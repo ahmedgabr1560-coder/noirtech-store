@@ -63,6 +63,12 @@
     }
 
     applyColors(c.colors);
+    try {
+      const hs = Number(c.heroScale);
+      const hsm = Number(c.heroScaleMobile);
+      if (hs > 0.3 && hs <= 1.5) root.style.setProperty("--hero-scale", String(hs));
+      if (hsm > 0.3 && hsm <= 1.5) root.style.setProperty("--hero-scale-mobile", String(hsm));
+    } catch (e) {}
 
     if (c.siteName) {
       document.querySelectorAll("[data-site-name]").forEach((el) => { el.textContent = c.siteName; });
