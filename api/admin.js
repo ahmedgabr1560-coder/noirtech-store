@@ -85,64 +85,125 @@ export default async function handler(req, res) {
       const catFile = await ghGet("categories.json");
       const ordFile = await ghGet("orders.json");
       const expFile = await ghGet("expenses.json");
-      const products = prodFile ? JSON.parse(prodFile.content) : [];
-      const categories = catFile ? JSON.parse(catFile.content) : { categories: [] };
-      const orders = ordFile ? JSON.parse(ordFile.content) : [];
-      const expenses = expFile ? JSON.parse(expFile.content) : [];
-      const visibleCats = (categories.categories || []).filter(c => c.visible !== false);
-      const deliveredOrders = (orders || []).filter(o => ["delivered", "completed"].includes(o.status));
-      const completed = deliveredOrders.length;
-      const cancelled = (orders || []).filter(o => o.status === "cancelled").length;
-      const newOrders = (orders || []).filter(o => o.status === "new" || !o.status).length;
-      const sales = deliveredOrders.reduce((s, o) => s + Number(o.total || 0), 0);
-      const pendingSales = (orders || [])
-        .filter(o => !["delivered", "completed", "cancelled"].includes(o.status || "new"))
-        .reduce((s, o) => s + Number(o.total || 0), 0);
+      let products = [];
+      try { products = prodFile ? JSON.parse(prodFile.content) : []; } catch { products = []; }
+      if (products && !Array.isArray(products) && products.products) products = products.products;
+      if (!Array.isArray(products)) products = [];
+      let categories = { categories: [] };
+      try { categories = catFile ? JSON.parse(catFile.content) : { categories: [] }; } catch {}
+      let orders = [];
+      try { orders = ordFile ? JSON.parse(ordFile.content) : []; } catch { orders = []; }
+      if (!Array.isArray(orders)) orders = [];
+      let expenses = [];
+      try { expenses = expFile ? JSON.parse(expFile.content) : []; } catch { expenses = []; }
+      if (!Array.isArray(expenses)) expenses = [];
 
-      // تكلفة البضاعة من سعر الشراء (costPrice) للطلبات المسلّمة
-      const productMap = new Map((products || []).map(p => [String(p.id), p]));
-      let cogs = 0;
-      let grossProfit = 0;
-      for (const o of deliveredOrders) {
+      const period = String(body.period || "all");
+      const from = body.from ? new Date(body.from) : null;
+      const to = body.to ? new Date(body.to) : null;
+      const now = new Date();
+      function inPeriod(iso) {
+        if (!iso) return period === "all";
+        const t = new Date(iso);
+        if (period === "today") {
+          return t.toDateString() === now.toDateString();
+        }
+        if (period === "7d") return (now - t) <= 7 * 864e5;
+        if (period === "month") return t.getMonth() === now.getMonth() && t.getFullYear() === now.getFullYear();
+        if (period === "prev_month") {
+          const pm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          return t.getMonth() === pm.getMonth() && t.getFullYear() === pm.getFullYear();
+        }
+        if (period === "year") return t.getFullYear() === now.getFullYear();
+        if (period === "custom" && from && to) return t >= from && t <= to;
+        return true;
+      }
+
+      const ordersP = orders.filter(o => inPeriod(o.at));
+      const delivered = ordersP.filter(o => ["delivered", "completed"].includes(String(o.status || "")));
+      const cancelled = ordersP.filter(o => String(o.status) === "cancelled");
+      const pending = ordersP.filter(o => !["delivered", "completed", "cancelled"].includes(String(o.status || "new")));
+      const sales = delivered.reduce((s, o) => s + (Number(o.total) || 0), 0);
+      const shippingRev = delivered.reduce((s, o) => s + (Number(o.shipping) || 0), 0);
+      const discounts = delivered.reduce((s, o) => s + (Number(o.discount) || 0), 0);
+
+      // COGS from costPrice * qty on delivered items
+      const byId = Object.fromEntries(products.map(p => [String(p.id), p]));
+      let cogs = 0, missingCost = 0, unitsSold = 0;
+      for (const o of delivered) {
         for (const it of (o.items || [])) {
-          const qty = Number(it.qty) || 1;
-          const sell = Number(it.price != null ? it.price : 0);
-          let cost = Number(it.costPrice != null ? it.costPrice : NaN);
-          if (Number.isNaN(cost)) {
-            const p = productMap.get(String(it.id));
-            cost = p ? Number(p.costPrice || 0) : 0;
-          }
-          cogs += cost * qty;
-          grossProfit += (sell - cost) * qty;
+          const q = Number(it.qty) || 1;
+          unitsSold += q;
+          const p = byId[String(it.id)];
+          const cost = p && p.costPrice != null ? Number(p.costPrice) : null;
+          if (cost == null || Number.isNaN(cost)) missingCost += q;
+          else cogs += cost * q;
         }
       }
 
-      const expList = expenses || [];
-      const capitalTotal = expList.filter(e => e.type === "capital").reduce((s, e) => s + Number(e.amount || 0), 0);
-      const expTotal = expList.filter(e => e.type !== "capital").reduce((s, e) => s + Number(e.amount || 0), 0);
-      // صافي الربح = (سعر البيع − سعر الشراء) للمسلّم − المصروفات التشغيلية (بدون رأس المال)
-      const profit = grossProfit - expTotal;
+      const expensesP = expenses.filter(e => e.type !== "capital" && inPeriod(e.at));
+      const expByCat = {};
+      let expTotal = 0;
+      for (const e of expensesP) {
+        const c = String(e.category || "other");
+        const a = Number(e.amount) || 0;
+        expByCat[c] = (expByCat[c] || 0) + a;
+        expTotal += a;
+      }
+
+      let stockUnits = 0, stockValue = 0, stockSellValue = 0, lowStock = 0;
+      for (const p of products) {
+        if (p.hidden) continue;
+        const st = Number(p.stock) || 0;
+        stockUnits += st;
+        stockValue += st * (Number(p.costPrice) || 0);
+        stockSellValue += st * (Number(p.price) || 0);
+        if (st > 0 && st <= 3) lowStock++;
+        if (st <= 0) lowStock++;
+      }
+
+      const gross = sales - cogs;
+      const net = gross - expTotal;
+
+      // top products by qty in delivered
+      const soldMap = {};
+      for (const o of delivered) {
+        for (const it of (o.items || [])) {
+          const id = String(it.id || it.name);
+          if (!soldMap[id]) soldMap[id] = { id: it.id, name: it.name, qty: 0, revenue: 0 };
+          soldMap[id].qty += Number(it.qty) || 1;
+          soldMap[id].revenue += Number(it.lineTotal) || ((Number(it.price)||0)*(Number(it.qty)||1));
+        }
+      }
+      const topProducts = Object.values(soldMap).sort((a,b)=>b.qty-a.qty).slice(0, 10);
+
       return res.status(200).json({
         ok: true,
         stats: {
+          period,
           products: products.length,
-          visibleCategories: visibleCats.length,
-          totalCategories: (categories.categories || []).length,
-          orders: (orders || []).length,
-          newOrders,
-          completed,
-          cancelled,
+          visibleCategories: (categories.categories || []).filter(c => c.visible !== false).length,
+          orders: ordersP.length,
+          completed: delivered.length,
+          cancelled: cancelled.length,
+          pending: pending.length,
+          newOrders: ordersP.filter(o => (o.status || "new") === "new").length,
           sales,
-          pendingSales,
+          shippingRevenue: shippingRev,
+          discounts,
           cogs,
-          grossProfit,
-          capital: capitalTotal,
+          missingCostUnits: missingCost,
+          unitsSold,
+          grossProfit: gross,
           expenses: expTotal,
-          netProfit: sales - expTotal,
-          profit,
-          lowStock: products.filter(p => Number(p.stock || 999) < 5).length
-        },
-        recentOrders: (orders || []).slice(0, 10)
+          expensesByCategory: expByCat,
+          netProfit: net,
+          stockUnits,
+          stockValueCost: stockValue,
+          stockValueSell: stockSellValue,
+          lowStockCount: lowStock,
+          topProducts
+        }
       });
     }
 
@@ -720,7 +781,10 @@ export default async function handler(req, res) {
         amount: Number(body.amount) || 0,
         category: String(body.category || "other"),
         description: String(body.description || ""),
-        at: new Date().toISOString()
+        note: String(body.note || "").slice(0, 500),
+        orderId: String(body.orderId || "").slice(0, 64),
+        paymentMethod: String(body.paymentMethod || "").slice(0, 40),
+        at: body.at ? String(body.at) : new Date().toISOString()
       };
       expenses.unshift(item);
       const put = await ghPut("expenses.json", JSON.stringify(expenses.slice(0, 500), null, 2), `Admin: add expense ${item.id}`, f?.sha);
@@ -783,6 +847,45 @@ export default async function handler(req, res) {
         }
       } catch (e) {}
       return res.status(200).json({ ok: true });
+    }
+
+    
+    if (action === "adjust_stock") {
+      const id = body.id;
+      const delta = Number(body.delta);
+      const reason = String(body.reason || "manual").slice(0, 120);
+      if (id == null || Number.isNaN(delta)) return res.status(400).json({ ok: false, error: "id and delta required" });
+      const f = await ghGet("products.json");
+      let products = [];
+      try { products = f ? JSON.parse(f.content) : []; } catch { products = []; }
+      if (products && !Array.isArray(products) && products.products) products = products.products;
+      if (!Array.isArray(products)) products = [];
+      const p = products.find(x => String(x.id) === String(id));
+      if (!p) return res.status(404).json({ ok: false, error: "product not found" });
+      const before = Number(p.stock) || 0;
+      const after = Math.max(0, before + delta);
+      p.stock = after;
+      const put = await ghPut("products.json", JSON.stringify(products, null, 2), `Stock ${id}: ${before}→${after}`, f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed" });
+      // log
+      try {
+        const lf = await ghGet("inventory-log.json");
+        let log = [];
+        try { log = lf ? JSON.parse(lf.content) : []; } catch { log = []; }
+        if (!Array.isArray(log)) log = [];
+        log.unshift({ id: "IL-" + Date.now().toString(36), productId: id, name: p.name, before, after, delta, reason, at: new Date().toISOString() });
+        if (log.length > 500) log = log.slice(0, 500);
+        await ghPut("inventory-log.json", JSON.stringify(log, null, 2), `Inventory log ${id}`, lf?.sha);
+      } catch (e) {}
+      return res.status(200).json({ ok: true, stock: after });
+    }
+
+    if (action === "list_inventory_log") {
+      const f = await ghGet("inventory-log.json");
+      let log = [];
+      try { log = f ? JSON.parse(f.content) : []; } catch { log = []; }
+      if (!Array.isArray(log)) log = [];
+      return res.status(200).json({ ok: true, log });
     }
 
     return res.status(400).json({ ok: false, error: "unknown action" });
