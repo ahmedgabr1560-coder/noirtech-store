@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة التحكم | NEXORA</title>
+  <title>لوحة تحكم ATHAR | أثر</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -90,7 +90,7 @@
 <body>
   <div class="login-wrap" id="loginView">
     <div class="login-card">
-      <h1>لوحة تحكم NEXORA</h1>
+      <h1>لوحة تحكم ATHAR | أثر</h1>
       <p>أدخل كلمة سر الإدارة للمتابعة</p>
       <label>كلمة السر
         <input type="password" id="adminSecret" placeholder="••••••••" />
@@ -106,7 +106,7 @@
       <div class="brand-row" style="display:flex;align-items:center;gap:10px;padding:8px 4px 14px">
         <span id="adminBrandMark" style="font-size:1.4rem">◆</span>
         <div>
-          <div id="adminBrandName" style="font-weight:800;color:#fff">NEXORA</div>
+          <div id="adminBrandName" style="font-weight:800;color:#fff">ATHAR | أثر</div>
           <div id="adminTopName" style="font-size:.75rem;color:#94a3b8">لوحة التحكم</div>
         </div>
       </div>
@@ -274,7 +274,7 @@
           <p class="hint" style="margin-bottom:12px">اسألي عن إدارة المتجر، العروض، الطلبات، أو صياغة ردود للعملاء.</p>
           <div id="adminAiMessages" style="height:min(52vh,420px);overflow:auto;border:1px solid var(--border);border-radius:16px;padding:14px;background:rgba(0,0,0,.25);margin-bottom:12px;display:flex;flex-direction:column;gap:10px">
             <div style="align-self:flex-start;max-width:90%;background:rgba(139,92,246,.2);border:1px solid rgba(167,139,250,.35);border-radius:14px;padding:10px 12px;color:#efeaff;line-height:1.55">
-              أهلاً 👋 أنا مساعدة إدارة NEXORA. قولي عايزة مساعدة في إيه؟
+              أهلاً 👋 أنا مساعدة إدارة ATHAR | أثر. قولي عايزة مساعدة في إيه؟
             </div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
@@ -557,7 +557,7 @@
             <label>يوزر بوت تليجرام<input id="gTelegram" dir="ltr" placeholder="username_bot" /></label>
             <label>اسم صاحب المتجر<input id="gOwner" /></label>
           </div>
-          <label>نص الفوتر<input id="gFooter" placeholder="© 2026 NEXORA" /></label>
+          <label>نص الفوتر<input id="gFooter" placeholder="© 2026 ATHAR | أثر" /></label>
           <label>نبذة عن المتجر<textarea id="gAbout"></textarea></label>
           <div class="form-grid">
             <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="gShowWa" /> إظهار زر واتساب</label>
@@ -585,7 +585,7 @@
           <p class="hint" style="margin-bottom:12px">غيّري اسم المتجر وأيقونة المتصفح (Favicon) في أي وقت — التغيير يظهر على المتجر بعد الحفظ.</p>
           <div class="form-grid">
             <label>اسم الموقع
-              <input id="brandName" placeholder="NEXORA" />
+              <input id="brandName" placeholder="ATHAR | أثر" />
             </label>
             <label>اختصار الشعار (حرفين/ثلاثة)
               <input id="brandMark" placeholder="NX" maxlength="3" />
@@ -2123,7 +2123,7 @@
       const data = await api("get_config");
       if (!data.ok) return;
       const c = data.config || {};
-      if ($("brandName")) $("brandName").value = c.siteName || "NEXORA";
+      if ($("brandName")) $("brandName").value = c.siteName || "ATHAR | أثر";
         applyAdminBrand(c);
       if ($("brandMark")) $("brandMark").value = c.logoMark || "NX";
       if ($("brandTagline")) $("brandTagline").value = c.siteTagline || c.tagline || "";
@@ -2150,7 +2150,7 @@
       if (btn) btn.disabled = true;
       if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
       try {
-        const name = $("brandName")?.value.trim() || "NEXORA";
+        const name = $("brandName")?.value.trim() || "ATHAR | أثر";
         const payload = {
           siteName: name,
           logoMark: ($("brandMark")?.value.trim() || name.slice(0, 2)).toUpperCase(),
@@ -2727,7 +2727,7 @@
     
     function applyAdminBrand(c) {
       if (!c) return;
-      const name = (c.siteName || "NEXORA").trim();
+      const name = (c.siteName || "ATHAR | أثر").trim();
       const mark = (c.logoMark || name.slice(0, 2) || "NX").toString().slice(0, 3).toUpperCase();
       document.title = "إدارة | " + name;
       document.querySelectorAll("[data-site-name]").forEach(el => { el.textContent = name; });
