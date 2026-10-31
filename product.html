@@ -129,6 +129,14 @@
           <div class="cart-total-row"><span>الشحن</span><strong id="cartShipping">—</strong></div>
           <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
         </div>
+        
+          <div id="cartDiscountRow" class="cart-total-row" style="display:none;color:#86efac"><span>الخصم</span><strong id="cartDiscount">- 0 ج.م</strong></div>
+          <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center">
+            <input type="text" id="couponInput" placeholder="كود الخصم" dir="ltr" autocomplete="off"
+              style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff;text-transform:uppercase;font-size:16px" />
+            <button type="button" class="btn btn-ghost" id="applyCouponBtn">تطبيق</button>
+          </div>
+          <p id="couponMsg" style="font-size:.8rem;margin:0 0 8px;color:#c4b5fd;min-height:1.2em"></p>
         <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
         <div id="checkoutFields" hidden>
           <label style="display:block;margin-bottom:8px">الاسم
@@ -633,7 +641,7 @@
         const sh = document.getElementById("cartShipping");
         if (sh) sh.textContent = money(0);
         const dr = document.getElementById("cartDiscountRow");
-        if (dr) dr.style.display = "none";
+        if (dr) dr.style.display = discount > 0 ? "flex" : "none";
         const hint = document.getElementById("cartShippingHint");
         if (hint) { hint.style.display = "none"; hint.textContent = ""; }
         const tt = document.getElementById("cartTotal");
@@ -667,7 +675,7 @@
       const sh = document.getElementById("cartShipping");
       if (sh) sh.textContent = ship.free ? "مجاني" : money(ship.amount);
       const dr = document.getElementById("cartDiscountRow");
-      if (dr) dr.style.display = "none";
+      if (dr) dr.style.display = discount > 0 ? "flex" : "none";
       const dd = document.getElementById("cartDiscount");
       if (dd) dd.textContent = "- " + money(discount);
       const tt = document.getElementById("cartTotal");
@@ -847,7 +855,50 @@
 
   <script>
     // صفحة المنتج ترسم الخانة ديناميكيًا؛ لذلك نستخدم حدثًا مفوضًا.
-</script>
+
+
+    (function(){
+      const CODES = { NEXORA10:10, WELCOME10:10, FIRST10:10, SAVE10:10, EGYPT10:10 };
+      async function refreshCodes() {
+        try {
+          const r = await fetch("/api/catalog?type=coupons&t=" + Date.now(), { cache: "no-store" });
+          if (!r.ok) return;
+          const d = await r.json();
+          (d.codes || []).forEach(row => {
+            const c = String(row.code || "").trim().toUpperCase();
+            const p = Number(row.percent);
+            if (c && p > 0 && row.active !== false) CODES[c] = Math.min(90, Math.round(p));
+          });
+        } catch (e) {}
+      }
+      refreshCodes();
+      function applyCoupon() {
+        const input = document.getElementById("couponInput");
+        const msg = document.getElementById("couponMsg");
+        const raw = String(input?.value || "").trim().toUpperCase();
+        if (!raw) {
+          try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
+          if (msg) msg.textContent = "اكتبي كود الخصم";
+          try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
+          return;
+        }
+        if (!CODES[raw]) {
+          try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
+          if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";
+          try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
+          return;
+        }
+        try { sessionStorage.setItem("nx_coupon_code", raw); } catch (e) {}
+        if (msg) msg.textContent = "تم تطبيق الخصم ✓";
+        try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
+      }
+      document.getElementById("applyCouponBtn")?.addEventListener("click", applyCoupon);
+      document.getElementById("couponInput")?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); applyCoupon(); }
+      });
+    })();
+
+  </script>
 
 </body>
 </html>
