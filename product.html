@@ -641,7 +641,9 @@
         const sh = document.getElementById("cartShipping");
         if (sh) sh.textContent = money(0);
         const dr = document.getElementById("cartDiscountRow");
-        if (dr) dr.style.display = discount > 0 ? "flex" : "none";
+        if (dr) dr.style.display = "none";
+        const dd = document.getElementById("cartDiscount");
+        if (dd) dd.textContent = "- " + money(0);
         const hint = document.getElementById("cartShippingHint");
         if (hint) { hint.style.display = "none"; hint.textContent = ""; }
         const tt = document.getElementById("cartTotal");
@@ -664,11 +666,19 @@
       const ship = calcShip(sub);
       let coupon = "";
       try {
-        localStorage.removeItem("nx_coupon_code");
-        coupon = String(sessionStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+        coupon = String(sessionStorage.getItem("nx_coupon_code") || localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
       } catch (e) {}
-      const discount = ["NEXORA10", "WELCOME10", "FIRST10", "SAVE10", "EGYPT10"].includes(coupon)
-        ? Math.round(Math.max(0, sub) * 0.10 * 100) / 100 : 0;
+      const codesMap = (window.PRODUCT_COUPON_CODES && typeof window.PRODUCT_COUPON_CODES === "object")
+        ? window.PRODUCT_COUPON_CODES
+        : { NEXORA10: 10, WELCOME10: 10, FIRST10: 10, SAVE10: 10, EGYPT10: 10 };
+      const pct = Number(codesMap[coupon]) || 0;
+      const discount = pct > 0 ? Math.round(Math.max(0, sub) * (pct / 100) * 100) / 100 : 0;
+      try {
+        const cin = document.getElementById("couponInput");
+        if (cin && coupon && !cin.value) cin.value = coupon;
+        const cmsg = document.getElementById("couponMsg");
+        if (cmsg && discount > 0) cmsg.textContent = "تم تطبيق الخصم ✓ (" + pct + "%)";
+      } catch (e2) {}
       const total = sub - discount + ship.amount;
       const ss = document.getElementById("cartSubtotal");
       if (ss) ss.textContent = money(sub);
@@ -767,11 +777,19 @@
       const ship = calcShip(sub);
       let coupon = "";
       try {
-        localStorage.removeItem("nx_coupon_code");
-        coupon = String(sessionStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+        coupon = String(sessionStorage.getItem("nx_coupon_code") || localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
       } catch (e) {}
-      const discount = ["NEXORA10", "WELCOME10", "FIRST10", "SAVE10", "EGYPT10"].includes(coupon)
-        ? Math.round(Math.max(0, sub) * 0.10 * 100) / 100 : 0;
+      const codesMap = (window.PRODUCT_COUPON_CODES && typeof window.PRODUCT_COUPON_CODES === "object")
+        ? window.PRODUCT_COUPON_CODES
+        : { NEXORA10: 10, WELCOME10: 10, FIRST10: 10, SAVE10: 10, EGYPT10: 10 };
+      const pct = Number(codesMap[coupon]) || 0;
+      const discount = pct > 0 ? Math.round(Math.max(0, sub) * (pct / 100) * 100) / 100 : 0;
+      try {
+        const cin = document.getElementById("couponInput");
+        if (cin && coupon && !cin.value) cin.value = coupon;
+        const cmsg = document.getElementById("couponMsg");
+        if (cmsg && discount > 0) cmsg.textContent = "تم تطبيق الخصم ✓ (" + pct + "%)";
+      } catch (e2) {}
       const order = {
         id: "NX-" + Date.now().toString().slice(-8),
         at: new Date().toISOString(),
@@ -863,7 +881,8 @@
 
 
     (function(){
-      const CODES = { NEXORA10:10, WELCOME10:10, FIRST10:10, SAVE10:10, EGYPT10:10 };
+      window.PRODUCT_COUPON_CODES = window.PRODUCT_COUPON_CODES || { NEXORA10:10, WELCOME10:10, FIRST10:10, SAVE10:10, EGYPT10:10 };
+      const CODES = window.PRODUCT_COUPON_CODES;
       async function refreshCodes() {
         try {
           const r = await fetch("/api/catalog?type=coupons&t=" + Date.now(), { cache: "no-store" });
@@ -872,7 +891,7 @@
           (d.codes || []).forEach(row => {
             const c = String(row.code || "").trim().toUpperCase();
             const p = Number(row.percent);
-            if (c && p > 0 && row.active !== false) CODES[c] = Math.min(90, Math.round(p));
+            if (c && p > 0 && row.active !== false) { CODES[c] = Math.min(90, Math.round(p)); window.PRODUCT_COUPON_CODES[c] = CODES[c]; }
           });
         } catch (e) {}
       }
@@ -882,18 +901,18 @@
         const msg = document.getElementById("couponMsg");
         const raw = String(input?.value || "").trim().toUpperCase();
         if (!raw) {
-          try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
+          try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
           if (msg) msg.textContent = "اكتبي كود الخصم";
           try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
           return;
         }
         if (!CODES[raw]) {
-          try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
+          try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
           if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";
           try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
           return;
         }
-        try { sessionStorage.setItem("nx_coupon_code", raw); } catch (e) {}
+        try { sessionStorage.setItem("nx_coupon_code", raw); localStorage.setItem("nx_coupon_code", raw); } catch (e) {}
         if (msg) msg.textContent = "تم تطبيق الخصم ✓";
         try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
       }
