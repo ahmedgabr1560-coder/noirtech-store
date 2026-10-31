@@ -1,0 +1,135 @@
+{
+  "defaultId": "default",
+  "templates": [
+    {
+      "id": "default",
+      "name": "التصميم الأساسي",
+      "isDefault": true,
+      "size": "10x15",
+      "customW": 100,
+      "customH": 150,
+      "styles": {
+        "bg": "#ffffff",
+        "text": "#111111",
+        "title": "#111111",
+        "accent": "#c9a227",
+        "border": "#e8e0d4",
+        "font": "Cairo, Tahoma, sans-serif",
+        "fontSize": 9,
+        "titleSize": 14,
+        "padding": 5,
+        "align": "right"
+      },
+      "fields": [
+        {
+          "id": "brand",
+          "label": "شعار/اسم المتجر",
+          "show": true
+        },
+        {
+          "id": "owner",
+          "label": "اسم صاحب البراند",
+          "show": true
+        },
+        {
+          "id": "qr",
+          "label": "QR Code",
+          "show": true
+        },
+        {
+          "id": "orderId",
+          "label": "رقم الطلب",
+          "show": true
+        },
+        {
+          "id": "date",
+          "label": "تاريخ الطلب",
+          "show": true
+        },
+        {
+          "id": "status",
+          "label": "حالة الطلب",
+          "show": true
+        },
+        {
+          "id": "customerName",
+          "label": "اسم العميل",
+          "show": true
+        },
+        {
+          "id": "customerPhone",
+          "label": "هاتف العميل",
+          "show": true
+        },
+        {
+          "id": "gov",
+          "label": "المحافظة",
+          "show": true
+        },
+        {
+          "id": "center",
+          "label": "المدينة/المركز",
+          "show": true
+        },
+        {
+          "id": "address",
+          "label": "العنوان التفصيلي",
+          "show": true
+        },
+        {
+          "id": "note",
+          "label": "ملاحظات/علامة مميزة",
+          "show": true
+        },
+        {
+          "id": "products",
+          "label": "المنتجات والكميات",
+          "show": true
+        },
+        {
+          "id": "subtotal",
+          "label": "إجمالي المنتجات",
+          "show": true
+        },
+        {
+          "id": "shipping",
+          "label": "الشحن",
+          "show": true
+        },
+        {
+          "id": "discount",
+          "label": "الخصم",
+          "show": true
+        },
+        {
+          "id": "total",
+          "label": "الإجمالي النهائي",
+          "show": true
+        },
+        {
+          "id": "payment",
+          "label": "طريقة الدفع",
+          "show": true
+        },
+        {
+          "id": "cod",
+          "label": "تحصيل COD",
+          "show": true
+        },
+        {
+          "id": "contacts",
+          "label": "أرقام المتجر",
+          "show": true
+        },
+        {
+          "id": "thanks",
+          "label": "عبارة الشكر",
+          "show": true
+        }
+      ],
+      "customTexts": [],
+      "showBorder": true,
+      "showDivider": true
+    }
+  ]
+}
