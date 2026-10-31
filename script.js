@@ -1127,6 +1127,8 @@ document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeO
 
 
 $("#checkoutBtn").addEventListener("click", async () => {
+  const btn = $("#checkoutBtn");
+  if (btn && (btn.disabled || btn.dataset.submitting === "1")) return;
   try {
     if (!cart.length) return toast("السلة فارغة");
     try {
@@ -1197,6 +1199,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
       const deal = it.dealLabel ? (" | عرض: " + it.dealLabel) : "";
       return "• " + it.name + col + deal + " × " + it.qty + " = " + Number(it.lineTotal != null ? it.lineTotal : (it.price * it.qty)).toLocaleString("ar-EG") + " ج.م";
     });
+    if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "جاري تنفيذ الطلب..."; }
     const orderRecord = {
       id: orderId,
       at: new Date().toISOString(),
@@ -1251,12 +1254,12 @@ $("#checkoutBtn").addEventListener("click", async () => {
       if (!saveRes || !saveRes.ok || !saveData || saveData.ok === false) {
         const err = (saveData && saveData.error) || (saveRes ? ("HTTP " + saveRes.status) : "network");
         toast("تعذر حفظ الطلب: " + err);
-        if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+        if (btn) { btn.disabled = false; btn.dataset.submitting = ""; btn.textContent = "إتمام الطلب الآن"; }
         return;
       }
     } catch (e) {
       toast("تعذر الاتصال لحفظ الطلب — حاول مرة أخرى");
-      if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+      if (btn) { btn.disabled = false; btn.dataset.submitting = ""; btn.textContent = "إتمام الطلب الآن"; }
       return;
     }
     if (payMethod === "card") {
@@ -1272,12 +1275,12 @@ $("#checkoutBtn").addEventListener("click", async () => {
     if ($("#orderNote")) $("#orderNote").value = "";
     showOrderSuccess(orderId);
     toast("تم تأكيد طلبك بنجاح");
-    if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+    if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "إتمام الطلب الآن"; }
   } catch (err) {
     console.error(err);
     toast("حصل خطأ أثناء إتمام الطلب");
     const btn = $("#checkoutBtn");
-    if (btn) { btn.disabled = false; btn.textContent = "إتمام الطلب الآن"; }
+    if (btn) { btn.disabled = false; btn.dataset.submitting = ""; btn.textContent = "إتمام الطلب الآن"; }
   }
 });
 
