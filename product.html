@@ -346,6 +346,7 @@
           const qs = tiers.map(function(t){ return Number(t.qty)||0; }).filter(function(q){ return q>0; });
           if (qs.length) return Math.min.apply(null, qs);
         }
+        if (p.offerMeta && p.offerMeta.type === "mixed_bundle") return 1;
         if (p.isOffer) return 2;
         if (/قطعتين|2 قطعه|2 قطعة|عرض القطعتين/i.test(String(p.name||""))) return 2;
         return 1;
@@ -411,6 +412,7 @@
                 <input type="number" id="buyQty" min="${Math.max(minQty, 1)}" max="${Math.max(minQty || 1, stock || 1)}" value="${minQty}" dir="ltr" style="width:56px;text-align:center;font-size:16px;background:transparent;border:0;color:#fff;font-weight:800" ${available ? "" : "disabled"} />
                 <button type="button" id="qtyPlus" class="btn btn-ghost" style="min-width:36px;padding:6px 10px" ${available ? "" : "disabled"}>+</button>
               </div>
+              ${(p.offerMeta && p.offerMeta.type === "mixed_bundle") ? `<div style="width:100%;font-size:.85rem;color:#c4b5fd;font-weight:700;margin-bottom:8px;padding:8px 10px;border-radius:10px;background:rgba(139,92,246,.12);border:1px solid rgba(167,139,250,.3)">عرض منتجين مختلفين — السعر يشمل الاثنين معًا</div>` : ""}
               ${minQty > 1 ? `<div style="width:100%;font-size:.82rem;color:#fbbf24;font-weight:700;margin-bottom:6px">الحد الأدنى للطلب: ${minQty} قطع</div>` : ""}
               <button type="button" id="ppAddCart" class="btn btn-primary" style="flex:1;min-width:160px;padding:12px 18px;font-weight:800" ${available ? "" : "disabled"}>
                 ${available ? "أضف للسلة" : "غير متوفر"}
