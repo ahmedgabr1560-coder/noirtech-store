@@ -751,6 +751,40 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, updated: n });
     }
 
+    
+    if (action === "update_return_policy") {
+      const policy = body.policy;
+      if (!policy || typeof policy !== "object") return res.status(400).json({ ok: false, error: "policy required" });
+      const clean = {
+        title: String(policy.title || "سياسة الاستبدال والاسترجاع").slice(0, 200),
+        titleEn: String(policy.titleEn || "Return & Refund Policy").slice(0, 200),
+        updatedAt: String(policy.updatedAt || new Date().toISOString().slice(0, 10)).slice(0, 40),
+        phone: String(policy.phone || "01064519541").slice(0, 30),
+        whatsapp: String(policy.whatsapp || "01283431213").slice(0, 30),
+        showInFooter: policy.showInFooter !== false,
+        intro: String(policy.intro || "").slice(0, 5000),
+        closing: String(policy.closing || "").slice(0, 1000),
+        sections: Array.isArray(policy.sections) ? policy.sections.slice(0, 30).map(s => ({
+          heading: String(s.heading || "").slice(0, 200),
+          body: String(s.body || "").slice(0, 8000)
+        })) : []
+      };
+      const f = await ghGet("return-policy.json");
+      const put = await ghPut("return-policy.json", JSON.stringify(clean, null, 2), "Update return policy", f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+      // also reflect footer flag in site-config
+      try {
+        const sc = await ghGet("site-config.json");
+        if (sc) {
+          let conf = {};
+          try { conf = JSON.parse(sc.content); } catch { conf = {}; }
+          conf.showReturnPolicyFooter = clean.showInFooter;
+          await ghPut("site-config.json", JSON.stringify(conf, null, 2), "Footer return policy flag", sc.sha);
+        }
+      } catch (e) {}
+      return res.status(200).json({ ok: true });
+    }
+
     return res.status(400).json({ ok: false, error: "unknown action" });
   } catch (e) {
     console.error(e);
