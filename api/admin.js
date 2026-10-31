@@ -304,6 +304,7 @@ export default async function handler(req, res) {
       // offer fields if provided
       if (body.isOffer != null) updated.isOffer = !!body.isOffer;
       if (body.offerType) updated.offerType = String(body.offerType);
+      if (body.offerSection != null) updated.offerSection = String(body.offerSection).slice(0, 30);
       if (body.sourceProductId) updated.sourceProductId = body.sourceProductId;
       if (body.offerMeta) updated.offerMeta = body.offerMeta;
       else if (body.bundle2Price || body.bundle3Price || body.sourceProductId2 || body.offerType === "mixed_bundle") {
