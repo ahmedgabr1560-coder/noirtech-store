@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>حسابي | NEXORA</title>
+  <title>حسابي | ATHAR | أثر</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -196,7 +196,7 @@
   <div class="bg"></div>
   <header class="topbar">
     <div class="topbar-inner">
-      <a class="logo" href="/"><span class="mark">NX</span> NEXORA</a>
+      <a class="logo" href="/"><span class="mark">NX</span> ATHAR | أثر</a>
       <div class="top-actions">
         <a class="btn btn-ghost" href="/">المتجر</a>
         <button type="button" class="btn btn-danger" id="logoutBtn">تسجيل الخروج</button>
@@ -360,7 +360,7 @@
     function renderAll() {
       user = getUser();
       if (!user) return;
-      document.getElementById("displayName").textContent = user.name || "مستخدم NEXORA";
+      document.getElementById("displayName").textContent = user.name || "مستخدم ATHAR | أثر";
       document.getElementById("displayEmail").textContent = user.email || "";
       setAvatar(user.avatar || null);
 
@@ -373,7 +373,7 @@
       const items = list.reduce((s, o) => s + (o.items || []).reduce((a, i) => a + (i.qty || 1), 0), 0);
       document.getElementById("statItems").textContent = String(items);
 
-      let since = "عضو NEXORA";
+      let since = "عضو ATHAR | أثر";
       const db = getUsers().find(u => u.email === user.email);
       if (db?.createdAt) {
         try {
