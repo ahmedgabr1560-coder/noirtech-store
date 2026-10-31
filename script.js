@@ -669,7 +669,7 @@ function productCard(p) {
           return `<span class="mixed-tri mixed-tri-a" style="background-image:url('${a}')"></span>
       <span class="mixed-tri mixed-tri-b" style="background-image:url('${b}')"></span>
       <span class="mixed-split-line"></span>`;
-        })() : `<img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />`}
+        })() : `<img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" width="400" height="400" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />`}
       ${isBundleOffer(p) || isMixedBundle(p) ? `<span class="badge-off" style="background:linear-gradient(135deg,#f97316,#ea580c)">عرض قطع</span>` : (off ? `<span class="badge-off">-${off}%</span>` : "")}
     </a>
     <div class="product-body">
@@ -1539,7 +1539,7 @@ function renderCatsDirectory() {
     ).join("");
     return `<article class="dir-card">
       <button type="button" class="dir-main" data-cat="${c.id}">
-        <img src="${c.image || ""}" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'" />
+        <img src="${c.image || ""}" alt="" loading="lazy" decoding="async" width="400" height="400" onerror="this.style.display='none'" />
         <div><span class="dir-ico">${c.icon || ""}</span><h3>${c.name_ar}</h3><small>${c.name_en || ""}</small></div>
       </button>
       <div class="dir-subs">${subs}</div>
@@ -1888,25 +1888,30 @@ async function loadProducts(force) {
     }
   }
   const t = Date.now();
-  const urls = [
-    "/api/catalog?type=products&t=" + t,
-    "/products.json?t=" + t
-  ];
+  // أسرع: catalog أولاً؛ products.json فقط لو فشل أو القائمة قصيرة
+  const urls = mustFresh
+    ? ["/api/catalog?type=products&t=" + t, "/products.json?t=" + t]
+    : ["/api/catalog?type=products&t=" + t];
   let best = null;
   for (const url of urls) {
     try {
-      const r = await fetch(url, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
+      const r = await fetch(url, { cache: mustFresh ? "no-store" : "default", headers: mustFresh ? { "Cache-Control": "no-cache" } : {} });
       if (!r.ok) continue;
       const data = await r.json();
       let list = Array.isArray(data) ? data : (data.products || []);
       if (!Array.isArray(list)) continue;
       list = list.filter(p => p && p.hidden !== true && p.active !== false);
-      // خذ أكبر قائمة ناجحة (catalog قد يفلتر أكثر)
-      if (!best || list.length >= best.length) {
-        best = list;
-        if (url.indexOf("/api/catalog") === 0 && data.ok === true && list.length) {
-          // لا نكسر الحلقة — نكمّل products.json لو أطول
-        }
+      if (!best || list.length >= best.length) best = list;
+      if (best && best.length >= 8 && url.indexOf("/api/catalog") === 0 && !mustFresh) break;
+    } catch (e) {}
+  }
+  if ((!best || !best.length) && !mustFresh) {
+    try {
+      const r = await fetch("/products.json?t=" + t, { cache: "default" });
+      if (r.ok) {
+        const data = await r.json();
+        let list = Array.isArray(data) ? data : (data.products || []);
+        best = (list || []).filter(p => p && p.hidden !== true && p.active !== false);
       }
     } catch (e) {}
   }
@@ -1945,7 +1950,7 @@ async function loadProducts(force) {
     if (document.visibilityState === "visible") softRefresh();
   });
   window.addEventListener("focus", softRefresh);
-  setInterval(softRefresh, 12000);
+  setInterval(softRefresh, 30000);
 })();
 
 
@@ -2190,7 +2195,7 @@ document.addEventListener("visibilitychange", () => {
     loadHeroConfig();
   }
 });
-setInterval(() => { loadHeroConfig(); }, 30000);
+setInterval(() => { loadHeroConfig(); }, 60000);
 
 
 
@@ -2275,7 +2280,7 @@ window.addEventListener("storage", (e) => {
   });
   setInterval(() => {
     if (document.visibilityState === "visible") refresh(false);
-  }, 2000);
+  }, 20000);
 })();
 
 document.getElementById("applyCouponBtn")?.addEventListener("click", applyCouponFromInput);
