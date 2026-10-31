@@ -208,10 +208,10 @@
       const n = Math.round(Number(r) || 0);
       return "★".repeat(Math.min(5, n)) + "☆".repeat(Math.max(0, 5 - Math.min(5, n)));
     };
-    async function esc(t) {
+    function esc(t) {
       return String(t || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
-    async function loadJSON(urls) {
+    async async function loadJSON(urls) {
       for (const u of urls) {
         try {
           const r = await fetch(u, { cache: "no-store" });
@@ -220,7 +220,7 @@
       }
       return null;
     }
-    function addLocalCart(p, qty) {
+    async function addLocalCart(p, qty) {
       const key = "nx_cart";
       let cart = [];
       try { cart = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) {}
@@ -250,7 +250,7 @@
     }
     (async function () {
       // فتح فوري من كاش الجلسة إن وجد
-      function readProdCache() {
+      async function readProdCache() {
         try {
           const raw = sessionStorage.getItem("nx_products");
           if (!raw) return null;
