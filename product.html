@@ -130,7 +130,7 @@
           <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
         </div>
         
-          <div id="cartDiscountRow" class="cart-total-row" style="display:none;color:#86efac"><span>الخصم</span><strong id="cartDiscount">- 0 ج.م</strong></div>
+          <div id="cartDiscountRow" class="cart-total-row" style="display:none;color:#86efac"><span id="cartDiscountLabel">الخصم</span><strong id="cartDiscount">- 0 ج.م</strong></div>
           <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center">
             <input type="text" id="couponInput" placeholder="كود الخصم" dir="ltr" autocomplete="off"
               style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff;text-transform:uppercase;font-size:16px" />
@@ -685,9 +685,12 @@
       const sh = document.getElementById("cartShipping");
       if (sh) sh.textContent = ship.free ? "مجاني" : money(ship.amount);
       const dr = document.getElementById("cartDiscountRow");
-      if (dr) dr.style.display = discount > 0 ? "flex" : "none";
+      if (dr) dr        dr.style.display = discount > 0 ? "flex" : "none";
+        const dl = document.getElementById("cartDiscountLabel");
+        if (dl) dl.textContent = discount > 0 ? ("الخصم" + (pct ? " (" + pct + "%)" : "") + (coupon ? " — " + coupon : "")) : "الخصم";
+      }
       const dd = document.getElementById("cartDiscount");
-      if (dd) dd.textContent = "- " + money(discount);
+      if (dd) dd.textContent = discount > 0 ? ("- " + money(discount) + (pct ? "  ·  " + pct + "%" : "")) : ("- " + money(0));
       const tt = document.getElementById("cartTotal");
       if (tt) tt.textContent = money(total);
       const hint = document.getElementById("cartShippingHint");
