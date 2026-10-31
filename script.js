@@ -1822,7 +1822,7 @@ function minOrderQty(p) {
   return 1;
 }
 
-function loadProducts(force) {
+async function loadProducts(force) {
   if (!force) {
     const cached = nxCacheGet("nx_products");
     if (cached && Array.isArray(cached) && cached.length) {
