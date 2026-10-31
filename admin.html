@@ -117,6 +117,7 @@
         <button data-panel="products">المنتجات</button>
         <button data-panel="add">إضافة منتج</button>
         <button data-panel="orders">الطلبات</button>
+        <button data-panel="labels">طباعة الملصقات</button>
         <button data-panel="visitors">الزوار والحسابات</button>
         <button data-panel="ai">شات الذكاء الاصطناعي</button>
         <button data-panel="shipping">الشحن</button>
@@ -301,7 +302,51 @@
       </section>
 
       
-            <section class="panel" id="panel-visitors">
+            
+      <section class="panel" id="panel-labels">
+        <div class="card">
+          <h3>طباعة ملصقات الطلبات — ATHAR | أثر</h3>
+          <p class="hint">ملصق شحن 10×15 سم من بيانات الطلب الحقيقية. الهاتف للمكالمات: 01064519541 — واتساب فقط: 01283431213</p>
+          <div class="form-grid" style="margin-bottom:12px">
+            <label>بحث (رقم طلب / اسم / هاتف)
+              <input id="lblSearch" placeholder="ابحثي..." />
+            </label>
+            <label>من تاريخ
+              <input id="lblDateFrom" type="date" />
+            </label>
+            <label>إلى تاريخ
+              <input id="lblDateTo" type="date" />
+            </label>
+            <label>الحالة
+              <select id="lblStatus">
+                <option value="">الكل</option>
+                <option value="new">جديد</option>
+                <option value="processing">قيد التجهيز</option>
+                <option value="shipped">تم الشحن</option>
+                <option value="delivered">تم التسليم</option>
+                <option value="cancelled">ملغي</option>
+              </select>
+            </label>
+            <label>الطباعة
+              <select id="lblPrintFilter">
+                <option value="">الكل</option>
+                <option value="printed">مطبوعة</option>
+                <option value="not">غير مطبوعة</option>
+              </select>
+            </label>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost" id="lblSelectAll">تحديد الظاهر</button>
+            <button type="button" class="btn btn-ghost" id="lblClearSel">إلغاء التحديد</button>
+            <button type="button" class="btn btn-primary" id="lblPrintSelected">طباعة المحدد</button>
+            <button type="button" class="btn btn-ghost" id="lblDownloadSelected">تحميل PDF للمحدد</button>
+            <button type="button" class="btn btn-ghost" id="lblRefresh">تحديث</button>
+          </div>
+          <div id="labelsTable"><p class="hint">جاري التحميل...</p></div>
+        </div>
+      </section>
+
+<section class="panel" id="panel-visitors">
         <div class="card">
           <h3>الزوار والحسابات</h3>
           <p class="hint" style="margin-bottom:12px">ملخص بسيط لعدد الزوار والحسابات.</p>
@@ -650,6 +695,7 @@
         // تحميل بيانات القسم عند فتحه
         try {
           if (panelId === "orders") loadOrders();
+          else if (panelId === "labels") loadLabelsPanel();
           else if (panelId === "products") loadProducts();
           else if (panelId === "categories") loadCategories();
           else if (panelId === "dash") loadStats();
