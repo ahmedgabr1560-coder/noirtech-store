@@ -1275,7 +1275,7 @@ $("#checkoutBtn").addEventListener("click", async () => {
     if ($("#orderNote")) $("#orderNote").value = "";
     showOrderSuccess(orderId);
     toast("تم تأكيد طلبك بنجاح");
-    if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "إتمام الطلب الآن"; }
+    if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "تم إرسال الطلب"; }
   } catch (err) {
     console.error(err);
     toast("حصل خطأ أثناء إتمام الطلب");
