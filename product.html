@@ -348,7 +348,7 @@
         }
         if (p.offerMeta && p.offerMeta.type === "mixed_bundle") return 1;
         if (p.isOffer) return 2;
-        if (/قطعتين|2 قطعه|2 قطعة|عرض القطعتين/i.test(String(p.name||""))) return 2;
+        if (/قطعتين|2 قطعه|2 قطعة|عرض القطع/i.test(String(p.name||""))) return 2;
         return 1;
       })();
       const galleryImgs = (Array.isArray(p.images) && p.images.length)
