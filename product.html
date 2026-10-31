@@ -685,7 +685,8 @@
       const sh = document.getElementById("cartShipping");
       if (sh) sh.textContent = ship.free ? "مجاني" : money(ship.amount);
       const dr = document.getElementById("cartDiscountRow");
-      if (dr) dr        dr.style.display = discount > 0 ? "flex" : "none";
+      if (dr) {
+        dr.style.display = discount > 0 ? "flex" : "none";
         const dl = document.getElementById("cartDiscountLabel");
         if (dl) dl.textContent = discount > 0 ? ("الخصم" + (pct ? " (" + pct + "%)" : "") + (coupon ? " — " + coupon : "")) : "الخصم";
       }
