@@ -2027,3 +2027,37 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
   border: 1px solid rgba(167,139,250,.35);
   white-space: nowrap;
 }
+
+
+/* Mixed two-product offer: diagonal triangle split in square */
+.product-media.mixed-split {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #111;
+}
+.product-media.mixed-split .mixed-tri {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.product-media.mixed-split .mixed-tri-a {
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  -webkit-clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.product-media.mixed-split .mixed-tri-b {
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  -webkit-clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+.product-media.mixed-split .mixed-split-line {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 49%, rgba(255,255,255,.35) 50%, transparent 51%);
+  pointer-events: none;
+  z-index: 2;
+}
+.product-media.mixed-split .badge-off { z-index: 3; }
