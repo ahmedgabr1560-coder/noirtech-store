@@ -1109,6 +1109,172 @@
       await Promise.all([loadStats(), loadCategories(), loadProducts(), loadOrders(), loadExpenses()]);
     }
 
+    
+    function finMoney(n) {
+      try { return Number(n || 0).toLocaleString("ar-EG") + " ج.م"; }
+      catch (e) { return (n || 0) + " ج.م"; }
+    }
+    const FIN_CAT = {
+      shipping: "شحن", packaging: "تغليف", ads: "إعلانات", purchase: "شراء بضاعة",
+      ops: "تشغيل", fees: "رسوم", salaries: "رواتب", other: "أخرى"
+    };
+
+    async function loadFinanceDashboard() {
+      const period = ($("finPeriod") && $("finPeriod").value) || "month";
+      const data = await api("stats", { period: period });
+      const box = $("finStats");
+      if (!data || !data.ok || !box) return;
+      const s = data.stats || {};
+      const cards = [
+        ["المبيعات (مسلّم)", finMoney(s.sales)],
+        ["عدد الطلبات", s.orders],
+        ["مكتمل / معلّق / ملغي", (s.completed||0) + " / " + (s.pending||0) + " / " + (s.cancelled||0)],
+        ["تكلفة البضاعة COGS", finMoney(s.cogs)],
+        ["إجمالي المصاريف", finMoney(s.expenses)],
+        ["مجمل الربح", finMoney(s.grossProfit)],
+        ["صافي الربح", finMoney(s.netProfit)],
+        ["قيمة المخزون (تكلفة)", finMoney(s.stockValueCost)],
+        ["وحدات المخزون", s.stockUnits],
+        ["تنبيه مخزون منخفض", s.lowStockCount]
+      ];
+      box.innerHTML = cards.map(function(c) {
+        return '<div class="card" style="padding:12px"><div class="hint">' + c[0] + '</div><div style="font-size:1.25rem;font-weight:800;margin-top:6px">' + c[1] + '</div></div>';
+      }).join("");
+      const miss = $("finMissingCost");
+      if (miss) {
+        if (s.missingCostUnits > 0) {
+          miss.style.display = "block";
+          miss.textContent = "تنبيه: " + s.missingCostUnits + " وحدة مبيعة بدون تكلفة شراء مسجّلة — استكملي costPrice للمنتجات.";
+        } else miss.style.display = "none";
+      }
+      const top = $("finTopProducts");
+      if (top) {
+        const list = s.topProducts || [];
+        top.innerHTML = list.length ? '<table><thead><tr><th>المنتج</th><th>الكمية</th><th>الإيراد</th></tr></thead><tbody>' +
+          list.map(function(p){ return '<tr><td>' + (p.name||p.id) + '</td><td>' + p.qty + '</td><td>' + finMoney(p.revenue) + '</td></tr>'; }).join("") +
+          '</tbody></table>' : '<p class="hint">لا مبيعات مكتملة في هذه الفترة</p>';
+      }
+      await loadInventoryTable();
+      await loadExpensesList();
+      await loadInventoryLog();
+    }
+
+    async function loadInventoryTable() {
+      const box = $("invTable");
+      if (!box) return;
+      if (!PRODUCTS.length) await loadProducts();
+      const q = (($("invSearch") && $("invSearch").value) || "").trim().toLowerCase();
+      const f = ($("invFilter") && $("invFilter").value) || "all";
+      let list = (PRODUCTS || []).filter(function(p){ return p && !p.hidden; });
+      if (q) list = list.filter(function(p){ return String(p.name||"").toLowerCase().includes(q) || String(p.id).includes(q); });
+      if (f === "low") list = list.filter(function(p){ return (Number(p.stock)||0) <= 3; });
+      if (f === "ok") list = list.filter(function(p){ return (Number(p.stock)||0) > 3; });
+      if (f === "nocost") list = list.filter(function(p){ return p.costPrice == null || Number(p.costPrice) === 0; });
+      if (!list.length) { box.innerHTML = '<p class="hint">لا منتجات</p>'; return; }
+      box.innerHTML = '<div style="overflow:auto"><table><thead><tr><th></th><th>المنتج</th><th>المخزون</th><th>تكلفة</th><th>بيع</th><th>قيمة المخزون</th><th>تعديل</th></tr></thead><tbody>' +
+      list.map(function(p){
+        const st = Number(p.stock)||0;
+        const cost = Number(p.costPrice)||0;
+        const price = Number(p.price)||0;
+        const warn = st <= 3 ? ' style="color:#fbbf24;font-weight:800"' : "";
+        const img = p.image ? '<img src="' + p.image + '" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:8px" />' : "";
+        return '<tr><td>' + img + '</td><td>' + (p.name||p.id) + '<br><small class="hint">#' + p.id + '</small></td><td' + warn + '>' + st + '</td><td>' +
+          (cost ? finMoney(cost) : '<span style="color:#fbbf24">غير محدد</span>') + '</td><td>' + finMoney(price) + '</td><td>' + finMoney(st * cost) +
+          '</td><td style="white-space:nowrap">' +
+          '<button type="button" class="btn btn-ghost inv-minus" data-id="' + p.id + '" style="padding:4px 8px">−1</button> ' +
+          '<button type="button" class="btn btn-ghost inv-plus" data-id="' + p.id + '" style="padding:4px 8px">+1</button> ' +
+          '<button type="button" class="btn btn-ghost inv-add5" data-id="' + p.id + '" style="padding:4px 8px">+5 توريد</button></td></tr>';
+      }).join("") + '</tbody></table></div>';
+      box.querySelectorAll(".inv-minus").forEach(function(btn){
+        btn.onclick = async function(){ await api("adjust_stock",{id:btn.dataset.id,delta:-1,reason:"manual-out"}); await loadProducts(true); loadFinanceDashboard(); };
+      });
+      box.querySelectorAll(".inv-plus").forEach(function(btn){
+        btn.onclick = async function(){ await api("adjust_stock",{id:btn.dataset.id,delta:1,reason:"manual-in"}); await loadProducts(true); loadFinanceDashboard(); };
+      });
+      box.querySelectorAll(".inv-add5").forEach(function(btn){
+        btn.onclick = async function(){ await api("adjust_stock",{id:btn.dataset.id,delta:5,reason:"supply"}); await loadProducts(true); loadFinanceDashboard(); };
+      });
+    }
+
+    async function loadExpensesList() {
+      const box = $("exList");
+      if (!box) return;
+      const data = await api("list_expenses");
+      const list = (data && data.expenses) || [];
+      if (!list.length) { box.innerHTML = '<p class="hint">لا مصاريف مسجّلة</p>'; return; }
+      box.innerHTML = '<table><thead><tr><th>التاريخ</th><th>التصنيف</th><th>الوصف</th><th>المبلغ</th><th></th></tr></thead><tbody>' +
+        list.slice(0,50).map(function(e){
+          return '<tr><td>' + (e.at ? new Date(e.at).toLocaleDateString("ar-EG") : "—") + '</td><td>' + (FIN_CAT[e.category]||e.category||"—") +
+            '</td><td>' + (e.description||e.note||"—") + (e.orderId ? " <small>(" + e.orderId + ")</small>" : "") +
+            '</td><td>' + finMoney(e.amount) + '</td><td><button type="button" class="btn btn-ghost ex-del" data-id="' + e.id + '" style="padding:4px 8px">حذف</button></td></tr>';
+        }).join("") + '</tbody></table>';
+      box.querySelectorAll(".ex-del").forEach(function(btn){
+        btn.onclick = async function(){
+          if (!confirm("حذف المصروف؟")) return;
+          await api("delete_expense", { id: btn.dataset.id });
+          loadExpensesList();
+          loadFinanceDashboard();
+        };
+      });
+    }
+
+    async function loadInventoryLog() {
+      const box = $("invLog");
+      if (!box) return;
+      const data = await api("list_inventory_log");
+      const log = (data && data.log) || [];
+      if (!log.length) { box.innerHTML = '<p class="hint">لا حركات بعد</p>'; return; }
+      box.innerHTML = '<table><thead><tr><th>الوقت</th><th>المنتج</th><th>قبل</th><th>بعد</th><th>السبب</th></tr></thead><tbody>' +
+        log.slice(0,40).map(function(r){
+          return '<tr><td>' + (r.at?new Date(r.at).toLocaleString("ar-EG"):"—") + '</td><td>' + (r.name||r.productId) + '</td><td>' + r.before + '</td><td>' + r.after + '</td><td>' + (r.reason||"—") + '</td></tr>';
+        }).join("") + '</tbody></table>';
+    }
+
+    function exportFinanceCsv() {
+      const rows = [["id","name","stock","costPrice","price","stockValue"]];
+      (PRODUCTS||[]).forEach(function(p){
+        if (!p || p.hidden) return;
+        const st = Number(p.stock)||0, c = Number(p.costPrice)||0;
+        rows.push([p.id, p.name, st, c, p.price, st*c]);
+      });
+      const csv = rows.map(function(r){ return r.map(function(x){ return '"' + String(x).replace(/"/g,'""') + '"'; }).join(","); }).join("\n");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
+      a.download = "athar-inventory.csv";
+      a.click();
+    }
+
+    (function bindFinanceUi() {
+      const on = function(id, ev, fn) { const el = $(id); if (el) el.addEventListener(ev, fn); };
+      on("finRefresh", "click", loadFinanceDashboard);
+      on("finPeriod", "change", loadFinanceDashboard);
+      on("finExportCsv", "click", exportFinanceCsv);
+      on("invSearch", "input", loadInventoryTable);
+      on("invFilter", "change", loadInventoryTable);
+      on("exBtn", "click", async function() {
+        const msg = $("exMsg");
+        const amount = Number($("exAmount") && $("exAmount").value);
+        if (!amount || amount <= 0) { if (msg) { msg.className = "msg err"; msg.textContent = "أدخلي مبلغًا صحيحًا"; } return; }
+        if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+        const data = await api("add_expense", {
+          amount: amount,
+          category: ($("exCat") && $("exCat").value) || "other",
+          description: ($("exDesc") && $("exDesc").value) || "",
+          note: ($("exNote") && $("exNote").value) || "",
+          orderId: ($("exOrderId") && $("exOrderId").value) || "",
+          paymentMethod: ($("exPay") && $("exPay").value) || "",
+          at: ($("exDate") && $("exDate").value) ? new Date($("exDate").value + "T12:00:00").toISOString() : undefined
+        });
+        if (!data || !data.ok) { if (msg) { msg.className = "msg err"; msg.textContent = (data && data.error) || "فشل"; } return; }
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ المصروف"; }
+        if ($("exAmount")) $("exAmount").value = "";
+        if ($("exDesc")) $("exDesc").value = "";
+        if ($("exNote")) $("exNote").value = "";
+        loadFinanceDashboard();
+      });
+    })();
+
+
     async function loadStats() {
       const data = await api("stats");
       if (!data.ok) return;
