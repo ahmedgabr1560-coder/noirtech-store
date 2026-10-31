@@ -306,14 +306,28 @@ export default async function handler(req, res) {
       if (body.offerType) updated.offerType = String(body.offerType);
       if (body.sourceProductId) updated.sourceProductId = body.sourceProductId;
       if (body.offerMeta) updated.offerMeta = body.offerMeta;
-      else if (body.bundle2Price || body.bundle3Price) {
+      else if (body.bundle2Price || body.bundle3Price || body.sourceProductId2 || body.offerType === "mixed_bundle") {
         const tiers = [];
         const b2 = Number(body.bundle2Price || 0);
         const b3 = Number(body.bundle3Price || 0);
         if (b2 > 0) tiers.push({ qty: 2, price: Math.round(b2) });
-        if (b3 > 0) tiers.push({ qty: 3, price: Math.round(b3) });
-        if (tiers.length) {
-          updated.offerMeta = { type: "bundle", tiers };
+        if (b3 > 0 && body.offerType !== "mixed_bundle") tiers.push({ qty: 3, price: Math.round(b3) });
+        const id1 = body.sourceProductId || body.offerMeta?.sourceProductId;
+        const id2 = body.sourceProductId2;
+        if (body.offerType === "mixed_bundle" && id1 && id2) {
+          updated.offerMeta = {
+            type: "mixed_bundle",
+            sourceProductIds: [String(id1), String(id2)],
+            productIds: [String(id1), String(id2)],
+            tiers: b2 > 0 ? [{ qty: 2, price: Math.round(b2) }] : (tiers.length ? tiers : [])
+          };
+          updated.isOffer = true;
+          updated.offerType = "mixed_bundle";
+          updated.sourceProductId = id1;
+          updated.sourceProductId2 = id2;
+          if (b2 > 0) updated.price = Math.round(b2);
+        } else if (tiers.length) {
+          updated.offerMeta = { type: "bundle", tiers, sourceProductId: id1 || undefined };
           updated.isOffer = true;
         }
       }
