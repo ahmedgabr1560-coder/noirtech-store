@@ -592,7 +592,7 @@ function renderAll() {
     if (bundles.length) {
       renderGrid(bundleGrid, bundles);
     } else {
-      bundleGrid.innerHTML = `<div class="empty-state">لا توجد عروض قطعتين حاليًا.<br><small>من الأدمن: إضافة منتج → عرض / خصم → عروض القطع (٢ / ٣ قطع)</small></div>`;
+      bundleGrid.innerHTML = `<div class="empty-state">لا توجد عروض قطع حاليًا.<br><small>من الأدمن: إضافة منتج → عرض / خصم → عروض القطع (٢ / ٣ قطع)</small></div>`;
     }
   }
   renderGrid($("#newGrid"), PRODUCTS.filter(p => !p.isOffer && !isBundleOffer(p)).slice(0, 12));
