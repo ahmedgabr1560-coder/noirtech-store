@@ -721,7 +721,17 @@
           <div style="margin-top:14px;padding:14px;border-radius:14px;border:1px solid rgba(167,139,250,.3);background:rgba(139,92,246,.08)">
             <h4 style="margin:0 0 8px">تدوير صور الواجهة من المنتجات</h4>
             <p class="hint" style="margin:0 0 10px">لو مفعّل: صور الهيرو تتغيّر تلقائي من منتجات المتجر (منتج بعد منتج).</p>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+            
+            <label>حجم صور الواجهة (كمبيوتر) %
+              <input id="hScale" type="range" min="50" max="120" step="5" value="100" />
+              <span id="hScaleVal" class="hint">100%</span>
+            </label>
+            <label>حجم صور الواجهة (موبايل) %
+              <input id="hScaleMobile" type="range" min="40" max="100" step="5" value="70" />
+              <span id="hScaleMobileVal" class="hint">70%</span>
+            </label>
+            <p class="hint">كل ما قلّت النسبة، صور الهيرو تبقى أصغر — مناسب للموبايل.</p>
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
               <input type="checkbox" id="hRotateProducts" style="width:auto" />
               <span>تفعيل تدوير الصور من المنتجات</span>
             </label>
@@ -2515,8 +2525,36 @@
       set("hImg2Url", c.heroImage2);
       setPrev("hImg1Prev", c.heroImage1);
       setPrev("hImg2Prev", c.heroImage2);
-      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ((function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts")) (function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts").checked = c.heroRotateFromProducts === true;
       if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
+      if ($("hScale")) {
+        const v = Math.round((Number(c.heroScale) || 1) * 100);
+        $("hScale").value = v;
+        if ($("hScaleVal")) $("hScaleVal").textContent = v + "%";
+      }
+      if ($("hScaleMobile")) {
+        const v = Math.round((Number(c.heroScaleMobile) || 0.7) * 100);
+        $("hScaleMobile").value = v;
+        if ($("hScaleMobileVal")) $("hScaleMobileVal").textContent = v + "%";
+      }
       if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
       if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
       if ($("payNote")) $("payNote").value = c.paymentNote || "";
@@ -2535,7 +2573,16 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
-          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
+          heroRotateFromProducts: (function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: partial.heroImage1 != null ? partial.heroImage1 : (pendingHero1 || $("hImg1Url")?.value.trim() || ""),
           heroImage2: partial.heroImage2 != null ? partial.heroImage2 : (pendingHero2 || $("hImg2Url")?.value.trim() || "")
@@ -2552,8 +2599,36 @@
           pendingHero2 = "";
           if ($("hImg2Url")) $("hImg2Url").value = c.heroImage2;
           setPrev("hImg2Prev", c.heroImage2);
-      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ((function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts")) (function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts").checked = c.heroRotateFromProducts === true;
       if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
+      if ($("hScale")) {
+        const v = Math.round((Number(c.heroScale) || 1) * 100);
+        $("hScale").value = v;
+        if ($("hScaleVal")) $("hScaleVal").textContent = v + "%";
+      }
+      if ($("hScaleMobile")) {
+        const v = Math.round((Number(c.heroScaleMobile) || 0.7) * 100);
+        $("hScaleMobile").value = v;
+        if ($("hScaleMobileVal")) $("hScaleMobileVal").textContent = v + "%";
+      }
       if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
       if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
       if ($("payNote")) $("payNote").value = c.paymentNote || "";
@@ -2623,7 +2698,16 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
-          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
+          heroRotateFromProducts: (function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: pendingHero1 || $("hImg1Url")?.value.trim() || "",
           heroImage2: pendingHero2 || $("hImg2Url")?.value.trim() || ""
@@ -2635,8 +2719,36 @@
         const c = data.config || {};
         if (c.heroImage1) { $("hImg1Url").value = c.heroImage1; setPrev("hImg1Prev", c.heroImage1); }
         if (c.heroImage2) { $("hImg2Url").value = c.heroImage2; setPrev("hImg2Prev", c.heroImage2);
-      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ((function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts")) (function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts").checked = c.heroRotateFromProducts === true;
       if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
+      if ($("hScale")) {
+        const v = Math.round((Number(c.heroScale) || 1) * 100);
+        $("hScale").value = v;
+        if ($("hScaleVal")) $("hScaleVal").textContent = v + "%";
+      }
+      if ($("hScaleMobile")) {
+        const v = Math.round((Number(c.heroScaleMobile) || 0.7) * 100);
+        $("hScaleMobile").value = v;
+        if ($("hScaleMobileVal")) $("hScaleMobileVal").textContent = v + "%";
+      }
       if ($("payVodafone")) $("payVodafone").value = c.vodafoneCash || c.phone || "";
       if ($("payInstapay")) $("payInstapay").value = c.instapay || c.email || "";
       if ($("payNote")) $("payNote").value = c.paymentNote || ""; }
@@ -2687,7 +2799,16 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
-          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
+          heroRotateFromProducts: (function(){
+      const bindScale = (id, lab) => {
+        const el = $(id); const l = $(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+      };
+      bindScale("hScale", "hScaleVal");
+      bindScale("hScaleMobile", "hScaleMobileVal");
+    })();
+    $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: $("hImg1Url")?.value.trim() || "",
           heroImage2: $("hImg2Url")?.value.trim() || "",
