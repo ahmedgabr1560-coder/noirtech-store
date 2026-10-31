@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 2470,
-    "totalLeaves": 751,
+    "totalLeaves": 752,
     "uniqueSessions": 2464,
     "todayEnters": 69,
-    "todayLeaves": 20,
+    "todayLeaves": 21,
     "todayDate": "2026-10-31",
     "accountsTotal": 0,
     "uniqueDevices": 1263,
@@ -17,6 +17,17 @@
     }
   },
   "sessions": {
+    "s_dimtg9lt36mmvwb4rpc": {
+      "firstSeen": "2026-10-31T11:17:58.723Z",
+      "lastSeen": "2026-10-31T11:28:47.653Z",
+      "path": "/",
+      "status": "left",
+      "enters": 1,
+      "leaves": 2,
+      "deviceId": "d_hu9usayobtkmvlelc6p",
+      "deviceType": "desktop",
+      "ipMasked": "156.221.91.xxx"
+    },
     "s_uxgj9ycg9hmvwbhb3d": {
       "firstSeen": "2026-10-31T11:27:43.693Z",
       "lastSeen": "2026-10-31T11:27:43.693Z",
@@ -38,17 +49,6 @@
       "deviceId": "d_b35ap5cjscqmvwbepka",
       "deviceType": "desktop",
       "ipMasked": "13.57.148.xxx"
-    },
-    "s_dimtg9lt36mmvwb4rpc": {
-      "firstSeen": "2026-10-31T11:17:58.723Z",
-      "lastSeen": "2026-10-31T11:22:09.892Z",
-      "path": "/",
-      "status": "left",
-      "enters": 1,
-      "leaves": 1,
-      "deviceId": "d_hu9usayobtkmvlelc6p",
-      "deviceType": "desktop",
-      "ipMasked": "156.221.91.xxx"
     },
     "s_ds1xkizr7nkmvwb52pc": {
       "firstSeen": "2026-10-31T11:18:13.247Z",
@@ -4420,6 +4420,12 @@
   },
   "recent": [
     {
+      "type": "leave",
+      "sessionId": "s_dimtg9lt…",
+      "path": "/",
+      "at": "2026-10-31T11:28:47.653Z"
+    },
+    {
       "type": "enter",
       "sessionId": "s_uxgj9ycg…",
       "path": "/",
@@ -4892,18 +4898,12 @@
       "sessionId": "s_esoykape…",
       "path": "/",
       "at": "2026-10-31T08:17:13.367Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_2z3dzbuq…",
-      "path": "/",
-      "at": "2026-10-31T08:17:08.584Z"
     }
   ],
   "devices": {
     "d_hu9usayobtkmvlelc6p": {
       "firstSeen": "2026-10-23T20:09:23.844Z",
-      "lastSeen": "2026-10-31T11:27:43.693Z",
+      "lastSeen": "2026-10-31T11:28:47.653Z",
       "type": "desktop",
       "ipMasked": "156.221.91.xxx"
     },
