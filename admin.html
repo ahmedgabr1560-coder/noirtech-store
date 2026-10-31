@@ -2525,16 +2525,7 @@
       set("hImg2Url", c.heroImage2);
       setPrev("hImg1Prev", c.heroImage1);
       setPrev("hImg2Prev", c.heroImage2);
-      if ($("hRotateProducts")) (function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
       if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
       if ($("hScale")) {
         const v = Math.round((Number(c.heroScale) || 1) * 100);
@@ -2564,16 +2555,7 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
-          heroRotateFromProducts: (function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts")?.checked === true,
+          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: partial.heroImage1 != null ? partial.heroImage1 : (pendingHero1 || $("hImg1Url")?.value.trim() || ""),
           heroImage2: partial.heroImage2 != null ? partial.heroImage2 : (pendingHero2 || $("hImg2Url")?.value.trim() || "")
@@ -2590,25 +2572,7 @@
           pendingHero2 = "";
           if ($("hImg2Url")) $("hImg2Url").value = c.heroImage2;
           setPrev("hImg2Prev", c.heroImage2);
-      if ((function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts")) (function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
       if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
       if ($("hScale")) {
         const v = Math.round((Number(c.heroScale) || 1) * 100);
@@ -2689,16 +2653,7 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
-          heroRotateFromProducts: (function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts")?.checked === true,
+          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: pendingHero1 || $("hImg1Url")?.value.trim() || "",
           heroImage2: pendingHero2 || $("hImg2Url")?.value.trim() || ""
@@ -2710,25 +2665,7 @@
         const c = data.config || {};
         if (c.heroImage1) { $("hImg1Url").value = c.heroImage1; setPrev("hImg1Prev", c.heroImage1); }
         if (c.heroImage2) { $("hImg2Url").value = c.heroImage2; setPrev("hImg2Prev", c.heroImage2);
-      if ((function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts")) (function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts").checked = c.heroRotateFromProducts === true;
+      if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
       if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
       if ($("hScale")) {
         const v = Math.round((Number(c.heroScale) || 1) * 100);
@@ -2790,16 +2727,7 @@
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
-          heroRotateFromProducts: (function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; , heroScale: ($("hScale")?Number($("hScale").value)/100:1), heroScaleMobile: ($("hScaleMobile")?Number($("hScaleMobile").value)/100:0.7)});
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts")?.checked === true,
+          heroRotateFromProducts: $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: $("hImg1Url")?.value.trim() || "",
           heroImage2: $("hImg2Url")?.value.trim() || "",
