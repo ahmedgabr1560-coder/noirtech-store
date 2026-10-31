@@ -100,7 +100,7 @@ function applyGeneralConfig(c) {
 
 function applyBrandConfig(c) {
   if (!c) return;
-  const name = (c.siteName || "NEXORA").trim();
+  const name = (c.siteName || "ATHAR | أثر").trim();
   const mark = (c.logoMark || name.replace(/[^\p{L}\p{N}]/gu, "").slice(0, 2) || "NX").trim().slice(0, 3).toUpperCase();
   const tag = (c.siteTagline || "").trim();
   const fav = (c.favicon || "").trim();
@@ -135,7 +135,7 @@ function applyBrandConfig(c) {
   const aiTitle = document.querySelector(".ai-head h4, #aiPanel h4");
   if (aiTitle) aiTitle.textContent = "نورا · " + name;
   const aiBubble = document.querySelector("#aiMessages .ai-msg.bot .ai-bubble");
-  if (aiBubble && /NEXORA|نورا/.test(aiBubble.textContent || "")) {
+  if (aiBubble && /ATHAR | أثر|نورا/.test(aiBubble.textContent || "")) {
     // only reset default bubble if still generic
   }
 
@@ -227,7 +227,7 @@ async function loadHeroConfig() {
 })();
 
 
-/* NEXORA — frontend demo store (localStorage only) */
+/* ATHAR | أثر — frontend demo store (localStorage only) */
 const DEMO = false;
 
 let CATEGORIES = [];
@@ -1012,7 +1012,7 @@ $("#registerForm").addEventListener("submit", async (e) => {
   closeAuth();
   toast("تم إنشاء الحساب بنجاح");
   const nl = String.fromCharCode(10);
-  const msg = "حساب جديد على NEXORA" + nl + nl + "الاسم: " + name + nl + "الهاتف: " + phone + nl + "البريد: " + email + nl + "صورة: " + (avatar ? "نعم" : "لا") + nl + "الوقت: " + new Date().toLocaleString("ar-EG") + nl + "تم إنشاء الحساب";
+  const msg = "حساب جديد على ATHAR | أثر" + nl + nl + "الاسم: " + name + nl + "الهاتف: " + phone + nl + "البريد: " + email + nl + "صورة: " + (avatar ? "نعم" : "لا") + nl + "الوقت: " + new Date().toLocaleString("ar-EG") + nl + "تم إنشاء الحساب";
   try { await notifyAdmin("register", msg); } catch (_) {}
   try {
     await fetch("/api/track", {
@@ -1051,7 +1051,7 @@ $("#loginForm").addEventListener("submit", async (e) => {
   closeAuth();
   toast("مرحبًا " + (user.name || ""));
   const nl = String.fromCharCode(10);
-  const msg = "تسجيل دخول NEXORA" + nl + nl + "الاسم: " + (user.name || "-") + nl + "الهاتف: " + (user.phone || "-") + nl + "البريد: " + (user.email || "-") + nl + "الوقت: " + new Date().toLocaleString("ar-EG");
+  const msg = "تسجيل دخول ATHAR | أثر" + nl + nl + "الاسم: " + (user.name || "-") + nl + "الهاتف: " + (user.phone || "-") + nl + "البريد: " + (user.email || "-") + nl + "الوقت: " + new Date().toLocaleString("ar-EG");
   try { await notifyAdmin("login", msg); } catch (_) {}
 });
 
@@ -1094,7 +1094,7 @@ $("#profileForm").addEventListener("submit", async (e) => {
   closeProfile();
   toast("تم حفظ الملف الشخصي");
   const nl = String.fromCharCode(10);
-  const msg = "تحديث بروفايل NEXORA" + nl + nl + "الاسم: " + name + nl + "الهاتف: " + phone + nl + "البريد: " + email + nl + "العنوان: " + (address || "-");
+  const msg = "تحديث بروفايل ATHAR | أثر" + nl + nl + "الاسم: " + name + nl + "الهاتف: " + phone + nl + "البريد: " + email + nl + "العنوان: " + (address || "-");
   try { await notifyAdmin("profile", msg); } catch (_) {}
 });
 
@@ -1114,7 +1114,7 @@ function showOrderSuccess(orderId) {
   const idEl = document.getElementById("orderSuccessId");
   if (idEl) idEl.textContent = orderId || "—";
   const msg = document.getElementById("orderSuccessMsg");
-  if (msg) msg.innerHTML = "شكرًا لطلبكِ من NEXORA.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.";
+  if (msg) msg.innerHTML = "شكرًا لطلبكِ من ATHAR | أثر.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.";
   document.getElementById("orderSuccessOverlay")?.classList.add("open");
   document.getElementById("orderSuccessModal")?.classList.add("open");
 }
@@ -1522,7 +1522,7 @@ function openAiChat() {
     box.dataset.welcomed = "1";
     // keep existing welcome if any, else add
     if (!box.children.length) {
-      const name = window.__SITE_NAME__ || "NEXORA";
+      const name = window.__SITE_NAME__ || "ATHAR | أثر";
       appendAiMsg("bot", "أهلاً أهلاً 😊 أنا نورا… قولي بتفكري في إيه؟ شنطة، هدوم، حذاء، ولا لسه بتلفّي؟", {
         chips: [
           { label: "👜 شنطة", q: "عايزة شنطة حريمي أنيقة" },
@@ -1642,7 +1642,7 @@ async function handleAiSend() {
         message: text,
         history: aiHistory.slice(-12),
         catalog,
-        siteName: window.__SITE_NAME__ || "NEXORA"
+        siteName: window.__SITE_NAME__ || "ATHAR | أثر"
       })
     });
     const data = await res.json().catch(() => ({}));
