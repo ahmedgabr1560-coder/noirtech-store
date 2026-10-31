@@ -565,7 +565,22 @@ function buildBundleCategoryTabs() {
   });
   tabs.innerHTML = html;
 }
-function renderBundleSection() {
+
+async function ensureCategoriesLoaded() {
+  if (window.CATEGORIES && window.CATEGORIES.length) return window.CATEGORIES;
+  try {
+    const r = await fetch("/categories.json?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) {
+      const d = await r.json();
+      window.CATEGORIES = Array.isArray(d) ? d : (d.categories || []);
+      return window.CATEGORIES;
+    }
+  } catch (e) {}
+  window.CATEGORIES = window.CATEGORIES || [];
+  return window.CATEGORIES;
+}
+async function renderBundleSection() {
+  try { await ensureCategoriesLoaded(); } catch (e) {}
   const bundleGrid = $("#bundleGrid");
   if (!bundleGrid) return;
   buildBundleCategoryTabs();
@@ -2174,3 +2189,10 @@ try {
     setTimeout(() => applyStoreOpenState(window.siteConfig), 1500);
   });
 } catch (e) {}
+
+document.addEventListener("click", function(e) {
+  const tab = e.target && e.target.closest && e.target.closest(".bundle-tab");
+  if (!tab) return;
+  activeBundleCat = tab.getAttribute("data-bundle-cat") || "all";
+  renderBundleSection();
+});
