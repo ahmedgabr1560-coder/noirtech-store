@@ -1725,11 +1725,49 @@ fetch("/api/checkout").then(function (r) { return r.json(); }).then(function (d)
 }).catch(function () {});
 
 
-async function loadProducts(force) {
+async 
+function dedupeProducts(list) {
+  const arr = Array.isArray(list) ? list : [];
+  const sourceIds = new Set();
+  arr.forEach(function(p) {
+    if (!p || p.hidden) return;
+    const sid = p.offerMeta && p.offerMeta.sourceProductId;
+    if (sid != null) sourceIds.add(String(sid));
+  });
+  const seenIds = new Set();
+  const seenNames = new Set();
+  const out = [];
+  arr.forEach(function(p) {
+    if (!p || p.hidden) return;
+    if (sourceIds.has(String(p.id)) && !p.isOffer && !(p.offerMeta && p.offerMeta.tiers)) return;
+    const id = String(p.id);
+    if (seenIds.has(id)) return;
+    const name = String(p.name || "").trim().toLowerCase().replace(/\s+/g, " ");
+    if (name && seenNames.has(name)) return;
+    seenIds.add(id);
+    if (name) seenNames.add(name);
+    out.push(p);
+  });
+  return out;
+}
+function minOrderQty(p) {
+  if (!p) return 1;
+  const tiers = p.offerMeta && Array.isArray(p.offerMeta.tiers) ? p.offerMeta.tiers : [];
+  if (tiers.length) {
+    const qs = tiers.map(function(t) { return Number(t.qty) || 0; }).filter(function(q) { return q > 0; });
+    if (qs.length) return Math.min.apply(null, qs);
+  }
+  if (p.isOffer) return 2;
+  const n = String(p.name || "");
+  if (/قطعتين|2 قطعه|2 قطعة|عرض القطعتين/i.test(n)) return 2;
+  return 1;
+}
+
+function loadProducts(force) {
   if (!force) {
     const cached = nxCacheGet("nx_products");
     if (cached && Array.isArray(cached) && cached.length) {
-      PRODUCTS = cached.filter(p => p && !p.hidden);
+      PRODUCTS = dedupeProducts(cached.filter(p => p && !p.hidden));
     }
   } else {
     try { sessionStorage.removeItem("nx_products"); } catch (e) {}
