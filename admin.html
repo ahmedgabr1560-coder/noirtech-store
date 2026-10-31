@@ -707,6 +707,314 @@
       };
     });
 
+    
+    /* ===== ATHAR Order Labels 10x15cm ===== */
+    const ATHAR_BRAND = {
+      name: "ATHAR | أثر",
+      owner: "أحمد حمدي عبدالونيس جبر",
+      phone: "01064519541",
+      whatsapp: "01283431213"
+    };
+    let LABELS_ORDERS = [];
+
+    function lblMoney(n) {
+      try { return Number(n || 0).toLocaleString("ar-EG") + " ج.م"; }
+      catch (e) { return (n || 0) + " ج.م"; }
+    }
+    function lblEsc(s) {
+      return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+    function lblPay(m) {
+      const x = String(m || "cod").toLowerCase();
+      if (x === "cod" || x === "cash") return "تحصيل عند الاستلام (COD)";
+      if (x.includes("vodafone") || x === "vf") return "فودافون كاش (مدفوع)";
+      if (x.includes("insta")) return "إنستا باي (مدفوع)";
+      if (x.includes("bank")) return "تحويل بنكي (مدفوع)";
+      if (x.includes("card") || x === "stripe") return "بطاقة (مدفوع)";
+      return String(m || "—");
+    }
+    function lblDate(at) {
+      if (!at) return "—";
+      try { return new Date(at).toLocaleString("ar-EG"); } catch (e) { return String(at); }
+    }
+    function lblStatusAr(s) {
+      const map = { new: "جديد", processing: "قيد التجهيز", shipped: "تم الشحن", delivered: "تم التسليم", cancelled: "ملغي" };
+      return map[s] || s || "—";
+    }
+
+    async function loadLabelsPanel() {
+      const box = $("labelsTable");
+      if (box) box.innerHTML = `<p class="hint">جاري تحميل الطلبات...</p>`;
+      try { sessionStorage.removeItem("adm_list_orders"); } catch (e) {}
+      const data = await api("list_orders");
+      if (!data || !data.ok) {
+        if (box) box.innerHTML = `<p class="hint" style="color:#fca5a5">تعذر تحميل الطلبات</p>`;
+        return;
+      }
+      LABELS_ORDERS = (data.orders || []).slice();
+      renderLabelsTable();
+    }
+
+    function filteredLabelOrders() {
+      const q = ($("lblSearch") && $("lblSearch").value || "").trim().toLowerCase();
+      const st = ($("lblStatus") && $("lblStatus").value) || "";
+      const pf = ($("lblPrintFilter") && $("lblPrintFilter").value) || "";
+      const df = ($("lblDateFrom") && $("lblDateFrom").value) || "";
+      const dt = ($("lblDateTo") && $("lblDateTo").value) || "";
+      return LABELS_ORDERS.filter(function(o) {
+        if (st && String(o.status || "new") !== st) return false;
+        if (pf === "printed" && !o.labelPrinted) return false;
+        if (pf === "not" && o.labelPrinted) return false;
+        if (df) {
+          const t = new Date(o.at || 0).getTime();
+          if (t < new Date(df + "T00:00:00").getTime()) return false;
+        }
+        if (dt) {
+          const t = new Date(o.at || 0).getTime();
+          if (t > new Date(dt + "T23:59:59").getTime()) return false;
+        }
+        if (q) {
+          const c = o.customer || {};
+          const blob = [o.id, c.name, c.phone, c.address, c.governorate, c.center].join(" ").toLowerCase();
+          if (!blob.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderLabelsTable() {
+      const box = $("labelsTable");
+      if (!box) return;
+      const list = filteredLabelOrders();
+      if (!list.length) {
+        box.innerHTML = `<p class="hint">لا توجد طلبات مطابقة.</p>`;
+        return;
+      }
+      box.innerHTML = `<div style="overflow:auto"><table>
+        <thead><tr>
+          <th><input type="checkbox" id="lblCheckAll" title="تحديد الكل" /></th>
+          <th>رقم الطلب</th><th>العميل</th><th>الهاتف</th><th>التاريخ</th>
+          <th>الإجمالي</th><th>الحالة</th><th>الملصق</th><th></th>
+        </tr></thead>
+        <tbody>
+        ${list.map(function(o) {
+          const c = o.customer || {};
+          const printed = !!o.labelPrinted;
+          return `<tr>
+            <td><input type="checkbox" class="lbl-check" value="${lblEsc(o.id)}" /></td>
+            <td dir="ltr">${lblEsc(o.id)}</td>
+            <td>${lblEsc(c.name || "—")}</td>
+            <td dir="ltr">${lblEsc(c.phone || "—")}</td>
+            <td>${lblEsc(lblDate(o.at))}</td>
+            <td>${lblMoney(o.total)}</td>
+            <td>${lblEsc(lblStatusAr(o.status))}</td>
+            <td>${printed ? ("مطبوعة" + (o.labelPrintCount ? " ×" + o.labelPrintCount : "")) : "غير مطبوعة"}</td>
+            <td style="white-space:nowrap">
+              <button type="button" class="btn btn-ghost lbl-preview" data-id="${lblEsc(o.id)}" style="padding:6px 10px;font-size:.8rem">معاينة</button>
+              <button type="button" class="btn btn-primary lbl-print-one" data-id="${lblEsc(o.id)}" style="padding:6px 10px;font-size:.8rem">طباعة الملصق</button>
+              <button type="button" class="btn btn-ghost lbl-dl-one" data-id="${lblEsc(o.id)}" style="padding:6px 10px;font-size:.8rem">PDF</button>
+            </td>
+          </tr>`;
+        }).join("")}
+        </tbody></table></div>
+        <p class="hint" style="margin-top:8px">${list.length} طلب</p>`;
+
+      const checkAll = $("lblCheckAll");
+      if (checkAll) checkAll.addEventListener("change", function(e) {
+        document.querySelectorAll(".lbl-check").forEach(function(cb) { cb.checked = e.target.checked; });
+      });
+      box.querySelectorAll(".lbl-preview").forEach(function(btn) {
+        btn.addEventListener("click", function() { openLabelPrint([btn.dataset.id], false); });
+      });
+      box.querySelectorAll(".lbl-print-one").forEach(function(btn) {
+        btn.addEventListener("click", function() { openLabelPrint([btn.dataset.id], true); });
+      });
+      box.querySelectorAll(".lbl-dl-one").forEach(function(btn) {
+        btn.addEventListener("click", function() { openLabelPrint([btn.dataset.id], true); });
+      });
+    }
+
+    function selectedLabelIds() {
+      return Array.from(document.querySelectorAll(".lbl-check:checked")).map(function(cb) { return cb.value; }).filter(Boolean);
+    }
+
+    function buildLabelHtml(order) {
+      const c = order.customer || {};
+      const items = Array.isArray(order.items) ? order.items : [];
+      const itemsRows = items.map(function(it, idx) {
+        const cols = Array.isArray(it.colors) && it.colors.length ? it.colors.join("، ") : (it.color || "—");
+        const qty = Number(it.qty) || 1;
+        const price = Number(it.price) || 0;
+        const line = it.lineTotal != null ? Number(it.lineTotal) : price * qty;
+        const img = it.image && /^https?:\/\//i.test(String(it.image))
+          ? `<img src="${lblEsc(it.image)}" alt="" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid #ddd" />`
+          : "";
+        return `<tr>
+          <td style="padding:3px 2px;border-bottom:1px solid #eee;font-size:9px">${idx + 1}</td>
+          <td style="padding:3px 2px;border-bottom:1px solid #eee">${img}</td>
+          <td style="padding:3px 2px;border-bottom:1px solid #eee;font-size:9px">${lblEsc(it.name || "منتج")}</td>
+          <td style="padding:3px 2px;border-bottom:1px solid #eee;font-size:9px">${lblEsc(cols)}</td>
+          <td style="padding:3px 2px;border-bottom:1px solid #eee;font-size:9px">${lblEsc(it.size || "—")}</td>
+          <td style="padding:3px 2px;border-bottom:1px solid #eee;font-size:9px;text-align:center">${qty}</td>
+          <td style="padding:3px 2px;border-bottom:1px solid #eee;font-size:9px;white-space:nowrap">${lblMoney(price)}</td>
+          <td style="padding:3px 2px;border-bottom:1px solid #eee;font-size:9px;white-space:nowrap">${lblMoney(line)}</td>
+        </tr>`;
+      }).join("") || `<tr><td colspan="8" style="font-size:9px;padding:6px">لا توجد منتجات</td></tr>`;
+
+      const sub = order.subtotal != null ? Number(order.subtotal) : items.reduce(function(s, it) {
+        return s + (Number(it.lineTotal) || (Number(it.price)||0)*(Number(it.qty)||1));
+      }, 0);
+      const ship = Number(order.shipping) || 0;
+      const disc = Number(order.discount) || 0;
+      const total = order.total != null ? Number(order.total) : (sub - disc + ship);
+      const isCod = !order.paymentMethod || ["cod","cash"].includes(String(order.paymentMethod).toLowerCase());
+      const codAmount = isCod ? total : 0;
+      const qrData = encodeURIComponent("ATHAR-ORDER:" + String(order.id || ""));
+      const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=90x90&margin=0&data=" + qrData;
+      const addr = [c.governorate, c.center, c.address].filter(Boolean).join(" — ") || (c.address || "غير محدد");
+      const landmark = c.note || c.landmark || "";
+
+      return `<section class="label-sheet">
+        <header class="lbl-head">
+          <div class="lbl-brand">
+            <div class="lbl-logo">${lblEsc(ATHAR_BRAND.name)}</div>
+            <div class="lbl-owner">${lblEsc(ATHAR_BRAND.owner)}</div>
+          </div>
+          <div class="lbl-qr"><img src="${qrUrl}" alt="QR" width="72" height="72" /></div>
+        </header>
+        <div class="lbl-meta">
+          <div><strong>رقم الطلب:</strong> <span dir="ltr">${lblEsc(order.id)}</span></div>
+          <div><strong>التاريخ:</strong> ${lblEsc(lblDate(order.at))}</div>
+          <div><strong>الحالة:</strong> ${lblEsc(lblStatusAr(order.status))}</div>
+        </div>
+        <div class="lbl-block">
+          <div class="lbl-title">بيانات العميل</div>
+          <div><strong>الاسم:</strong> ${lblEsc(c.name || "غير محدد")}</div>
+          <div><strong>الهاتف:</strong> <span dir="ltr">${lblEsc(c.phone || "غير محدد")}</span></div>
+          <div><strong>المحافظة:</strong> ${lblEsc(c.governorate || "غير محدد")}</div>
+          <div><strong>المركز / المدينة:</strong> ${lblEsc(c.center || "غير محدد")}</div>
+          <div><strong>العنوان:</strong> ${lblEsc(addr)}</div>
+          ${landmark ? `<div><strong>علامة مميزة / ملاحظات:</strong> ${lblEsc(landmark)}</div>` : ""}
+        </div>
+        <div class="lbl-block">
+          <div class="lbl-title">المنتجات</div>
+          <table class="lbl-items" cellspacing="0" cellpadding="0">
+            <thead><tr>
+              <th>#</th><th></th><th>المنتج</th><th>اللون</th><th>المقاس</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th>
+            </tr></thead>
+            <tbody>${itemsRows}</tbody>
+          </table>
+        </div>
+        <div class="lbl-block lbl-money">
+          <div><span>مجموع المنتجات</span><strong>${lblMoney(sub)}</strong></div>
+          <div><span>الشحن</span><strong>${ship === 0 ? "مجاني" : lblMoney(ship)}</strong></div>
+          <div><span>الخصم${order.coupon ? " (" + lblEsc(order.coupon) + ")" : ""}</span><strong>${disc > 0 ? ("- " + lblMoney(disc)) : "—"}</strong></div>
+          <div class="lbl-total"><span>الإجمالي النهائي</span><strong>${lblMoney(total)}</strong></div>
+          <div class="lbl-cod"><span>المطلوب تحصيله (COD)</span><strong>${isCod ? lblMoney(codAmount) : "مدفوع مسبقًا — 0"}</strong></div>
+          <div><span>طريقة الدفع</span><strong>${lblEsc(lblPay(order.paymentMethod))}</strong></div>
+        </div>
+        <footer class="lbl-foot">
+          <div>📞 مكالمات فقط: <span dir="ltr">${ATHAR_BRAND.phone}</span></div>
+          <div>💬 واتساب فقط: <span dir="ltr">${ATHAR_BRAND.whatsapp}</span></div>
+          <div class="lbl-thanks">شكرًا لاختياركِ ATHAR | أثر</div>
+        </footer>
+      </section>`;
+    }
+
+    function openLabelPrint(ids, autoPrint) {
+      const orders = ids.map(function(id) {
+        return LABELS_ORDERS.find(function(o) { return String(o.id) === String(id); });
+      }).filter(Boolean);
+      if (!orders.length) {
+        alert("لم يتم العثور على الطلب");
+        return;
+      }
+      const sheets = orders.map(buildLabelHtml).join("\\n");
+      const autoScript = autoPrint
+        ? "window.addEventListener('load', function(){ setTimeout(function(){ window.print(); }, 400); });"
+        : "";
+      const html = "<!DOCTYPE html><html lang=\\"ar\\" dir=\\"rtl\\"><head><meta charset=\\"utf-8\\" /><title>ملصقات ATHAR | أثر</title><style>"
+        + "@page{size:100mm 150mm;margin:4mm}"
+        + "*{box-sizing:border-box}"
+        + "html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Cairo,Tajawal,Segoe UI,Tahoma,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+        + ".label-sheet{width:100mm;min-height:150mm;max-height:150mm;padding:5mm;margin:0 auto;background:#fff;color:#111;border:1px solid #e8e0d4;page-break-after:always;overflow:hidden}"
+        + ".label-sheet:last-child{page-break-after:auto}"
+        + ".lbl-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #c9a227;padding-bottom:4px;margin-bottom:6px}"
+        + ".lbl-logo{font-size:14px;font-weight:900;color:#111}"
+        + ".lbl-owner{font-size:9px;color:#555;margin-top:2px}"
+        + ".lbl-qr img{display:block;width:72px;height:72px}"
+        + ".lbl-meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;font-size:9px;margin-bottom:6px}"
+        + ".lbl-block{margin-bottom:5px;font-size:9px;line-height:1.45}"
+        + ".lbl-title{font-weight:800;font-size:10px;border-right:3px solid #c9a227;padding-right:6px;margin-bottom:3px}"
+        + ".lbl-items{width:100%;border-collapse:collapse}"
+        + ".lbl-items th{font-size:8px;text-align:right;border-bottom:1px solid #c9a227;padding:2px;color:#333}"
+        + ".lbl-money>div{display:flex;justify-content:space-between;gap:8px;font-size:9px;padding:1px 0}"
+        + ".lbl-total,.lbl-cod{font-weight:800;border-top:1px solid #ddd;margin-top:2px;padding-top:3px!important}"
+        + ".lbl-cod{background:#f7f1e3;padding:3px 4px!important;border-radius:3px}"
+        + ".lbl-foot{border-top:1px solid #c9a227;margin-top:6px;padding-top:4px;font-size:8px;color:#333}"
+        + ".lbl-thanks{margin-top:3px;font-weight:700;color:#c9a227}"
+        + "@media screen{body{background:#2a2a2a;padding:16px}.label-sheet{box-shadow:0 8px 30px rgba(0,0,0,.35);margin-bottom:16px}"
+        + ".screen-bar{position:sticky;top:0;z-index:9;background:#111;color:#fff;padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;border-radius:10px}"
+        + ".screen-bar button{padding:8px 14px;border:0;border-radius:8px;font-weight:700;cursor:pointer}"
+        + ".screen-bar .p{background:#c9a227;color:#111}.screen-bar .c{background:#333;color:#fff}}"
+        + "@media print{.screen-bar{display:none!important}body{background:#fff;padding:0}.label-sheet{border:none;box-shadow:none;margin:0}}"
+        + "</style></head><body>"
+        + "<div class=\\"screen-bar\\"><strong>معاينة ملصقات ATHAR | أثر</strong>"
+        + "<button type=\\"button\\" class=\\"p\\" onclick=\\"window.print()\\">طباعة / حفظ PDF</button>"
+        + "<button type=\\"button\\" class=\\"c\\" onclick=\\"window.close()\\">إغلاق</button>"
+        + "<span style=\\"opacity:.8;font-size:12px\\">مقاس 10×15 سم — Save as PDF من نافذة الطباعة</span></div>"
+        + sheets
+        + "<script>" + autoScript + "<\\/script></body></html>";
+      const w = window.open("", "_blank");
+      if (!w) {
+        alert("اسمحي بالنوافذ المنبثقة لمعاينة الملصق");
+        return;
+      }
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      api("mark_label_printed", { ids: orders.map(function(o) { return o.id; }) }).then(function() {
+        orders.forEach(function(o) {
+          o.labelPrinted = true;
+          o.labelPrintCount = (Number(o.labelPrintCount) || 0) + 1;
+          o.labelPrintedAt = new Date().toISOString();
+        });
+        renderLabelsTable();
+      }).catch(function() {});
+    }
+
+    (function bindLabelControls() {
+      function on(id, ev, fn) {
+        const el = $(id);
+        if (el) el.addEventListener(ev, fn);
+      }
+      on("lblRefresh", "click", loadLabelsPanel);
+      on("lblSearch", "input", renderLabelsTable);
+      on("lblStatus", "change", renderLabelsTable);
+      on("lblPrintFilter", "change", renderLabelsTable);
+      on("lblDateFrom", "change", renderLabelsTable);
+      on("lblDateTo", "change", renderLabelsTable);
+      on("lblSelectAll", "click", function() {
+        document.querySelectorAll(".lbl-check").forEach(function(cb) { cb.checked = true; });
+        const a = $("lblCheckAll"); if (a) a.checked = true;
+      });
+      on("lblClearSel", "click", function() {
+        document.querySelectorAll(".lbl-check").forEach(function(cb) { cb.checked = false; });
+        const a = $("lblCheckAll"); if (a) a.checked = false;
+      });
+      on("lblPrintSelected", "click", function() {
+        const ids = selectedLabelIds();
+        if (!ids.length) return alert("حددي طلب واحد على الأقل");
+        openLabelPrint(ids, true);
+      });
+      on("lblDownloadSelected", "click", function() {
+        const ids = selectedLabelIds();
+        if (!ids.length) return alert("حددي طلب واحد على الأقل");
+        openLabelPrint(ids, true);
+      });
+    })();
+
+
     async function refreshAll() {
       await Promise.all([loadStats(), loadCategories(), loadProducts(), loadOrders(), loadExpenses()]);
     }
