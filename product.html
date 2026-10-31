@@ -211,7 +211,7 @@
     function esc(t) {
       return String(t || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
-    async async function loadJSON(urls) {
+    async function loadJSON(urls) {
       for (const u of urls) {
         try {
           const r = await fetch(u, { cache: "no-store" });
@@ -367,11 +367,14 @@
             const cached = sessionStorage.getItem("nx_products");
             if (cached) pool = JSON.parse(cached) || [];
           } catch (e0) {}
+          if (!pool.length && window.__ATHAR_PRODUCTS) pool = window.__ATHAR_PRODUCTS;
           if (!pool.length) {
             try {
-              const rr = await fetch("/products.json?t=" + Date.now(), { cache: "no-store" });
-              if (rr.ok) {
-                const dd = await rr.json();
+              const xhr = new XMLHttpRequest();
+              xhr.open("GET", "/products.json?t=" + Date.now(), false);
+              xhr.send(null);
+              if (xhr.status >= 200 && xhr.status < 300) {
+                const dd = JSON.parse(xhr.responseText);
                 pool = Array.isArray(dd) ? dd : (dd.products || []);
               }
             } catch (e1) {}
