@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>سياسة الاستبدال والاسترجاع | ATHAR أثر</title>
+  <meta name="description" content="تعرف على سياسة الاستبدال والاسترجاع في متجر ATHAR | أثر، وحقوق العملاء وخطوات تقديم طلب الاسترجاع أو الاستبدال." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="/return-policy" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    body.policy-page { background: #0a0a0c; color: #f5f5f7; font-family: Cairo, Tahoma, sans-serif; }
+    .policy-wrap { max-width: 820px; margin: 0 auto; padding: 28px 18px 64px; }
+    .policy-top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:22px; flex-wrap:wrap; }
+    .policy-card {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(201,162,39,.28);
+      border-radius: 18px;
+      padding: 28px 22px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    }
+    .policy-card h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 800;
+      color: #fff;
+    }
+    .policy-en { color: #c9a227; font-size: .95rem; margin-bottom: 10px; }
+    .policy-updated { color: #9a9aa3; font-size: .85rem; margin-bottom: 18px; }
+    .policy-intro { line-height: 1.85; color: #d4d4d8; margin-bottom: 22px; }
+    .policy-sec { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .policy-sec:last-of-type { border-bottom: 0; }
+    .policy-sec h2 {
+      font-size: 1.05rem;
+      margin: 0 0 10px;
+      color: #f5e6b8;
+      font-weight: 800;
+    }
+    .policy-sec p, .policy-sec li {
+      margin: 0 0 8px;
+      line-height: 1.8;
+      color: #cfcfd4;
+      white-space: pre-line;
+      font-size: .95rem;
+    }
+    .policy-contact {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(201,162,39,.08);
+      border: 1px solid rgba(201,162,39,.25);
+    }
+    .policy-contact a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 8px 6px 0;
+      padding: 10px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .9rem;
+    }
+    .btn-call { background: #fff; color: #111; }
+    .btn-wa { background: #25d366; color: #062; }
+    .policy-close { margin-top: 18px; color: #c9a227; font-weight: 700; }
+    .policy-brand { font-weight: 800; color: #fff; }
+    @media (max-width: 600px) {
+      .policy-card { padding: 20px 14px; }
+    }
+  </style>
+</head>
+<body class="policy-page">
+  <div class="policy-wrap">
+    <div class="policy-top">
+      <a href="/" class="btn btn-ghost" style="text-decoration:none">← العودة للمتجر</a>
+      <strong class="policy-brand">ATHAR | أثر</strong>
+    </div>
+    <article class="policy-card" id="policyRoot">
+      <p class="hint">جاري تحميل السياسة...</p>
+    </article>
+  </div>
+  <script>
+    (async function () {
+      const root = document.getElementById("policyRoot");
+      function esc(s) {
+        return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      }
+      function paragraphs(text) {
+        return String(text || "").split(/\n\n+/).map(function (p) {
+          return "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>";
+        }).join("");
+      }
+      try {
+        const r = await fetch("/return-policy.json?t=" + Date.now(), { cache: "no-store" });
+        if (!r.ok) throw new Error("load failed");
+        const p = await r.json();
+        const phone = p.phone || "01064519541";
+        const wa = String(p.whatsapp || "01283431213").replace(/\D/g, "");
+        const sections = Array.isArray(p.sections) ? p.sections : [];
+        root.innerHTML =
+          "<h1>" + esc(p.title || "سياسة الاستبدال والاسترجاع") + "</h1>" +
+          "<div class='policy-en'>" + esc(p.titleEn || "Return & Refund Policy") + "</div>" +
+          "<div class='policy-brand' style='margin-bottom:8px'>ATHAR | أثر</div>" +
+          (p.updatedAt ? "<div class='policy-updated'>آخر تحديث: " + esc(p.updatedAt) + "</div>" : "") +
+          "<div class='policy-intro'>" + paragraphs(p.intro || "") + "</div>" +
+          sections.map(function (s) {
+            return "<section class='policy-sec'><h2>" + esc(s.heading || "") + "</h2>" + paragraphs(s.body || "") + "</section>";
+          }).join("") +
+          "<div class='policy-contact'>" +
+            "<strong>تواصل سريع</strong><br>" +
+            "<a class='btn-call' href='tel:" + esc(phone) + "'>📞 اتصال: " + esc(phone) + "</a>" +
+            "<a class='btn-wa' target='_blank' rel='noopener' href='https://wa.me/20" + (wa.startsWith("0") ? wa.slice(1) : wa) + "'>💬 واتساب فقط</a>" +
+          "</div>" +
+          "<p class='policy-close'>" + esc(p.closing || "") + "</p>" +
+          "<p class='policy-brand'>ATHAR | أثر</p>";
+      } catch (e) {
+        root.innerHTML = "<h1>سياسة الاستبدال والاسترجاع</h1><p>تعذر تحميل المحتوى حاليًا. تواصلي معنا على 01064519541 أو واتساب 01283431213.</p>";
+      }
+    })();
+  </script>
+</body>
+</html>
