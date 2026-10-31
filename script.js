@@ -1791,7 +1791,7 @@ function loadProducts(force) {
     } catch (e) {}
   }
   if (best) {
-    PRODUCTS = best.filter(p => p && !p.hidden);
+    PRODUCTS = dedupeProducts(best.filter(p => p && !p.hidden));
     nxCacheSet("nx_products", PRODUCTS);
   }
   PRODUCTS = PRODUCTS || [];
