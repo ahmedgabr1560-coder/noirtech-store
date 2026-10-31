@@ -123,7 +123,7 @@
         <button data-panel="ai">شات الذكاء الاصطناعي</button>
         <button data-panel="shipping">الشحن</button>
         <button data-panel="coupons">أكواد الخصم</button>
-        <button data-panel="finance">الأرباح والمصروفات</button>
+        <button data-panel="finance">المالية والمخزون</button>
         <button data-panel="general">إعدادات الموقع</button>
         <button data-panel="brand">الاسم والأيقونة</button>
         <button data-panel="hero">الواجهة</button>
@@ -464,28 +464,84 @@
       </section>
 
       <section class="panel" id="panel-finance">
-        <div class="grid" id="finStats"></div>
+        <div class="card">
+          <h3>المالية والمخزون — ATHAR | أثر</h3>
+          <p class="hint">الحسابات بالجنيه المصري. الأرباح من الطلبات المُسلَّمة فقط. البيانات الحالية محفوظة.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center">
+            <label style="margin:0">الفترة
+              <select id="finPeriod">
+                <option value="all">الكل</option>
+                <option value="today">اليوم</option>
+                <option value="7d">آخر 7 أيام</option>
+                <option value="month" selected>هذا الشهر</option>
+                <option value="prev_month">الشهر السابق</option>
+                <option value="year">هذه السنة</option>
+              </select>
+            </label>
+            <button type="button" class="btn btn-ghost" id="finRefresh">تحديث</button>
+            <button type="button" class="btn btn-ghost" id="finExportCsv">تصدير CSV</button>
+          </div>
+          <div class="grid" id="finStats" style="margin-bottom:14px"></div>
+          <div id="finMissingCost" class="hint" style="display:none;color:#fbbf24;margin-bottom:10px"></div>
+        </div>
+
+        <div class="card">
+          <h3>المخزون</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <input id="invSearch" placeholder="بحث منتج..." style="flex:1;min-width:160px" />
+            <select id="invFilter">
+              <option value="all">كل الحالات</option>
+              <option value="low">منخفض / نفد</option>
+              <option value="ok">متوفر</option>
+              <option value="nocost">بدون تكلفة شراء</option>
+            </select>
+          </div>
+          <div id="invTable"><p class="hint">جاري التحميل...</p></div>
+        </div>
+
         <div class="card">
           <h3>تسجيل مصروف</h3>
           <div class="form-grid">
-            <label>المبلغ<input id="exAmount" type="number" /></label>
+            <label>المبلغ (ج.م)<input id="exAmount" type="number" min="0" step="0.01" /></label>
             <label>التصنيف
               <select id="exCat">
-                <option value="ads">إعلانات</option>
                 <option value="shipping">شحن</option>
+                <option value="packaging">تغليف</option>
+                <option value="ads">إعلانات</option>
+                <option value="purchase">شراء بضاعة</option>
                 <option value="ops">تشغيل</option>
+                <option value="fees">رسوم تحصيل/دفع</option>
                 <option value="salaries">رواتب</option>
                 <option value="other">أخرى</option>
               </select>
             </label>
+            <label>تاريخ المصروف<input id="exDate" type="date" /></label>
+            <label>رقم طلب مرتبط (اختياري)<input id="exOrderId" placeholder="NX-..." /></label>
+            <label>طريقة الدفع
+              <select id="exPay">
+                <option value="">—</option>
+                <option value="cash">كاش</option>
+                <option value="wallet">محفظة</option>
+                <option value="bank">تحويل</option>
+                <option value="card">بطاقة</option>
+              </select>
+            </label>
           </div>
-          <label>الوصف<input id="exDesc" /></label>
+          <label>الوصف<input id="exDesc" placeholder="وصف مختصر" /></label>
+          <label>ملاحظات<textarea id="exNote" rows="2" style="width:100%"></textarea></label>
           <button class="btn btn-primary" id="exBtn">حفظ المصروف</button>
           <div class="msg" id="exMsg"></div>
+          <div id="exList" style="margin-top:14px"></div>
         </div>
+
         <div class="card">
-          <h3>سجل المصروفات</h3>
-          <div id="exTable">—</div>
+          <h3>الأكثر مبيعًا (حسب الفترة)</h3>
+          <div id="finTopProducts"><p class="hint">—</p></div>
+        </div>
+
+        <div class="card">
+          <h3>سجل حركة المخزون</h3>
+          <div id="invLog"><p class="hint">—</p></div>
         </div>
       </section>
 
@@ -733,7 +789,7 @@
           else if (panelId === "products") loadProducts();
           else if (panelId === "categories") loadCategories();
           else if (panelId === "dash") loadStats();
-          else if (panelId === "finance") loadExpenses();
+          else if (panelId === "finance") loadFinanceDashboard();
           else if (panelId === "visitors") { if (typeof loadVisitors === "function") loadVisitors(); }
           else if (panelId === "coupons") { if (typeof loadCouponsPanel === "function") loadCouponsPanel(); }
           else if (panelId === "shipping") { if (typeof loadShippingSettings === "function") loadShippingSettings(); }
