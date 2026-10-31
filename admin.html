@@ -993,16 +993,14 @@
 
     function bustStoreCaches() {
       try {
-        sessionStorage.removeItem("adm_list_products");
-        sessionStorage.removeItem("adm_list_orders");
-        sessionStorage.removeItem("nx_products");
-        sessionStorage.removeItem("nx_categories");
-        sessionStorage.removeItem("nx_config");
-        sessionStorage.removeItem("nx_shipping_zones");
-        localStorage.setItem("nx_catalog_bump", String(Date.now()));
-        // إشارة لتبويبات المتجر المفتوحة
-        try { localStorage.setItem("nx_force_reload_products", String(Date.now())); } catch (e2) {}
-        try { catalogChannel?.postMessage({ type: "catalog-updated", at: Date.now() }); } catch (e3) {}
+        ["adm_list_products","adm_list_orders","nx_products","nx_categories","nx_config","nx_shipping_zones"].forEach(function(k){
+          try { sessionStorage.removeItem(k); } catch (e) {}
+        });
+        const tick = String(Date.now());
+        localStorage.setItem("nx_catalog_bust", tick);
+        localStorage.setItem("nx_products_tick", tick);
+        // إشارة لنفس التبويب
+        try { window.dispatchEvent(new StorageEvent("storage", { key: "nx_catalog_bust", newValue: tick })); } catch (e) {}
       } catch (e) {}
     }
 
@@ -2084,7 +2082,7 @@
         del.disabled = true;
         const data = await api("delete_product", { id: Number(del.getAttribute("data-del-prod")) });
         if (!data.ok) alert(data.error||"فشل");
-        try { bustStoreCaches(); } catch (err) {}
+        try { bustStoreCaches(); if (typeof loadProducts === "function") loadProducts(true); } catch (err) {}
         await loadProducts();
       }
       if (hide) {
@@ -2305,7 +2303,7 @@
           if (!data.ok) throw new Error(data.error || "فشل التعديل");
           msg.className = "msg ok";
           msg.textContent = "تم حفظ تعديلات المنتج #" + editingId;
-          try { bustStoreCaches(); } catch (err) {}
+          try { bustStoreCaches(); if (typeof loadProducts === "function") loadProducts(true); } catch (err) {}
           clearEditMode();
         } else {
           const r = await fetch("/api/product", {
