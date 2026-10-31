@@ -528,6 +528,7 @@ function discountPct(p) {
 let activeBundleSec = "all";
 function bundleSectionOf(p) {
   if (!p) return "other";
+  if (p.offerSection) return String(p.offerSection);
   const t = String(p.offerType || (p.offerMeta && p.offerMeta.type) || "").toLowerCase();
   if (t === "mixed_bundle" || (p.offerMeta && Array.isArray(p.offerMeta.productIds) && p.offerMeta.productIds.length >= 2)) {
     return "mixed";
@@ -557,13 +558,14 @@ function getBundleProducts() {
 function filterBundlesBySec(list, sec) {
   sec = sec || "all";
   if (sec === "all") return list;
-  if (sec === "mixed") return list.filter(p => bundleSectionOf(p) === "mixed" || String(p.offerType) === "mixed_bundle");
+  if (sec === "mixed") return list.filter(p => (p.offerSection || bundleSectionOf(p)) === "mixed" || String(p.offerType) === "mixed_bundle");
   if (sec === "same") return list.filter(p => {
-    if (String(p.offerType) === "mixed_bundle") return false;
+    if ((p.offerSection || "") === "mixed" || String(p.offerType) === "mixed_bundle") return false;
+    if (p.offerSection === "same") return true;
     return isBundleOffer(p) || p.offerType === "bundle" || p.offerType === "both";
   });
-  if (sec === "bags") return list.filter(isBagsProduct);
-  if (sec === "other") return list.filter(p => !isBagsProduct(p));
+  if (sec === "bags") return list.filter(p => (p.offerSection === "bags") || isBagsProduct(p));
+  if (sec === "other") return list.filter(p => (p.offerSection === "other") || (!isBagsProduct(p) && (p.offerSection || bundleSectionOf(p)) !== "mixed"));
   return list;
 }
 
