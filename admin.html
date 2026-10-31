@@ -2731,6 +2731,8 @@
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: $("hImg1Url")?.value.trim() || "",
           heroImage2: $("hImg2Url")?.value.trim() || "",
+          heroScale: $("hScale") ? Number($("hScale").value) / 100 : 1,
+          heroScaleMobile: $("hScaleMobile") ? Number($("hScaleMobile").value) / 100 : 0.7,
           vodafoneCash: $("payVodafone")?.value.trim() || "",
           instapay: $("payInstapay")?.value.trim() || "",
           paymentNote: $("payNote")?.value.trim() || ""
