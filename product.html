@@ -340,6 +340,16 @@
         const add = document.getElementById("ppAdd");
         if (add) add.click();
       };
+      const minQty = (function(){
+        const tiers = p.offerMeta && Array.isArray(p.offerMeta.tiers) ? p.offerMeta.tiers : [];
+        if (tiers.length) {
+          const qs = tiers.map(function(t){ return Number(t.qty)||0; }).filter(function(q){ return q>0; });
+          if (qs.length) return Math.min.apply(null, qs);
+        }
+        if (p.isOffer) return 2;
+        if (/قطعتين|2 قطعه|2 قطعة|عرض القطعتين/i.test(String(p.name||""))) return 2;
+        return 1;
+      })();
       const galleryImgs = (Array.isArray(p.images) && p.images.length)
         ? p.images.filter(Boolean)
         : (p.image ? [p.image] : ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70"]);
@@ -398,9 +408,10 @@
             <div class="pd-buy-row" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:16px 0 8px">
               <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:6px 10px">
                 <button type="button" id="qtyMinus" class="btn btn-ghost" style="min-width:36px;padding:6px 10px" ${available ? "" : "disabled"}>-</button>
-                <input type="number" id="buyQty" min="1" max="${Math.max(1, stock || 1)}" value="1" dir="ltr" style="width:56px;text-align:center;font-size:16px;background:transparent;border:0;color:#fff;font-weight:800" ${available ? "" : "disabled"} />
+                <input type="number" id="buyQty" min="${Math.max(minQty, 1)}" max="${Math.max(1, stock || 1)}" value="${minQty}" dir="ltr" style="width:56px;text-align:center;font-size:16px;background:transparent;border:0;color:#fff;font-weight:800" ${available ? "" : "disabled"} />
                 <button type="button" id="qtyPlus" class="btn btn-ghost" style="min-width:36px;padding:6px 10px" ${available ? "" : "disabled"}>+</button>
               </div>
+              ${minQty > 1 ? `<div style="width:100%;font-size:.82rem;color:#fbbf24;font-weight:700;margin-bottom:6px">الحد الأدنى للطلب: ${minQty} قطع</div>` : ""}
               <button type="button" id="ppAddCart" class="btn btn-primary" style="flex:1;min-width:160px;padding:12px 18px;font-weight:800" ${available ? "" : "disabled"}>
                 ${available ? "أضف للسلة" : "غير متوفر"}
               </button>
@@ -591,7 +602,7 @@
 
       document.getElementById("ppAddCart")?.addEventListener("click", () => {
         if (!available) return;
-        let qty = Math.max(1, Number(qtyInput?.value) || 1);
+        let qty = Math.max(minQty || 1, Number(qtyInput?.value) || 1);
         if (stock > 0) qty = Math.min(qty, stock);
         if (colors.length) {
           const picks = selectedColors.slice(0, qty);
