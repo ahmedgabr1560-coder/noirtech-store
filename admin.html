@@ -2525,16 +2525,7 @@
       set("hImg2Url", c.heroImage2);
       setPrev("hImg1Prev", c.heroImage1);
       setPrev("hImg2Prev", c.heroImage2);
-      if ((function(){
-      const bindScale = (id, lab) => {
-        const el = $(id); const l = $(lab);
-        if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
-      };
-      bindScale("hScale", "hScaleVal");
-      bindScale("hScaleMobile", "hScaleMobileVal");
-    })();
-    $("hRotateProducts")) (function(){
+      if ($("hRotateProducts")) (function(){
       const bindScale = (id, lab) => {
         const el = $(id); const l = $(lab);
         if (!el) return;
@@ -2803,7 +2794,7 @@
       const bindScale = (id, lab) => {
         const el = $(id); const l = $(lab);
         if (!el) return;
-        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; });
+        el.addEventListener("input", function(){ if (l) l.textContent = el.value + "%"; , heroScale: ($("hScale")?Number($("hScale").value)/100:1), heroScaleMobile: ($("hScaleMobile")?Number($("hScaleMobile").value)/100:0.7)});
       };
       bindScale("hScale", "hScaleVal");
       bindScale("hScaleMobile", "hScaleMobileVal");
