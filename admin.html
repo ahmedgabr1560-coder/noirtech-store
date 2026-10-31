@@ -308,6 +308,75 @@
         <div class="card">
           <h3>طباعة ملصقات الطلبات — ATHAR | أثر</h3>
           <p class="hint">ملصق شحن 10×15 سم من بيانات الطلب الحقيقية. الهاتف للمكالمات: 01064519541 — واتساب فقط: 01283431213</p>
+          
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0">
+            <button type="button" class="btn btn-primary" id="lblOpenEditor">تخصيص تصميم الملصق</button>
+            <select id="lblTemplateSelect" style="min-width:160px"></select>
+            <button type="button" class="btn btn-ghost" id="lblApplyTemplate">استخدام القالب</button>
+          </div>
+          <div id="labelEditor" class="card" style="display:none;margin-bottom:14px;background:rgba(0,0,0,.25)">
+            <h3 style="margin-top:0">محرر تصميم الملصق</h3>
+            <div class="form-grid">
+              <label>اسم القالب<input id="leName" /></label>
+              <label>مقاس الملصق
+                <select id="leSize">
+                  <option value="10x15">10 × 15 سم</option>
+                  <option value="10x10">10 × 10 سم</option>
+                  <option value="a6">A6</option>
+                  <option value="custom">مخصص</option>
+                </select>
+              </label>
+              <label>عرض مخصص (مم)<input id="leW" type="number" min="50" max="300" value="100" /></label>
+              <label>ارتفاع مخصص (مم)<input id="leH" type="number" min="50" max="400" value="150" /></label>
+              <label>لون الخلفية<input id="leBg" type="color" value="#ffffff" /></label>
+              <label>لون النص<input id="leText" type="color" value="#111111" /></label>
+              <label>لون العناوين/الذهبي<input id="leAccent" type="color" value="#c9a227" /></label>
+              <label>لون الحدود<input id="leBorder" type="color" value="#e8e0d4" /></label>
+              <label>حجم الخط الأساسي<input id="leFontSize" type="number" min="7" max="16" value="9" /></label>
+              <label>حجم عنوان البراند<input id="leTitleSize" type="number" min="10" max="22" value="14" /></label>
+              <label>الخط
+                <select id="leFont">
+                  <option value="Cairo, Tahoma, sans-serif">Cairo</option>
+                  <option value="Tahoma, Arial, sans-serif">Tahoma</option>
+                  <option value="Arial, sans-serif">Arial</option>
+                </select>
+              </label>
+              <label>المحاذاة
+                <select id="leAlign">
+                  <option value="right">يمين</option>
+                  <option value="center">وسط</option>
+                  <option value="left">يسار</option>
+                </select>
+              </label>
+            </div>
+            <label style="display:flex;gap:8px;align-items:center;margin:8px 0">
+              <input type="checkbox" id="leBorderOn" checked style="width:auto" /> إظهار إطار الملصق
+            </label>
+            <label style="display:flex;gap:8px;align-items:center;margin:8px 0">
+              <input type="checkbox" id="leDividerOn" checked style="width:auto" /> فواصل ذهبية
+            </label>
+            <h4>العناصر الظاهرة (ترتيب من الأعلى)</h4>
+            <div id="leFields" style="display:grid;gap:6px;max-height:280px;overflow:auto;margin-bottom:10px"></div>
+            <h4>نص حر إضافي</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+              <input id="leCustomText" placeholder="أضيفي نصًا يظهر على الملصق" style="flex:1;min-width:180px" />
+              <button type="button" class="btn btn-ghost" id="leAddCustom">إضافة نص</button>
+            </div>
+            <div id="leCustomList" style="margin-bottom:10px"></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+              <button type="button" class="btn btn-primary" id="leSave">حفظ التصميم</button>
+              <button type="button" class="btn btn-ghost" id="leSaveAs">حفظ كقالب جديد</button>
+              <button type="button" class="btn btn-ghost" id="lePreview">معاينة الطباعة</button>
+              <button type="button" class="btn btn-ghost" id="leDefault">استعادة الافتراضي</button>
+              <button type="button" class="btn btn-ghost" id="leClose">إغلاق المحرر</button>
+            </div>
+            <div class="msg" id="leMsg"></div>
+            <div style="margin-top:14px">
+              <div class="hint" style="margin-bottom:8px">معاينة مباشرة (مقاس تقريبي على الشاشة)</div>
+              <div id="leLivePreview" style="background:#333;padding:12px;border-radius:12px;overflow:auto"></div>
+            </div>
+          </div>
+
           <div class="form-grid" style="margin-bottom:12px">
             <label>بحث (رقم طلب / اسم / هاتف)
               <input id="lblSearch" placeholder="ابحثي..." />
@@ -807,6 +876,189 @@
     };
     let LABELS_ORDERS = [];
 
+    let LABEL_TEMPLATES = { defaultId: "default", templates: [] };
+    let ACTIVE_LABEL_TPL = null;
+
+    function labelSizeMm(tpl) {
+      const s = (tpl && tpl.size) || "10x15";
+      if (s === "10x10") return { w: 100, h: 100 };
+      if (s === "a6") return { w: 105, h: 148 };
+      if (s === "custom") return { w: Number(tpl.customW) || 100, h: Number(tpl.customH) || 150 };
+      return { w: 100, h: 150 };
+    }
+
+    function defaultLabelTemplate() {
+      return {
+        id: "default",
+        name: "التصميم الأساسي",
+        isDefault: true,
+        size: "10x15",
+        customW: 100,
+        customH: 150,
+        styles: { bg: "#ffffff", text: "#111111", title: "#111111", accent: "#c9a227", border: "#e8e0d4", font: "Cairo, Tahoma, sans-serif", fontSize: 9, titleSize: 14, padding: 5, align: "right" },
+        fields: [
+          {id:"brand",label:"شعار/اسم المتجر",show:true},{id:"owner",label:"اسم صاحب البراند",show:true},
+          {id:"qr",label:"QR Code",show:true},{id:"orderId",label:"رقم الطلب",show:true},
+          {id:"date",label:"تاريخ الطلب",show:true},{id:"status",label:"حالة الطلب",show:true},
+          {id:"customerName",label:"اسم العميل",show:true},{id:"customerPhone",label:"هاتف العميل",show:true},
+          {id:"gov",label:"المحافظة",show:true},{id:"center",label:"المدينة/المركز",show:true},
+          {id:"address",label:"العنوان التفصيلي",show:true},{id:"note",label:"ملاحظات/علامة مميزة",show:true},
+          {id:"products",label:"المنتجات والكميات",show:true},{id:"subtotal",label:"إجمالي المنتجات",show:true},
+          {id:"shipping",label:"الشحن",show:true},{id:"discount",label:"الخصم",show:true},
+          {id:"total",label:"الإجمالي النهائي",show:true},{id:"payment",label:"طريقة الدفع",show:true},
+          {id:"cod",label:"تحصيل COD",show:true},{id:"contacts",label:"أرقام المتجر",show:true},
+          {id:"thanks",label:"عبارة الشكر",show:true}
+        ],
+        customTexts: [],
+        showBorder: true,
+        showDivider: true
+      };
+    }
+
+    function fieldOn(tpl, id) {
+      const f = (tpl.fields || []).find(x => x.id === id);
+      return !f || f.show !== false;
+    }
+
+    async function loadLabelTemplates() {
+      const data = await api("get_label_templates");
+      if (data && data.ok && Array.isArray(data.templates) && data.templates.length) {
+        LABEL_TEMPLATES = { defaultId: data.defaultId || data.templates[0].id, templates: data.templates };
+      } else {
+        const d = defaultLabelTemplate();
+        LABEL_TEMPLATES = { defaultId: d.id, templates: [d] };
+      }
+      ACTIVE_LABEL_TPL = LABEL_TEMPLATES.templates.find(t => t.id === LABEL_TEMPLATES.defaultId) || LABEL_TEMPLATES.templates[0];
+      const sel = $("lblTemplateSelect");
+      if (sel) {
+        sel.innerHTML = LABEL_TEMPLATES.templates.map(t =>
+          `<option value="${lblEsc(t.id)}" ${t.id === (ACTIVE_LABEL_TPL && ACTIVE_LABEL_TPL.id) ? "selected" : ""}>${lblEsc(t.name)}${t.isDefault ? " (افتراضي)" : ""}</option>`
+        ).join("");
+      }
+    }
+
+    function readEditorToTemplate(asNew) {
+      const base = ACTIVE_LABEL_TPL ? JSON.parse(JSON.stringify(ACTIVE_LABEL_TPL)) : defaultLabelTemplate();
+      if (asNew) {
+        base.id = "tpl-" + Date.now().toString(36);
+        base.isDefault = false;
+      }
+      base.name = ($("leName") && $("leName").value.trim()) || base.name || "قالب";
+      base.size = ($("leSize") && $("leSize").value) || "10x15";
+      base.customW = Number($("leW") && $("leW").value) || 100;
+      base.customH = Number($("leH") && $("leH").value) || 150;
+      base.styles = base.styles || {};
+      base.styles.bg = ($("leBg") && $("leBg").value) || "#ffffff";
+      base.styles.text = ($("leText") && $("leText").value) || "#111111";
+      base.styles.accent = ($("leAccent") && $("leAccent").value) || "#c9a227";
+      base.styles.border = ($("leBorder") && $("leBorder").value) || "#e8e0d4";
+      base.styles.fontSize = Number($("leFontSize") && $("leFontSize").value) || 9;
+      base.styles.titleSize = Number($("leTitleSize") && $("leTitleSize").value) || 14;
+      base.styles.font = ($("leFont") && $("leFont").value) || "Cairo, Tahoma, sans-serif";
+      base.styles.align = ($("leAlign") && $("leAlign").value) || "right";
+      base.showBorder = !!($("leBorderOn") && $("leBorderOn").checked);
+      base.showDivider = !!($("leDividerOn") && $("leDividerOn").checked);
+      const fields = [];
+      document.querySelectorAll("#leFields .le-field").forEach(function(row) {
+        fields.push({ id: row.dataset.id, label: row.dataset.label, show: !!row.querySelector("input[type=checkbox]")?.checked });
+      });
+      if (fields.length) base.fields = fields;
+      return base;
+    }
+
+    function fillEditorFromTemplate(tpl) {
+      if (!tpl) return;
+      if ($("leName")) $("leName").value = tpl.name || "";
+      if ($("leSize")) $("leSize").value = tpl.size || "10x15";
+      if ($("leW")) $("leW").value = tpl.customW || 100;
+      if ($("leH")) $("leH").value = tpl.customH || 150;
+      const st = tpl.styles || {};
+      if ($("leBg")) $("leBg").value = st.bg || "#ffffff";
+      if ($("leText")) $("leText").value = st.text || "#111111";
+      if ($("leAccent")) $("leAccent").value = st.accent || "#c9a227";
+      if ($("leBorder")) $("leBorder").value = st.border || "#e8e0d4";
+      if ($("leFontSize")) $("leFontSize").value = st.fontSize || 9;
+      if ($("leTitleSize")) $("leTitleSize").value = st.titleSize || 14;
+      if ($("leFont")) $("leFont").value = st.font || "Cairo, Tahoma, sans-serif";
+      if ($("leAlign")) $("leAlign").value = st.align || "right";
+      if ($("leBorderOn")) $("leBorderOn").checked = tpl.showBorder !== false;
+      if ($("leDividerOn")) $("leDividerOn").checked = tpl.showDivider !== false;
+      const box = $("leFields");
+      if (box) {
+        const fields = (tpl.fields && tpl.fields.length) ? tpl.fields : defaultLabelTemplate().fields;
+        box.innerHTML = fields.map(function(f, idx) {
+          return `<div class="le-field" data-id="${lblEsc(f.id)}" data-label="${lblEsc(f.label||f.id)}" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid rgba(255,255,255,.08);border-radius:8px">
+            <input type="checkbox" ${f.show !== false ? "checked" : ""} style="width:auto" />
+            <span style="flex:1">${lblEsc(f.label || f.id)}</span>
+            <button type="button" class="btn btn-ghost le-up" data-i="${idx}" style="padding:4px 8px">↑</button>
+            <button type="button" class="btn btn-ghost le-down" data-i="${idx}" style="padding:4px 8px">↓</button>
+          </div>`;
+        }).join("");
+        box.querySelectorAll(".le-up").forEach(function(btn) {
+          btn.onclick = function() {
+            const i = Number(btn.dataset.i);
+            if (i <= 0) return;
+            const t = readEditorToTemplate(false);
+            const a = t.fields[i - 1]; t.fields[i - 1] = t.fields[i]; t.fields[i] = a;
+            ACTIVE_LABEL_TPL = t; fillEditorFromTemplate(t); refreshLabelLivePreview();
+          };
+        });
+        box.querySelectorAll(".le-down").forEach(function(btn) {
+          btn.onclick = function() {
+            const t = readEditorToTemplate(false);
+            const i = Number(btn.dataset.i);
+            if (i >= t.fields.length - 1) return;
+            const a = t.fields[i + 1]; t.fields[i + 1] = t.fields[i]; t.fields[i] = a;
+            ACTIVE_LABEL_TPL = t; fillEditorFromTemplate(t); refreshLabelLivePreview();
+          };
+        });
+        box.querySelectorAll("input[type=checkbox]").forEach(function(cb) {
+          cb.onchange = function() { refreshLabelLivePreview(); };
+        });
+      }
+      const cl = $("leCustomList");
+      if (cl) {
+        const customs = tpl.customTexts || [];
+        cl.innerHTML = customs.length ? customs.map(function(t, i) {
+          return `<div style="display:flex;gap:8px;align-items:center;margin:4px 0"><span style="flex:1">${lblEsc(t)}</span><button type="button" class="btn btn-ghost le-delc" data-i="${i}" style="padding:4px 8px">حذف</button></div>`;
+        }).join("") : `<span class="hint">لا نصوص إضافية</span>`;
+        cl.querySelectorAll(".le-delc").forEach(function(btn) {
+          btn.onclick = function() {
+            const t = readEditorToTemplate(false);
+            t.customTexts = t.customTexts || [];
+            t.customTexts.splice(Number(btn.dataset.i), 1);
+            ACTIVE_LABEL_TPL = t; fillEditorFromTemplate(t); refreshLabelLivePreview();
+          };
+        });
+      }
+    }
+
+    function sampleOrderForPreview() {
+      if (LABELS_ORDERS && LABELS_ORDERS[0]) return LABELS_ORDERS[0];
+      return {
+        id: "NX-PREVIEW", at: new Date().toISOString(), status: "new",
+        subtotal: 300, shipping: 50, discount: 0, total: 350, paymentMethod: "cod",
+        customer: { name: "عميل تجريبي", phone: "01000000000", governorate: "القاهرة", center: "مدينة نصر", address: "شارع تجريبي", note: "" },
+        items: [{ name: "منتج تجريبي", qty: 1, price: 300, lineTotal: 300, color: "أسود" }]
+      };
+    }
+
+    function refreshLabelLivePreview() {
+      const tpl = readEditorToTemplate(false);
+      ACTIVE_LABEL_TPL = tpl;
+      const box = $("leLivePreview");
+      if (!box) return;
+      const mm = labelSizeMm(tpl);
+      const scale = 2.2;
+      box.innerHTML = `<div style="width:${mm.w * scale}px;margin:0 auto;transform-origin:top center">${buildLabelHtml(sampleOrderForPreview(), tpl)}</div>`;
+    }
+
+    async function saveLabelTemplates(list, defaultId) {
+      const data = await api("save_label_templates", { templates: list, defaultId: defaultId });
+      return data && data.ok;
+    }
+
+
     function lblMoney(n) {
       try { return Number(n || 0).toLocaleString("ar-EG") + " ج.م"; }
       catch (e) { return (n || 0) + " ج.م"; }
@@ -842,6 +1094,7 @@
         return;
       }
       LABELS_ORDERS = (data.orders || []).slice();
+      await loadLabelTemplates();
       renderLabelsTable();
     }
 
@@ -928,7 +1181,9 @@
       return Array.from(document.querySelectorAll(".lbl-check:checked")).map(function(cb) { return cb.value; }).filter(Boolean);
     }
 
-    function buildLabelHtml(order) {
+    function buildLabelHtml(order, tpl) {
+      tpl = tpl || ACTIVE_LABEL_TPL || defaultLabelTemplate();
+      const st = tpl.styles || {};
       const c = order.customer || {};
       const items = Array.isArray(order.items) ? order.items : [];
       const itemsRows = items.map(function(it, idx) {
@@ -964,13 +1219,14 @@
       const addr = [c.governorate, c.center, c.address].filter(Boolean).join(" — ") || (c.address || "غير محدد");
       const landmark = c.note || c.landmark || "";
 
-      return `<section class="label-sheet">
+      const _bg = st.bg || "#fff"; const _color = st.text || "#111"; const _font = st.font || "Cairo, Tahoma, sans-serif"; const _align = st.align || "right"; const _fs = st.fontSize || 9; const _pad = st.padding || 5; const _border = tpl.showBorder === false ? "none" : ("1px solid " + (st.border || "#e8e0d4"));
+      return `<section class="label-sheet" style="background:${_bg};color:${_color};font-family:${_font};text-align:${_align};font-size:${_fs}px;padding:${_pad}mm;border:${_border}">
         <header class="lbl-head">
           <div class="lbl-brand">
-            <div class="lbl-logo">${lblEsc(ATHAR_BRAND.name)}</div>
-            <div class="lbl-owner">${lblEsc(ATHAR_BRAND.owner)}</div>
+            ${fieldOn(tpl,"brand")?`<div class="lbl-logo" style="font-size:${st.titleSize||14}px;color:${st.title||"#111"}">${lblEsc(ATHAR_BRAND.name)}</div>`:``}
+            ${fieldOn(tpl,"owner")?`<div class="lbl-owner">${lblEsc(ATHAR_BRAND.owner)}</div>`:``}
           </div>
-          <div class="lbl-qr"><img src="${qrUrl}" alt="QR" width="72" height="72" /></div>
+          ${fieldOn(tpl,"qr")?`<div class="lbl-qr"><img src="${qrUrl}" alt="QR" width="72" height="72" /></div>`:``}
         </header>
         <div class="lbl-meta">
           <div><strong>رقم الطلب:</strong> <span dir="ltr">${lblEsc(order.id)}</span></div>
@@ -1003,6 +1259,7 @@
           <div class="lbl-cod"><span>المطلوب تحصيله (COD)</span><strong>${isCod ? lblMoney(codAmount) : "مدفوع مسبقًا — 0"}</strong></div>
           <div><span>طريقة الدفع</span><strong>${lblEsc(lblPay(order.paymentMethod))}</strong></div>
         </div>
+        ${(tpl.customTexts||[]).map(function(tx){return `<div style="font-size:${st.fontSize||9}px;margin:3px 0">${lblEsc(tx)}</div>`;}).join("")}
         <footer class="lbl-foot">
           <div>📞 مكالمات فقط: <span dir="ltr">${ATHAR_BRAND.phone}</span></div>
           <div>💬 واتساب فقط: <span dir="ltr">${ATHAR_BRAND.whatsapp}</span></div>
@@ -1020,15 +1277,17 @@
         alert("لم يتم العثور على الطلب");
         return;
       }
-      const sheets = orders.map(buildLabelHtml).join("\n");
+      const _tplPrint = ACTIVE_LABEL_TPL || defaultLabelTemplate();
+      const _mm = labelSizeMm(_tplPrint);
+      const sheets = orders.map(function(o){ return buildLabelHtml(o, _tplPrint); }).join("\n");
       const autoScript = autoPrint
         ? "window.addEventListener('load',function(){setTimeout(function(){window.print();},400);});"
         : "";
       const css = [
-        "@page{size:100mm 150mm;margin:4mm}",
+        "@page{size:"+_mm.w+"mm "+_mm.h+"mm;margin:4mm}",
         "*{box-sizing:border-box}",
         "html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Cairo,Tajawal,Segoe UI,Tahoma,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}",
-        ".label-sheet{width:100mm;min-height:150mm;max-height:150mm;padding:5mm;margin:0 auto;background:#fff;color:#111;border:1px solid #e8e0d4;page-break-after:always;overflow:hidden}",
+        ".label-sheet{width:"+_mm.w+"mm;min-height:"+_mm.h+"mm;max-height:"+_mm.h+"mm;padding:5mm;margin:0 auto;background:#fff;color:#111;border:1px solid #e8e0d4;page-break-after:always;overflow:hidden}",
         ".label-sheet:last-child{page-break-after:auto}",
         ".lbl-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #c9a227;padding-bottom:4px;margin-bottom:6px}",
         ".lbl-logo{font-size:14px;font-weight:900;color:#111}",
@@ -1072,6 +1331,85 @@
       }).catch(function() {});
     }
 
+
+    
+    $("lblOpenEditor")?.addEventListener("click", async () => {
+      await loadLabelTemplates();
+      const ed = $("labelEditor");
+      if (ed) ed.style.display = "block";
+      fillEditorFromTemplate(ACTIVE_LABEL_TPL || defaultLabelTemplate());
+      refreshLabelLivePreview();
+    });
+    $("leClose")?.addEventListener("click", () => { const ed = $("labelEditor"); if (ed) ed.style.display = "none"; });
+    $("lePreview")?.addEventListener("click", () => {
+      ACTIVE_LABEL_TPL = readEditorToTemplate(false);
+      openLabelPrint([sampleOrderForPreview().id], false);
+      // if sample not in list, force preview window with current build
+      const tpl = ACTIVE_LABEL_TPL;
+      const htmlOrder = sampleOrderForPreview();
+      if (!LABELS_ORDERS.find(o => String(o.id) === String(htmlOrder.id))) {
+        LABELS_ORDERS.unshift(htmlOrder);
+      }
+      openLabelPrint([htmlOrder.id], false);
+    });
+    $("leDefault")?.addEventListener("click", () => {
+      ACTIVE_LABEL_TPL = defaultLabelTemplate();
+      fillEditorFromTemplate(ACTIVE_LABEL_TPL);
+      refreshLabelLivePreview();
+    });
+    $("leAddCustom")?.addEventListener("click", () => {
+      const v = ($("leCustomText") && $("leCustomText").value || "").trim();
+      if (!v) return;
+      const t = readEditorToTemplate(false);
+      t.customTexts = t.customTexts || [];
+      t.customTexts.push(v);
+      if ($("leCustomText")) $("leCustomText").value = "";
+      ACTIVE_LABEL_TPL = t;
+      fillEditorFromTemplate(t);
+      refreshLabelLivePreview();
+    });
+    ["leBg","leText","leAccent","leBorder","leFontSize","leTitleSize","leFont","leAlign","leSize","leW","leH","leBorderOn","leDividerOn"].forEach(function(id) {
+      const el = $(id);
+      if (el) el.addEventListener("change", refreshLabelLivePreview);
+      if (el) el.addEventListener("input", refreshLabelLivePreview);
+    });
+    $("leSave")?.addEventListener("click", async () => {
+      const msg = $("leMsg");
+      const tpl = readEditorToTemplate(false);
+      let list = (LABEL_TEMPLATES.templates || []).slice();
+      const idx = list.findIndex(t => t.id === tpl.id);
+      if (idx >= 0) list[idx] = tpl; else list.push(tpl);
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      const ok = await saveLabelTemplates(list, LABEL_TEMPLATES.defaultId || tpl.id);
+      if (ok) {
+        LABEL_TEMPLATES.templates = list;
+        ACTIVE_LABEL_TPL = tpl;
+        await loadLabelTemplates();
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ التصميم"; }
+      } else if (msg) { msg.className = "msg err"; msg.textContent = "فشل الحفظ"; }
+    });
+    $("leSaveAs")?.addEventListener("click", async () => {
+      const msg = $("leMsg");
+      const tpl = readEditorToTemplate(true);
+      tpl.name = ($("leName") && $("leName").value.trim()) || ("قالب " + new Date().toLocaleDateString("ar-EG"));
+      const list = (LABEL_TEMPLATES.templates || []).concat([tpl]);
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      const ok = await saveLabelTemplates(list, LABEL_TEMPLATES.defaultId);
+      if (ok) {
+        await loadLabelTemplates();
+        ACTIVE_LABEL_TPL = tpl;
+        fillEditorFromTemplate(tpl);
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ قالب جديد"; }
+      } else if (msg) { msg.className = "msg err"; msg.textContent = "فشل الحفظ"; }
+    });
+    $("lblApplyTemplate")?.addEventListener("click", async () => {
+      await loadLabelTemplates();
+      const id = $("lblTemplateSelect") && $("lblTemplateSelect").value;
+      ACTIVE_LABEL_TPL = LABEL_TEMPLATES.templates.find(t => t.id === id) || ACTIVE_LABEL_TPL;
+      LABEL_TEMPLATES.defaultId = ACTIVE_LABEL_TPL.id;
+      await saveLabelTemplates(LABEL_TEMPLATES.templates, ACTIVE_LABEL_TPL.id);
+      alert("تم اعتماد القالب للطباعة: " + (ACTIVE_LABEL_TPL.name || ""));
+    });
 
     (function bindLabelControls() {
       function on(id, ev, fn) {
