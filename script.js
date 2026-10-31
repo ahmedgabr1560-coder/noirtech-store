@@ -683,7 +683,7 @@ function applyCouponFromInput() {
     return;
   }
   try { sessionStorage.setItem("nx_coupon_code", raw); } catch (e) {}
-  if (msg) msg.textContent = "تم تطبيق الخصم ✓";
+  if (msg) msg.textContent = "تم تطبيق الخصم ✓ (" + (typeof couponPercent==="function"?couponPercent():"") + "%)";
   if (typeof updateCartUI === "function") updateCartUI();
 }
 
@@ -751,7 +751,10 @@ function updateCartUI() {
   const total = subtotal - discount + ship.amount;
   if ($("#cartSubtotal")) $("#cartSubtotal").textContent = money(subtotal);
   if ($("#cartShipping")) $("#cartShipping").textContent = ship.free ? "مجاني" : money(ship.amount);
-  if ($("#cartDiscount")) $("#cartDiscount").textContent = discount > 0 ? ("- " + money(discount)) : "";
+  const _cp = (typeof couponPercent === "function") ? couponPercent() : 0;
+  const _cc = (function(){ try { return String(sessionStorage.getItem("nx_coupon_code")||"").toUpperCase(); } catch(e){ return ""; } })();
+  if ($("#cartDiscount")) $("#cartDiscount").textContent = discount > 0 ? ("- " + money(discount) + (_cp ? "  ·  " + _cp + "%" : "")) : "";
+  try { const dl = document.getElementById("cartDiscountLabel"); if (dl) dl.textContent = discount > 0 ? ("الخصم" + (_cp ? " (" + _cp + "%)" : "") + (_cc ? " — " + _cc : "")) : "الخصم"; } catch (e) {}
   if ($("#cartDiscountRow")) { $("#cartDiscountRow").hidden = discount <= 0; $("#cartDiscountRow").style.display = discount > 0 ? "flex" : "none"; }
   if ($("#cartShippingLabel")) $("#cartShippingLabel").textContent = ship.free ? "الشحن" : "الشحن";
   if ($("#cartShippingHint")) {
