@@ -2275,6 +2275,15 @@
           payload.isOffer = true;
           payload.offerType = "mixed_bundle";
           if (pairPrice > 0) payload.price = pairPrice;
+          const p1 = (PRODUCTS || []).find(x => String(x.id) === String(a));
+          const p2 = (PRODUCTS || []).find(x => String(x.id) === String(b));
+          const imgs = [];
+          if (p1) { if (p1.image) imgs.push(p1.image); (p1.images || []).forEach(im => { if (im && !imgs.includes(im)) imgs.push(im); }); }
+          if (p2) { if (p2.image) imgs.push(p2.image); (p2.images || []).forEach(im => { if (im && !imgs.includes(im)) imgs.push(im); }); }
+          if (imgs.length) {
+            payload.images = imgs.slice(0, 8);
+            payload.image = imgs[0];
+          }
         }
         let data;
         if (editingId) {
