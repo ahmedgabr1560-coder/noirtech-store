@@ -2250,6 +2250,20 @@
           bundle2Price: $("bundle2Price")?.value || "",
           bundle3Price: $("bundle3Price")?.value || ""
         };
+        if ($("pType")?.value === "offer" && ($("offerKind")?.value === "mixed_bundle")) {
+          const a = $("offerSourceProduct")?.value;
+          const b = $("offerSourceProduct2")?.value;
+          const pairPrice = Number($("bundle2Price")?.value || $("pPriceOffer")?.value || $("pPrice")?.value || 0);
+          payload.offerMeta = {
+            type: "mixed_bundle",
+            sourceProductIds: [a, b],
+            productIds: [a, b],
+            tiers: pairPrice > 0 ? [{ qty: 2, price: Math.round(pairPrice) }] : []
+          };
+          payload.isOffer = true;
+          payload.offerType = "mixed_bundle";
+          if (pairPrice > 0) payload.price = pairPrice;
+        }
         let data;
         if (editingId) {
           data = await api("update_product", Object.assign({}, payload, { id: editingId }));
