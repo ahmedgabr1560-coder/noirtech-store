@@ -85,6 +85,33 @@
     #cartDrawer #checkoutBtn{margin-top:4px;padding:13px;border-radius:13px;font-weight:900}
     @media (max-width:460px){#cartDrawer{width:100%}.drawer-head,.drawer-body,.drawer-foot{padding-left:12px;padding-right:12px}.cart-line{grid-template-columns:52px 1fr auto}.cart-line img{width:52px;height:52px}}
 
+  
+    .pd-gallery-wrap{position:relative;width:100%}
+    .pd-main-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px;background:#111;display:block}
+    .pd-nav-btn{
+      position:absolute;top:50%;transform:translateY(-50%);
+      width:40px;height:40px;border-radius:50%;border:0;
+      background:rgba(0,0,0,.55);color:#fff;font-size:1.2rem;font-weight:800;
+      cursor:pointer;z-index:2;display:grid;place-items:center;
+      backdrop-filter:blur(4px);
+    }
+    .pd-nav-btn:hover{background:rgba(139,92,246,.85)}
+    .pd-nav-prev{right:10px}
+    .pd-nav-next{left:10px}
+    .pd-img-count{
+      position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.55);color:#fff;font-size:.8rem;font-weight:700;
+      padding:4px 12px;border-radius:999px;z-index:2;
+    }
+    .pd-thumbs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;margin-top:10px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+    .pd-thumb{flex:0 0 auto;padding:0;border:2px solid transparent;border-radius:10px;overflow:hidden;cursor:pointer;background:none;opacity:.75}
+    .pd-thumb.active,.pd-thumb:hover{opacity:1;border-color:#a78bfa}
+    .pd-thumb img{width:64px;height:64px;object-fit:cover;display:block}
+    @media(max-width:600px){
+      .pd-nav-btn{width:36px;height:36px}
+      .pd-thumb img{width:56px;height:56px}
+    }
+
   </style>
   <link rel="preload" href="/styles.css" as="style" />
   <link rel="preload" href="/script.js" as="script" />
@@ -313,14 +340,26 @@
         const add = document.getElementById("ppAdd");
         if (add) add.click();
       };
+      const galleryImgs = (Array.isArray(p.images) && p.images.length)
+        ? p.images.filter(Boolean)
+        : (p.image ? [p.image] : ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70"]);
+      let galleryIndex = 0;
+
       root.innerHTML = `
         <div class="pd-layout">
           <div class="pd-gallery">
-            <img class="pd-main-img" id="pdMainImg" src="${(Array.isArray(p.images)&&p.images[0])||p.image}" alt="${esc(p.name)}"
+          <div class="pd-gallery-wrap" id="pdGalleryWrap">
+            <img class="pd-main-img" id="pdMainImg" src="${galleryImgs[0]}" alt="${esc(p.name)}"
               onerror="this.src='https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70'" />
-            ${(Array.isArray(p.images)&&p.images.length>1) ? `<div class="pd-thumbs" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-              ${p.images.map((src,i)=>`<button type="button" class="pd-thumb" data-src="${src}" style="padding:0;border:2px solid ${i===0?'#a78bfa':'transparent'};border-radius:10px;overflow:hidden;cursor:pointer;background:none">
-                <img src="${src}" alt="" style="width:56px;height:56px;object-fit:cover;display:block" />
+            ${galleryImgs.length > 1 ? `
+              <button type="button" class="pd-nav-btn pd-nav-prev" id="pdPrev" aria-label="السابق">›</button>
+              <button type="button" class="pd-nav-btn pd-nav-next" id="pdNext" aria-label="التالي">‹</button>
+              <div class="pd-img-count" id="pdImgCount">1 / ${galleryImgs.length}</div>
+            ` : ""}
+          </div>
+          ${galleryImgs.length > 1 ? `<div class="pd-thumbs" id="pdThumbs">
+              ${galleryImgs.map((src,i)=>`<button type="button" class="pd-thumb${i===0?" active":""}" data-idx="${i}" data-src="${src}" aria-label="صورة ${i+1}">
+                <img src="${src}" alt="" loading="lazy" />
               </button>`).join("")}
             </div>` : ""}
           </div>
@@ -387,16 +426,49 @@
         </div>` : ""}
       `;
 
-      const galleryImgs = (Array.isArray(p.images) && p.images.length) ? p.images : (p.image ? [p.image] : []);
-      document.querySelectorAll(".pd-thumb").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const src = btn.getAttribute("data-src");
-          const main = document.getElementById("pdMainImg");
-          if (main && src) main.src = src;
-          document.querySelectorAll(".pd-thumb").forEach(b => b.style.borderColor = "transparent");
-          btn.style.borderColor = "#a78bfa";
+      function showGalleryImage(idx) {
+        if (!galleryImgs.length) return;
+        galleryIndex = (idx + galleryImgs.length) % galleryImgs.length;
+        const main = document.getElementById("pdMainImg");
+        if (main) {
+          main.style.opacity = "0.35";
+          main.src = galleryImgs[galleryIndex];
+          main.onload = function() { main.style.opacity = "1"; main.style.transition = "opacity .25s ease"; };
+        }
+        const count = document.getElementById("pdImgCount");
+        if (count) count.textContent = (galleryIndex + 1) + " / " + galleryImgs.length;
+        document.querySelectorAll(".pd-thumb").forEach(function(b, i) {
+          b.classList.toggle("active", i === galleryIndex);
+          b.style.borderColor = i === galleryIndex ? "#a78bfa" : "transparent";
+        });
+      }
+      document.getElementById("pdPrev")?.addEventListener("click", function(e) {
+        e.preventDefault(); showGalleryImage(galleryIndex - 1);
+      });
+      document.getElementById("pdNext")?.addEventListener("click", function(e) {
+        e.preventDefault(); showGalleryImage(galleryIndex + 1);
+      });
+      document.querySelectorAll(".pd-thumb").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          const i = Number(btn.getAttribute("data-idx"));
+          showGalleryImage(Number.isFinite(i) ? i : 0);
         });
       });
+      // swipe on mobile
+      (function() {
+        const wrap = document.getElementById("pdGalleryWrap");
+        if (!wrap || galleryImgs.length < 2) return;
+        let x0 = null;
+        wrap.addEventListener("touchstart", function(e) { x0 = e.touches[0].clientX; }, { passive: true });
+        wrap.addEventListener("touchend", function(e) {
+          if (x0 == null) return;
+          const dx = e.changedTouches[0].clientX - x0;
+          x0 = null;
+          if (Math.abs(dx) < 40) return;
+          if (dx > 0) showGalleryImage(galleryIndex - 1);
+          else showGalleryImage(galleryIndex + 1);
+        }, { passive: true });
+      })();
 
       let selectedColors = []; // لون لكل قطعة حسب الكمية
       const colorPickers = document.getElementById("colorPickers");
