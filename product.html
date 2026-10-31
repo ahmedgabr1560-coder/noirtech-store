@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>تفاصيل المنتج | NEXORA</title>
+  <title>تفاصيل المنتج | ATHAR | أثر</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -99,7 +99,7 @@
     <div class="pp-top">
       <a href="/">← العودة للمتجر</a>
       <div style="display:flex;align-items:center;gap:12px">
-        <strong style="color:#fff" data-site-name>NEXORA</strong>
+        <strong style="color:#fff" data-site-name>ATHAR | أثر</strong>
         <button type="button" id="ppHeaderCart" class="btn btn-ghost" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px" aria-label="السلة">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           <span id="ppCartCount">0</span>
@@ -278,14 +278,14 @@
       root.innerHTML = "المنتج غير موجود.<br><a href='/' style='color:#c4b5fd'>العودة للمتجر</a>";
         return;
       }
-      document.title = p.name + " | NEXORA";
+      document.title = p.name + " | ATHAR | أثر";
       const cats = catalog?.categories || [];
       const cat = cats.find(c => c.id === p.category);
       const sub = cat?.subs?.find(s => s.id === p.subcategory);
       const off = p.oldPrice && p.oldPrice > p.price ? Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100) : null;
       const specs = p.specs && typeof p.specs === "object" ? p.specs : {};
       const specRows = Object.entries(specs).map(([k,v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("");
-      const desc = p.description || p.desc || (p.name + " — متوفر في NEXORA.");
+      const desc = p.description || p.desc || (p.name + " — متوفر في ATHAR | أثر.");
       const related = list.filter(x => x.category === p.category && Number(x.id) !== id).slice(0, 4);
 
       
@@ -529,12 +529,12 @@
         if (r.ok) {
           const wrapped = await r.json();
           const c = wrapped.config || wrapped;
-          const name = (c.siteName||"NEXORA").trim();
+          const name = (c.siteName||"ATHAR | أثر").trim();
           const mark = (c.logoMark||name.slice(0,2)||"NX").toString().slice(0,3).toUpperCase();
           document.querySelectorAll("[data-site-name]").forEach(el=>el.textContent=name);
           document.querySelectorAll("[data-site-mark]").forEach(el=>el.textContent=mark);
           if (!location.search.includes("id=")) document.title = name;
-          else if (document.title.includes("NEXORA")) document.title = document.title.replace(/NEXORA/g, name);
+          else if (document.title.includes("ATHAR | أثر")) document.title = document.title.replace(/ATHAR | أثر/g, name);
           const strong = document.querySelector(".pp-top strong");
           if (strong) strong.textContent = name;
           return;
@@ -542,12 +542,12 @@
         r = await fetch("/site-config.json?t="+Date.now(),{cache:"no-store"});
         if (!r.ok) return;
         const c = await r.json();
-        const name = (c.siteName||"NEXORA").trim();
+        const name = (c.siteName||"ATHAR | أثر").trim();
         const mark = (c.logoMark||name.slice(0,2)||"NX").toString().slice(0,3).toUpperCase();
         document.querySelectorAll("[data-site-name]").forEach(el=>el.textContent=name);
         document.querySelectorAll("[data-site-mark]").forEach(el=>el.textContent=mark);
         if (!location.search.includes("id=")) document.title = name;
-        else if (document.title.includes("NEXORA")) document.title = document.title.replace(/NEXORA/g, name);
+        else if (document.title.includes("ATHAR | أثر")) document.title = document.title.replace(/ATHAR | أثر/g, name);
         const strong = document.querySelector(".pp-top strong");
         if (strong) strong.textContent = name;
       } catch(e){}
@@ -836,7 +836,7 @@
               <h3 style="margin:0 0 8px;font-size:1.2rem">تم استلام طلبك بنجاح</h3>
               <p style="margin:0 0 6px;color:#94a3b8;font-size:.92rem">رقم الطلب</p>
               <p style="margin:0 0 14px;font-weight:700;letter-spacing:.04em;direction:ltr">${order.id}</p>
-              <p style="margin:0 0 18px;color:#94a3b8;font-size:.88rem;line-height:1.6">هنتواصل معاكِ قريبًا لتأكيد الطلب والتوصيل. شكرًا لاختياركِ NEXORA.</p>
+              <p style="margin:0 0 18px;color:#94a3b8;font-size:.88rem;line-height:1.6">هنتواصل معاكِ قريبًا لتأكيد الطلب والتوصيل. شكرًا لاختياركِ ATHAR | أثر.</p>
               <button type="button" style="width:100%;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:700">حسنًا</button>
             </div>`;
             box.querySelector("button").onclick = () => box.remove();
