@@ -1939,12 +1939,28 @@ function stopHeroProductRotate() {
 }
 function startHeroProductRotate(config) {
   stopHeroProductRotate();
-  if (!config || config.heroRotateFromProducts !== true) return;
-  const secs = Math.max(2, Math.min(60, Number(config.heroRotateSeconds) || 5));
-  const imgs = (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS) ? PRODUCTS : [])
+  config = config || window.siteConfig || {};
+  // شغّال افتراضيًا — يقلب صور الواجهة
+  const enabled = config.heroRotateFromProducts !== false;
+  if (!enabled) return;
+  const secs = Math.max(2, Math.min(60, Number(config.heroRotateSeconds) || 4));
+  let imgs = (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS) ? PRODUCTS : [])
     .filter(p => p && !p.hidden && p.image && /^https?:\/\//i.test(String(p.image)))
     .map(p => ({ src: p.image, name: p.name || "", id: p.id }));
-  if (imgs.length < 1) return;
+  // أضف صور الهيرو الثابتة لو موجودة
+  [config.heroImage1, config.heroImage2].forEach(function(src) {
+    if (src && /^https?:\/\//i.test(String(src)) && !imgs.some(function(x){ return x.src === src; })) {
+      imgs.unshift({ src: src, name: "", id: null });
+    }
+  });
+  // من عناصر الصفحة الحالية
+  try {
+    const i1 = document.getElementById("heroImg1");
+    const i2 = document.getElementById("heroImg2");
+    if (i1 && i1.src && !imgs.some(function(x){ return x.src === i1.src; })) imgs.unshift({ src: i1.src, name: "", id: null });
+    if (i2 && i2.src && !imgs.some(function(x){ return x.src === i2.src; })) imgs.push({ src: i2.src, name: "", id: null });
+  } catch (e) {}
+  if (imgs.length < 2) return;
 
   const img1 = document.getElementById("heroImg1");
   const img2 = document.getElementById("heroImg2");
