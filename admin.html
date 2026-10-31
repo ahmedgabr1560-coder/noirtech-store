@@ -125,6 +125,7 @@
         <button data-panel="coupons">أكواد الخصم</button>
         <button data-panel="finance">المالية والمخزون</button>
         <button data-panel="general">إعدادات الموقع</button>
+        <button data-panel="theme">تخصيص ألوان المتجر</button>
         <button data-panel="brand">الاسم والأيقونة</button>
         <button data-panel="hero">الواجهة</button>
         <button data-panel="settings">إعدادات</button>
@@ -739,7 +740,222 @@
         </div>
       </section>
 
-      <section class="panel" id="panel-settings">
+      
+      <section class="panel" id="panel-theme">
+        <div class="card">
+          <h3>تخصيص ألوان المتجر | Store Appearance</h3>
+          <p class="hint">غيّري الألوان، عاينيها، ثم انشري للزوار. المسودة لا تظهر للزوار حتى النشر.</p>
+          <label>قوالب جاهزة
+            <select id="thPreset">
+              <option value="">— اختاري قالبًا —</option>
+              <option value="luxury_black_gold">Luxury Black & Gold</option>
+              <option value="minimal_beige">Minimal Beige</option>
+              <option value="elegant_white">Elegant White</option>
+              <option value="modern_dark">Modern Dark</option>
+              <option value="classic_brown">Classic Brown</option>
+            </select>
+          </label>
+          <label style="margin-top:10px">استدارة الأزرار والبطاقات (px)
+            <input type="number" id="thRadius" min="0" max="32" value="14" />
+          </label>
+          <div class="form-grid" id="thFields" style="margin-top:12px">
+            <label>اللون الأساسي Primary
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_primary" data-key="primary" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_primary" data-key="primary" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>اللون الثانوي
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_secondary" data-key="secondary" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_secondary" data-key="secondary" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>خلفية الموقع
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_bg" data-key="bg" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_bg" data-key="bg" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>خلفية الأقسام
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_bgSection" data-key="bgSection" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_bgSection" data-key="bgSection" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>خلفية البطاقات
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_bgCard" data-key="bgCard" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_bgCard" data-key="bgCard" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>الحدود والفواصل
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_border" data-key="border" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_border" data-key="border" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>العناوين الرئيسية
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_textHeading" data-key="textHeading" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_textHeading" data-key="textHeading" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>النصوص العادية
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_text" data-key="text" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_text" data-key="text" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>النصوص الثانوية
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_textMuted" data-key="textMuted" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_textMuted" data-key="textMuted" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>الروابط
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_link" data-key="link" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_link" data-key="link" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>خلفية الزر الأساسي
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_btnPrimaryBg" data-key="btnPrimaryBg" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_btnPrimaryBg" data-key="btnPrimaryBg" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>نص الزر الأساسي
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_btnPrimaryText" data-key="btnPrimaryText" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_btnPrimaryText" data-key="btnPrimaryText" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>خلفية الزر الثانوي
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_btnSecondaryBg" data-key="btnSecondaryBg" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_btnSecondaryBg" data-key="btnSecondaryBg" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>نص الزر الثانوي
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_btnSecondaryText" data-key="btnSecondaryText" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_btnSecondaryText" data-key="btnSecondaryText" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>الزر عند المرور
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_btnHover" data-key="btnHover" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_btnHover" data-key="btnHover" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>الهيدر
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_headerBg" data-key="headerBg" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_headerBg" data-key="headerBg" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>الفوتر
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_footerBg" data-key="footerBg" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_footerBg" data-key="footerBg" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>قائمة التنقل
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_navBg" data-key="navBg" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_navBg" data-key="navBg" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>لون السعر
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_price" data-key="price" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_price" data-key="price" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>السعر قبل الخصم
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_priceOld" data-key="priceOld" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_priceOld" data-key="priceOld" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>شارات العروض
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_badge" data-key="badge" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_badge" data-key="badge" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>أيقونة السلة
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_cartIcon" data-key="cartIcon" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_cartIcon" data-key="cartIcon" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>خلفية حقول الإدخال
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_inputBg" data-key="inputBg" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_inputBg" data-key="inputBg" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>حدود الحقول
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_inputBorder" data-key="inputBorder" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_inputBorder" data-key="inputBorder" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>رسائل النجاح
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_success" data-key="success" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_success" data-key="success" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>رسائل الخطأ
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_error" data-key="error" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_error" data-key="error" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>ذهبي
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_gold" data-key="gold" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_gold" data-key="gold" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+            <label>لون التمييز
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="th_accent" data-key="accent" style="width:48px;height:36px;padding:0;border:0;background:transparent" />
+                <input type="text" id="thx_accent" data-key="accent" dir="ltr" placeholder="#000000" style="flex:1;font-family:monospace" />
+              </div>
+            </label>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+            <button type="button" class="btn btn-ghost" id="thDraft">حفظ المسودة</button>
+            <button type="button" class="btn btn-primary" id="thPublish">نشر التغييرات</button>
+            <button type="button" class="btn btn-ghost" id="thPreview">معاينة على المتجر</button>
+            <button type="button" class="btn btn-ghost" id="thRevert">استعادة المنشور</button>
+            <button type="button" class="btn btn-ghost" id="thDefault">الألوان الافتراضية</button>
+          </div>
+          <div class="msg" id="thMsg"></div>
+          <div style="margin-top:16px;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:var(--bg-section,#111)" id="thLiveBox">
+            <div class="hint" style="margin-bottom:8px">معاينة سريعة</div>
+            <div id="thPreviewCard" style="padding:16px;border-radius:12px;border:1px solid #333">
+              <strong id="thPrevTitle" style="display:block;margin-bottom:8px">ATHAR | أثر</strong>
+              <p id="thPrevText" style="margin:0 0 10px;font-size:.9rem">نص تجريبي لبطاقات المنتجات والعناوين.</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <span id="thPrevPrice" style="font-weight:800">450 ج.م</span>
+                <span id="thPrevOld" style="text-decoration:line-through;opacity:.7">550 ج.م</span>
+                <span id="thPrevBadge" style="padding:2px 8px;border-radius:999px;font-size:.75rem;color:#fff">خصم</span>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:8px">
+                <button type="button" id="thPrevBtn" style="padding:8px 14px;border:0;border-radius:10px;font-weight:700">أضف للسلة</button>
+                <button type="button" id="thPrevBtn2" style="padding:8px 14px;border:0;border-radius:10px">تفاصيل</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+<section class="panel" id="panel-settings">
         <div class="card">
           <h3>إعدادات عامة</h3>
           <p class="hint">كلمة سر الإدارة محفوظة في متغير Vercel باسم <code>ADMIN_SECRET</code> ولا تُحفظ داخل ملفات الموقع.</p>
@@ -859,6 +1075,7 @@
           else if (panelId === "categories") loadCategories();
           else if (panelId === "dash") loadStats();
           else if (panelId === "finance") loadFinanceDashboard();
+          else if (panelId === "theme") loadThemePanel();
           else if (panelId === "visitors") { if (typeof loadVisitors === "function") loadVisitors(); }
           else if (panelId === "coupons") { if (typeof loadCouponsPanel === "function") loadCouponsPanel(); }
           else if (panelId === "shipping") { if (typeof loadShippingSettings === "function") loadShippingSettings(); }
