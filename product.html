@@ -528,10 +528,11 @@
       }
       function restartGalleryAuto() {
         stopGalleryAuto();
-        if (galleryImgs.length < 2) return;
+        if (!galleryImgs || galleryImgs.length < 2) return;
+        const autoMs = 3000;
         galleryAutoTimer = setInterval(function() {
           showGalleryImage(galleryIndex + 1);
-        }, 3500);
+        }, autoMs);
       }
       // إيقاف مؤقت عند التفاعل اليدوي
       ["pdPrev", "pdNext"].forEach(function(id) {
