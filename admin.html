@@ -719,16 +719,27 @@
             </label>
           </div>
           <div style="margin-top:14px;padding:14px;border-radius:14px;border:1px solid rgba(167,139,250,.45);background:rgba(139,92,246,.1)">
-            <h4 style="margin:0 0 8px">حجم صور الواجهة</h4>
-            <p class="hint" style="margin:0 0 10px">حرّكي الشريط ثم اضغطي «حفظ الواجهة» — التغيير يظهر في المتجر بعد التحديث.</p>
-            <label style="display:block;margin-bottom:10px">كمبيوتر: <strong id="hScaleVal">128%</strong>
-              <input id="hScale" type="range" min="50" max="150" step="5" value="128" style="width:100%" />
-            </label>
-            <label style="display:block;margin-bottom:10px">موبايل: <strong id="hScaleMobileVal">105%</strong>
-              <input id="hScaleMobile" type="range" min="50" max="130" step="5" value="105" style="width:100%" />
-            </label>
-            <button type="button" class="btn btn-ghost" id="saveHeroScaleBtn" style="margin-top:4px">حفظ الحجم فقط</button>
+            <h4 style="margin:0 0 8px">حجم صور الموبايلات في الواجهة</h4>
+            <p class="hint" style="margin:0 0 10px">يتحكّم في إطار الصور (الموبايلين) فقط — مش في كرت «شنط حريمي». اكتبي النسبة ثم احفظي.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <label>كمبيوتر (%)
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input id="hScale" type="number" min="50" max="160" step="1" value="128" dir="ltr" style="flex:1;font-family:monospace;font-size:1.05rem" />
+                  <span class="hint">%</span>
+                </div>
+              </label>
+              <label>موبايل (%)
+                <div style="display:flex;align-items:center;gap:6px">
+                  <input id="hScaleMobile" type="number" min="50" max="140" step="1" value="105" dir="ltr" style="flex:1;font-family:monospace;font-size:1.05rem" />
+                  <span class="hint">%</span>
+                </div>
+              </label>
+            </div>
+            <p class="hint" style="margin:8px 0 0">مثال: 100 = عادي · 120 = أكبر · 80 = أصغر</p>
+            <button type="button" class="btn btn-primary" id="saveHeroScaleBtn" style="margin-top:10px">حفظ نسبة الصور</button>
             <span class="hint" id="heroScaleMsg" style="margin-right:8px"></span>
+            <span id="hScaleVal" style="display:none"></span>
+            <span id="hScaleMobileVal" style="display:none"></span>
           </div>
 
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
@@ -2923,16 +2934,21 @@
     });
     
     (function setupHeroScaleControls(){
-      function bind(id, lab) {
-        var el = document.getElementById(id);
-        var l = document.getElementById(lab);
+      function clampPct(el, min, max) {
         if (!el) return;
-        el.addEventListener("input", function(){
-          if (l) l.textContent = el.value + "%";
-        });
+        var v = parseInt(el.value, 10);
+        if (isNaN(v)) v = 100;
+        v = Math.max(min, Math.min(max, v));
+        el.value = v;
+        return v;
       }
-      bind("hScale", "hScaleVal");
-      bind("hScaleMobile", "hScaleMobileVal");
+      ["hScale","hScaleMobile"].forEach(function(id){
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("change", function(){
+          clampPct(el, id === "hScale" ? 50 : 50, id === "hScale" ? 160 : 140);
+        });
+      });
       var btn = document.getElementById("saveHeroScaleBtn");
       if (btn) {
         btn.addEventListener("click", async function(){
@@ -2942,9 +2958,13 @@
           try {
             var hs = document.getElementById("hScale");
             var hsm = document.getElementById("hScaleMobile");
+            var pv = hs ? Math.max(50, Math.min(160, parseInt(hs.value,10)||100)) : 100;
+            var pm = hsm ? Math.max(50, Math.min(140, parseInt(hsm.value,10)||100)) : 100;
+            if (hs) hs.value = pv;
+            if (hsm) hsm.value = pm;
             var data = await api("update_hero", {
-              heroScale: hs ? Number(hs.value) / 100 : 1,
-              heroScaleMobile: hsm ? Number(hsm.value) / 100 : 1.05
+              heroScale: pv / 100,
+              heroScaleMobile: pm / 100
             });
             if (!data.ok) throw new Error(data.error || "فشل الحفظ");
             if (msg) { msg.textContent = "تم حفظ الحجم — حدّثي المتجر"; msg.className = "hint"; msg.style.color = "#4ade80"; }
