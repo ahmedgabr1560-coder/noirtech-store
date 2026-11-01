@@ -1,3 +1,14 @@
+const __rlC = globalThis.__ATHAR_RL_CHAT || (globalThis.__ATHAR_RL_CHAT = new Map());
+function chatRate(req, limit=20, windowMs=60000) {
+  const xf = String(req.headers["x-forwarded-for"] || "");
+  const key = (xf.split(",")[0] || "ip").trim();
+  const now = Date.now();
+  let row = __rlC.get(key);
+  if (!row || now - row.start > windowMs) row = { start: now, count: 0 };
+  row.count++;
+  __rlC.set(key, row);
+  return row.count <= limit;
+}
 function money(n) {
   try { return Number(n).toLocaleString("ar-EG") + " ج.م"; } catch (e) { return String(n) + " ج.م"; }
 }
@@ -201,6 +212,9 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method === "GET") return res.status(200).json({ ok: true, style: "human-local" });
+  if (req.method === "POST" && !chatRate(req)) {
+    return res.status(429).json({ reply: "ثواني بس 😊 في طلبات كتير دلوقتي، جرّبي تاني بعد لحظة." });
+  }
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
