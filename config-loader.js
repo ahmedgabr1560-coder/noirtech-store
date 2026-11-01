@@ -27,6 +27,48 @@
     } catch (e) {}
   }
 
+  
+  const SYSTEM_LIGHT = {
+    bg: "#f6f5f2", bgSection: "#efece6", bgCard: "#ffffff", text: "#1c1916",
+    textHeading: "#0c0b0a", textMuted: "#6f6a62", border: "#e4ddd3",
+    headerBg: "#faf8f5", footerBg: "#efece6", navBg: "#faf8f5",
+    inputBg: "#ffffff", inputBorder: "#ddd5c8", btnSecondaryBg: "#f0ebe3",
+    btnSecondaryText: "#1c1916", shadow: "rgba(0,0,0,0.12)", priceOld: "#8a847a"
+  };
+  const SYSTEM_DARK = {
+    bg: "#07070a", bgSection: "#0a0a0c", bgCard: "#0f0f14", text: "#f4f4f8",
+    textHeading: "#ffffff", textMuted: "#9898a6", border: "#2a2a32",
+    headerBg: "#0a0a0c", footerBg: "#07070a", navBg: "#0a0a0c",
+    inputBg: "#0c0c12", inputBorder: "#2a2a32", btnSecondaryBg: "#1a1a22",
+    btnSecondaryText: "#f5f5f7", shadow: "rgba(0,0,0,0.45)", priceOld: "#9898a6"
+  };
+
+  function prefersDark() {
+    try { return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches; }
+    catch (e) { return true; }
+  }
+
+  function applySystemSurfaces(brandColors) {
+    const dark = prefersDark();
+    const root = document.documentElement;
+    root.setAttribute("data-theme", dark ? "dark" : "light");
+    root.style.colorScheme = dark ? "dark" : "light";
+    const surfaces = dark ? SYSTEM_DARK : SYSTEM_LIGHT;
+    // ابدأ من ألوان الأدمن (العلامة) ثم افرض الأسطح حسب النظام
+    const merged = Object.assign({}, brandColors || {}, surfaces);
+    // أبقِ ألوان الهوية من الأدمن
+    if (brandColors) {
+      ["primary","secondary","btnPrimaryBg","btnPrimaryText","btnHover","link","price","badge","cartIcon","gold","goldLight","goldDark","accent","success","error"].forEach(function(k){
+        if (brandColors[k]) merged[k] = brandColors[k];
+      });
+    }
+    applyColors(merged);
+    try {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", dark ? (merged.bg || "#0a0a0c") : (merged.bg || "#f6f5f2"));
+    } catch (e) {}
+  }
+
   function applyColors(colors) {
       if (!colors || typeof colors !== "object") return;
       const map = {
@@ -85,7 +127,16 @@
       }
     }
 
-    applyColors(c.colors);
+    window.__ATHAR_BRAND_COLORS = c.colors || null;
+    applySystemSurfaces(c.colors);
+    try {
+      if (!window.__ATHAR_SCHEME_BOUND && window.matchMedia) {
+        window.__ATHAR_SCHEME_BOUND = true;
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function() {
+          applySystemSurfaces(window.__ATHAR_BRAND_COLORS);
+        });
+      }
+    } catch (e) {}
     try {
       const hs = Number(c.heroScale);
       const hsm = Number(c.heroScaleMobile);
