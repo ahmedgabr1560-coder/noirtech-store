@@ -631,38 +631,56 @@ function resolveProductImage(prod) {
   return prod.image || "";
 }
 function getMixedOfferImages(p) {
-  // [0] = المنتج الأول (مثلث فوق) ، [1] = المنتج الثاني (مثلث تحت)
-  const out = [];
-  if (!p) return out;
-  let ids = [];
-  if (p.offerMeta) {
-    ids = p.offerMeta.productIds || p.offerMeta.sourceProductIds || [];
+  // [0] مثلث فوق = المنتج الأول | [1] مثلث تحت = المنتج الثاني
+  if (!p) return ["", ""];
+  const pool = (typeof PRODUCTS !== "undefined" && PRODUCTS && PRODUCTS.length)
+    ? PRODUCTS
+    : (window.__ATHAR_PRODUCTS || []);
+  function byId(id) {
+    if (id == null || id === "") return null;
+    return pool.find(function(x) { return String(x.id) === String(id); }) || null;
   }
-  if ((!ids || !ids.length) && p.sourceProductId) {
-    ids = [p.sourceProductId];
-    if (p.sourceProductId2) ids.push(p.sourceProductId2);
+  function imgOf(prod) {
+    if (!prod) return "";
+    if (Array.isArray(prod.images) && prod.images[0]) return prod.images[0];
+    return prod.image || "";
   }
-  // حافظ على ترتيب الأول ثم الثاني
-  ids = (ids || []).map(String).filter(Boolean);
-  const pool = (typeof PRODUCTS !== "undefined" && PRODUCTS) ? PRODUCTS : (window.__ATHAR_PRODUCTS || []);
-  ids.forEach(function(id) {
-    const src = pool.find(function(x) { return String(x.id) === String(id); });
-    const img = resolveProductImage(src);
-    if (img) out.push(img);
-    else out.push(""); // حافظ على ترتيب الخانات
-  });
-  // fallback: صور العرض نفسها
-  if (Array.isArray(p.images) && p.images.length) {
-    for (let i = 0; i < p.images.length && out.length < 2; i++) {
-      if (p.images[i] && out.indexOf(p.images[i]) < 0) out.push(p.images[i]);
+  let id1 = null, id2 = null;
+  const meta = p.offerMeta || {};
+  const ids = meta.productIds || meta.sourceProductIds || [];
+  if (Array.isArray(ids) && ids.length >= 1) id1 = ids[0];
+  if (Array.isArray(ids) && ids.length >= 2) id2 = ids[1];
+  if (id1 == null && p.sourceProductId != null) id1 = p.sourceProductId;
+  if (id2 == null && p.sourceProductId2 != null) id2 = p.sourceProductId2;
+  if (id2 == null && meta.sourceProductId2 != null) id2 = meta.sourceProductId2;
+  if ((id1 == null || id2 == null) && p.name && String(p.name).indexOf("+") >= 0) {
+    const raw = String(p.name).replace(/^عرض\s*:\s*/i, "");
+    const parts = raw.split(/\s*\+\s*/).map(function(s){ return s.trim(); }).filter(Boolean);
+    if (parts.length >= 2) {
+      function findByName(n) {
+        const nn = n.toLowerCase();
+        return pool.find(function(x) {
+          const xn = String(x.name || "").toLowerCase();
+          return xn === nn || xn.indexOf(nn) >= 0 || nn.indexOf(xn) >= 0;
+        });
+      }
+      if (id1 == null) {
+        const f1 = findByName(parts[0]);
+        if (f1) id1 = f1.id;
+      }
+      if (id2 == null) {
+        const f2 = findByName(parts[1]);
+        if (f2) id2 = f2.id;
+      }
     }
   }
-  if (p.image && out.length < 2 && out.indexOf(p.image) < 0) out.push(p.image);
-  // املأ الفراغات
-  const cleaned = out.filter(Boolean);
-  if (cleaned.length === 1) return [cleaned[0], cleaned[0]];
-  if (cleaned.length >= 2) return [cleaned[0], cleaned[1]];
-  return [p.image || "", p.image || ""];
+  let img1 = imgOf(byId(id1));
+  let img2 = imgOf(byId(id2));
+  if (!img1 && Array.isArray(p.images) && p.images[0]) img1 = p.images[0];
+  if (!img2 && Array.isArray(p.images) && p.images[1]) img2 = p.images[1];
+  if (!img1) img1 = p.image || "";
+  if (!img2) img2 = (Array.isArray(p.images) && p.images[1]) || img1 || p.image || "";
+  return [img1, img2];
 }
 
 function productCard(p) {
@@ -673,9 +691,9 @@ function productCard(p) {
           const imgs = getMixedOfferImages(p);
           const a = imgs[0] || p.image || ""; // فوق = منتج 1
           const b = imgs[1] || a; // تحت = منتج 2
-          return `<span class="mixed-tri mixed-tri-a" style="background-image:url('${a}')"></span>
-      <span class="mixed-tri mixed-tri-b" style="background-image:url('${b}')"></span>
-      <span class="mixed-split-line"></span>`;
+          return `<span class="mixed-tri mixed-tri-a" title="المنتج الأول" style="background-image:url('${a}')"></span>
+      <span class="mixed-tri mixed-tri-b" title="المنتج الثاني" style="background-image:url('${b}')"></span>
+      <span class="mixed-split-line" aria-hidden="true"></span>`;
         })() : `<img src="${p.image}" alt="${String(p.name||'منتج').replace(/"/g,'')}" loading="lazy" decoding="async" width="400" height="400" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />`}
       ${isBundleOffer(p) || isMixedBundle(p) ? `<span class="badge-off" style="background:linear-gradient(135deg,#f97316,#ea580c)">عرض قطع</span>` : (off ? `<span class="badge-off">-${off}%</span>` : "")}
     </a>
