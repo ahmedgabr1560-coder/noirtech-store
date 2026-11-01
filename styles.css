@@ -1935,12 +1935,12 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
 /* Hero visual size — controllable via admin (--hero-scale / --hero-scale-mobile) */
 @media (max-width: 900px) {
   .hero-visual {
-    min-height: calc(260px * var(--hero-scale-mobile, 0.72)) !important;
+    min-height: calc(260px * var(--hero-scale-mobile, 0.88)) !important;
     margin-bottom: 4px;
   }
   .phones-stack {
-    width: min(68vw, calc(240px * var(--hero-scale-mobile, 0.72))) !important;
-    height: calc(250px * var(--hero-scale-mobile, 0.72)) !important;
+    width: min(68vw, calc(240px * var(--hero-scale-mobile, 0.88))) !important;
+    height: calc(250px * var(--hero-scale-mobile, 0.88)) !important;
   }
   .phones-stack .phone {
     border-radius: 18px !important;
@@ -1956,18 +1956,18 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
     bottom: 6px !important;
     right: 4% !important;
     border-radius: 12px !important;
-    transform: scale(calc(0.9 * var(--hero-scale-mobile, 0.72) / 0.72));
+    transform: scale(calc(0.9 * var(--hero-scale-mobile, 0.88) / 0.72));
   }
   .hero-chip strong { font-size: 0.78rem; }
   .hero-chip span { font-size: 0.68rem; }
 }
 @media (max-width: 480px) {
   .hero-visual {
-    min-height: calc(220px * var(--hero-scale-mobile, 0.68)) !important;
+    min-height: calc(220px * var(--hero-scale-mobile, 0.85)) !important;
   }
   .phones-stack {
-    width: min(62vw, calc(210px * var(--hero-scale-mobile, 0.68))) !important;
-    height: calc(220px * var(--hero-scale-mobile, 0.68)) !important;
+    width: min(62vw, calc(210px * var(--hero-scale-mobile, 0.85))) !important;
+    height: calc(220px * var(--hero-scale-mobile, 0.85)) !important;
   }
 }
 
@@ -2046,12 +2046,16 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
   background-repeat: no-repeat;
 }
 .product-media.mixed-split .mixed-tri-a {
+  /* المنتج الأول — المثلث العلوي */
   clip-path: polygon(0 0, 100% 0, 0 100%);
   -webkit-clip-path: polygon(0 0, 100% 0, 0 100%);
+  z-index: 1;
 }
 .product-media.mixed-split .mixed-tri-b {
+  /* المنتج الثاني — المثلث السفلي */
   clip-path: polygon(100% 0, 100% 100%, 0 100%);
   -webkit-clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  z-index: 1;
 }
 .product-media.mixed-split .mixed-split-line {
   position: absolute;
@@ -2061,3 +2065,56 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
   z-index: 2;
 }
 .product-media.mixed-split .badge-off { z-index: 3; }
+
+/* عروض القطع — تبويبات بنفس روح أقسام المتجر */
+.bundle-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 4px 0;
+}
+.bundle-tabs .bundle-tab,
+.bundle-tabs .chip {
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: #e2e8f0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s ease;
+}
+.bundle-tabs .bundle-tab:hover,
+.bundle-tabs .chip:hover {
+  border-color: rgba(167,139,250,.45);
+  background: rgba(139,92,246,.12);
+}
+.bundle-tabs .bundle-tab.active,
+.bundle-tabs .chip.active {
+  background: linear-gradient(135deg, rgba(139,92,246,.35), rgba(109,75,232,.25));
+  border-color: rgba(167,139,250,.55);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(109,75,232,.2);
+}
+#bundleCatHint { display: none; }
+
+/* pro polish */
+.section-head h2 {
+  letter-spacing: -0.02em;
+}
+.products-grid {
+  gap: 16px;
+}
+@media (min-width: 900px) {
+  .products-grid { gap: 20px; }
+}
+.product-card {
+  border: 1px solid rgba(255,255,255,.06);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
+}
