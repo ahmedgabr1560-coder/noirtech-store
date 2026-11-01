@@ -717,7 +717,20 @@
               <img id="hImg2Prev" alt="معاينة 2" style="margin-top:8px;width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
             </label>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <div style="margin-top:14px;padding:14px;border-radius:14px;border:1px solid rgba(167,139,250,.45);background:rgba(139,92,246,.1)">
+            <h4 style="margin:0 0 8px">حجم صور الواجهة</h4>
+            <p class="hint" style="margin:0 0 10px">حرّكي الشريط ثم اضغطي «حفظ الواجهة» — التغيير يظهر في المتجر بعد التحديث.</p>
+            <label style="display:block;margin-bottom:10px">كمبيوتر: <strong id="hScaleVal">128%</strong>
+              <input id="hScale" type="range" min="50" max="150" step="5" value="128" style="width:100%" />
+            </label>
+            <label style="display:block;margin-bottom:10px">موبايل: <strong id="hScaleMobileVal">105%</strong>
+              <input id="hScaleMobile" type="range" min="50" max="130" step="5" value="105" style="width:100%" />
+            </label>
+            <button type="button" class="btn btn-ghost" id="saveHeroScaleBtn" style="margin-top:4px">حفظ الحجم فقط</button>
+            <span class="hint" id="heroScaleMsg" style="margin-right:8px"></span>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
             <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة</button>
             <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">معاينة المتجر</a>
           </div>
@@ -725,16 +738,6 @@
           <div style="margin-top:14px;padding:14px;border-radius:14px;border:1px solid rgba(167,139,250,.3);background:rgba(139,92,246,.08)">
             <h4 style="margin:0 0 8px">تدوير صور الواجهة من المنتجات</h4>
             <p class="hint" style="margin:0 0 10px">لو مفعّل: صور الهيرو تتغيّر تلقائي من منتجات المتجر (منتج بعد منتج).</p>
-            
-            <label>حجم صور الواجهة (كمبيوتر) %
-              <input id="hScale" type="range" min="50" max="140" step="5" value="128" />
-              <span id="hScaleVal" class="hint">128%</span>
-            </label>
-            <label>حجم صور الواجهة (موبايل) %
-              <input id="hScaleMobile" type="range" min="50" max="120" step="5" value="105" />
-              <span id="hScaleMobileVal" class="hint">105%</span>
-            </label>
-            <p class="hint">كل ما قلّت النسبة، صور الهيرو تبقى أصغر — مناسب للموبايل.</p>
 <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
               <input type="checkbox" id="hRotateProducts" style="width:auto" />
               <span>تفعيل تدوير الصور من المنتجات</span>
@@ -2557,7 +2560,7 @@
         if ($("hScaleVal")) $("hScaleVal").textContent = v + "%";
       }
       if ($("hScaleMobile")) {
-        const v = Math.round((Number(c.heroScaleMobile) || 0.7) * 100);
+        const v = Math.round((Number(c.heroScaleMobile) || 1.05) * 100);
         $("hScaleMobile").value = v;
         if ($("hScaleMobileVal")) $("hScaleMobileVal").textContent = v + "%";
       }
@@ -2582,7 +2585,9 @@
           heroRotateFromProducts: $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: partial.heroImage1 != null ? partial.heroImage1 : (pendingHero1 || $("hImg1Url")?.value.trim() || ""),
-          heroImage2: partial.heroImage2 != null ? partial.heroImage2 : (pendingHero2 || $("hImg2Url")?.value.trim() || "")
+          heroImage2: partial.heroImage2 != null ? partial.heroImage2 : (pendingHero2 || $("hImg2Url")?.value.trim() || ""),
+          heroScale: $("hScale") ? Number($("hScale").value) / 100 : 1,
+          heroScaleMobile: $("hScaleMobile") ? Number($("hScaleMobile").value) / 100 : 1.05
         };
         const data = await api("update_hero", payload);
         if (!data.ok) throw new Error(data.error || "فشل الحفظ التلقائي");
@@ -2604,7 +2609,7 @@
         if ($("hScaleVal")) $("hScaleVal").textContent = v + "%";
       }
       if ($("hScaleMobile")) {
-        const v = Math.round((Number(c.heroScaleMobile) || 0.7) * 100);
+        const v = Math.round((Number(c.heroScaleMobile) || 1.05) * 100);
         $("hScaleMobile").value = v;
         if ($("hScaleMobileVal")) $("hScaleMobileVal").textContent = v + "%";
       }
@@ -2663,6 +2668,43 @@
       setPrev("hImg2Prev", v);
       await autoSaveHeroImages({ heroImage2: v });
     });
+    
+    (function setupHeroScaleControls(){
+      function bind(id, lab) {
+        var el = document.getElementById(id);
+        var l = document.getElementById(lab);
+        if (!el) return;
+        el.addEventListener("input", function(){
+          if (l) l.textContent = el.value + "%";
+        });
+      }
+      bind("hScale", "hScaleVal");
+      bind("hScaleMobile", "hScaleMobileVal");
+      var btn = document.getElementById("saveHeroScaleBtn");
+      if (btn) {
+        btn.addEventListener("click", async function(){
+          var msg = document.getElementById("heroScaleMsg");
+          btn.disabled = true;
+          if (msg) { msg.textContent = "جاري الحفظ..."; msg.className = "hint"; }
+          try {
+            var hs = document.getElementById("hScale");
+            var hsm = document.getElementById("hScaleMobile");
+            var data = await api("update_hero", {
+              heroScale: hs ? Number(hs.value) / 100 : 1,
+              heroScaleMobile: hsm ? Number(hsm.value) / 100 : 1.05
+            });
+            if (!data.ok) throw new Error(data.error || "فشل الحفظ");
+            if (msg) { msg.textContent = "تم حفظ الحجم — حدّثي المتجر"; msg.className = "hint"; msg.style.color = "#4ade80"; }
+            try { localStorage.setItem("nx_catalog_bust", String(Date.now())); } catch (e) {}
+          } catch (err) {
+            if (msg) { msg.textContent = err.message || "خطأ"; msg.style.color = "#f87171"; }
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      }
+    })();
+
     $("saveHeroBtn")?.addEventListener("click", async () => {
       const btn = $("saveHeroBtn");
       const msg = $("heroMsg");
@@ -2680,7 +2722,9 @@
           heroRotateFromProducts: $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: pendingHero1 || $("hImg1Url")?.value.trim() || "",
-          heroImage2: pendingHero2 || $("hImg2Url")?.value.trim() || ""
+          heroImage2: pendingHero2 || $("hImg2Url")?.value.trim() || "",
+          heroScale: $("hScale") ? Number($("hScale").value) / 100 : 1,
+          heroScaleMobile: $("hScaleMobile") ? Number($("hScaleMobile").value) / 100 : 1.05
         };
         const data = await api("update_hero", payload);
         if (!data.ok) throw new Error(data.error || "فشل الحفظ");
@@ -2697,7 +2741,7 @@
         if ($("hScaleVal")) $("hScaleVal").textContent = v + "%";
       }
       if ($("hScaleMobile")) {
-        const v = Math.round((Number(c.heroScaleMobile) || 0.7) * 100);
+        const v = Math.round((Number(c.heroScaleMobile) || 1.05) * 100);
         $("hScaleMobile").value = v;
         if ($("hScaleMobileVal")) $("hScaleMobileVal").textContent = v + "%";
       }
