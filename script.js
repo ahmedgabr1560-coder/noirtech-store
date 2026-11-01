@@ -631,31 +631,38 @@ function resolveProductImage(prod) {
   return prod.image || "";
 }
 function getMixedOfferImages(p) {
+  // [0] = المنتج الأول (مثلث فوق) ، [1] = المنتج الثاني (مثلث تحت)
   const out = [];
   if (!p) return out;
   let ids = [];
   if (p.offerMeta) {
     ids = p.offerMeta.productIds || p.offerMeta.sourceProductIds || [];
   }
-  if ((!ids || ids.length < 2) && p.sourceProductId) {
-    ids = [p.sourceProductId, p.sourceProductId2].filter(Boolean);
+  if ((!ids || !ids.length) && p.sourceProductId) {
+    ids = [p.sourceProductId];
+    if (p.sourceProductId2) ids.push(p.sourceProductId2);
   }
-  const pool = (typeof PRODUCTS !== "undefined" && PRODUCTS) ? PRODUCTS : [];
+  // حافظ على ترتيب الأول ثم الثاني
+  ids = (ids || []).map(String).filter(Boolean);
+  const pool = (typeof PRODUCTS !== "undefined" && PRODUCTS) ? PRODUCTS : (window.__ATHAR_PRODUCTS || []);
   ids.forEach(function(id) {
     const src = pool.find(function(x) { return String(x.id) === String(id); });
     const img = resolveProductImage(src);
     if (img) out.push(img);
+    else out.push(""); // حافظ على ترتيب الخانات
   });
-  // fallback: own images
-  if (out.length < 2 && Array.isArray(p.images)) {
-    p.images.forEach(function(img) {
-      if (img && out.indexOf(img) < 0) out.push(img);
-    });
+  // fallback: صور العرض نفسها
+  if (Array.isArray(p.images) && p.images.length) {
+    for (let i = 0; i < p.images.length && out.length < 2; i++) {
+      if (p.images[i] && out.indexOf(p.images[i]) < 0) out.push(p.images[i]);
+    }
   }
-  if (out.length < 2 && p.image && out.indexOf(p.image) < 0) out.push(p.image);
-  // still need 2: duplicate last
-  if (out.length === 1) out.push(out[0]);
-  return out.slice(0, 2);
+  if (p.image && out.length < 2 && out.indexOf(p.image) < 0) out.push(p.image);
+  // املأ الفراغات
+  const cleaned = out.filter(Boolean);
+  if (cleaned.length === 1) return [cleaned[0], cleaned[0]];
+  if (cleaned.length >= 2) return [cleaned[0], cleaned[1]];
+  return [p.image || "", p.image || ""];
 }
 
 function productCard(p) {
@@ -664,8 +671,8 @@ function productCard(p) {
     <a class="product-media ${isMixedBundle(p) ? "mixed-split" : ""}" href="/product.html?id=${p.id}" data-open="${p.id}">
       ${isMixedBundle(p) ? (function(){
           const imgs = getMixedOfferImages(p);
-          const a = imgs[0] || p.image || "";
-          const b = imgs[1] || a;
+          const a = imgs[0] || p.image || ""; // فوق = منتج 1
+          const b = imgs[1] || a; // تحت = منتج 2
           return `<span class="mixed-tri mixed-tri-a" style="background-image:url('${a}')"></span>
       <span class="mixed-tri mixed-tri-b" style="background-image:url('${b}')"></span>
       <span class="mixed-split-line"></span>`;
