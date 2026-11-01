@@ -241,7 +241,7 @@ let activeSort = "newest";
 /** Products loaded from products.json (bot-managed) */
 
 /* ===== Instant refresh cache (sessionStorage) ===== */
-const NX_CACHE_TTL = 3 * 1000; // 8 ثواني // 15 ثانية — تحديث سريع من الأدمن
+const NX_CACHE_TTL = 45 * 1000; // 8 ثواني // 15 ثانية — تحديث سريع من الأدمن
 function nxCacheGet(key) {
   try {
     const raw = sessionStorage.getItem(key);
@@ -1568,6 +1568,7 @@ function renderSubcatsBar() {
   ).join("");
   bar.innerHTML = allBtn + chips;
 }
+let _renderShopTimer = null;
 function renderShop() {
   let list = PRODUCTS.filter(productMatches);
   list = sortedProducts(list);
@@ -1884,7 +1885,11 @@ async function loadProducts(force) {
   let mustFresh = !!force;
   try {
     const bust = localStorage.getItem("nx_catalog_bust");
-    if (bust) mustFresh = true;
+    const lastSeen = sessionStorage.getItem("nx_bust_seen") || "";
+    if (bust && bust !== lastSeen) {
+      mustFresh = true;
+      sessionStorage.setItem("nx_bust_seen", bust);
+    }
   } catch (e) {}
   if (mustFresh) {
     try { sessionStorage.removeItem("nx_products"); } catch (e) {}
@@ -1892,6 +1897,9 @@ async function loadProducts(force) {
     const cached = nxCacheGet("nx_products");
     if (cached && Array.isArray(cached) && cached.length) {
       PRODUCTS = dedupeProducts(cached.filter(p => p && !p.hidden && p.active !== false));
+      // استجابة فورية من الكاش — بدون شبكة
+      try { window.__ATHAR_PRODUCTS = PRODUCTS; } catch (e0) {}
+      return PRODUCTS;
     }
   }
   const t = Date.now();
@@ -1957,7 +1965,7 @@ async function loadProducts(force) {
     if (document.visibilityState === "visible") softRefresh();
   });
   window.addEventListener("focus", softRefresh);
-  setInterval(softRefresh, 30000);
+  setInterval(softRefresh, 60000);
 })();
 
 
@@ -2202,7 +2210,7 @@ document.addEventListener("visibilitychange", () => {
     loadHeroConfig();
   }
 });
-setInterval(() => { loadHeroConfig(); }, 60000);
+setInterval(() => { loadHeroConfig(); }, 120000);
 
 
 
@@ -2287,7 +2295,7 @@ window.addEventListener("storage", (e) => {
   });
   setInterval(() => {
     if (document.visibilityState === "visible") refresh(false);
-  }, 20000);
+  }, 45000);
 })();
 
 document.getElementById("applyCouponBtn")?.addEventListener("click", applyCouponFromInput);
