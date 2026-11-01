@@ -1,4 +1,21 @@
 
+(function bindSystemTheme(){
+  try {
+    const dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    if (window.matchMedia && !window.__ATHAR_SCHEME_BOUND_JS) {
+      window.__ATHAR_SCHEME_BOUND_JS = true;
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(e) {
+        document.documentElement.setAttribute("data-theme", e.matches ? "dark" : "light");
+        document.documentElement.style.colorScheme = e.matches ? "dark" : "light";
+        if (typeof applySystemSurfaces === "function") applySystemSurfaces(window.__ATHAR_BRAND_COLORS);
+      });
+    }
+  } catch (e) {}
+})();
+
+
 function applyStoreOpenState(cfg) {
   try {
     cfg = cfg || window.siteConfig || {};
