@@ -1209,6 +1209,15 @@
         fillThemeFields(colors);
         livePreviewTheme(colors);
         if (msg) { msg.className = "msg"; msg.textContent = cfg.colorsDraft ? "مسودة غير منشورة محمّلة" : "الألوان المنشورة محمّلة"; }
+        const mode = cfg.themeMode || "system";
+        window.__ATHAR_THEME_MODE = mode;
+        document.querySelectorAll(".theme-mode-btn").forEach(function(b){
+          const on = b.getAttribute("data-mode") === mode;
+          b.classList.toggle("btn-primary", on);
+          b.classList.toggle("btn-ghost", !on);
+        });
+        const mmsg = document.getElementById("themeModeMsg");
+        if (mmsg) mmsg.textContent = mode === "system" ? "الوضع الحالي: تلقائي" : (mode === "dark" ? "الوضع الحالي: داكن" : "الوضع الحالي: فاتح");
       } catch (e) {
         fillThemeFields(THEME_DEFAULTS);
         if (msg) { msg.className = "msg err"; msg.textContent = e.message || "تعذر التحميل"; }
@@ -1337,23 +1346,6 @@
       });
     }
 
-    const _loadThemePanelOrig = typeof loadThemePanel === "function" ? loadThemePanel : null;
-    async function loadThemePanel() {
-      if (_loadThemePanelOrig) await _loadThemePanelOrig();
-      try {
-        const data = await api("get_config");
-        const cfg = data.config || data || {};
-        const mode = cfg.themeMode || "system";
-        window.__ATHAR_THEME_MODE = mode;
-        document.querySelectorAll(".theme-mode-btn").forEach(function(b){
-          const on = b.getAttribute("data-mode") === mode;
-          b.classList.toggle("btn-primary", on);
-          b.classList.toggle("btn-ghost", !on);
-        });
-        const msg = document.getElementById("themeModeMsg");
-        if (msg) msg.textContent = mode === "system" ? "الوضع الحالي: تلقائي" : (mode === "dark" ? "الوضع الحالي: داكن" : "الوضع الحالي: فاتح");
-      } catch (e) {}
-    }
     try { bindThemeModeButtons(); } catch (e) {}
 
 
