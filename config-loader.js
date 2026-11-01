@@ -8,7 +8,26 @@
     const root = document.documentElement;
     const text = (sel, val) => { const el = document.querySelector(sel); if (el && val != null) el.textContent = val; };
 
-    function applyColors(colors) {
+    
+  function applyHeroScale(c) {
+    if (!c) return;
+    try {
+      const root = document.documentElement;
+      let hs = Number(c.heroScale);
+      let hsm = Number(c.heroScaleMobile);
+      if (!(hs > 0.3 && hs <= 1.6)) hs = 1.28;
+      if (!(hsm > 0.3 && hsm <= 1.5)) hsm = 1.05;
+      root.style.setProperty("--hero-scale", String(hs));
+      root.style.setProperty("--hero-scale-mobile", String(hsm));
+      // force on body too (some CSS scopes)
+      if (document.body) {
+        document.body.style.setProperty("--hero-scale", String(hs));
+        document.body.style.setProperty("--hero-scale-mobile", String(hsm));
+      }
+    } catch (e) {}
+  }
+
+  function applyColors(colors) {
       if (!colors || typeof colors !== "object") return;
       const map = {
         bg: "--bg",
