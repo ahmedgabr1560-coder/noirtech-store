@@ -21,11 +21,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
-  <link rel="preload" href="/styles.css?v=20261016-speed1" as="style" />
-  <link rel="preload" href="/script.js?v=20261031-store-runtime-fix" as="script" />
+  <link rel="preload" href="/styles.css?v=20261101-speed2" as="style" />
+  <link rel="preload" href="/script.js?v=20261101-speed2" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" /></noscript>
-  <link rel="stylesheet" href="/styles.css?v=20261016-speed1" />
+  <noscript></noscript>
+  <link rel="stylesheet" href="/styles.css?v=20261101-speed2" />
 </head>
 <body>
     <div class="bg-stage" aria-hidden="true">
@@ -144,10 +144,10 @@
           <div class="hero-light"></div>
           <div class="phones-stack">
             <div class="phone p1">
-              <img id="heroImg1" src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=700&h=1200&fit=crop&q=90" alt="صورة الواجهة 1" />
+              <img id="heroImg1" fetchpriority="high" decoding="async" src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=700&h=1200&fit=crop&q=90" alt="صورة الواجهة 1" />
             </div>
             <div class="phone p2">
-              <img id="heroImg2" src="https://images.unsplash.com/photo-1590874103328-eac38a941346?w=700&h=1200&fit=crop&q=90" alt="صورة الواجهة 2" />
+              <img id="heroImg2" decoding="async" loading="eager" src="https://images.unsplash.com/photo-1590874103328-eac38a941346?w=700&h=1200&fit=crop&q=90" alt="صورة الواجهة 2" />
             </div>
           </div>
           <a class="hero-chip" href="#shop">
@@ -504,7 +504,8 @@
     </div>
   </div>
 
-  <script src="/script.js?v=20261031-store-runtime-fix" defer></script>
+  <script src="/config-loader.js" defer></script>
+  <script src="/script.js?v=20261101-speed2" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
