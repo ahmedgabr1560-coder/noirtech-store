@@ -158,11 +158,27 @@ function applyBrandConfig(c) {
   if (meta) meta.setAttribute("content", name + " — متجر الموضة والأزياء");
 }
 
-async function loadHeroConfig() {
+async 
+function applyHeroScaleFromConfig(c) {
+  if (!c) return;
+  try {
+    const root = document.documentElement;
+    let hs = Number(c.heroScale);
+    let hsm = Number(c.heroScaleMobile);
+    if (!(hs > 0.3 && hs <= 1.6)) hs = 1.28;
+    if (!(hsm > 0.3 && hsm <= 1.5)) hsm = 1.05;
+    root.style.setProperty("--hero-scale", String(hs));
+    root.style.setProperty("--hero-scale-mobile", String(hsm));
+  } catch (e) {}
+}
+
+function loadHeroConfig() {
   const cached = nxCacheGet("nx_config");
   if (cached && typeof cached === "object") {
     window.siteConfig = cached;
     window.__SITE_CONFIG__ = cached;
+    try { applyHeroScaleFromConfig(window.siteConfig); } catch (eHS) {}
+    applyHeroScaleFromConfig(cached);
     try { applyBrandConfig(cached); } catch (e) {}
     try { applyGeneralConfig(cached); } catch (e) {}
   }
@@ -2184,6 +2200,7 @@ async function bootStore() {
     if (cfg) {
       window.siteConfig = cfg;
       window.__SITE_CONFIG__ = cfg;
+    try { applyHeroScaleFromConfig(window.siteConfig); } catch (eHS) {}
       try { applyBrandConfig(cfg); } catch (e) {}
       try { applyGeneralConfig(cfg); } catch (e) {}
     }
