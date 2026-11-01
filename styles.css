@@ -2192,3 +2192,15 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
 @media (max-width: 640px) {
   .pd-thumb { width: 56px; height: 56px; }
 }
+
+/* hero scale force */
+:root {
+  --hero-scale: 1.3;
+  --hero-scale-mobile: 1.2;
+}
+@media (max-width: 768px) {
+  .phones-stack {
+    width: min(88vw, calc(320px * var(--hero-scale-mobile, 1.2))) !important;
+    height: calc(340px * var(--hero-scale-mobile, 1.2)) !important;
+  }
+}
