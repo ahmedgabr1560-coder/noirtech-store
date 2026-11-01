@@ -17,6 +17,31 @@
   ],
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(self)"
+        },
+        {
+          "key": "X-DNS-Prefetch-Control",
+          "value": "on"
+        }
+      ]
+    },
+    {
       "source": "/api/(.*)",
       "headers": [
         {
@@ -60,7 +85,7 @@
       ]
     },
     {
-      "source": "/(products.json|categories.json|site-config.json)",
+      "source": "/(products.json|categories.json|site-config.json|robots.txt|sitemap.xml)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -119,6 +144,10 @@
     "api/catalog.js": {
       "maxDuration": 10,
       "memory": 256
+    },
+    "api/order.js": {
+      "maxDuration": 20,
+      "memory": 512
     }
   }
 }
