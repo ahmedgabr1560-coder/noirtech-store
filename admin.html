@@ -1105,6 +1105,191 @@
     });
 
     
+
+    /* ===== Theme / Store Colors ===== */
+    const THEME_DEFAULTS = {
+      primary: "#a78bfa", secondary: "#c9a227", bg: "#07070a", bgSection: "#0a0a0c", bgCard: "#0f0f14",
+      border: "#2a2a32", text: "#f4f4f8", textHeading: "#ffffff", textMuted: "#9898a6", link: "#c4b5fd",
+      btnPrimaryBg: "#8b5cf6", btnPrimaryText: "#ffffff", btnSecondaryBg: "#1a1a22", btnSecondaryText: "#f5f5f7",
+      btnHover: "#7c5cf0", headerBg: "#0a0a0c", footerBg: "#07070a", navBg: "#0a0a0c", price: "#f0b429",
+      priceOld: "#9898a6", badge: "#f97316", cartIcon: "#a78bfa", inputBg: "#0c0c12", inputBorder: "#2a2a32",
+      success: "#16a34a", error: "#ef4444", gold: "#f0b429", goldLight: "#ffd666", goldDark: "#d4920a",
+      accent: "#7c5cff", shadow: "rgba(0,0,0,0.45)", radius: "14"
+    };
+    const THEME_PRESETS = {
+      luxury_black_gold: { ...THEME_DEFAULTS, primary: "#c9a227", secondary: "#f0b429", btnPrimaryBg: "#c9a227", btnPrimaryText: "#111", link: "#f0b429", accent: "#d4af37", cartIcon: "#f0b429" },
+      minimal_beige: { ...THEME_DEFAULTS, bg: "#f5f0e8", bgSection: "#efe8dc", bgCard: "#ffffff", text: "#2a241c", textHeading: "#1a1510", textMuted: "#7a6f62", border: "#e0d6c8", primary: "#8b6914", secondary: "#c9a227", btnPrimaryBg: "#8b6914", headerBg: "#efe8dc", footerBg: "#e8dfd0", navBg: "#efe8dc", inputBg: "#fff", inputBorder: "#d4c9b8", link: "#8b6914" },
+      elegant_white: { ...THEME_DEFAULTS, bg: "#ffffff", bgSection: "#f8f8fa", bgCard: "#ffffff", text: "#1a1a1a", textHeading: "#0a0a0a", textMuted: "#6b6b76", border: "#e5e5ea", primary: "#6d28d9", secondary: "#a78bfa", btnPrimaryBg: "#6d28d9", headerBg: "#ffffff", footerBg: "#f4f4f6", navBg: "#ffffff", inputBg: "#fff", inputBorder: "#ddd", link: "#6d28d9", cartIcon: "#6d28d9" },
+      modern_dark: { ...THEME_DEFAULTS },
+      classic_brown: { ...THEME_DEFAULTS, primary: "#8B4513", secondary: "#D2691E", btnPrimaryBg: "#8B4513", accent: "#A0522D", gold: "#CD853F", link: "#D2691E", cartIcon: "#D2691E", price: "#CD853F" }
+    };
+
+    function themeHex(v) {
+      v = String(v || "").trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) return v.toLowerCase();
+      if (/^#[0-9a-fA-F]{3}$/.test(v)) {
+        return ("#" + v[1]+v[1]+v[2]+v[2]+v[3]+v[3]).toLowerCase();
+      }
+      return null;
+    }
+
+    function collectThemeColors() {
+      const out = {};
+      document.querySelectorAll("#panel-theme [data-key]").forEach(function(el) {
+        const k = el.getAttribute("data-key");
+        if (!k) return;
+        let val = (el.value || "").trim();
+        if (el.type === "color") {
+          out[k] = val;
+          return;
+        }
+        if (val) out[k] = val;
+      });
+      const r = document.getElementById("thRadius");
+      if (r) out.radius = String(r.value || "14");
+      return out;
+    }
+
+    function fillThemeFields(colors) {
+      colors = colors || {};
+      Object.keys(THEME_DEFAULTS).forEach(function(k) {
+        const val = colors[k] != null ? colors[k] : THEME_DEFAULTS[k];
+        const col = document.getElementById("th_" + k);
+        const txt = document.getElementById("thx_" + k);
+        const hex = themeHex(val);
+        if (col && hex) col.value = hex;
+        if (txt) txt.value = val;
+      });
+      const r = document.getElementById("thRadius");
+      if (r) r.value = parseInt(colors.radius || THEME_DEFAULTS.radius, 10) || 14;
+    }
+
+    function livePreviewTheme(colors) {
+      try {
+        if (typeof applyColors === "function") applyColors(colors);
+        else if (window.applyColors) window.applyColors(colors);
+        else {
+          const map = {
+            bg: "--bg", bgSection: "--bg-section", bgCard: "--bg-card", primary: "--primary", secondary: "--secondary",
+            border: "--border-solid", text: "--text", textHeading: "--text-heading", textMuted: "--muted", link: "--link",
+            btnPrimaryBg: "--btn-primary-bg", btnPrimaryText: "--btn-primary-text", btnSecondaryBg: "--btn-secondary-bg",
+            btnSecondaryText: "--btn-secondary-text", btnHover: "--btn-hover", headerBg: "--header-bg", footerBg: "--footer-bg",
+            navBg: "--nav-bg", price: "--price", priceOld: "--price-old", badge: "--badge", cartIcon: "--cart-icon",
+            inputBg: "--input-bg", inputBorder: "--input-border", success: "--success", error: "--error",
+            gold: "--gold", goldLight: "--gold-light", goldDark: "--gold-dark", accent: "--accent", shadow: "--shadow"
+          };
+          const root = document.documentElement;
+          Object.keys(map).forEach(function(k) {
+            if (colors[k]) root.style.setProperty(map[k], colors[k]);
+          });
+          if (colors.radius) root.style.setProperty("--radius", colors.radius + (String(colors.radius).endsWith("px") ? "" : "px"));
+        }
+      } catch (e) {}
+    }
+
+    async function loadThemePanel() {
+      const msg = document.getElementById("thMsg");
+      try {
+        const data = await api("get_config");
+        const cfg = data.config || data || {};
+        const colors = cfg.colorsDraft || cfg.colors || THEME_DEFAULTS;
+        fillThemeFields(colors);
+        livePreviewTheme(colors);
+        if (msg) { msg.className = "msg"; msg.textContent = cfg.colorsDraft ? "مسودة غير منشورة محمّلة" : "الألوان المنشورة محمّلة"; }
+      } catch (e) {
+        fillThemeFields(THEME_DEFAULTS);
+        if (msg) { msg.className = "msg err"; msg.textContent = e.message || "تعذر التحميل"; }
+      }
+    }
+
+    function bindThemePanelOnce() {
+      if (window.__themeBound) return;
+      window.__themeBound = true;
+      // sync color <-> text
+      document.querySelectorAll("#panel-theme input[type=color][data-key]").forEach(function(col) {
+        col.addEventListener("input", function() {
+          const k = col.getAttribute("data-key");
+          const txt = document.getElementById("thx_" + k);
+          if (txt) txt.value = col.value;
+          livePreviewTheme(collectThemeColors());
+        });
+      });
+      document.querySelectorAll("#panel-theme input[type=text][data-key]").forEach(function(txt) {
+        txt.addEventListener("change", function() {
+          const k = txt.getAttribute("data-key");
+          const hex = themeHex(txt.value);
+          const col = document.getElementById("th_" + k);
+          if (hex && col) col.value = hex;
+          livePreviewTheme(collectThemeColors());
+        });
+      });
+      const radius = document.getElementById("thRadius");
+      if (radius) radius.addEventListener("input", function(){ livePreviewTheme(collectThemeColors()); });
+
+      const preset = document.getElementById("thPreset");
+      if (preset) preset.addEventListener("change", function() {
+        const p = THEME_PRESETS[preset.value];
+        if (p) { fillThemeFields(p); livePreviewTheme(p); }
+      });
+
+      async function saveTheme(publish) {
+        const msg = document.getElementById("thMsg");
+        const colors = collectThemeColors();
+        if (msg) { msg.className = "msg"; msg.textContent = publish ? "جاري النشر..." : "جاري حفظ المسودة..."; }
+        try {
+          const payload = publish
+            ? { colors: colors, colorsDraft: null, publish: true }
+            : { colorsDraft: colors };
+          // always send colors for publish path inside API
+          if (publish) payload.colors = colors;
+          const data = await api("update_theme", payload);
+          if (!data.ok) throw new Error(data.error || "فشل الحفظ");
+          try { if (typeof bustStoreCaches === "function") bustStoreCaches(); } catch (e) {}
+          try { localStorage.setItem("nx_catalog_bust", String(Date.now())); } catch (e) {}
+          if (msg) {
+            msg.className = "msg ok";
+            msg.textContent = publish ? "تم نشر الألوان على المتجر — حدّثي صفحة المتجر" : "تم حفظ المسودة (للأدمن فقط حتى النشر)";
+          }
+          if (publish) livePreviewTheme(colors);
+        } catch (e) {
+          if (msg) { msg.className = "msg err"; msg.textContent = e.message || "خطأ"; }
+        }
+      }
+
+      const thDraft = document.getElementById("thDraft");
+      if (thDraft) thDraft.addEventListener("click", function(){ saveTheme(false); });
+      const thPublish = document.getElementById("thPublish");
+      if (thPublish) thPublish.addEventListener("click", function(){ saveTheme(true); });
+      const thPreview = document.getElementById("thPreview");
+      if (thPreview) thPreview.addEventListener("click", function() {
+        livePreviewTheme(collectThemeColors());
+        window.open("/", "_blank");
+      });
+      const thRevert = document.getElementById("thRevert");
+      if (thRevert) thRevert.addEventListener("click", async function() {
+        const msg = document.getElementById("thMsg");
+        try {
+          const data = await api("get_config");
+          const cfg = data.config || data || {};
+          fillThemeFields(cfg.colors || THEME_DEFAULTS);
+          livePreviewTheme(cfg.colors || THEME_DEFAULTS);
+          if (msg) { msg.className = "msg ok"; msg.textContent = "تم استعادة الألوان المنشورة"; }
+        } catch (e) {
+          if (msg) { msg.className = "msg err"; msg.textContent = e.message || "خطأ"; }
+        }
+      });
+      const thDefault = document.getElementById("thDefault");
+      if (thDefault) thDefault.addEventListener("click", function() {
+        fillThemeFields(THEME_DEFAULTS);
+        livePreviewTheme(THEME_DEFAULTS);
+        const msg = document.getElementById("thMsg");
+        if (msg) { msg.className = "msg"; msg.textContent = "افتراضي — اضغطي نشر لتطبيقه على المتجر"; }
+      });
+    }
+
+    // bind on load
+    try { bindThemePanelOnce(); } catch (e) { console.warn(e); }
+
     /* ===== ATHAR Order Labels 10x15cm ===== */
     const ATHAR_BRAND = {
       name: "ATHAR | أثر",
