@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>تفاصيل المنتج | ATHAR | أثر</title>
+  <meta name="description" content="تفاصيل المنتج من متجر ATHAR | أثر" />
+  <meta property="og:type" content="product" />
+  <meta property="og:site_name" content="ATHAR | أثر" />
+  <meta property="og:title" content="تفاصيل المنتج | ATHAR | أثر" />
+  <meta property="og:description" content="تسوقي من ATHAR | أثر — توصيل سريع في مصر" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#0a0a0c" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -392,6 +399,18 @@
       // unique
       galleryImgs = galleryImgs.filter(function(v, i, a) { return v && a.indexOf(v) === i; });
       let galleryIndex = 0;
+
+      try {
+        document.title = (p.name || "منتج") + " | ATHAR | أثر";
+        const desc = (p.name || "") + " — " + (p.price != null ? (p.price + " ج.م — ") : "") + "من متجر ATHAR | أثر";
+        const md = document.querySelector('meta[name="description"]');
+        if (md) md.setAttribute("content", desc);
+        const ogt = document.querySelector('meta[property="og:title"]');
+        if (ogt) ogt.setAttribute("content", document.title);
+        const ogd = document.querySelector('meta[property="og:description"]');
+        if (ogd) ogd.setAttribute("content", desc);
+      } catch (eSeo) {}
+
 
       root.innerHTML = `
         <div class="pd-layout">
