@@ -993,6 +993,10 @@ export default async function handler(req, res) {
       if (body.clearDraft === true) {
         delete config.colorsDraft;
       }
+      if (body.themeMode != null) {
+        const m = String(body.themeMode).toLowerCase();
+        config.themeMode = (m === "light" || m === "dark") ? m : "system";
+      }
       if (body.themePreset) config.themePreset = String(body.themePreset).slice(0, 40);
       if (body.defaultMode) config.defaultMode = String(body.defaultMode).slice(0, 10);
       if (body.radius != null) {
