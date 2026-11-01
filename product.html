@@ -358,46 +358,41 @@
         if (/قطعتين|2 قطعه|2 قطعة|عرض القطع/i.test(String(p.name||""))) return 2;
         return 1;
       })();
-      let galleryImgs = (Array.isArray(p.images) && p.images.length)
-        ? p.images.filter(Boolean)
-        : (p.image ? [p.image] : []);
-      // عرض منتجين مختلفين: اجلب صور المنتجين المصدر
-      try {
+      let galleryImgs = [];
+      (function buildGallery(){
+        const push = function(im) {
+          if (im && galleryImgs.indexOf(im) < 0) galleryImgs.push(im);
+        };
+        // 1) صور المنتج نفسه
+        if (Array.isArray(p.images)) p.images.forEach(push);
+        if (p.image) push(p.image);
+        // 2) لو عرض منتجين: كل صور المنتجين (حتى لو مخفيين في الكتالوج)
         const mixed = (p.offerType === "mixed_bundle") || (p.offerMeta && p.offerMeta.type === "mixed_bundle") || (p.sourceProductId && p.sourceProductId2);
-        if (mixed) {
+        if (mixed || (p.sourceProductId && p.sourceProductId2)) {
           let ids = (p.offerMeta && (p.offerMeta.productIds || p.offerMeta.sourceProductIds)) || [];
-          if ((!ids || ids.length < 2) && p.sourceProductId) ids = [p.sourceProductId, p.sourceProductId2].filter(Boolean);
-          const more = [];
-          // try products.json / catalog cache
+          if ((!ids || ids.length < 2)) ids = [p.sourceProductId, p.sourceProductId2].filter(Boolean);
           let pool = [];
           try {
-            const cached = sessionStorage.getItem("nx_products");
-            if (cached) pool = JSON.parse(cached) || [];
-          } catch (e0) {}
-          if (!pool.length && window.__ATHAR_PRODUCTS) pool = window.__ATHAR_PRODUCTS;
-          if (!pool.length) {
-            try {
-              const xhr = new XMLHttpRequest();
-              xhr.open("GET", "/products.json?t=" + Date.now(), false);
-              xhr.send(null);
-              if (xhr.status >= 200 && xhr.status < 300) {
-                const dd = JSON.parse(xhr.responseText);
-                pool = Array.isArray(dd) ? dd : (dd.products || []);
-              }
-            } catch (e1) {}
-          }
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "/products.json?t=" + Date.now(), false);
+            xhr.send(null);
+            if (xhr.status >= 200 && xhr.status < 300) {
+              const dd = JSON.parse(xhr.responseText);
+              pool = Array.isArray(dd) ? dd : (dd.products || []);
+            }
+          } catch (e1) {}
+          if (!pool.length && window.__ATHAR_PRODUCTS) pool = window.__ATHAR_PRODUCTS || [];
           ids.forEach(function(id) {
             const src = (pool || []).find(function(x) { return String(x.id) === String(id); });
             if (!src) return;
-            if (Array.isArray(src.images) && src.images.length) src.images.forEach(function(im){ if (im) more.push(im); });
-            else if (src.image) more.push(src.image);
+            if (Array.isArray(src.images) && src.images.length) src.images.forEach(push);
+            else if (src.image) push(src.image);
           });
-          if (more.length) galleryImgs = more;
         }
-      } catch (eMix) {}
-      if (!galleryImgs.length) galleryImgs = ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70"];
-      // unique
-      galleryImgs = galleryImgs.filter(function(v, i, a) { return v && a.indexOf(v) === i; });
+        if (!galleryImgs.length) {
+          push("https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70");
+        }
+      })();
       let galleryIndex = 0;
 
       try {
