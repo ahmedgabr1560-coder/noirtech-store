@@ -2127,3 +2127,68 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
 /* Speed: layout containment */
 .products-grid { contain: layout content; }
 .header, .footer { contain: layout; }
+
+/* معرض صور صفحة المنتج */
+.pd-gallery { position: relative; }
+.pd-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-start;
+}
+.pd-thumb {
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 2px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+  cursor: pointer;
+  opacity: .75;
+  transition: .2s ease;
+}
+.pd-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pd-thumb.active, .pd-thumb:hover {
+  opacity: 1;
+  border-color: rgba(167,139,250,.85);
+  box-shadow: 0 0 0 1px rgba(167,139,250,.35);
+}
+.pd-img-count {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  z-index: 3;
+  backdrop-filter: blur(6px);
+}
+.pd-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.pd-nav.prev { right: 10px; }
+.pd-nav.next { left: 10px; }
+@media (max-width: 640px) {
+  .pd-thumb { width: 56px; height: 56px; }
+}
