@@ -769,6 +769,18 @@
         <div class="card">
           <h3>تخصيص ألوان المتجر | Store Appearance</h3>
           <p class="hint">غيّري الألوان، عاينيها، ثم انشري للزوار. المسودة لا تظهر للزوار حتى النشر.</p>
+
+          <div style="margin:0 0 14px;padding:12px;border-radius:12px;border:1px solid rgba(167,139,250,.35);background:rgba(139,92,246,.08)">
+            <h4 style="margin:0 0 8px">وضع المظهر (داكن / فاتح)</h4>
+            <p class="hint" style="margin:0 0 10px">تلقائي = حسب الهاتف أو الكمبيوتر أو المتصفح</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px" id="themeModeGroup">
+              <button type="button" class="btn btn-ghost theme-mode-btn" data-mode="system" id="tmSystem">تلقائي</button>
+              <button type="button" class="btn btn-ghost theme-mode-btn" data-mode="dark" id="tmDark">داكن</button>
+              <button type="button" class="btn btn-ghost theme-mode-btn" data-mode="light" id="tmLight">فاتح</button>
+            </div>
+            <p class="hint" id="themeModeMsg" style="margin:8px 0 0"></p>
+          </div>
+
           <label>قوالب جاهزة
             <select id="thPreset">
               <option value="">— اختاري قالبًا —</option>
@@ -1290,6 +1302,60 @@
 
     // bind on load
     try { bindThemePanelOnce(); } catch (e) { console.warn(e); }
+
+    async function saveThemeMode(mode) {
+      const msg = document.getElementById("themeModeMsg");
+      mode = mode === "light" || mode === "dark" ? mode : "system";
+      if (msg) msg.textContent = "جاري الحفظ...";
+      document.querySelectorAll(".theme-mode-btn").forEach(function(b){
+        b.classList.toggle("btn-primary", b.getAttribute("data-mode") === mode);
+        b.classList.toggle("btn-ghost", b.getAttribute("data-mode") !== mode);
+      });
+      try {
+        const data = await api("update_theme", { themeMode: mode });
+        if (!data.ok) throw new Error(data.error || "فشل الحفظ");
+        try { localStorage.setItem("nx_catalog_bust", String(Date.now())); } catch (e) {}
+        if (msg) { msg.textContent = mode === "system" ? "تم: تلقائي حسب الجهاز" : (mode === "dark" ? "تم: داكن ثابت" : "تم: فاتح ثابت"); msg.style.color = "#4ade80"; }
+        // معاينة فورية في الأدمن
+        try {
+          window.__ATHAR_THEME_MODE = mode;
+          if (typeof applySystemSurfaces === "function") applySystemSurfaces(window.__ATHAR_BRAND_COLORS);
+          else {
+            document.documentElement.setAttribute("data-theme", mode === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : mode);
+          }
+        } catch (e2) {}
+      } catch (e) {
+        if (msg) { msg.textContent = e.message || "خطأ"; msg.style.color = "#f87171"; }
+      }
+    }
+
+    function bindThemeModeButtons() {
+      document.querySelectorAll(".theme-mode-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          saveThemeMode(btn.getAttribute("data-mode"));
+        });
+      });
+    }
+
+    const _loadThemePanelOrig = typeof loadThemePanel === "function" ? loadThemePanel : null;
+    async function loadThemePanel() {
+      if (_loadThemePanelOrig) await _loadThemePanelOrig();
+      try {
+        const data = await api("get_config");
+        const cfg = data.config || data || {};
+        const mode = cfg.themeMode || "system";
+        window.__ATHAR_THEME_MODE = mode;
+        document.querySelectorAll(".theme-mode-btn").forEach(function(b){
+          const on = b.getAttribute("data-mode") === mode;
+          b.classList.toggle("btn-primary", on);
+          b.classList.toggle("btn-ghost", !on);
+        });
+        const msg = document.getElementById("themeModeMsg");
+        if (msg) msg.textContent = mode === "system" ? "الوضع الحالي: تلقائي" : (mode === "dark" ? "الوضع الحالي: داكن" : "الوضع الحالي: فاتح");
+      } catch (e) {}
+    }
+    try { bindThemeModeButtons(); } catch (e) {}
+
 
     /* ===== ATHAR Order Labels 10x15cm ===== */
     const ATHAR_BRAND = {
