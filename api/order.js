@@ -1,4 +1,24 @@
 // /api/order — حفظ الطلبات من المتجر (عام) بدون كلمة سر الأدمن
+
+// Rate limit بسيط في ذاكرة الدالة (لكل instance)
+const __rl = globalThis.__ATHAR_RL_ORDER || (globalThis.__ATHAR_RL_ORDER = new Map());
+function clientIp(req) {
+  const xf = String(req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "");
+  return (xf.split(",")[0] || "").trim() || "unknown";
+}
+function rateLimit(req, limit, windowMs) {
+  const key = clientIp(req);
+  const now = Date.now();
+  let row = __rl.get(key);
+  if (!row || now - row.start > windowMs) {
+    row = { start: now, count: 0 };
+  }
+  row.count += 1;
+  __rl.set(key, row);
+  if (row.count > limit) return false;
+  return true;
+}
+
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
 const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
@@ -59,6 +79,10 @@ function sanitizeOrder(order) {
   if (!phone || phone.length < 10) return { error: "phone required" };
   const address = String(customer.address || "").trim();
   if (!address) return { error: "address required" };
+  const name = String(customer.name || "").trim();
+  if (!name || name.length < 2) return { error: "name required" };
+  if (address.length < 5) return { error: "address too short" };
+  if (itemsIn.length > 40) return { error: "too many items" };
 
   const items = itemsIn.slice(0, 50).map((item) => {
     const colors = Array.isArray(item.colors)
