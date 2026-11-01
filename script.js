@@ -676,7 +676,7 @@ function productCard(p) {
           return `<span class="mixed-tri mixed-tri-a" style="background-image:url('${a}')"></span>
       <span class="mixed-tri mixed-tri-b" style="background-image:url('${b}')"></span>
       <span class="mixed-split-line"></span>`;
-        })() : `<img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async" width="400" height="400" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />`}
+        })() : `<img src="${p.image}" alt="${String(p.name||'منتج').replace(/"/g,'')}" loading="lazy" decoding="async" width="400" height="400" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop&q=70'" />`}
       ${isBundleOffer(p) || isMixedBundle(p) ? `<span class="badge-off" style="background:linear-gradient(135deg,#f97316,#ea580c)">عرض قطع</span>` : (off ? `<span class="badge-off">-${off}%</span>` : "")}
     </a>
     <div class="product-body">
