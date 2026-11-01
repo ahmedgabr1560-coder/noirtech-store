@@ -4,6 +4,18 @@ const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
 const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "";
+const __rlA = globalThis.__ATHAR_RL_ADMIN || (globalThis.__ATHAR_RL_ADMIN = new Map());
+function adminAuthRate(req) {
+  const xf = String(req.headers["x-forwarded-for"] || "");
+  const key = (xf.split(",")[0] || "ip").trim();
+  const now = Date.now();
+  let row = __rlA.get(key);
+  if (!row || now - row.start > 60000) row = { start: now, count: 0 };
+  row.count++;
+  __rlA.set(key, row);
+  return row.count <= 30; // 30 محاولة/دقيقة
+}
+
 
 function parseDataUrl(dataUrl) {
   const m = String(dataUrl || "").match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
@@ -57,6 +69,11 @@ function okAuth(req, body) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === "POST" && typeof adminAuthRate === "function" && !adminAuthRate(req)) {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    return res.status(429).json({ ok: false, error: "too many requests" });
+  }
+
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-secret");
