@@ -2293,6 +2293,15 @@
           payload.isOffer = true;
           payload.offerType = "mixed_bundle";
           if (pairPrice > 0) payload.price = pairPrice;
+          payload.sourceProductId = a;
+          payload.sourceProductId2 = b;
+          payload.offerMeta = Object.assign({}, payload.offerMeta || {}, {
+            type: "mixed_bundle",
+            sourceProductId: a,
+            sourceProductId2: b,
+            productIds: [a, b],
+            sourceProductIds: [a, b]
+          });
           const p1 = (PRODUCTS || []).find(x => String(x.id) === String(a));
           const p2 = (PRODUCTS || []).find(x => String(x.id) === String(b));
           const imgs = [];
