@@ -973,14 +973,22 @@ export default async function handler(req, res) {
       if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
       let config = {};
       try { config = JSON.parse(f.content); } catch { config = {}; }
-      if (body.colors && typeof body.colors === "object") {
-        config.colors = { ...(config.colors || {}), ...body.colors };
-      }
       if (body.colorsDraft && typeof body.colorsDraft === "object") {
         config.colorsDraft = body.colorsDraft;
+      } else if (body.colorsDraft === null) {
+        delete config.colorsDraft;
       }
-      if (body.publish === true && config.colorsDraft) {
+      if (body.colors && typeof body.colors === "object") {
+        if (body.publish === true) {
+          config.colors = { ...(config.colors || {}), ...body.colors };
+          delete config.colorsDraft;
+        } else {
+          config.colors = { ...(config.colors || {}), ...body.colors };
+        }
+      }
+      if (body.publish === true && config.colorsDraft && typeof config.colorsDraft === "object") {
         config.colors = { ...(config.colors || {}), ...config.colorsDraft };
+        delete config.colorsDraft;
       }
       if (body.clearDraft === true) {
         delete config.colorsDraft;
