@@ -44,8 +44,12 @@
   };
 
   function prefersDark() {
-    try { return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches; }
-    catch (e) { return true; }
+    try {
+      const mode = window.__ATHAR_THEME_MODE || "system";
+      if (mode === "dark") return true;
+      if (mode === "light") return false;
+      return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    } catch (e) { return true; }
   }
 
   function applySystemSurfaces(brandColors) {
@@ -128,6 +132,7 @@
     }
 
     window.__ATHAR_BRAND_COLORS = c.colors || null;
+    window.__ATHAR_THEME_MODE = c.themeMode || "system";
     applySystemSurfaces(c.colors);
     try {
       if (!window.__ATHAR_SCHEME_BOUND && window.matchMedia) {
