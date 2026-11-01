@@ -66,10 +66,18 @@
     try {
       const hs = Number(c.heroScale);
       const hsm = Number(c.heroScaleMobile);
-      if (hs > 0.3 && hs <= 1.5) root.style.setProperty("--hero-scale", String(hs));
-      else root.style.setProperty("--hero-scale", "1.28");
-      if (hsm > 0.3 && hsm <= 1.5) root.style.setProperty("--hero-scale-mobile", String(hsm));
-      else root.style.setProperty("--hero-scale-mobile", "1.05");
+      if (hs > 0.3 && hs <= 1.6) {
+        root.style.setProperty("--hero-scale", String(hs));
+        document.documentElement.style.setProperty("--hero-scale", String(hs));
+      } else {
+        root.style.setProperty("--hero-scale", "1.28");
+      }
+      if (hsm > 0.3 && hsm <= 1.5) {
+        root.style.setProperty("--hero-scale-mobile", String(hsm));
+        document.documentElement.style.setProperty("--hero-scale-mobile", String(hsm));
+      } else {
+        root.style.setProperty("--hero-scale-mobile", "1.05");
+      }
     } catch (e) {}
 
     if (c.siteName) {
