@@ -65,6 +65,10 @@
         radius: "--radius"
       };
       // dual: accent maps to --violet too
+      if (colors.radius != null) {
+        const rad = String(colors.radius);
+        root.style.setProperty("--radius", rad.endsWith("px") ? rad : rad + "px");
+      }
       Object.keys(map).forEach((k) => {
         if (colors[k] == null || colors[k] === "") return;
         let v = String(colors[k]);
