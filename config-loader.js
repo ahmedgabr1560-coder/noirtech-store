@@ -67,9 +67,9 @@
       const hs = Number(c.heroScale);
       const hsm = Number(c.heroScaleMobile);
       if (hs > 0.3 && hs <= 1.5) root.style.setProperty("--hero-scale", String(hs));
-      else root.style.setProperty("--hero-scale", "1.12");
+      else root.style.setProperty("--hero-scale", "1.28");
       if (hsm > 0.3 && hsm <= 1.5) root.style.setProperty("--hero-scale-mobile", String(hsm));
-      else root.style.setProperty("--hero-scale-mobile", "0.9");
+      else root.style.setProperty("--hero-scale-mobile", "1.05");
     } catch (e) {}
 
     if (c.siteName) {
