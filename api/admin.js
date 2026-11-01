@@ -700,7 +700,15 @@ export default async function handler(req, res) {
 
       const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","heroScale","heroScaleMobile","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email","siteName","siteTagline","logoMark","favicon","address","footerText","aboutText","ownerName","telegramBot","storeClosedMessage"];
       for (const k of textFields) {
-        if (body[k] != null) config[k] = String(body[k]);
+        if (body[k] != null && k !== "heroScale" && k !== "heroScaleMobile") config[k] = String(body[k]);
+      }
+      if (body.heroScale != null && body.heroScale !== "") {
+        const n = Number(body.heroScale);
+        if (!Number.isNaN(n)) config.heroScale = Math.max(0.4, Math.min(1.6, n));
+      }
+      if (body.heroScaleMobile != null && body.heroScaleMobile !== "") {
+        const n = Number(body.heroScaleMobile);
+        if (!Number.isNaN(n)) config.heroScaleMobile = Math.max(0.4, Math.min(1.5, n));
       }
       for (const k of ["showFloatWhatsapp","showFloatTelegram","showFloatAI","showContact","showCategories","heroRotateFromProducts","storeOpen"]) {
         if (body[k] != null) config[k] = body[k] === true || body[k] === "true" || body[k] === 1 || body[k] === "1";
