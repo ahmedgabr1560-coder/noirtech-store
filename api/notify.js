@@ -6,6 +6,22 @@
 // TWILIO_WHATSAPP_FROM   مثال: whatsapp:+14155238886  (رقم Twilio/Sandbox أو رقم معتمد)
 // TWILIO_WHATSAPP_TO     مثال: whatsapp:+201283431213 (رقمك لاستقبال إشعارات الطلبات)
 
+
+const __rlN = globalThis.__ATHAR_RL_NOTIFY || (globalThis.__ATHAR_RL_NOTIFY = new Map());
+function notifyIp(req) {
+  const xf = String(req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "");
+  return (xf.split(",")[0] || "").trim() || "unknown";
+}
+function notifyRateLimit(req, limit, windowMs) {
+  const key = notifyIp(req);
+  const now = Date.now();
+  let row = __rlN.get(key);
+  if (!row || now - row.start > windowMs) row = { start: now, count: 0 };
+  row.count += 1;
+  __rlN.set(key, row);
+  return row.count <= limit;
+}
+
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "");
 
@@ -189,11 +205,17 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (!notifyRateLimit(req, 12, 60 * 1000)) {
+    return res.status(429).json({ error: "too many requests" });
+  }
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const type = body.type || "info";
-    const message = typeof body.message === "string" ? body.message : "";
+    const message = typeof body.message === "string" ? body.message.slice(0, 3500) : "";
+    if (!message && !(body.type === "order" && body.order)) {
+      return res.status(400).json({ error: "message required" });
+    }
     const order = body.order || null;
 
     if (type === "order" && order && Array.isArray(order.items) && order.items.length) {
