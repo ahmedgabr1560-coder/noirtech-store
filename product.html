@@ -416,7 +416,7 @@
         <div class="pd-layout">
           <div class="pd-gallery">
           <div class="pd-gallery-wrap" id="pdGalleryWrap">
-            <img class="pd-main-img" id="pdMainImg" src="${galleryImgs[0]}" alt="${esc(p.name)}"
+            <img class="pd-main-img" id="pdMainImg" fetchpriority="high" decoding="async" src="${galleryImgs[0]}" alt="${esc(p.name)}"
               onerror="this.src='https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800&h=800&fit=crop&q=70'" />
             ${galleryImgs.length > 1 ? `
               <button type="button" class="pd-nav-btn pd-nav-prev" id="pdPrev" aria-label="السابق">›</button>
