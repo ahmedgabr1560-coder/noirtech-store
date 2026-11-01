@@ -172,7 +172,7 @@ function applyHeroScaleFromConfig(c) {
   } catch (e) {}
 }
 
-function loadHeroConfig() {
+async function loadHeroConfig() {
   const cached = nxCacheGet("nx_config");
   if (cached && typeof cached === "object") {
     window.siteConfig = cached;
