@@ -1,5 +1,6 @@
 /* NEXORA — Exact NovaMart cinematic match */
 :root {
+  color-scheme: dark light;
   --bg: #000000;
   --bg-section: #0a0a0c;
   --bg-card: #0f0f14;
@@ -41,13 +42,62 @@
 html { scroll-behavior: smooth; }
 body {
   font-family: var(--font);
-  background: #000;
+  background: var(--bg);
   color: var(--text);
   line-height: 1.55;
   min-height: 100vh;
   overflow-x: hidden;
   direction: rtl;
+  transition: background-color .25s ease, color .2s ease;
 }
+
+/* فاتح تلقائي حسب نظام الهاتف / الكمبيوتر / المتصفح */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f5f2;
+    --bg-section: #efece6;
+    --bg-card: #ffffff;
+    --text: #1c1916;
+    --text-heading: #0c0b0a;
+    --muted: #6f6a62;
+    --border: rgba(0,0,0,0.08);
+    --border-solid: #e4ddd3;
+    --btn-secondary-bg: #f0ebe3;
+    --btn-secondary-text: #1c1916;
+    --header-bg: #faf8f5;
+    --footer-bg: #efece6;
+    --nav-bg: #faf8f5;
+    --price-old: #8a847a;
+    --input-bg: #ffffff;
+    --input-border: #ddd5c8;
+    --shadow: rgba(0,0,0,0.12);
+  }
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f5f2;
+  --bg-section: #efece6;
+  --bg-card: #ffffff;
+  --text: #1c1916;
+  --text-heading: #0c0b0a;
+  --muted: #6f6a62;
+  --border: rgba(0,0,0,0.08);
+  --border-solid: #e4ddd3;
+  --btn-secondary-bg: #f0ebe3;
+  --btn-secondary-text: #1c1916;
+  --header-bg: #faf8f5;
+  --footer-bg: #efece6;
+  --nav-bg: #faf8f5;
+  --price-old: #8a847a;
+  --input-bg: #ffffff;
+  --input-border: #ddd5c8;
+  --shadow: rgba(0,0,0,0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 
 /* ===== Background ===== */
 .bg-stage {
@@ -2195,6 +2245,7 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
 
 /* hero scale force */
 :root {
+  color-scheme: dark light;
   --hero-scale: 1.3;
   --hero-scale-mobile: 1.2;
 }
