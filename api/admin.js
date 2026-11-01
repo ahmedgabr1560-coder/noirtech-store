@@ -710,6 +710,9 @@ export default async function handler(req, res) {
         const n = Number(body.heroScaleMobile);
         if (!Number.isNaN(n)) config.heroScaleMobile = Math.max(0.4, Math.min(1.5, n));
       }
+      // تأكيد أرقام حتى لو قديمة كنص
+      if (config.heroScale != null) config.heroScale = Math.max(0.4, Math.min(1.6, Number(config.heroScale) || 1.28));
+      if (config.heroScaleMobile != null) config.heroScaleMobile = Math.max(0.4, Math.min(1.5, Number(config.heroScaleMobile) || 1.05));
       for (const k of ["showFloatWhatsapp","showFloatTelegram","showFloatAI","showContact","showCategories","heroRotateFromProducts","storeOpen"]) {
         if (body[k] != null) config[k] = body[k] === true || body[k] === "true" || body[k] === 1 || body[k] === "1";
       }
