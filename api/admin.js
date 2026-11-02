@@ -993,6 +993,9 @@ export default async function handler(req, res) {
       if (body.clearDraft === true) {
         delete config.colorsDraft;
       }
+      if (body.heroLayout && typeof body.heroLayout === "object") {
+        config.heroLayout = body.heroLayout;
+      }
       if (body.themeMode != null) {
         const m = String(body.themeMode).toLowerCase();
         config.themeMode = (m === "light" || m === "dark") ? m : "system";
