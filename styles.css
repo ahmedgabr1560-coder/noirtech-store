@@ -2421,3 +2421,52 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
 }
 
 
+
+/* hp-controlled sections — from admin homepage builder */
+.hp-controlled {
+  padding-top: var(--hp-pad-y, 40px) !important;
+  padding-bottom: var(--hp-pad-y, 40px) !important;
+  background: var(--hp-bg, transparent);
+}
+.hp-controlled .section-head h2,
+.hp-controlled.hero h1,
+.hp-controlled .hero-copy h1 {
+  font-size: var(--hp-title, 28px) !important;
+  color: var(--hp-title-color, inherit);
+}
+.hp-controlled .section-head p,
+.hp-controlled .hero-desc,
+.hp-controlled.hero .hero-desc {
+  font-size: var(--hp-text, 15px) !important;
+  color: var(--hp-text-color, inherit);
+}
+.hp-controlled .products-grid {
+  gap: var(--hp-gap, 16px) !important;
+  grid-template-columns: repeat(var(--hp-cols, 2), minmax(0, 1fr)) !important;
+}
+.hp-controlled .product-card {
+  border-radius: var(--hp-radius, 14px) !important;
+  transform: scale(var(--hp-card-scale, 1));
+  transform-origin: center top;
+  box-shadow: 0 12px 30px rgba(0,0,0, calc(var(--hp-shadow, 0.4) * 0.6));
+  border-color: var(--hp-border, inherit);
+}
+.hp-controlled .product-media,
+.hp-controlled .product-media img {
+  border-radius: calc(var(--hp-radius, 14px) - 2px) !important;
+}
+.hp-controlled .product-media img {
+  transform: scale(var(--hp-img-scale, 1));
+  transform-origin: center center;
+}
+.hp-controlled .btn,
+.hp-controlled .btn-primary {
+  transform: scale(var(--hp-btn-scale, 1));
+  transform-origin: center center;
+}
+.hp-controlled .btn-primary {
+  background: var(--hp-btn-color, var(--btn-primary-bg, #8b5cf6));
+}
+@media (max-width: 700px) {
+  .hp-controlled .product-card { transform: scale(1); }
+}
