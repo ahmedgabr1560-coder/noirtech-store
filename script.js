@@ -2603,3 +2603,43 @@ try {
   window.openProfile = openProfile;
   window.closeProfile = closeProfile;
 } catch (eExp) {}
+
+
+/* Hero gravity: once per full page load after images ready */
+(function atharHeroGravity() {
+  function start() {
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        var s0 = document.querySelector(".phones-stack");
+        if (s0) s0.classList.add("hero-gravity-skip");
+        return;
+      }
+      var stack = document.querySelector(".phones-stack");
+      if (!stack || stack.dataset.gravityDone === "1") return;
+      var imgs = stack.querySelectorAll("img");
+      var pending = 0;
+      function go() {
+        if (stack.dataset.gravityDone === "1") return;
+        stack.dataset.gravityDone = "1";
+        stack.classList.add("hero-gravity-on");
+      }
+      function one() {
+        pending--;
+        if (pending <= 0) go();
+      }
+      if (!imgs.length) { go(); return; }
+      pending = imgs.length;
+      imgs.forEach(function (img) {
+        if (img.complete && img.naturalWidth) one();
+        else {
+          img.addEventListener("load", one, { once: true });
+          img.addEventListener("error", one, { once: true });
+        }
+      });
+      // safety timeout
+      setTimeout(go, 1800);
+    } catch (e) {}
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();
