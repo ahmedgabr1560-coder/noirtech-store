@@ -1,5 +1,7 @@
 /* ATHAR core globals — must be first to avoid TDZ */
 var PRODUCTS = [];
+var __heroRotateTimer = null;
+var __heroRotateIdx = 0;
 var CATEGORIES = [];
 var BRANDS = [];
 var cart = [];
@@ -2111,9 +2113,7 @@ function ensureHomeOnStart() {
 
 
 
-/* Hero images rotate from products */
-let __heroRotateTimer = null;
-let __heroRotateIdx = 0;
+/* Hero rotate globals at top */
 function stopHeroProductRotate() {
   if (__heroRotateTimer) {
     clearInterval(__heroRotateTimer);
