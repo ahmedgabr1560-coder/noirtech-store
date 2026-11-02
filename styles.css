@@ -557,15 +557,35 @@ button, input, select, textarea { font-family: inherit; }
   right: 4%;
   top: 2%;
   z-index: 3;
-  transform: rotate(-10deg);
-  animation: float1 7s ease-in-out infinite;
+  transform: rotate(-10deg) translateY(-160%);
+  opacity: 0;
+  will-change: transform, opacity;
 }
 .phones-stack .p2 {
   left: 6%;
   top: 14%;
   z-index: 2;
-  transform: rotate(11deg);
-  animation: float2 8s ease-in-out infinite;
+  transform: rotate(11deg) translateY(-160%);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+/* بعد التحميل: سقوط بالجاذبية + ارتداد ثم استقرار ثم طفو خفيف */
+.phones-stack.hero-gravity-on .p1 {
+  animation:
+    heroGravity1 1.25s cubic-bezier(0.22, 1.15, 0.36, 1) 0.08s both,
+    float1 7s ease-in-out 1.4s infinite;
+}
+.phones-stack.hero-gravity-on .p2 {
+  animation:
+    heroGravity2 1.35s cubic-bezier(0.22, 1.15, 0.36, 1) 0.22s both,
+    float2 8s ease-in-out 1.55s infinite;
+}
+/* بدون JS (fallback): شغّل بعد لحظات */
+.phones-stack:not(.hero-gravity-on):not(.hero-gravity-skip) .p1 {
+  animation: heroGravity1 1.25s cubic-bezier(0.22, 1.15, 0.36, 1) 0.35s both, float1 7s ease-in-out 1.7s infinite;
+}
+.phones-stack:not(.hero-gravity-on):not(.hero-gravity-skip) .p2 {
+  animation: heroGravity2 1.35s cubic-bezier(0.22, 1.15, 0.36, 1) 0.5s both, float2 8s ease-in-out 1.85s infinite;
 }
 .phones-stack .p1:hover,
 .phones-stack .p2:hover {
