@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
   <link rel="preload" href="/styles.css?v=20261102-tdzfix" as="style" />
-  <link rel="preload" href="/script.js?v=20261102-safety" as="script" />
+  <link rel="preload" href="/script.js?v=20261103-inline" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
   <link rel="stylesheet" href="/styles.css?v=20261102-tdzfix" />
@@ -513,7 +513,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261102-productsfix" defer></script>
-  <script src="/script.js?v=20261102-safety" defer></script>
+  <script src="/script.js?v=20261103-inline" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
@@ -524,4 +524,62 @@
   </script>
   <script src="/go-home-patch.js" defer></script>
   <script>
-  // hero config applied from script.js?v=20261102-safety
+  // hero config applied from script.js?v=20261103-inline
+<script>
+/* ATHAR emergency product painter — يعمل حتى لو script.js تأخر أو فشل */
+(function () {
+  function paint(list) {
+    try {
+      window.PRODUCTS = list;
+      if (typeof PRODUCTS !== "undefined") { try { PRODUCTS = list; } catch (e) {} }
+      window.__ATHAR_PRODUCTS = list;
+      var grid = document.getElementById("shopGrid");
+      if (!grid || !list || !list.length) return;
+      var empty = grid.innerHTML.indexOf("empty-state") >= 0 || !grid.querySelector(".product-card");
+      if (!empty && grid.querySelectorAll(".product-card").length >= Math.min(8, list.length)) return;
+      if (typeof renderGrid === "function") {
+        try { renderGrid(grid, list); return; } catch (e) {}
+      }
+      if (typeof renderShop === "function") {
+        try { renderShop(); if (grid.querySelector(".product-card")) return; } catch (e) {}
+      }
+      grid.innerHTML = list.map(function (p) {
+        var name = String(p.name || "منتج").replace(/</g, "");
+        var img = p.image || (p.images && p.images[0]) || "";
+        var price = p.price != null ? p.price : "";
+        return '<article class="product-card" data-id="' + p.id + '">' +
+          '<a class="product-media" href="/product.html?id=' + p.id + '">' +
+          '<img src="' + img + '" alt="" loading="lazy" width="400" height="400"/>' +
+          '</a><div class="product-body"><h3>' + name + '</h3>' +
+          (price !== "" ? '<div class="price">' + price + ' ج.م</div>' : '') +
+          '</div></article>';
+      }).join("");
+    } catch (e) {}
+  }
+  async function load() {
+    try {
+      var r = await fetch("/api/catalog?type=products&t=" + Date.now(), { cache: "no-store" });
+      if (r.ok) {
+        var d = await r.json();
+        var list = d.products || d || [];
+        if (Array.isArray(list) && list.length) {
+          list = list.filter(function (p) { return p && p.hidden !== true && p.active !== false; });
+          if (list.length) { paint(list); return; }
+        }
+      }
+    } catch (e) {}
+    try {
+      var r2 = await fetch("/products.json?t=" + Date.now(), { cache: "no-store" });
+      if (r2.ok) {
+        var d2 = await r2.json();
+        var list2 = Array.isArray(d2) ? d2 : (d2.products || []);
+        list2 = (list2 || []).filter(function (p) { return p && p.hidden !== true && p.active !== false; });
+        if (list2.length) paint(list2);
+      }
+    } catch (e2) {}
+  }
+  function kick() { load(); setTimeout(load, 1200); setTimeout(load, 3000); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", kick);
+  else kick();
+})();
+</script>
