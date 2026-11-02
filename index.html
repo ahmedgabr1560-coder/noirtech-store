@@ -22,11 +22,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
-  <link rel="preload" href="/styles.css?v=20261102-tdzfix" as="style" />
-  <link rel="preload" href="/script.js?v=20261103-rotate2" as="script" />
+  <link rel="preload" href="/styles.css?v=20261103-cartbtn" as="style" />
+  <link rel="preload" href="/script.js?v=20261103-cartbtn" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
-  <link rel="stylesheet" href="/styles.css?v=20261102-tdzfix" />
+  <link rel="stylesheet" href="/styles.css?v=20261103-cartbtn" />
 </head>
 <body>
     <div class="bg-stage" aria-hidden="true">
@@ -225,7 +225,15 @@
       if(typeof renderShop==="function"){ try{ renderShop(); if(grid.querySelector(".product-card")) return; }catch(e){} }
       if(typeof renderGrid==="function"){ try{ renderGrid(grid,list); return; }catch(e){} }
       grid.innerHTML=list.map(function(p){
-        return '<article class="product-card" data-id="'+p.id+'"><a class="product-media" href="/product.html?id='+p.id+'"><img src="'+(p.image||(p.images&&p.images[0])||"")+'" alt="" loading="lazy"/></a><div class="product-body"><h3>'+String(p.name||"").replace(/</g,"")+'</h3></div></article>';
+        var name=String(p.name||"").replace(/</g,"");
+        var img=p.image||(p.images&&p.images[0])||"";
+        var price=p.price!=null?p.price:"";
+        return '<article class="product-card" data-id="'+p.id+'">'
+          +'<a class="product-media" href="/product.html?id='+p.id+'"><img src="'+img+'" alt="" loading="lazy"/></a>'
+          +'<div class="product-body"><h3 class="product-name"><a href="/product.html?id='+p.id+'">'+name+'</a></h3>'
+          +(price!==""?'<div class="price-row"><span class="price">'+Number(price).toLocaleString("ar-EG")+' ج.م</span></div>':'')
+          +'<button type="button" class="add-btn" data-add="'+p.id+'">أضف للسلة</button>'
+          +'</div></article>';
       }).join("");
     }catch(e){}
   }
@@ -546,7 +554,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261102-productsfix" defer></script>
-  <script src="/script.js?v=20261103-rotate2" defer></script>
+  <script src="/script.js?v=20261103-cartbtn" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
@@ -557,7 +565,7 @@
   </script>
   <script src="/go-home-patch.js" defer></script>
   <script>
-  // hero config applied from script.js?v=20261103-rotate2"undefined") { try { PRODUCTS = list; } catch (e) {} }
+  // hero config applied from script.js?v=20261103-cartbtn"undefined") { try { PRODUCTS = list; } catch (e) {} }
       window.__ATHAR_PRODUCTS = list;
       var grid = document.getElementById("shopGrid");
       if (!grid || !list || !list.length) return;
