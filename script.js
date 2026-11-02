@@ -3,6 +3,7 @@ var PRODUCTS = [];
 var __heroRotateTimer = null;
 var __heroRotateIdx = 0;
 function $(s, r) { return (r || document).querySelector(s); }
+var activeBundleCat = "all";
 var CATEGORIES = [];
 var BRANDS = [];
 var cart = [];
@@ -599,7 +600,7 @@ function discountPct(p) {
 
 
 
-let activeBundleCat = "all";
+/* activeBundleCat at top */
 function getBundleProducts() {
   return (PRODUCTS || []).filter(p => isBundleOffer(p) || (p.isOffer && (p.offerType === "mixed_bundle" || p.offerType === "bundle" || p.offerType === "both")));
 }
@@ -653,32 +654,52 @@ async function ensureCategoriesLoaded() {
   return window.CATEGORIES;
 }
 async function renderBundleSection() {
-  try { await ensureCategoriesLoaded(); } catch (e) {}
-  const bundleGrid = $("#bundleGrid");
+  try { if (typeof ensureCategoriesLoaded === "function") await ensureCategoriesLoaded(); } catch (e) {}
+  const bundleGrid = document.getElementById("bundleGrid") || (typeof $ === "function" ? $("#bundleGrid") : null);
   if (!bundleGrid) return;
-  buildBundleCategoryTabs();
-  let list = getBundleProducts();
-  if (activeBundleCat && activeBundleCat !== "all") {
+  try { if (typeof buildBundleCategoryTabs === "function") buildBundleCategoryTabs(); } catch (e) {}
+  let list = [];
+  try {
+    list = typeof getBundleProducts === "function" ? getBundleProducts() : (PRODUCTS || []).filter(function(p) {
+      return typeof isBundleOffer === "function" && isBundleOffer(p);
+    });
+  } catch (e2) {
+    list = (PRODUCTS || window.__ATHAR_PRODUCTS || []).filter(function(p) {
+      if (!p) return false;
+      if (p.isOffer) return true;
+      const tiers = p.offerMeta && p.offerMeta.tiers;
+      return Array.isArray(tiers) && tiers.some(function(t) { return Number(t.qty) >= 2; });
+    });
+  }
+  if (typeof activeBundleCat !== "undefined" && activeBundleCat && activeBundleCat !== "all") {
     list = list.filter(function(p) {
       const c = String(p.category || p.cat || "").trim() || "_none";
       return c === String(activeBundleCat);
     });
   }
   var __hpBundleLimit = typeof atharSectionLimit === "function" ? atharSectionLimit("bundles") : null;
-  list = list.slice(0, __hpBundleLimit || 48);
+  if (__hpBundleLimit && __hpBundleLimit > 0) list = list.slice(0, __hpBundleLimit);
   if (list.length) {
-    renderGrid(bundleGrid, list);
+    if (typeof renderGrid === "function") renderGrid(bundleGrid, list);
+    else {
+      bundleGrid.innerHTML = list.map(function(p) {
+        return '<article class="product-card" data-id="' + p.id + '"><a href="/product.html?id=' + p.id + '"><img src="' + (p.image||'') + '" alt=""/><h3>' + (p.name||'') + '</h3></a>' +
+          '<button type="button" class="add-btn" data-add="' + p.id + '" onclick="try{addToCart(' + p.id + ',{fromHome:true})}catch(e){}">أضف للسلة</button></article>';
+      }).join("");
+    }
   } else {
-    bundleGrid.innerHTML = `<div class="empty-state">لا توجد عروض قطع في هذا القسم حاليًا.<br><small>أضيفي عرضًا من الأدمن واختاري قسم المتجر للمنتج</small></div>`;
+    bundleGrid.innerHTML = '<div class="empty-state">لا توجد عروض قطع حاليًا.</div>';
   }
 }
 
 function isBundleOffer(p) {
   if (!p) return false;
+  const ot = String(p.offerType || "");
+  if (ot === "mixed_bundle" || ot === "bundle" || ot === "both") return true;
+  if (p.offerMeta && String(p.offerMeta.type || "") === "mixed_bundle") return true;
   const tiers = p.offerMeta && Array.isArray(p.offerMeta.tiers) ? p.offerMeta.tiers : [];
-  if (tiers.some(t => Number(t.qty) >= 2 && Number(t.price) > 0)) return true;
-  // offerType bundle/both without tiers still counts if flag
-  if (p.isOffer && (p.offerType === "bundle" || p.offerType === "both")) return true;
+  if (tiers.some(function(t) { return Number(t.qty) >= 2 && Number(t.price) > 0; })) return true;
+  if (p.isOffer && (ot === "bundle" || ot === "both" || ot === "mixed_bundle")) return true;
   return false;
 }
 function isDiscountOffer(p) {
@@ -2065,6 +2086,7 @@ async function loadProducts(force) {
   PRODUCTS = Array.isArray(PRODUCTS) ? PRODUCTS : [];
   try { window.PRODUCTS = PRODUCTS; } catch (eW) {}
   try { if (typeof startHeroProductRotate === "function") startHeroProductRotate(window.siteConfig || window.__SITE_CONFIG__ || {}); } catch (eHR) {}
+  try { if (typeof renderBundleSection === "function") renderBundleSection(); } catch (eBR) {}
   try {
     if (typeof renderShop === "function") renderShop();
     if (typeof renderBundleSection === "function") renderBundleSection();
@@ -2504,6 +2526,7 @@ document.addEventListener("click", function(e) {
     }
     try { if (typeof renderShop === "function") renderShop(); } catch (e4) {}
     try { if (typeof renderBundleSection === "function") renderBundleSection(); } catch (e5) {}
+    try { if (typeof renderBundleSection === "function") setTimeout(function(){ renderBundleSection(); }, 500); } catch (e5b) {}
     try {
       const grid = document.getElementById("shopGrid");
       if (grid && PRODUCTS && PRODUCTS.length && (!grid.children.length || (grid.children.length === 1 && grid.innerHTML.indexOf("empty-state") >= 0))) {
