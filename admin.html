@@ -1026,10 +1026,17 @@
         ["adm_list_products","adm_list_orders","nx_products","nx_categories","nx_config","nx_shipping_zones"].forEach(function(k){
           try { sessionStorage.removeItem(k); } catch (e) {}
         });
+        try { sessionStorage.removeItem("nx_bust_seen"); } catch (e) {}
         const tick = String(Date.now());
         localStorage.setItem("nx_catalog_bust", tick);
         localStorage.setItem("nx_products_tick", tick);
-        // إشارة لنفس التبويب
+        try {
+          if ("BroadcastChannel" in window) {
+            const ch = new BroadcastChannel("ATHAR_SYNC");
+            ch.postMessage({ type: "catalog_bust", t: tick });
+            ch.close();
+          }
+        } catch (e) {}
         try { window.dispatchEvent(new StorageEvent("storage", { key: "nx_catalog_bust", newValue: tick })); } catch (e) {}
       } catch (e) {}
     }
@@ -2294,8 +2301,9 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    async function loadProducts() {
-      const data = await (adminCacheGet("list_products") ? Promise.resolve(adminCacheGet("list_products")) : api("list_products").then(d => { if (d && d.ok) adminCacheSet("list_products", d); return d; }));
+    async function loadProducts(forceFresh) {
+      if (forceFresh) { try { sessionStorage.removeItem("adm_list_products"); } catch (e) {} }
+      const data = await ((adminCacheGet("list_products") && !forceFresh) ? Promise.resolve(adminCacheGet("list_products")) : api("list_products").then(d => { if (d && d.ok) adminCacheSet("list_products", d); return d; }));
       if (!data.ok) return;
       PRODUCTS = data.products || [];
       renderProducts();
@@ -2361,6 +2369,7 @@
           alert(`لم يتم حفظ تغيير ظهور المنتج.${result?.error ? `\n${result.error}` : ""}`);
           return;
         }
+        try { bustStoreCaches(); } catch (err) {}
         await loadProducts();
         renderProducts();
         return;
