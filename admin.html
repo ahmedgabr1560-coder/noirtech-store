@@ -2994,7 +2994,7 @@
           e.target.reset(); pendingImage = ""; pendingImages = []; showPreview("");
           try { renderMultiPrev(); } catch (err) {}
         }
-        bustStoreCaches(); await loadProducts(); await loadStats();
+        bustStoreCaches(); await loadProducts(true); await loadStats();
       } catch (err) {
         msg.className = "msg err";
         msg.textContent = err.message || "خطأ";
