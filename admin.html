@@ -1605,8 +1605,8 @@
         order: ["home","bundles","shop","contact"],
         sections: {
           home: { visible:true, desktop:Object.assign({},HP_DEV_DEFAULT,{padY:48,titleSize:42,textSize:16,cols:1,limit:0}), tablet:Object.assign({},HP_DEV_DEFAULT,{padY:36,titleSize:34,cols:1,limit:0}), mobile:Object.assign({},HP_DEV_DEFAULT,{padY:28,titleSize:28,cols:1,limit:0}) },
-          bundles: { visible:true, desktop:Object.assign({},HP_DEV_DEFAULT,{cols:4,limit:8}), tablet:Object.assign({},HP_DEV_DEFAULT,{cols:3,limit:6}), mobile:Object.assign({},HP_DEV_DEFAULT,{cols:2,limit:4}) },
-          shop: { visible:true, desktop:Object.assign({},HP_DEV_DEFAULT,{cols:4,limit:12}), tablet:Object.assign({},HP_DEV_DEFAULT,{cols:3,limit:9}), mobile:Object.assign({},HP_DEV_DEFAULT,{cols:2,limit:8}) },
+          bundles: { visible:true, desktop:Object.assign({},HP_DEV_DEFAULT,{cols:4,limit:0}), tablet:Object.assign({},HP_DEV_DEFAULT,{cols:3,limit:0}), mobile:Object.assign({},HP_DEV_DEFAULT,{cols:2,limit:0}) },
+          shop: { visible:true, desktop:Object.assign({},HP_DEV_DEFAULT,{cols:4,limit:0}), tablet:Object.assign({},HP_DEV_DEFAULT,{cols:3,limit:0}), mobile:Object.assign({},HP_DEV_DEFAULT,{cols:2,limit:0}) },
           contact: { visible:true, desktop:Object.assign({},HP_DEV_DEFAULT,{padY:36,titleSize:22,cols:1,limit:0}), tablet:Object.assign({},HP_DEV_DEFAULT,{padY:28,titleSize:20,cols:1,limit:0}), mobile:Object.assign({},HP_DEV_DEFAULT,{padY:24,titleSize:18,cols:1,limit:0}) }
         }
       };
@@ -1668,7 +1668,7 @@
           + '<label style="margin:0;font-size:.78rem">حجم الكروت %<input type="number" data-hp="cardScale" value="'+(d.cardScale??100)+'" dir="ltr"></label>'
           + '<label style="margin:0;font-size:.78rem">حجم الصور %<input type="number" data-hp="imgScale" value="'+(d.imgScale??100)+'" dir="ltr"></label>'
           + '<label style="margin:0;font-size:.78rem">أعمدة<input type="number" data-hp="cols" min="1" max="6" value="'+(d.cols??2)+'" dir="ltr"></label>'
-          + '<label style="margin:0;font-size:.78rem">عدد المنتجات<input type="number" data-hp="limit" min="0" max="48" value="'+(d.limit??8)+'" dir="ltr"></label>'
+          + '<label style="margin:0;font-size:.78rem">عدد المنتجات (0=الكل)<input type="number" data-hp="limit" min="0" max="200" value="'+(d.limit??0)+'" dir="ltr"></label>'
           + '<label style="margin:0;font-size:.78rem">ظل %<input type="number" data-hp="shadow" min="0" max="100" value="'+(d.shadow??40)+'" dir="ltr"></label>'
           + '<label style="margin:0;font-size:.78rem">خلفية<section></section><input type="color" data-hp="bg" value="'+(d.bg&&/^#/.test(d.bg)?d.bg:"#0a0a0c")+'" style="width:100%;height:34px;padding:0;border:0"></label>'
           + '<label style="margin:0;font-size:.78rem">لون العنوان<input type="color" data-hp="titleColor" value="'+(d.titleColor&&/^#/.test(d.titleColor)?d.titleColor:"#ffffff")+'" style="width:100%;height:34px;padding:0;border:0"></label>'
