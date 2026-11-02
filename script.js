@@ -992,13 +992,18 @@ function updateCartUI() {
 function addToCart(id, opts) {
   opts = opts || {};
   id = Number(id);
-  const p = PRODUCTS.find(x => Number(x.id) === id);
+  let p = (PRODUCTS || []).find(x => Number(x.id) === id);
+  if (!p && window.__ATHAR_PRODUCTS) p = window.__ATHAR_PRODUCTS.find(x => Number(x.id) === id);
   if (!p) { toast("المنتج غير متاح"); return; }
   const colors = Array.isArray(p.colors) ? p.colors : [];
-  // لو فيه ألوان ومفيش لون مختار → صفحة المنتج
+  // من الواجهة: أضف مباشرة (أول لون إن وجد)
   if (colors.length && !opts.color && !opts.skipColorCheck) {
-    window.location.href = "/product.html?id=" + encodeURIComponent(id);
-    return;
+    if (opts.fromHome) {
+      opts.color = colors[0];
+    } else {
+      window.location.href = "/product.html?id=" + encodeURIComponent(id);
+      return;
+    }
   }
   if (p.available === false || (p.stock != null && Number(p.stock) <= 0)) {
     toast("المنتج غير متوفر حاليًا");
@@ -1095,8 +1100,14 @@ function closeProfile() {
 
 // Events
 document.addEventListener("click", (e) => {
-  const add = e.target.closest("[data-add]");
-  if (add) { addToCart(Number(add.dataset.add)); return; }
+  const add = e.target.closest("[data-add], .add-btn");
+  if (add) {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = Number(add.getAttribute("data-add") || add.dataset.add);
+    if (id) addToCart(id, { fromHome: true });
+    return;
+  }
   const open = e.target.closest("[data-open]");
   if (open) {
     e.preventDefault();
