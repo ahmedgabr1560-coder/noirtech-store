@@ -1069,11 +1069,14 @@ function openCart() {
   updateCartUI();
 }
 function closeCart() {
-  const overlay = document.getElementById("cartOverlay");
-  const drawer = document.getElementById("cartDrawer");
-  if (overlay) overlay.classList.remove("open");
-  if (drawer) drawer.classList.remove("open");
-  document.body.style.overflow = "";
+  try {
+    const overlay = document.getElementById("cartOverlay");
+    const drawer = document.getElementById("cartDrawer");
+    if (overlay) { overlay.classList.remove("open"); overlay.style.visibility = ""; overlay.style.opacity = ""; }
+    if (drawer) { drawer.classList.remove("open"); drawer.style.transform = ""; }
+    document.body.style.overflow = "";
+    document.body.classList.remove("drawer-open");
+  } catch (e) { console.warn(e); }
 }
 
 function openProduct(id) {
@@ -1086,13 +1089,23 @@ function closeProduct() {
 }
 
 function openAuth(tab = "login") {
-  $("#authOverlay").classList.add("open");
-  $("#authModal").classList.add("open");
-  switchAuth(tab);
+  try {
+    const overlay = document.getElementById("authOverlay");
+    const modal = document.getElementById("authModal");
+    if (overlay) overlay.classList.add("open");
+    if (modal) modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+    switchAuth(tab);
+  } catch (e) { console.warn(e); }
 }
 function closeAuth() {
-  $("#authOverlay").classList.remove("open");
-  $("#authModal").classList.remove("open");
+  try {
+    const overlay = document.getElementById("authOverlay");
+    const modal = document.getElementById("authModal");
+    if (overlay) overlay.classList.remove("open");
+    if (modal) modal.classList.remove("open");
+    document.body.style.overflow = "";
+  } catch (e) { console.warn(e); }
 }
 function switchAuth(tab = "login") {
   const loginPanel = document.getElementById("loginPanel");
@@ -1119,8 +1132,13 @@ function openProfile() {
   window.location.href = "/profile.html";
 }
 function closeProfile() {
-  $("#profileOverlay").classList.remove("open");
-  $("#profileModal").classList.remove("open");
+  try {
+    const overlay = document.getElementById("profileOverlay");
+    const modal = document.getElementById("profileModal");
+    if (overlay) overlay.classList.remove("open");
+    if (modal) modal.classList.remove("open");
+    document.body.style.overflow = "";
+  } catch (e) { console.warn(e); }
 }
 
 // Events
@@ -2642,4 +2660,53 @@ try {
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
+})();
+
+
+/* Modal/Drawer close — capture phase (X + overlay) */
+(function atharModalCloseFix() {
+  if (window.__ATHAR_CLOSE_BOUND) return;
+  window.__ATHAR_CLOSE_BOUND = true;
+  function handleCloseClick(e) {
+    try {
+      const t = e.target;
+      if (!t || !t.closest) return;
+      const btn = t.closest("#closeCart, #closeAuth, #closeProfile, #closeProduct, [data-close]");
+      if (btn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.id || btn.getAttribute("data-close") || "";
+        if (id === "closeCart" || btn.closest("#cartDrawer")) { if (typeof closeCart === "function") closeCart(); return; }
+        if (id === "closeAuth" || btn.closest("#authModal")) { if (typeof closeAuth === "function") closeAuth(); return; }
+        if (id === "closeProfile" || btn.closest("#profileModal")) { if (typeof closeProfile === "function") closeProfile(); return; }
+        if (id === "closeProduct") { if (typeof closeProduct === "function") closeProduct(); return; }
+        // generic data-close
+        const which = btn.getAttribute("data-close");
+        if (which === "cart" && typeof closeCart === "function") closeCart();
+        if (which === "auth" && typeof closeAuth === "function") closeAuth();
+        if (which === "profile" && typeof closeProfile === "function") closeProfile();
+        return;
+      }
+      // overlay click (backdrop)
+      if (t.id === "cartOverlay") { e.preventDefault(); if (typeof closeCart === "function") closeCart(); return; }
+      if (t.id === "authOverlay") { e.preventDefault(); if (typeof closeAuth === "function") closeAuth(); return; }
+      if (t.id === "profileOverlay") { e.preventDefault(); if (typeof closeProfile === "function") closeProfile(); return; }
+      if (t.id === "productOverlay") { e.preventDefault(); if (typeof closeProduct === "function") closeProduct(); return; }
+    } catch (err) { console.warn(err); }
+  }
+  document.addEventListener("click", handleCloseClick, true);
+  // Escape key
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    try {
+      if (document.getElementById("cartDrawer")?.classList.contains("open") && typeof closeCart === "function") closeCart();
+      if (document.getElementById("authModal")?.classList.contains("open") && typeof closeAuth === "function") closeAuth();
+      if (document.getElementById("profileModal")?.classList.contains("open") && typeof closeProfile === "function") closeProfile();
+    } catch (err) {}
+  });
+  try {
+    window.closeCart = closeCart;
+    window.closeAuth = closeAuth;
+    window.closeProfile = closeProfile;
+  } catch (e) {}
 })();
