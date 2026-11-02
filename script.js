@@ -1256,51 +1256,53 @@ $("#profileAvatarInput")?.addEventListener("change", (e) => {
   r.readAsDataURL(f);
 });
 
-$("#registerForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = ($("#regName")?.value || "").trim();
-  const phone = ($("#regPhone")?.value || "").trim();
-  const email = ($("#regEmail")?.value || "").trim().toLowerCase();
-  const password = $("#regPassword")?.value || "";
-  if (!name) return toast("اكتب الاسم");
-  if (!phone || phone.length < 10) return toast("اكتب رقم هاتف صحيح");
-  if (!email || !email.includes("@")) return toast("اكتب بريد إلكتروني صحيح");
-  if (!password || password.length < 4) return toast("كلمة المرور ٤ أحرف على الأقل");
-  usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
-  if (usersDB.some(u => (u.email || "").toLowerCase() === email)) return toast("هذا البريد مسجّل بالفعل");
-  const avatar = regAvatar || null;
-  const user = { name: name, phone: phone, email: email, password: password, address: "", avatar: avatar, createdAt: new Date().toISOString() };
-  usersDB.push(user);
-  localStorage.setItem("nx_users", JSON.stringify(usersDB));
-  currentUser = { name: name, phone: phone, email: email, address: "", avatar: avatar };
-  localStorage.setItem("nx_user", JSON.stringify(currentUser));
-  regAvatar = null;
-  updateUserUI();
-  closeAuth();
-  toast("تم إنشاء الحساب بنجاح");
-  const nl = String.fromCharCode(10);
-  const msg = "حساب جديد على ATHAR | أثر" + nl + nl + "الاسم: " + name + nl + "الهاتف: " + phone + nl + "البريد: " + email + nl + "صورة: " + (avatar ? "نعم" : "لا") + nl + "الوقت: " + new Date().toLocaleString("ar-EG") + nl + "تم إنشاء الحساب";
-  try { await notifyAdmin("register", msg); } catch (_) {}
-  try {
-    await fetch("/api/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "register_account",
-        name: name,
-        phone: phone,
-        email: email,
-        hasAvatar: !!avatar
-      })
-    });
-  } catch (_) {}
-  setTimeout(function(){ openProfile(); }, 150);
-});
+(function bindRegisterForm() {
+  const form = document.getElementById("registerForm");
+  if (!form || form.dataset.bound === "1") return;
+  form.dataset.bound = "1";
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    try {
+      const name = (document.getElementById("regName")?.value || "").trim();
+      const phone = (document.getElementById("regPhone")?.value || "").trim();
+      const email = (document.getElementById("regEmail")?.value || "").trim().toLowerCase();
+      const password = document.getElementById("regPassword")?.value || "";
+      if (!name) return toast("اكتب الاسم");
+      if (!phone || phone.replace(/\D/g,"").length < 10) return toast("اكتب رقم هاتف صحيح");
+      if (!email || !email.includes("@")) return toast("اكتب بريد إلكتروني صحيح");
+      if (!password || password.length < 4) return toast("كلمة المرور ٤ أحرف على الأقل");
+      let usersDB = [];
+      try { usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]"); } catch (e0) { usersDB = []; }
+      if (!Array.isArray(usersDB)) usersDB = [];
+      if (usersDB.some(function(u){ return (u.email || "").toLowerCase() === email; })) return toast("هذا البريد مسجّل بالفعل");
+      const avatar = (typeof regAvatar !== "undefined" && regAvatar) ? regAvatar : null;
+      const user = { name: name, phone: phone, email: email, password: password, address: "", avatar: avatar, createdAt: new Date().toISOString() };
+      usersDB.push(user);
+      localStorage.setItem("nx_users", JSON.stringify(usersDB));
+      currentUser = { name: name, phone: phone, email: email, address: "", avatar: avatar };
+      try { localStorage.setItem("nx_user", JSON.stringify(currentUser)); } catch (e1) {}
+      try { if (typeof updateUserUI === "function") updateUserUI(); } catch (e2) {}
+      try { if (typeof closeAuth === "function") closeAuth(); } catch (e3) {}
+      toast("تم إنشاء الحساب بنجاح");
+      try {
+        if (typeof notifyAdmin === "function") {
+          notifyAdmin("register", "🆕 حساب جديد\\nالاسم: " + name + "\\nالهاتف: " + phone + "\\nالبريد: " + email);
+        }
+      } catch (e4) {}
+    } catch (err) {
+      console.warn(err);
+      toast("تعذر إنشاء الحساب، حاولي مرة أخرى");
+    }
+  });
+})();
+try { bindRegisterForm(); } catch (eR) {}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ try { bindRegisterForm(); } catch(e){} });
 
 
 
 
-$("#loginForm").addEventListener("submit", async (e) => {
+
+const __loginForm = document.getElementById("loginForm"); if(__loginForm) __loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = ($("#loginEmail")?.value || "").trim().toLowerCase();
   const password = $("#loginPassword")?.value || "";
