@@ -538,7 +538,20 @@ export default async function handler(req, res) {
         };
       }).sort((a, b) => new Date(b.lastSeen || 0) - new Date(a.lastSeen || 0));
       const stats = data.stats || {};
-      stats.onlineNow = online;
+      const asInt = (x) => Math.max(0, Math.round(Number(x) || 0));
+      stats.onlineNow = asInt(online);
+      stats.totalEnters = asInt(stats.totalEnters);
+      stats.totalLeaves = asInt(stats.totalLeaves);
+      stats.uniqueSessions = asInt(stats.uniqueSessions);
+      stats.todayEnters = asInt(stats.todayEnters);
+      stats.todayLeaves = asInt(stats.todayLeaves);
+      stats.uniqueDevices = asInt(stats.uniqueDevices);
+      stats.accountsTotal = asInt(stats.accountsTotal);
+      if (stats.deviceTypes && typeof stats.deviceTypes === "object") {
+        for (const k of Object.keys(stats.deviceTypes)) {
+          stats.deviceTypes[k] = asInt(stats.deviceTypes[k]);
+        }
+      }
       return res.status(200).json({
         ok: true,
         stats,
