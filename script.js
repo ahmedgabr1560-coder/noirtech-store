@@ -12,6 +12,7 @@ function atharSectionLimit(sectionId) {
     const v = el.getAttribute("data-hp-limit");
     if (v === "" || v == null) return null;
     const n = Number(v);
+    // 0 أو سالب = كل المنتجات
     return Number.isFinite(n) && n > 0 ? n : null;
   } catch (e) { return null; }
 }
@@ -1549,12 +1550,13 @@ function getSub(catId, subId) {
   return c ? (c.subs || []).find(s => s.id === subId) : null;
 }
 function productMatches(p) {
-  if (activeCategory && p.category !== activeCategory) return false;
-  if (activeSubcategory && p.subcategory !== activeSubcategory) {
-    // phone accessories also under mobiles
+  if (!p) return false;
+  if (p.hidden === true || p.active === false) return false;
+  if (activeCategory && String(p.category || "") !== String(activeCategory)) return false;
+  if (activeSubcategory && String(p.subcategory || "") !== String(activeSubcategory)) {
     if (!(activeSubcategory === "mobiles" && (p.tags || []).includes("phone-accessory"))) return false;
   }
-  if (activeBrand && (p.brand || "") !== activeBrand) return false;
+  if (activeBrand && String(p.brand || "") !== String(activeBrand)) return false;
   return true;
 }
 function sortedProducts(list) {
