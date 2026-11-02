@@ -743,6 +743,71 @@
           </div>
 
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            <button type="button" class="btn btn-primary" 
+          <div style="margin-top:18px;padding:16px;border-radius:14px;border:1px solid rgba(201,162,39,.35);background:rgba(201,162,39,.06)" id="heroLayoutBox">
+            <h4 style="margin:0 0 6px">التحكم في أحجام عناصر الواجهة الرئيسية</h4>
+            <p class="hint" style="margin:0 0 12px">تحكّمي في الصورة الرئيسية (إطارات الموبايل) وكارت «شنط حريمي» لكل جهاز، مع معاينة مباشرة قبل الحفظ.</p>
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="hlDeviceTabs">
+              <button type="button" class="btn btn-primary hl-dev" data-dev="desktop">كمبيوتر</button>
+              <button type="button" class="btn btn-ghost hl-dev" data-dev="tablet">تابلت</button>
+              <button type="button" class="btn btn-ghost hl-dev" data-dev="mobile">هاتف</button>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" class="hl-grid">
+              <div style="padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.2)">
+                <h4 style="margin:0 0 10px;font-size:.95rem">① الصورة الرئيسية (الموبايلات)</h4>
+                <label>العرض (px)<input type="number" id="hl_main_w" min="120" max="700" step="1" value="440" dir="ltr" /></label>
+                <label>الارتفاع (px)<input type="number" id="hl_main_h" min="120" max="800" step="1" value="460" dir="ltr" /></label>
+                <label>التكبير %<input type="number" id="hl_main_scale" min="40" max="160" step="1" value="100" dir="ltr" /></label>
+                <label>تحريك أفقي (px)<input type="number" id="hl_main_x" min="-120" max="120" step="1" value="0" dir="ltr" /></label>
+                <label>تحريك رأسي (px)<input type="number" id="hl_main_y" min="-120" max="120" step="1" value="0" dir="ltr" /></label>
+                <label>احتواء الصورة
+                  <select id="hl_main_fit">
+                    <option value="cover">cover — ملء المساحة</option>
+                    <option value="contain">contain — إظهار كاملة</option>
+                    <option value="fill">fill — تمديد</option>
+                  </select>
+                </label>
+                <button type="button" class="btn btn-ghost" id="hlMainReset" style="margin-top:8px">إعادة افتراضي للصورة</button>
+              </div>
+
+              <div style="padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.2)">
+                <h4 style="margin:0 0 10px;font-size:.95rem">② كارت شنط حريمي</h4>
+                <label>عرض الكارت (px)<input type="number" id="hl_chip_w" min="100" max="360" step="1" value="200" dir="ltr" /></label>
+                <label>ارتفاع الكارت (px) — 0=تلقائي<input type="number" id="hl_chip_h" min="0" max="200" step="1" value="0" dir="ltr" /></label>
+                <label>حجم أيقونة الكارت (px)<input type="number" id="hl_chip_icon" min="16" max="48" step="1" value="28" dir="ltr" /></label>
+                <label>حجم النص (px)<input type="number" id="hl_chip_text" min="10" max="22" step="1" value="14" dir="ltr" /></label>
+                <label>تحريك أفقي (px)<input type="number" id="hl_chip_x" min="-80" max="80" step="1" value="0" dir="ltr" /></label>
+                <label>تحريك رأسي (px)<input type="number" id="hl_chip_y" min="-80" max="80" step="1" value="0" dir="ltr" /></label>
+                <label>المسافات الداخلية (px)<input type="number" id="hl_chip_pad" min="4" max="28" step="1" value="12" dir="ltr" /></label>
+                <button type="button" class="btn btn-ghost" id="hlChipReset" style="margin-top:8px">إعادة افتراضي للكارت</button>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;padding:12px;border-radius:12px;border:1px dashed rgba(255,255,255,.15);background:rgba(0,0,0,.25)">
+              <div class="hint" style="margin-bottom:8px">معاينة مباشرة (تقريبية)</div>
+              <div id="hlPreview" style="position:relative;height:220px;border-radius:12px;background:radial-gradient(circle at 50% 40%,rgba(167,139,250,.15),transparent 60%),#0a0a0c;overflow:hidden">
+                <div id="hlPrevMain" style="position:absolute;left:50%;top:50%;background:linear-gradient(145deg,#2a2a35,#121218);border-radius:16px;border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 30px rgba(0,0,0,.45);transform:translate(-50%,-50%)"></div>
+                <div id="hlPrevChip" style="position:absolute;display:flex;align-items:center;gap:8px;background:rgba(12,12,16,.85);border:1px solid rgba(255,255,255,.14);border-radius:14px;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.35)">
+                  <span style="width:22px;height:22px;border-radius:8px;background:rgba(240,180,41,.2);display:grid;place-items:center;font-size:10px;color:#f0b429">◇</span>
+                  <div style="line-height:1.2"><b id="hlPrevChipTitle">شنط حريمي</b><div style="opacity:.7;font-size:.75em" id="hlPrevChipSub">أحدث التشكيلة</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center">
+              <button type="button" class="btn btn-primary" id="hlSaveBtn">حفظ تعديلات الأحجام</button>
+              <button type="button" class="btn btn-ghost" id="hlResetAllBtn">إعادة كل الافتراضي للجهاز الحالي</button>
+              <span class="hint" id="hlSaveMsg"></span>
+            </div>
+          </div>
+          <style>
+            @media (max-width:700px){ .hl-grid{ grid-template-columns:1fr !important; } }
+            #heroLayoutBox label{ display:block; margin-bottom:8px; font-size:.85rem; }
+            #heroLayoutBox label input, #heroLayoutBox label select{ width:100%; margin-top:4px; }
+          </style>
+
             <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة</button>
             <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">معاينة المتجر</a>
           </div>
@@ -1329,6 +1394,7 @@
 
     // bind on load
     try { bindThemePanelOnce(); } catch (e) { console.warn(e); }
+    try { loadHeroLayoutPanel(); } catch (eHL0) {}
 
     async function saveThemeMode(mode) {
       const msg = document.getElementById("themeModeMsg");
@@ -1366,6 +1432,141 @@
 
     try { bindThemeModeButtons(); } catch (e) {}
 
+
+    
+    /* ===== Hero Layout Controls (main image + chip) ===== */
+    const HL_DEFAULTS = {
+      desktop: { main: {w:440,h:460,scale:100,x:0,y:0,fit:"cover"}, chip: {w:200,h:0,img:0,text:14,icon:28,x:0,y:0,pad:12} },
+      tablet:  { main: {w:360,h:380,scale:100,x:0,y:0,fit:"cover"}, chip: {w:180,h:0,img:0,text:13,icon:26,x:0,y:0,pad:11} },
+      mobile:  { main: {w:300,h:320,scale:100,x:0,y:0,fit:"cover"}, chip: {w:170,h:0,img:0,text:12,icon:24,x:0,y:0,pad:10} }
+    };
+    let HL_STATE = JSON.parse(JSON.stringify(HL_DEFAULTS));
+    let HL_DEV = "desktop";
+
+    function hlNum(id, def) {
+      const el = document.getElementById(id);
+      if (!el) return def;
+      const n = Number(el.value);
+      return Number.isFinite(n) ? n : def;
+    }
+    function hlReadForm() {
+      return {
+        main: {
+          w: hlNum("hl_main_w", 440), h: hlNum("hl_main_h", 460), scale: hlNum("hl_main_scale", 100),
+          x: hlNum("hl_main_x", 0), y: hlNum("hl_main_y", 0),
+          fit: (document.getElementById("hl_main_fit") || {}).value || "cover"
+        },
+        chip: {
+          w: hlNum("hl_chip_w", 200), h: hlNum("hl_chip_h", 0), img: 0,
+          text: hlNum("hl_chip_text", 14), icon: hlNum("hl_chip_icon", 28),
+          x: hlNum("hl_chip_x", 0), y: hlNum("hl_chip_y", 0), pad: hlNum("hl_chip_pad", 12)
+        }
+      };
+    }
+    function hlFillForm(data) {
+      data = data || HL_DEFAULTS[HL_DEV];
+      const m = data.main || {}, c = data.chip || {};
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+      set("hl_main_w", m.w); set("hl_main_h", m.h); set("hl_main_scale", m.scale);
+      set("hl_main_x", m.x); set("hl_main_y", m.y);
+      const fit = document.getElementById("hl_main_fit"); if (fit) fit.value = m.fit || "cover";
+      set("hl_chip_w", c.w); set("hl_chip_h", c.h || 0); set("hl_chip_text", c.text);
+      set("hl_chip_icon", c.icon); set("hl_chip_x", c.x); set("hl_chip_y", c.y); set("hl_chip_pad", c.pad);
+      hlPreview();
+    }
+    function hlPreview() {
+      const d = hlReadForm();
+      const main = document.getElementById("hlPrevMain");
+      const chip = document.getElementById("hlPrevChip");
+      if (!main || !chip) return;
+      const sc = (d.main.scale || 100) / 100;
+      const mw = Math.max(40, (d.main.w || 440) * sc * 0.35);
+      const mh = Math.max(40, (d.main.h || 460) * sc * 0.35);
+      main.style.width = mw + "px";
+      main.style.height = mh + "px";
+      main.style.transform = "translate(calc(-50% + " + ((d.main.x||0)*0.35) + "px), calc(-50% + " + ((d.main.y||0)*0.35) + "px))";
+      const cw = Math.max(80, (d.chip.w || 200) * 0.7);
+      chip.style.width = cw + "px";
+      chip.style.height = (d.chip.h && d.chip.h > 0) ? (d.chip.h * 0.7) + "px" : "auto";
+      chip.style.padding = Math.max(4, (d.chip.pad || 12) * 0.7) + "px";
+      chip.style.fontSize = Math.max(10, (d.chip.text || 14) * 0.85) + "px";
+      chip.style.right = (12 - (d.chip.x || 0) * 0.3) + "px";
+      chip.style.bottom = (12 - (d.chip.y || 0) * 0.3) + "px";
+      const title = document.getElementById("hlPrevChipTitle");
+      const sub = document.getElementById("hlPrevChipSub");
+      if (title && document.getElementById("hChipTitle")) title.textContent = document.getElementById("hChipTitle").value || "شنط حريمي";
+      if (sub && document.getElementById("hChipSub")) sub.textContent = document.getElementById("hChipSub").value || "أحدث التشكيلة";
+    }
+    function hlBind() {
+      if (window.__hlBound) return;
+      window.__hlBound = true;
+      document.querySelectorAll(".hl-dev").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          HL_STATE[HL_DEV] = hlReadForm();
+          HL_DEV = btn.getAttribute("data-dev") || "desktop";
+          document.querySelectorAll(".hl-dev").forEach(function(b) {
+            const on = b.getAttribute("data-dev") === HL_DEV;
+            b.classList.toggle("btn-primary", on);
+            b.classList.toggle("btn-ghost", !on);
+          });
+          hlFillForm(HL_STATE[HL_DEV] || HL_DEFAULTS[HL_DEV]);
+        });
+      });
+      ["hl_main_w","hl_main_h","hl_main_scale","hl_main_x","hl_main_y","hl_main_fit","hl_chip_w","hl_chip_h","hl_chip_text","hl_chip_icon","hl_chip_x","hl_chip_y","hl_chip_pad"].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", hlPreview);
+        el.addEventListener("change", hlPreview);
+      });
+      const mr = document.getElementById("hlMainReset");
+      if (mr) mr.addEventListener("click", function() {
+        HL_STATE[HL_DEV].main = JSON.parse(JSON.stringify(HL_DEFAULTS[HL_DEV].main));
+        hlFillForm(HL_STATE[HL_DEV]);
+      });
+      const cr = document.getElementById("hlChipReset");
+      if (cr) cr.addEventListener("click", function() {
+        HL_STATE[HL_DEV].chip = JSON.parse(JSON.stringify(HL_DEFAULTS[HL_DEV].chip));
+        hlFillForm(HL_STATE[HL_DEV]);
+      });
+      const ra = document.getElementById("hlResetAllBtn");
+      if (ra) ra.addEventListener("click", function() {
+        HL_STATE[HL_DEV] = JSON.parse(JSON.stringify(HL_DEFAULTS[HL_DEV]));
+        hlFillForm(HL_STATE[HL_DEV]);
+      });
+      const save = document.getElementById("hlSaveBtn");
+      if (save) save.addEventListener("click", async function() {
+        const msg = document.getElementById("hlSaveMsg");
+        HL_STATE[HL_DEV] = hlReadForm();
+        if (msg) msg.textContent = "جاري الحفظ...";
+        save.disabled = true;
+        try {
+          const data = await api("update_hero", { heroLayout: HL_STATE });
+          if (!data.ok) throw new Error(data.error || "فشل الحفظ");
+          try { if (typeof bustStoreCaches === "function") bustStoreCaches(); } catch (e) {}
+          if (msg) { msg.textContent = "تم الحفظ — حدّثي المتجر لرؤية التغيير"; msg.style.color = "#4ade80"; }
+        } catch (e) {
+          if (msg) { msg.textContent = e.message || "خطأ"; msg.style.color = "#f87171"; }
+        } finally { save.disabled = false; }
+      });
+    }
+    async function loadHeroLayoutPanel(cfg) {
+      try {
+        if (!cfg) {
+          const data = await api("get_config");
+          cfg = data.config || data || {};
+        }
+        if (cfg.heroLayout && typeof cfg.heroLayout === "object") {
+          HL_STATE = Object.assign(JSON.parse(JSON.stringify(HL_DEFAULTS)), cfg.heroLayout);
+          ["desktop","tablet","mobile"].forEach(function(d) {
+            HL_STATE[d] = Object.assign({}, HL_DEFAULTS[d], cfg.heroLayout[d] || {});
+            HL_STATE[d].main = Object.assign({}, HL_DEFAULTS[d].main, (cfg.heroLayout[d] || {}).main || {});
+            HL_STATE[d].chip = Object.assign({}, HL_DEFAULTS[d].chip, (cfg.heroLayout[d] || {}).chip || {});
+          });
+        }
+        hlFillForm(HL_STATE[HL_DEV]);
+        hlBind();
+      } catch (e) { hlBind(); hlFillForm(HL_DEFAULTS.desktop); }
+    }
 
     /* ===== ATHAR Order Labels 10x15cm ===== */
     const ATHAR_BRAND = {
