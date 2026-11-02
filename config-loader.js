@@ -73,6 +73,33 @@
     } catch (e) {}
   }
 
+  
+  function applyHeroLayout(layout) {
+    if (!layout || typeof layout !== "object") return;
+    try {
+      const w = window.innerWidth || 1200;
+      const dev = w <= 700 ? "mobile" : (w <= 1024 ? "tablet" : "desktop");
+      const block = layout[dev] || layout.desktop || {};
+      const m = block.main || {};
+      const c = block.chip || {};
+      const root = document.documentElement;
+      if (m.w) root.style.setProperty("--hero-main-w", String(m.w));
+      if (m.h) root.style.setProperty("--hero-main-h", String(m.h));
+      if (m.scale) root.style.setProperty("--hero-main-scale", String((Number(m.scale) || 100) / 100));
+      root.style.setProperty("--hero-main-x", String(m.x || 0));
+      root.style.setProperty("--hero-main-y", String(m.y || 0));
+      if (m.fit) root.style.setProperty("--hero-main-fit", String(m.fit));
+      if (c.w) root.style.setProperty("--hero-chip-w", String(c.w));
+      if (c.h && Number(c.h) > 0) root.style.setProperty("--hero-chip-h", String(c.h) + "px");
+      else root.style.setProperty("--hero-chip-h", "auto");
+      root.style.setProperty("--hero-chip-text", String(c.text || 14));
+      root.style.setProperty("--hero-chip-icon", String(c.icon || 28));
+      root.style.setProperty("--hero-chip-x", String(c.x || 0));
+      root.style.setProperty("--hero-chip-y", String(c.y || 0));
+      root.style.setProperty("--hero-chip-pad", String(c.pad || 12));
+    } catch (e) {}
+  }
+
   function applyColors(colors) {
       if (!colors || typeof colors !== "object") return;
       const map = {
@@ -134,6 +161,16 @@
     window.__ATHAR_BRAND_COLORS = c.colors || null;
     window.__ATHAR_THEME_MODE = c.themeMode || "system";
     applySystemSurfaces(c.colors);
+    if (c.heroLayout) applyHeroLayout(c.heroLayout);
+    try {
+      if (!window.__HL_RESIZE_BOUND) {
+        window.__HL_RESIZE_BOUND = true;
+        window.addEventListener("resize", function() {
+          const cfg = window.__SITE_CONFIG__ || window.siteConfig;
+          if (cfg && cfg.heroLayout) applyHeroLayout(cfg.heroLayout);
+        });
+      }
+    } catch (e) {}
     try {
       if (!window.__ATHAR_SCHEME_BOUND && window.matchMedia) {
         window.__ATHAR_SCHEME_BOUND = true;
