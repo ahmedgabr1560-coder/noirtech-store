@@ -1667,18 +1667,28 @@ function renderShop() {
   // homepage builder limit
   var __hpShopLimit = typeof atharSectionLimit === "function" ? atharSectionLimit("shop") : null;
 
-  let list = PRODUCTS.filter(productMatches);
+  let pool = Array.isArray(PRODUCTS) ? PRODUCTS : [];
+  if (!pool.length && window.__ATHAR_PRODUCTS) pool = window.__ATHAR_PRODUCTS;
+  let list = pool.filter(function(p){ try { return productMatches(p); } catch(e){ return !!p && !p.hidden; } });
+  // لو الفلتر رجّع فاضي وفي منتجات — اعرض الكل (عشان المتجر ميفضلش فاضي)
+  if (!list.length && pool.length) {
+    list = pool.filter(function(p){ return p && p.hidden !== true && p.active !== false; });
+  }
   list = sortedProducts(list);
   if (__hpShopLimit && list.length > __hpShopLimit) list = list.slice(0, __hpShopLimit);
   const grid = document.getElementById("shopGrid");
   const empty = document.getElementById("shopEmpty");
   if (grid) {
     if (!list.length) {
-      grid.innerHTML = "";
+      grid.innerHTML = '<div class="empty-state">لا توجد منتجات حالياً — حدّثي الصفحة أو أضيفي من الأدمن</div>';
       if (empty) empty.hidden = false;
     } else {
       if (empty) empty.hidden = true;
-      renderGrid(grid, list);
+      try { renderGrid(grid, list); } catch (eG) {
+        grid.innerHTML = list.map(function(p){
+          return '<article class="product-card"><a href="/product.html?id='+p.id+'"><img src="'+(p.image||'')+'" alt=""/><h3>'+(p.name||'')+'</h3></a></article>';
+        }).join("");
+      }
     }
   }
   // brands dropdown from visible catalog
@@ -2029,11 +2039,18 @@ async function loadProducts(force) {
   }
   if (best && best.length) {
     PRODUCTS = dedupeProducts(best);
-    try { if (typeof renderShop === "function") renderShop(); if (typeof renderBundleSection === "function") renderBundleSection(); else if (typeof renderBundles === "function") renderBundles(); } catch (eR) {}
-      nxCacheSet("nx_products", PRODUCTS);
+    try { nxCacheSet("nx_products", PRODUCTS); } catch (eC) {}
     try { window.__ATHAR_PRODUCTS = PRODUCTS; } catch (e) {}
   }
-  PRODUCTS = PRODUCTS || [];
+  PRODUCTS = Array.isArray(PRODUCTS) ? PRODUCTS : [];
+  try {
+    if (typeof renderShop === "function") renderShop();
+    if (typeof renderBundleSection === "function") renderBundleSection();
+    else if (typeof renderBundles === "function") renderBundles();
+    if (typeof renderAll === "function" && PRODUCTS.length) {
+      // لا تعيد renderAll كامل لو هتكرر — فقط تأكيد المتجر
+    }
+  } catch (eR) { console.warn(eR); }
   return PRODUCTS;
 }
 
@@ -2278,11 +2295,17 @@ async function bootStore() {
     await Promise.all([
       loadHeroConfig().catch(e => console.warn(e)),
       loadCatalog().catch(e => console.warn(e)),
-      loadProducts().catch(e => console.warn(e))
+      loadProducts(true).catch(e => console.warn(e))
     ]);
   } catch (e) { console.warn(e); }
+  // ضمان ظهور المنتجات
+  if (!PRODUCTS.length) {
+    try { await loadProducts(true); } catch (e2) {}
+  }
   try { startHeroProductRotate(window.__SITE_CONFIG__ || {}); } catch (e) {}
   try { renderAll(); } catch (e) { console.warn(e); }
+  try { if (typeof renderShop === "function") renderShop(); } catch (e) {}
+  try { if (typeof renderBundleSection === "function") renderBundleSection(); } catch (e) {}
   try { bindCategoryUI(); } catch (e) { console.warn(e); }
   try { updateCartUI(); } catch (e) {}
   try { updateUserUI(); } catch (e) {}
