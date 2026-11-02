@@ -29,11 +29,11 @@
 
   
   const SYSTEM_LIGHT = {
-    bg: "#ffffff", bgSection: "#f5f5f5", bgCard: "#ffffff", text: "#111111",
-    textHeading: "#000000", textMuted: "#555555", border: "#e5e5e5",
-    headerBg: "#ffffff", footerBg: "#f5f5f5", navBg: "#ffffff",
-    inputBg: "#ffffff", inputBorder: "#dddddd", btnSecondaryBg: "#f0f0f0",
-    btnSecondaryText: "#111111", shadow: "rgba(0,0,0,0.10)", priceOld: "#888888"
+    bg: "#f8f7f4", bgSection: "#f1efe9", bgCard: "#ffffff", text: "#1a1814",
+    textHeading: "#0c0b0a", textMuted: "#6b6560", border: "#e6e1d8",
+    headerBg: "rgba(255,255,255,0.92)", footerBg: "#f1efe9", navBg: "#ffffff",
+    inputBg: "#ffffff", inputBorder: "#ddd6ca", btnSecondaryBg: "#f0ebe3",
+    btnSecondaryText: "#1a1814", shadow: "rgba(28,24,20,0.08)", priceOld: "#9a9388"
   };
   const SYSTEM_DARK = {
     bg: "#000000", bgSection: "#0a0a0a", bgCard: "#111111", text: "#f5f5f5",
