@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
   <link rel="preload" href="/styles.css?v=20261103-gravity" as="style" />
-  <link rel="preload" href="/script.js?v=20261103-gravity" as="script" />
+  <link rel="preload" href="/script.js?v=20261103-close" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
   <link rel="stylesheet" href="/styles.css?v=20261103-gravity" />
@@ -324,7 +324,7 @@
   <aside class="drawer" id="cartDrawer" aria-label="سلة التسوق">
     <div class="drawer-head">
       <h3>سلة التسوق</h3>
-      <button type="button" class="icon-close" id="closeCart" aria-label="إغلاق">×</button>
+      <button type="button" class="icon-close" id="closeCart" aria-label="إغلاق" data-close="cart" onclick="event.preventDefault();event.stopPropagation();try{closeCart()}catch(e){}">×</button>
     </div>
     <div class="drawer-scroll">
       <div class="drawer-body" id="cartItems"></div>
@@ -381,14 +381,14 @@
   <!-- Product detail modal -->
   <div class="modal-overlay" id="productOverlay"></div>
   <div class="modal product-modal-wide" id="productModal" role="dialog" aria-modal="true">
-    <button type="button" class="icon-close modal-close" id="closeProduct">×</button>
+    <button type="button" class="icon-close modal-close" id="closeProduct" data-close="product" onclick="event.preventDefault();event.stopPropagation();try{closeProduct()}catch(e){}">×</button>
     <div class="product-detail" id="productDetail"></div>
   </div>
 
   <!-- Auth modal -->
       <div class="modal-overlay" id="authOverlay"></div>
   <div class="modal auth-modal" id="authModal" role="dialog" aria-modal="true">
-    <button type="button" class="icon-close modal-close" id="closeAuth" aria-label="إغلاق">×</button>
+    <button type="button" class="icon-close modal-close" id="closeAuth" aria-label="إغلاق" data-close="auth" onclick="event.preventDefault();event.stopPropagation();try{closeAuth()}catch(e){}">×</button>
 
     <!-- LOGIN ONLY -->
     <div id="loginPanel" class="auth-panel">
@@ -459,7 +459,7 @@
 <!-- Profile modal -->
     <div class="modal-overlay" id="profileOverlay"></div>
   <div class="modal profile-modal" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileName">
-    <button type="button" class="icon-close modal-close" id="closeProfile" aria-label="إغلاق">×</button>
+    <button type="button" class="icon-close modal-close" id="closeProfile" aria-label="إغلاق" data-close="profile" onclick="event.preventDefault();event.stopPropagation();try{closeProfile()}catch(e){}">×</button>
 
     <div class="profile-head">
       <div class="avatar-upload profile-avatar-box">
@@ -566,7 +566,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-lightfix" defer></script>
-  <script src="/script.js?v=20261103-gravity" defer></script>
+  <script src="/script.js?v=20261103-close" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
@@ -577,7 +577,7 @@
   </script>
   <script src="/go-home-patch.js" defer></script>
   <script>
-  // hero config applied from script.js?v=20261103-gravity"undefined") { try { PRODUCTS = list; } catch (e) {} }
+  // hero config applied from script.js?v=20261103-close"undefined") { try { PRODUCTS = list; } catch (e) {} }
       window.__ATHAR_PRODUCTS = list;
       var grid = document.getElementById("shopGrid");
       if (!grid || !list || !list.length) return;
