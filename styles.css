@@ -2773,3 +2773,15 @@ html[data-theme="light"] .mega-menu {
   color: #111 !important;
   box-shadow: 0 12px 40px rgba(0,0,0,0.1) !important;
 }
+
+/* close btn z */
+.icon-close, .modal-close, #closeCart, #closeAuth, #closeProfile, #closeProduct {
+  position: relative;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+.drawer-head .icon-close, .drawer-head #closeCart {
+  position: relative;
+  z-index: 50 !important;
+}
