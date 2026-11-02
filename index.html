@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
   <link rel="preload" href="/styles.css?v=20261102-tdzfix" as="style" />
-  <link rel="preload" href="/script.js?v=20261103-fix" as="script" />
+  <link rel="preload" href="/script.js?v=20261103-emg2" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
   <link rel="stylesheet" href="/styles.css?v=20261102-tdzfix" />
@@ -213,6 +213,39 @@
         </div>
         <div class="subcats-bar" id="subcatsBar"></div>
         <div class="products-grid" id="shopGrid"></div>
+
+<script id="athar-emergency-products">
+(function(){
+  function paint(list){
+    try{
+      window.PRODUCTS=list; window.__ATHAR_PRODUCTS=list;
+      try{ PRODUCTS=list; }catch(e){}
+      var grid=document.getElementById("shopGrid");
+      if(!grid||!list||!list.length) return;
+      if(typeof renderShop==="function"){ try{ renderShop(); if(grid.querySelector(".product-card")) return; }catch(e){} }
+      if(typeof renderGrid==="function"){ try{ renderGrid(grid,list); return; }catch(e){} }
+      grid.innerHTML=list.map(function(p){
+        return '<article class="product-card" data-id="'+p.id+'"><a class="product-media" href="/product.html?id='+p.id+'"><img src="'+(p.image||(p.images&&p.images[0])||"")+'" alt="" loading="lazy"/></a><div class="product-body"><h3>'+String(p.name||"").replace(/</g,"")+'</h3></div></article>';
+      }).join("");
+    }catch(e){}
+  }
+  async function load(){
+    try{
+      var r=await fetch("/products.json?t="+Date.now(),{cache:"no-store"});
+      if(!r.ok) r=await fetch("/api/catalog?type=products&t="+Date.now(),{cache:"no-store"});
+      var d=await r.json();
+      var list=Array.isArray(d)?d:(d.products||[]);
+      list=(list||[]).filter(function(p){return p&&p.hidden!==true&&p.active!==false;});
+      if(list.length) paint(list);
+    }catch(e){}
+  }
+  load();
+  setTimeout(load,1000);
+  setTimeout(load,2500);
+  setTimeout(load,5000);
+})();
+</script>
+
         <div class="empty-state" id="shopEmpty" hidden>لا توجد منتجات في هذا التصنيف حاليًا.</div>
       </div>
     </section>
@@ -513,7 +546,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261102-productsfix" defer></script>
-  <script src="/script.js?v=20261103-fix" defer></script>
+  <script src="/script.js?v=20261103-emg2" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
@@ -524,7 +557,7 @@
   </script>
   <script src="/go-home-patch.js" defer></script>
   <script>
-  // hero config applied from script.js?v=20261103-fix"undefined") { try { PRODUCTS = list; } catch (e) {} }
+  // hero config applied from script.js?v=20261103-emg2"undefined") { try { PRODUCTS = list; } catch (e) {} }
       window.__ATHAR_PRODUCTS = list;
       var grid = document.getElementById("shopGrid");
       if (!grid || !list || !list.length) return;
