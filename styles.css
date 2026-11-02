@@ -2539,3 +2539,217 @@ html[data-theme="dark"] .icon-btn,
 html[data-theme="dark"] .site-header { color: #fff; }
 html[data-theme="light"] body { background: #fff; color: #111; }
 html[data-theme="dark"] body { background: #000; color: #f5f5f5; }
+
+/* === LIGHT THEME FULL FIX === */
+html[data-theme="light"],
+html[data-theme="light"] body {
+  background: #ffffff !important;
+  color: #111111 !important;
+  color-scheme: light;
+}
+
+html[data-theme="light"] {
+  --bg: #ffffff !important;
+  --bg-section: #f4f4f5 !important;
+  --bg-card: #ffffff !important;
+  --text: #111111 !important;
+  --text-heading: #000000 !important;
+  --muted: #5c5c5c !important;
+  --border: rgba(0,0,0,0.10) !important;
+  --border-solid: #e5e5e5 !important;
+  --header-bg: #ffffff !important;
+  --footer-bg: #f4f4f5 !important;
+  --nav-bg: #ffffff !important;
+  --input-bg: #ffffff !important;
+  --input-border: #d4d4d4 !important;
+  --btn-secondary-bg: #f0f0f0 !important;
+  --btn-secondary-text: #111111 !important;
+  --shadow: rgba(0,0,0,0.08) !important;
+  --price-old: #888888 !important;
+}
+
+/* خلفية سينمائية → فاتحة */
+html[data-theme="light"] .bg-stage .bg-black {
+  background: radial-gradient(ellipse 80% 60% at 70% 20%, #f0f0f2 0%, #ffffff 55%, #ffffff 100%) !important;
+}
+html[data-theme="light"] .bg-stage .light-svg,
+html[data-theme="light"] .bg-stage .hero-glow-a,
+html[data-theme="light"] .bg-stage .hero-glow-b {
+  opacity: 0.25 !important;
+  filter: brightness(1.2) !important;
+}
+
+/* هيدر */
+html[data-theme="light"] .site-header,
+html[data-theme="light"] header.site-header {
+  background: rgba(255,255,255,0.92) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  color: #111 !important;
+}
+html[data-theme="light"] .site-header a,
+html[data-theme="light"] .main-nav a,
+html[data-theme="light"] .logo-text,
+html[data-theme="light"] .logo-text span,
+html[data-theme="light"] .action-label,
+html[data-theme="light"] .icon-btn,
+html[data-theme="light"] .nav-drop-btn {
+  color: #111111 !important;
+}
+html[data-theme="light"] .icon-btn:hover,
+html[data-theme="light"] .main-nav a:hover {
+  background: rgba(0,0,0,0.05) !important;
+  color: #000 !important;
+}
+html[data-theme="light"] .search-box input {
+  background: #f5f5f5 !important;
+  color: #111 !important;
+  border-color: #e0e0e0 !important;
+}
+html[data-theme="light"] .search-box input::placeholder {
+  color: #888 !important;
+}
+html[data-theme="light"] .badge-count {
+  background: #111 !important;
+  color: #fff !important;
+}
+
+/* كروت المنتجات */
+html[data-theme="light"] .product-card,
+html[data-theme="light"] .card,
+html[data-theme="light"] article.product-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  color: #111 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+}
+html[data-theme="light"] .product-card h3,
+html[data-theme="light"] .product-card .product-name,
+html[data-theme="light"] .product-card .price,
+html[data-theme="light"] .product-card p {
+  color: #111 !important;
+}
+html[data-theme="light"] .product-card .muted,
+html[data-theme="light"] .product-card .price-old {
+  color: #777 !important;
+}
+html[data-theme="light"] .add-btn,
+html[data-theme="light"] button.add-btn {
+  background: #111 !important;
+  color: #fff !important;
+  border: none !important;
+}
+html[data-theme="light"] .add-btn:hover {
+  background: #333 !important;
+}
+
+/* أقسام وعناوين */
+html[data-theme="light"] .section,
+html[data-theme="light"] .section-head h2,
+html[data-theme="light"] h1, 
+html[data-theme="light"] h2, 
+html[data-theme="light"] h3 {
+  color: #111 !important;
+}
+html[data-theme="light"] .hint,
+html[data-theme="light"] .muted,
+html[data-theme="light"] .section-head p {
+  color: #666 !important;
+}
+
+/* كرت الهيرو */
+html[data-theme="light"] .hero-chip {
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(0,0,0,0.1) !important;
+  color: #111 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+}
+html[data-theme="light"] .hero-chip strong {
+  color: #000 !important;
+}
+html[data-theme="light"] .hero-chip span {
+  color: #555 !important;
+}
+html[data-theme="light"] .hero-title,
+html[data-theme="light"] .hero-sub,
+html[data-theme="light"] .hero h1 {
+  color: #111 !important;
+}
+
+/* سلة ومودال */
+html[data-theme="light"] .drawer,
+html[data-theme="light"] .modal,
+html[data-theme="light"] .auth-modal,
+html[data-theme="light"] .cart-drawer {
+  background: #ffffff !important;
+  color: #111 !important;
+  border-color: rgba(0,0,0,0.1) !important;
+}
+html[data-theme="light"] .drawer-overlay,
+html[data-theme="light"] .modal-overlay {
+  background: rgba(0,0,0,0.35) !important;
+}
+html[data-theme="light"] .drawer h2,
+html[data-theme="light"] .modal h2,
+html[data-theme="light"] .auth-brand h2 {
+  color: #111 !important;
+}
+html[data-theme="light"] .drawer input,
+html[data-theme="light"] .modal input,
+html[data-theme="light"] .auth-form input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] select {
+  background: #fff !important;
+  color: #111 !important;
+  border: 1px solid #ddd !important;
+}
+html[data-theme="light"] .auth-form label,
+html[data-theme="light"] .field label {
+  color: #333 !important;
+}
+
+/* فوتر */
+html[data-theme="light"] footer,
+html[data-theme="light"] .site-footer {
+  background: #f4f4f5 !important;
+  color: #333 !important;
+  border-top: 1px solid rgba(0,0,0,0.08) !important;
+}
+html[data-theme="light"] footer a {
+  color: #333 !important;
+}
+
+/* قائمة الموبايل */
+html[data-theme="light"] #catNav,
+html[data-theme="light"] .cat-nav {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.08) !important;
+  color: #111 !important;
+}
+html[data-theme="light"] #catNav a {
+  color: #111 !important;
+}
+
+/* أزرار عامة */
+html[data-theme="light"] .btn-ghost {
+  background: #f0f0f0 !important;
+  color: #111 !important;
+  border: 1px solid #e0e0e0 !important;
+}
+html[data-theme="light"] .btn-primary {
+  color: #fff !important;
+}
+
+/* empty states */
+html[data-theme="light"] .empty-state {
+  color: #555 !important;
+  background: #fafafa !important;
+  border-color: #eee !important;
+}
+
+/* mega menu */
+html[data-theme="light"] .mega-menu {
+  background: #fff !important;
+  border: 1px solid rgba(0,0,0,0.1) !important;
+  color: #111 !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1) !important;
+}
