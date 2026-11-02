@@ -2442,3 +2442,50 @@ document.addEventListener("click", function(e) {
   activeBundleCat = tab.getAttribute("data-bundle-cat") || "all";
   renderBundleSection();
 });
+
+
+
+/* ===== SAFETY NET: never leave shop empty ===== */
+(function atharEnsureProductsVisible() {
+  async function pullAndPaint() {
+    try {
+      if (typeof loadProducts === "function") {
+        await loadProducts(true);
+      }
+    } catch (e) {
+      try {
+        const r = await fetch("/products.json?t=" + Date.now(), { cache: "no-store" });
+        if (r.ok) {
+          const data = await r.json();
+          let list = Array.isArray(data) ? data : (data.products || []);
+          list = (list || []).filter(function(p) { return p && p.hidden !== true && p.active !== false; });
+          PRODUCTS = list;
+          try { window.PRODUCTS = PRODUCTS; window.__ATHAR_PRODUCTS = PRODUCTS; } catch (e2) {}
+        }
+      } catch (e3) {}
+    }
+    try { if (typeof renderShop === "function") renderShop(); } catch (e4) {}
+    try { if (typeof renderBundleSection === "function") renderBundleSection(); } catch (e5) {}
+    try {
+      const grid = document.getElementById("shopGrid");
+      if (grid && PRODUCTS && PRODUCTS.length && (!grid.children.length || (grid.children.length === 1 && grid.innerHTML.indexOf("empty-state") >= 0))) {
+        if (typeof renderGrid === "function") renderGrid(grid, PRODUCTS);
+        else {
+          grid.innerHTML = PRODUCTS.map(function(p) {
+            return '<article class="product-card"><a href="/product.html?id=' + p.id + '"><img src="' + (p.image || "") + '" alt="" loading="lazy"/><h3>' + (p.name || "") + '</h3></a></article>';
+          }).join("");
+        }
+      }
+    } catch (e6) {}
+  }
+  function schedule() {
+    pullAndPaint();
+    setTimeout(pullAndPaint, 800);
+    setTimeout(pullAndPaint, 2500);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", schedule);
+  } else {
+    schedule();
+  }
+})();
