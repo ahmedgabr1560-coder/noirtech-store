@@ -100,6 +100,59 @@
     } catch (e) {}
   }
 
+  
+  function applyHomepageConfig(hp) {
+    if (!hp || typeof hp !== "object") return;
+    try {
+      const w = window.innerWidth || 1200;
+      const dev = w <= 700 ? "mobile" : (w <= 1024 ? "tablet" : "desktop");
+      const order = Array.isArray(hp.order) ? hp.order : ["home","bundles","shop","contact"];
+      const sections = hp.sections || {};
+      // reorder + visibility
+      const parentMap = {};
+      order.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) parentMap[id] = el;
+      });
+      // use common parent - body main flow: sections are sequential under body/main
+      const first = parentMap[order[0]];
+      const parent = first && first.parentNode;
+      if (parent) {
+        order.forEach(function(id) {
+          const el = parentMap[id];
+          if (!el) return;
+          parent.appendChild(el); // move to end in order
+        });
+      }
+      order.forEach(function(id) {
+        const el = document.getElementById(id);
+        const sec = sections[id] || {};
+        if (!el) return;
+        el.style.display = sec.visible === false ? "none" : "";
+        const d = sec[dev] || sec.desktop || {};
+        el.style.setProperty("--hp-pad-y", (d.padY != null ? d.padY : 40) + "px");
+        el.style.setProperty("--hp-title", (d.titleSize != null ? d.titleSize : 28) + "px");
+        el.style.setProperty("--hp-text", (d.textSize != null ? d.textSize : 15) + "px");
+        el.style.setProperty("--hp-gap", (d.gap != null ? d.gap : 16) + "px");
+        el.style.setProperty("--hp-radius", (d.radius != null ? d.radius : 14) + "px");
+        el.style.setProperty("--hp-card-scale", String((d.cardScale != null ? d.cardScale : 100) / 100));
+        el.style.setProperty("--hp-img-scale", String((d.imgScale != null ? d.imgScale : 100) / 100));
+        el.style.setProperty("--hp-btn-scale", String((d.btnScale != null ? d.btnScale : 100) / 100));
+        el.style.setProperty("--hp-cols", String(d.cols != null ? d.cols : 2));
+        el.style.setProperty("--hp-shadow", String((d.shadow != null ? d.shadow : 40) / 100));
+        if (d.bg) el.style.setProperty("--hp-bg", d.bg);
+        if (d.titleColor) el.style.setProperty("--hp-title-color", d.titleColor);
+        if (d.textColor) el.style.setProperty("--hp-text-color", d.textColor);
+        if (d.btnColor) el.style.setProperty("--hp-btn-color", d.btnColor);
+        if (d.borderColor) el.style.setProperty("--hp-border", d.borderColor);
+        el.setAttribute("data-hp-limit", d.limit != null ? d.limit : "");
+        el.classList.add("hp-controlled");
+      });
+      window.__ATHAR_HOMEPAGE = hp;
+      window.dispatchEvent(new CustomEvent("athar-homepage-applied", { detail: hp }));
+    } catch (e) {}
+  }
+
   function applyColors(colors) {
       if (!colors || typeof colors !== "object") return;
       const map = {
@@ -162,12 +215,14 @@
     window.__ATHAR_THEME_MODE = c.themeMode || "system";
     applySystemSurfaces(c.colors);
     if (c.heroLayout) applyHeroLayout(c.heroLayout);
+    if (c.homepage) applyHomepageConfig(c.homepage);
     try {
       if (!window.__HL_RESIZE_BOUND) {
         window.__HL_RESIZE_BOUND = true;
         window.addEventListener("resize", function() {
           const cfg = window.__SITE_CONFIG__ || window.siteConfig;
           if (cfg && cfg.heroLayout) applyHeroLayout(cfg.heroLayout);
+          if (cfg && cfg.homepage) applyHomepageConfig(cfg.homepage);
         });
       }
     } catch (e) {}
