@@ -128,7 +128,7 @@
         const el = document.getElementById(id);
         const sec = sections[id] || {};
         if (!el) return;
-        el.style.display = sec.visible === false ? "none" : "";
+        if (sec.visible === false) { el.style.display = "none"; } else { el.style.display = ""; el.style.visibility = "visible"; }
         const d = sec[dev] || sec.desktop || {};
         el.style.setProperty("--hp-pad-y", (d.padY != null ? d.padY : 40) + "px");
         el.style.setProperty("--hp-title", (d.titleSize != null ? d.titleSize : 28) + "px");
@@ -138,7 +138,7 @@
         el.style.setProperty("--hp-card-scale", String((d.cardScale != null ? d.cardScale : 100) / 100));
         el.style.setProperty("--hp-img-scale", String((d.imgScale != null ? d.imgScale : 100) / 100));
         el.style.setProperty("--hp-btn-scale", String((d.btnScale != null ? d.btnScale : 100) / 100));
-        el.style.setProperty("--hp-cols", String(d.cols != null ? d.cols : 2));
+        var colsN = Number(d.cols != null ? d.cols : 2); if (!colsN || colsN < 1) colsN = 2; el.style.setProperty("--hp-cols", String(colsN));
         el.style.setProperty("--hp-shadow", String((d.shadow != null ? d.shadow : 40) / 100));
         if (d.bg) el.style.setProperty("--hp-bg", d.bg);
         if (d.titleColor) el.style.setProperty("--hp-title-color", d.titleColor);
