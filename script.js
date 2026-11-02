@@ -781,7 +781,7 @@ function productCard(p) {
         ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
       </div>
       ${(p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) ? `<div style="font-size:.72rem;color:#fdba74;margin-top:4px;font-weight:700">🔥 ${p.offerMeta.tiers.map(t => t.qty + " بـ " + Number(t.price).toLocaleString("ar-EG")).join(" · ")}</div>` : ""}
-      <button type="button" class="add-btn" data-add="${p.id}">أضف للسلة</button>
+      <button type="button" class="add-btn" data-add="${p.id}" onclick="event.preventDefault();event.stopPropagation();try{addToCart(${p.id},{fromHome:true});}catch(e){console.warn(e);}">أضف للسلة</button>
     </div>
   </article>`;
 }
@@ -1001,7 +1001,8 @@ function addToCart(id, opts) {
   // من الواجهة: أضف مباشرة (أول لون إن وجد)
   if (colors.length && !opts.color && !opts.skipColorCheck) {
     if (opts.fromHome) {
-      opts.color = colors[0];
+      const c0 = colors[0];
+      opts.color = (c0 && typeof c0 === "object") ? (c0.name || c0.code || "") : c0;
     } else {
       window.location.href = "/product.html?id=" + encodeURIComponent(id);
       return;
@@ -2526,3 +2527,27 @@ document.addEventListener("click", function(e) {
     schedule();
   }
 })();
+
+
+function ensureHomeAddButtons() {
+  try {
+    document.querySelectorAll("#shopGrid .product-card, #bundleGrid .product-card").forEach(function(card) {
+      if (card.querySelector(".add-btn, [data-add]")) return;
+      const id = card.getAttribute("data-id");
+      if (!id) return;
+      const body = card.querySelector(".product-body") || card;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "add-btn";
+      btn.setAttribute("data-add", id);
+      btn.textContent = "أضف للسلة";
+      btn.onclick = function(ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        try { addToCart(Number(id), { fromHome: true }); } catch (e) { console.warn(e); }
+      };
+      body.appendChild(btn);
+    });
+  } catch (e) {}
+}
+setInterval(ensureHomeAddButtons, 2000);
