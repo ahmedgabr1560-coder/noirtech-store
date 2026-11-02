@@ -3029,7 +3029,11 @@
     
     
     async function loadVisitorsPanel() {
-      const fmt = (n) => (n == null ? "—" : Number(n).toLocaleString("ar-EG"));
+      const fmt = (n) => {
+        if (n == null || n === "" || Number.isNaN(Number(n))) return "—";
+        const v = Math.round(Number(n));
+        return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      };
       try {
         const [vData, aData] = await Promise.all([
           (adminCacheGet("list_visitors") ? Promise.resolve(adminCacheGet("list_visitors")) : api("list_visitors").then(d => { if (d && d.ok) adminCacheSet("list_visitors", d); return d; })),
