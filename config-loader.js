@@ -145,7 +145,7 @@
         if (d.textColor) el.style.setProperty("--hp-text-color", d.textColor);
         if (d.btnColor) el.style.setProperty("--hp-btn-color", d.btnColor);
         if (d.borderColor) el.style.setProperty("--hp-border", d.borderColor);
-        el.setAttribute("data-hp-limit", d.limit != null ? d.limit : "");
+        el.setAttribute("data-hp-limit", (d.limit != null && Number(d.limit) > 0) ? d.limit : "");
         el.classList.add("hp-controlled");
       });
       window.__ATHAR_HOMEPAGE = hp;
