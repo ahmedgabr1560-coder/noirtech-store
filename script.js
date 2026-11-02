@@ -2,7 +2,7 @@
 window.addEventListener("athar-homepage-applied", function() {
   try {
     if (typeof renderShop === "function") renderShop();
-    if (typeof renderBundles === "function") renderBundles();
+    if (typeof renderBundleSection === "function") renderBundleSection(); else if (typeof renderBundles === "function") renderBundles();
   } catch (e) {}
 });
 function atharSectionLimit(sectionId) {
@@ -659,7 +659,8 @@ async function renderBundleSection() {
       return c === String(activeBundleCat);
     });
   }
-  list = list.slice(0, 48);
+  var __hpBundleLimit = typeof atharSectionLimit === "function" ? atharSectionLimit("bundles") : null;
+  list = list.slice(0, __hpBundleLimit || 48);
   if (list.length) {
     renderGrid(bundleGrid, list);
   } else {
@@ -2021,7 +2022,7 @@ async function loadProducts(force) {
   }
   if (best && best.length) {
     PRODUCTS = dedupeProducts(best);
-    try { if (typeof renderShop === "function") renderShop(); if (typeof renderBundles === "function") renderBundles(); } catch (eR) {}
+    try { if (typeof renderShop === "function") renderShop(); if (typeof renderBundleSection === "function") renderBundleSection(); else if (typeof renderBundles === "function") renderBundles(); } catch (eR) {}
       nxCacheSet("nx_products", PRODUCTS);
     try { window.__ATHAR_PRODUCTS = PRODUCTS; } catch (e) {}
   }
