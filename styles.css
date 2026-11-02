@@ -2483,3 +2483,26 @@ input, select, textarea { background: var(--input-bg); border-color: var(--input
 }
 #shop, #bundles { display: block !important; visibility: visible !important; opacity: 1 !important; }
 .product-card { display: block !important; min-height: 120px; }
+
+/* add-btn click fix */
+.product-card .add-btn,
+button.add-btn,
+[data-add] {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #fff;
+  font-weight: 700;
+  font-family: inherit;
+}
+.product-card .add-btn:active { transform: scale(0.98); }
