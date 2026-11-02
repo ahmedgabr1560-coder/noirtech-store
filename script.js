@@ -1,3 +1,15 @@
+/* ATHAR core globals — must be first to avoid TDZ */
+var PRODUCTS = [];
+var CATEGORIES = [];
+var BRANDS = [];
+var cart = [];
+try { cart = JSON.parse(localStorage.getItem("nx_cart") || "[]"); if (!Array.isArray(cart)) cart = []; } catch (e) { cart = []; }
+var activeCategory = "";
+var activeSubcategory = "";
+var activeBrand = "";
+var activeSort = "newest";
+var DEMO = false;
+
 
 window.addEventListener("athar-homepage-applied", function() {
   try {
@@ -297,16 +309,6 @@ async function loadHeroConfig() {
 
 
 /* ATHAR | أثر — frontend demo store (localStorage only) */
-const DEMO = false;
-
-let CATEGORIES = [];
-let BRANDS = [];
-let activeCategory = "";
-let activeSubcategory = "";
-let activeBrand = "";
-let activeSort = "newest";
-
-
 /** Products loaded from products.json (bot-managed) */
 
 /* ===== Instant refresh cache (sessionStorage) ===== */
@@ -325,9 +327,8 @@ function nxCacheSet(key, data) {
   try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch (e) {}
 }
 
-let PRODUCTS = [];
-
-let cart = JSON.parse(localStorage.getItem("nx_cart") || "[]");
+/* PRODUCTS global at top */
+/* cart global at top */
 let currentUser = JSON.parse(localStorage.getItem("nx_user") || "null");
 let usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
 let regAvatar = null;
@@ -703,9 +704,11 @@ function resolveProductImage(prod) {
 function getMixedOfferImages(p) {
   // [0] مثلث فوق = المنتج الأول | [1] مثلث تحت = المنتج الثاني
   if (!p) return ["", ""];
-  const pool = (typeof PRODUCTS !== "undefined" && PRODUCTS && PRODUCTS.length)
-    ? PRODUCTS
-    : (window.__ATHAR_PRODUCTS || []);
+  const pool = (Array.isArray(window.PRODUCTS) && window.PRODUCTS.length)
+    ? window.PRODUCTS
+    : (Array.isArray(PRODUCTS) && PRODUCTS.length)
+      ? PRODUCTS
+      : (window.__ATHAR_PRODUCTS || []);
   function byId(id) {
     if (id == null || id === "") return null;
     return pool.find(function(x) { return String(x.id) === String(id); }) || null;
@@ -2039,10 +2042,12 @@ async function loadProducts(force) {
   }
   if (best && best.length) {
     PRODUCTS = dedupeProducts(best);
+    try { window.PRODUCTS = PRODUCTS; } catch (eW2) {}
     try { nxCacheSet("nx_products", PRODUCTS); } catch (eC) {}
     try { window.__ATHAR_PRODUCTS = PRODUCTS; } catch (e) {}
   }
   PRODUCTS = Array.isArray(PRODUCTS) ? PRODUCTS : [];
+  try { window.PRODUCTS = PRODUCTS; } catch (eW) {}
   try {
     if (typeof renderShop === "function") renderShop();
     if (typeof renderBundleSection === "function") renderBundleSection();
