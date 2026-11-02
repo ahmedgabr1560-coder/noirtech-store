@@ -2048,6 +2048,7 @@ async function loadProducts(force) {
   }
   PRODUCTS = Array.isArray(PRODUCTS) ? PRODUCTS : [];
   try { window.PRODUCTS = PRODUCTS; } catch (eW) {}
+  try { if (typeof startHeroProductRotate === "function") startHeroProductRotate(window.siteConfig || window.__SITE_CONFIG__ || {}); } catch (eHR) {}
   try {
     if (typeof renderShop === "function") renderShop();
     if (typeof renderBundleSection === "function") renderBundleSection();
@@ -2116,33 +2117,60 @@ let __heroRotateIdx = 0;
 function stopHeroProductRotate() {
   if (__heroRotateTimer) {
     clearInterval(__heroRotateTimer);
+    clearTimeout(__heroRotateTimer);
     __heroRotateTimer = null;
   }
 }
 function startHeroProductRotate(config) {
   stopHeroProductRotate();
-  config = config || window.siteConfig || {};
-  // شغّال افتراضيًا — يقلب صور الواجهة
+  config = config || window.siteConfig || window.__SITE_CONFIG__ || {};
   const enabled = config.heroRotateFromProducts !== false;
   if (!enabled) return;
-  const secs = Math.max(2, Math.min(60, Number(config.heroRotateSeconds) || 4));
-  let imgs = (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS) ? PRODUCTS : [])
-    .filter(p => p && !p.hidden && p.image && /^https?:\/\//i.test(String(p.image)))
-    .map(p => ({ src: p.image, name: p.name || "", id: p.id }));
-  // أضف صور الهيرو الثابتة لو موجودة
+  const secs = Math.max(2, Math.min(60, Number(config.heroRotateSeconds) || 3));
+
+  function imgOf(p) {
+    if (!p) return "";
+    if (p.image && String(p.image).trim()) return String(p.image).trim();
+    if (Array.isArray(p.images) && p.images[0]) return String(p.images[0]).trim();
+    return "";
+  }
+  function okSrc(src) {
+    if (!src) return false;
+    src = String(src);
+    if (/^https?:\/\//i.test(src)) return true;
+    if (src.indexOf("//") === 0) return true;
+    if (src.charAt(0) === "/") return true;
+    if (src.indexOf("data:image") === 0) return true;
+    return false;
+  }
+
+  const pool = (Array.isArray(PRODUCTS) && PRODUCTS.length)
+    ? PRODUCTS
+    : (Array.isArray(window.__ATHAR_PRODUCTS) ? window.__ATHAR_PRODUCTS : []);
+
+  let imgs = pool
+    .filter(function(p) { return p && p.hidden !== true && p.active !== false && okSrc(imgOf(p)); })
+    .map(function(p) { return { src: imgOf(p), name: p.name || "", id: p.id }; });
+
   [config.heroImage1, config.heroImage2].forEach(function(src) {
-    if (src && /^https?:\/\//i.test(String(src)) && !imgs.some(function(x){ return x.src === src; })) {
-      imgs.unshift({ src: src, name: "", id: null });
+    if (okSrc(src) && !imgs.some(function(x){ return x.src === src; })) {
+      imgs.push({ src: src, name: "", id: null });
     }
   });
-  // من عناصر الصفحة الحالية
   try {
     const i1 = document.getElementById("heroImg1");
     const i2 = document.getElementById("heroImg2");
-    if (i1 && i1.src && !imgs.some(function(x){ return x.src === i1.src; })) imgs.unshift({ src: i1.src, name: "", id: null });
-    if (i2 && i2.src && !imgs.some(function(x){ return x.src === i2.src; })) imgs.push({ src: i2.src, name: "", id: null });
+    if (i1 && okSrc(i1.getAttribute("src") || i1.src) && !imgs.some(function(x){ return x.src === (i1.getAttribute("src")||i1.src); }))
+      imgs.push({ src: i1.getAttribute("src") || i1.src, name: "", id: null });
+    if (i2 && okSrc(i2.getAttribute("src") || i2.src) && !imgs.some(function(x){ return x.src === (i2.getAttribute("src")||i2.src); }))
+      imgs.push({ src: i2.getAttribute("src") || i2.src, name: "", id: null });
   } catch (e) {}
-  if (imgs.length < 2) return;
+
+  if (imgs.length < 2) {
+    // أعد المحاولة بعد ما المنتجات تتحمل
+    __heroRotateTimer = setTimeout(function() { startHeroProductRotate(config); }, 2000);
+    return;
+  }
 
   const img1 = document.getElementById("heroImg1");
   const img2 = document.getElementById("heroImg2");
@@ -2155,32 +2183,28 @@ function startHeroProductRotate(config) {
     const a = imgs[__heroRotateIdx % imgs.length];
     const b = imgs[(__heroRotateIdx + 1) % imgs.length];
     if (img1) {
-      img1.style.opacity = "0.35";
-      setTimeout(() => { img1.src = a.src; img1.alt = a.name || "منتج"; img1.style.opacity = "1"; }, 180);
+      img1.style.transition = "opacity .3s ease";
+      img1.style.opacity = "0.3";
+      setTimeout(function() { img1.src = a.src; img1.alt = a.name || "منتج"; img1.style.opacity = "1"; }, 200);
     }
     if (img2) {
-      img2.style.opacity = "0.35";
-      setTimeout(() => { img2.src = b.src; img2.alt = b.name || "منتج"; img2.style.opacity = "1"; }, 220);
+      img2.style.transition = "opacity .3s ease";
+      img2.style.opacity = "0.3";
+      setTimeout(function() { img2.src = b.src; img2.alt = b.name || "منتج"; img2.style.opacity = "1"; }, 240);
     }
     if (chipTitle && a.name) chipTitle.textContent = a.name;
     if (chipSub) chipSub.textContent = "من تشكيلتنا";
-    // click chip -> product
     const chip = document.querySelector(".hero-chip");
     if (chip && a.id != null) {
-      chip.setAttribute("href", "/product.html?id=" + encodeURIComponent(a.id));
+      try { chip.setAttribute("href", "/product.html?id=" + encodeURIComponent(a.id)); } catch (e) {}
     }
     __heroRotateIdx = (__heroRotateIdx + 1) % imgs.length;
   }
 
-  // smooth transition css once
-  [img1, img2].forEach(el => {
-    if (el) el.style.transition = "opacity .25s ease";
-  });
-
   showPair();
   __heroRotateTimer = setInterval(showPair, secs * 1000);
+  try { window.__HERO_ROTATE_COUNT = imgs.length; } catch (e) {}
 }
-
 
 
 /* ===== Visitor tracking (enter / leave / online) ===== */
