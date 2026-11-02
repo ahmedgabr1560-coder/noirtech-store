@@ -775,13 +775,13 @@
 
               <div style="padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.2)">
                 <h4 style="margin:0 0 10px;font-size:.95rem">② كرت «شنط حريمي – تشكيلة جديدة» (العرض / الخط / الأيقونة / التحريك)</h4>
-                <label>عرض الكارت (px)<input type="number" id="hl_chip_w" min="100" max="360" step="1" value="200" dir="ltr" /></label>
+                <label>عرض الكارت (px)<input type="number" id="hl_chip_w" min="90" max="360" step="1" value="150" dir="ltr" /></label>
                 <label>ارتفاع الكارت (px) — 0=تلقائي<input type="number" id="hl_chip_h" min="0" max="200" step="1" value="0" dir="ltr" /></label>
-                <label>حجم أيقونة الكارت (px)<input type="number" id="hl_chip_icon" min="16" max="48" step="1" value="28" dir="ltr" /></label>
-                <label>حجم النص (px)<input type="number" id="hl_chip_text" min="10" max="22" step="1" value="14" dir="ltr" /></label>
+                <label>حجم أيقونة الكارت (px)<input type="number" id="hl_chip_icon" min="16" max="48" step="1" value="22" dir="ltr" /></label>
+                <label>حجم النص (px)<input type="number" id="hl_chip_text" min="10" max="22" step="1" value="12" dir="ltr" /></label>
                 <label>تحريك أفقي (px)<input type="number" id="hl_chip_x" min="-80" max="80" step="1" value="0" dir="ltr" /></label>
                 <label>تحريك رأسي (px)<input type="number" id="hl_chip_y" min="-80" max="80" step="1" value="0" dir="ltr" /></label>
-                <label>المسافات الداخلية (px)<input type="number" id="hl_chip_pad" min="4" max="28" step="1" value="12" dir="ltr" /></label>
+                <label>المسافات الداخلية (px)<input type="number" id="hl_chip_pad" min="4" max="28" step="1" value="8" dir="ltr" /></label>
                 <button type="button" class="btn btn-ghost" id="hlChipReset" style="margin-top:8px">إعادة افتراضي للكارت</button>
               </div>
             </div>
@@ -1459,9 +1459,9 @@
     
     /* ===== Hero Layout Controls (main image + chip) ===== */
     const HL_DEFAULTS = {
-      desktop: { main: {w:440,h:460,scale:100,x:0,y:0,fit:"cover"}, chip: {w:200,h:0,img:0,text:14,icon:28,x:0,y:0,pad:12} },
-      tablet:  { main: {w:360,h:380,scale:100,x:0,y:0,fit:"cover"}, chip: {w:180,h:0,img:0,text:13,icon:26,x:0,y:0,pad:11} },
-      mobile:  { main: {w:300,h:320,scale:100,x:0,y:0,fit:"cover"}, chip: {w:170,h:0,img:0,text:12,icon:24,x:0,y:0,pad:10} }
+      desktop: { main: {w:440,h:460,scale:100,x:0,y:0,fit:"cover"}, chip: {w:150,h:0,img:0,text:12,icon:22,x:0,y:0,pad:8} },
+      tablet:  { main: {w:360,h:380,scale:100,x:0,y:0,fit:"cover"}, chip: {w:140,h:0,img:0,text:11,icon:20,x:0,y:0,pad:7} },
+      mobile:  { main: {w:300,h:320,scale:100,x:0,y:0,fit:"cover"}, chip: {w:125,h:0,img:0,text:11,icon:18,x:0,y:0,pad:6} }
     };
     let HL_STATE = JSON.parse(JSON.stringify(HL_DEFAULTS));
     let HL_DEV = "desktop";
