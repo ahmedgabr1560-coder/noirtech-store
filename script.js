@@ -1060,6 +1060,7 @@ function addToCart(id, opts) {
 }
 
 function openCart() {
+  // exported for header onclick
   const overlay = document.getElementById("cartOverlay");
   const drawer = document.getElementById("cartDrawer");
   if (overlay) overlay.classList.add("open");
@@ -1161,34 +1162,45 @@ document.addEventListener("click", (e) => {
     cart = cart.filter(x => !(Number(x.id) === id && String(x.color || "") === String(col))); saveCart(); }
 });
 
-const cartBtnEl = document.getElementById("cartBtn");
-if (cartBtnEl) {
-  cartBtnEl.addEventListener("click", function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    openCart();
+function atharBindHeaderIcons() {
+  function on(id, fn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      try { fn(e); } catch (err) { console.warn(err); }
+    });
+  }
+  on("cartBtn", function () { openCart(); });
+  on("closeCart", function () { closeCart(); });
+  on("cartOverlay", function () { closeCart(); });
+  on("closeProduct", function () { if (typeof closeProduct === "function") closeProduct(); });
+  on("productOverlay", function () { if (typeof closeProduct === "function") closeProduct(); });
+  on("closeAuth", function () { if (typeof closeAuth === "function") closeAuth(); });
+  on("authOverlay", function () { if (typeof closeAuth === "function") closeAuth(); });
+  on("closeProfile", function () { if (typeof closeProfile === "function") closeProfile(); });
+  on("profileOverlay", function () { if (typeof closeProfile === "function") closeProfile(); });
+  on("accountBtn", function () {
+    try {
+      if (typeof currentUser !== "undefined" && currentUser) openProfile();
+      else openAuth("login");
+    } catch (e) { try { openAuth("login"); } catch (e2) {} }
+  });
+  on("goToRegister", function () { if (typeof switchAuth === "function") switchAuth("register"); });
+  on("goToLogin", function () { if (typeof switchAuth === "function") switchAuth("login"); });
+  on("menuToggle", function () {
+    const nav = document.getElementById("catNav");
+    if (nav) nav.classList.toggle("open");
+    document.body.classList.toggle("nav-open");
   });
 }
-document.getElementById("closeCart")?.addEventListener("click", closeCart);
-document.getElementById("cartOverlay")?.addEventListener("click", closeCart);
-document.getElementById("closeProduct")?.addEventListener("click", closeProduct);
-document.getElementById("productOverlay")?.addEventListener("click", closeProduct);
-$("#closeAuth").addEventListener("click", closeAuth);
-$("#authOverlay").addEventListener("click", closeAuth);
-$("#closeProfile").addEventListener("click", closeProfile);
-$("#profileOverlay").addEventListener("click", closeProfile);
-
-$("#accountBtn").addEventListener("click", () => {
-  if (currentUser) openProfile();
-  else openAuth("login");
-});
-
-document.getElementById("goToRegister")?.addEventListener("click", () => switchAuth("register"));
-document.getElementById("goToLogin")?.addEventListener("click", () => switchAuth("login"));
-
-$("#menuToggle").addEventListener("click", () => {
-  $("#catNav").classList.toggle("open");
-});
+try { atharBindHeaderIcons(); } catch (eBind) { console.warn(eBind); }
+// إعادة الربط بعد اكتمال التحميل (لو السكربت اتنفّذ بدري)
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", function () { try { atharBindHeaderIcons(); } catch (e) {} });
+}
+window.addEventListener("load", function () { try { atharBindHeaderIcons(); } catch (e) {} });
 
 $("#searchForm").addEventListener("submit", (e) => {
   e.preventDefault();
@@ -2574,3 +2586,12 @@ function ensureHomeAddButtons() {
   } catch (e) {}
 }
 setInterval(ensureHomeAddButtons, 2000);
+
+try {
+  window.openCart = openCart;
+  window.closeCart = closeCart;
+  window.openAuth = openAuth;
+  window.closeAuth = closeAuth;
+  window.openProfile = openProfile;
+  window.closeProfile = closeProfile;
+} catch (eExp) {}
