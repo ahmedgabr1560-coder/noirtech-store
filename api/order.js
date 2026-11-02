@@ -160,6 +160,42 @@ export default async function handler(req, res) {
     }
 
     if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+
+    // إشعار تيليجرام احتياطي من السيرفر (لو العميل فشل)
+    try {
+      const BOT = process.env.TELEGRAM_BOT_TOKEN || "";
+      const CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "");
+      if (BOT && CHAT && order) {
+        const items = Array.isArray(order.items) ? order.items : [];
+        const lines = items.slice(0, 20).map((it, i) => {
+          const n = it.name || it.title || "منتج";
+          const q = it.qty || it.quantity || 1;
+          const c = it.color || it.selectedColor || "";
+          return `${i + 1}) ${n} × ${q}${c ? " | لون: " + c : ""}`;
+        }).join("\n");
+        const text = [
+          "🛒 طلب جديد — ATHAR | أثر",
+          `رقم: ${order.id || "-"}`,
+          `الاسم: ${order.name || order.customerName || "-"}`,
+          `هاتف: ${order.phone || "-"}`,
+          `المحافظة: ${order.governorate || order.gov || "-"}`,
+          `العنوان: ${order.address || "-"}`,
+          `الدفع: ${order.paymentMethod || order.payment || "-"}`,
+          `الكوبون: ${order.coupon || order.couponCode || "-"}`,
+          `الإجمالي: ${order.total || order.grandTotal || "-"}`,
+          "",
+          "المنتجات:",
+          lines || "-",
+          order.note ? ("ملاحظة: " + order.note) : ""
+        ].filter(Boolean).join("\n");
+        await fetch(`https://api.telegram.org/bot${BOT}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: CHAT, text: text.slice(0, 4000) })
+        }).catch(() => {});
+      }
+    } catch (eTg) {}
+
     return res.status(200).json({ ok: true, id: order.id });
   } catch (e) {
     return res.status(500).json({ ok: false, error: e.message || "server error" });
