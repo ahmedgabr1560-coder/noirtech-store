@@ -29,18 +29,18 @@
 
   
   const SYSTEM_LIGHT = {
-    bg: "#f6f5f2", bgSection: "#efece6", bgCard: "#ffffff", text: "#1c1916",
-    textHeading: "#0c0b0a", textMuted: "#6f6a62", border: "#e4ddd3",
-    headerBg: "#faf8f5", footerBg: "#efece6", navBg: "#faf8f5",
-    inputBg: "#ffffff", inputBorder: "#ddd5c8", btnSecondaryBg: "#f0ebe3",
-    btnSecondaryText: "#1c1916", shadow: "rgba(0,0,0,0.12)", priceOld: "#8a847a"
+    bg: "#ffffff", bgSection: "#f5f5f5", bgCard: "#ffffff", text: "#111111",
+    textHeading: "#000000", textMuted: "#555555", border: "#e5e5e5",
+    headerBg: "#ffffff", footerBg: "#f5f5f5", navBg: "#ffffff",
+    inputBg: "#ffffff", inputBorder: "#dddddd", btnSecondaryBg: "#f0f0f0",
+    btnSecondaryText: "#111111", shadow: "rgba(0,0,0,0.10)", priceOld: "#888888"
   };
   const SYSTEM_DARK = {
-    bg: "#07070a", bgSection: "#0a0a0c", bgCard: "#0f0f14", text: "#f4f4f8",
-    textHeading: "#ffffff", textMuted: "#9898a6", border: "#2a2a32",
-    headerBg: "#0a0a0c", footerBg: "#07070a", navBg: "#0a0a0c",
-    inputBg: "#0c0c12", inputBorder: "#2a2a32", btnSecondaryBg: "#1a1a22",
-    btnSecondaryText: "#f5f5f7", shadow: "rgba(0,0,0,0.45)", priceOld: "#9898a6"
+    bg: "#000000", bgSection: "#0a0a0a", bgCard: "#111111", text: "#f5f5f5",
+    textHeading: "#ffffff", textMuted: "#aaaaaa", border: "#2a2a2a",
+    headerBg: "#000000", footerBg: "#000000", navBg: "#000000",
+    inputBg: "#111111", inputBorder: "#333333", btnSecondaryBg: "#1a1a1a",
+    btnSecondaryText: "#f5f5f5", shadow: "rgba(0,0,0,0.55)", priceOld: "#888888"
   };
 
   function prefersDark() {
