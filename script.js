@@ -2264,7 +2264,6 @@ async function bootStore() {
   try { await loadCoupons(); } catch (e) {}
 
   bindCheckoutDraft();
-  // الشحن ليس مطلوبًا لرسم الصفحة الأولى؛ حمّله في الخلفية حتى يظهر المتجر فورًا.
   loadShippingZones().then(() => {
     populateGovSelect();
     bindShippingSelects();
@@ -2273,40 +2272,40 @@ async function bootStore() {
   }).catch(() => {});
 
   try { ensureHomeOnStart(); } catch (e) {}
-  // عرض فوري من كاش الجلسة قبل الشبكة (ريفرش أسرع)
+
+  // امسح كاش منتجات فاضي كان يمنع الظهور
   try {
     const cp = nxCacheGet("nx_products");
-    if (cp && Array.isArray(cp)) PRODUCTS = cp.filter(p => p && !p.hidden);
-    const cc = nxCacheGet("nx_categories");
-    if (cc && Array.isArray(cc.categories)) {
-      CATEGORIES = cc.categories.filter(c => c && c.visible !== false);
-      BRANDS = Array.isArray(cc.brands) ? cc.brands : [];
-    }
-    const cfg = nxCacheGet("nx_config");
-    if (cfg) {
-      window.siteConfig = cfg;
-      window.__SITE_CONFIG__ = cfg;
-    try { applyHeroScaleFromConfig(window.siteConfig); } catch (eHS) {}
-      try { applyBrandConfig(cfg); } catch (e) {}
-      try { applyGeneralConfig(cfg); } catch (e) {}
-    }
-    if (PRODUCTS.length || CATEGORIES.length) {
-      try { renderAll(); } catch (e) {}
-      try { updateCartUI(); } catch (e) {}
-    }
+    if (Array.isArray(cp) && cp.length === 0) sessionStorage.removeItem("nx_products");
   } catch (e) {}
-  // تحميل متوازي أسرع تحت الضغط (CDN + Promise.all)
+
+  // تحميل التصنيفات والإعدادات أولًا (خفيفة)
+  try { await loadCatalog(); } catch (e) { console.warn(e); }
+  try { await loadHeroConfig(); } catch (e) { console.warn(e); }
+
+  // تحميل المنتجات إجباري من الشبكة — هذا أهم شيء في الصفحة
   try {
-    await Promise.all([
-      loadHeroConfig().catch(e => console.warn(e)),
-      loadCatalog().catch(e => console.warn(e)),
-      loadProducts(true).catch(e => console.warn(e))
-    ]);
-  } catch (e) { console.warn(e); }
-  // ضمان ظهور المنتجات
-  if (!PRODUCTS.length) {
-    try { await loadProducts(true); } catch (e2) {}
+    await loadProducts(true);
+  } catch (e) {
+    console.warn("loadProducts failed", e);
+    try { await loadProducts(true); } catch (e2) { console.warn(e2); }
   }
+
+  // لو لسه فاضي — مسار طوارئ مباشر
+  if (!PRODUCTS || !PRODUCTS.length) {
+    try {
+      const r = await fetch("/products.json?t=" + Date.now(), { cache: "no-store" });
+      if (r.ok) {
+        const data = await r.json();
+        let list = Array.isArray(data) ? data : (data.products || []);
+        list = (list || []).filter(p => p && p.hidden !== true && p.active !== false);
+        PRODUCTS = typeof dedupeProducts === "function" ? dedupeProducts(list) : list;
+        window.PRODUCTS = PRODUCTS;
+        window.__ATHAR_PRODUCTS = PRODUCTS;
+      }
+    } catch (e3) { console.warn(e3); }
+  }
+
   try { startHeroProductRotate(window.__SITE_CONFIG__ || {}); } catch (e) {}
   try { renderAll(); } catch (e) { console.warn(e); }
   try { if (typeof renderShop === "function") renderShop(); } catch (e) {}
