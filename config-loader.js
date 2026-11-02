@@ -56,6 +56,8 @@
     const dark = prefersDark();
     const root = document.documentElement;
     root.setAttribute("data-theme", dark ? "dark" : "light");
+    /* light force */
+    if (!dark) { try { document.body && (document.body.style.background = "#ffffff"); } catch(e){} }
     root.style.colorScheme = dark ? "dark" : "light";
     const surfaces = dark ? SYSTEM_DARK : SYSTEM_LIGHT;
     // ابدأ من ألوان الأدمن (العلامة) ثم افرض الأسطح حسب النظام
