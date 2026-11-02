@@ -1,11 +1,11 @@
 {
   "stats": {
-    "totalEnters": 2636,
+    "totalEnters": 2637,
     "totalLeaves": 805,
-    "uniqueSessions": 2630,
-    "todayEnters": 106,
-    "todayLeaves": 26,
-    "todayDate": "2026-11-01",
+    "uniqueSessions": 2631,
+    "todayEnters": 1,
+    "todayLeaves": 0,
+    "todayDate": "2026-11-02",
     "accountsTotal": 0,
     "uniqueDevices": 1405,
     "deviceTypes": {
@@ -17,6 +17,17 @@
     }
   },
   "sessions": {
+    "s_gw8ukv3keqdmvz43048": {
+      "firstSeen": "2026-11-02T10:23:58.074Z",
+      "lastSeen": "2026-11-02T10:23:58.074Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
+      "ipMasked": "156.221.91.xxx"
+    },
     "s_y0gqofo3hgmvyc23ly": {
       "firstSeen": "2026-11-01T21:19:26.156Z",
       "lastSeen": "2026-11-01T21:20:16.612Z",
@@ -4405,20 +4416,15 @@
       "deviceId": "d_rzidpg1ytcmvty7zqy",
       "deviceType": "other",
       "ipMasked": "34.31.203.xxx"
-    },
-    "s_davfn3prs2vmvtxnjno": {
-      "firstSeen": "2026-10-29T19:25:08.083Z",
-      "lastSeen": "2026-10-29T19:25:08.083Z",
-      "path": "/",
-      "status": "left",
-      "enters": 0,
-      "leaves": 1,
-      "deviceId": "d_bpmjml5bcj9mvtxnjno",
-      "deviceType": "iphone",
-      "ipMasked": "156.203.142.xxx"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_gw8ukv3k…",
+      "path": "/",
+      "at": "2026-11-02T10:23:58.074Z"
+    },
     {
       "type": "leave",
       "sessionId": "s_y0gqofo3…",
@@ -4892,18 +4898,12 @@
       "sessionId": "s_fkn6nyip…",
       "path": "/",
       "at": "2026-11-01T15:56:59.500Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_8nwc4p0n…",
-      "path": "/",
-      "at": "2026-11-01T15:56:59.131Z"
     }
   ],
   "devices": {
     "d_9u8vm1uag34mvgkeeg3": {
       "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-01T21:20:16.612Z",
+      "lastSeen": "2026-11-02T10:23:58.074Z",
       "type": "ipad",
       "ipMasked": "156.221.91.xxx"
     },
