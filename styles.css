@@ -2510,3 +2510,23 @@ button.add-btn,
   font-family: inherit;
 }
 .product-card .add-btn:active { transform: scale(0.98); }
+
+/* header icons click */
+.header-actions,
+.header-actions .icon-btn,
+#cartBtn, #accountBtn, #menuToggle {
+  position: relative;
+  z-index: 120;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+#catNav.open {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  max-height: 80vh;
+  overflow: auto;
+}
+@media (max-width: 900px) {
+  #menuToggle { display: grid !important; }
+}
