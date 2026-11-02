@@ -1256,25 +1256,26 @@ $("#profileAvatarInput")?.addEventListener("change", (e) => {
   r.readAsDataURL(f);
 });
 
-(function bindRegisterForm() {
+function bindRegisterForm() {
   const form = document.getElementById("registerForm");
   if (!form || form.dataset.bound === "1") return;
   form.dataset.bound = "1";
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
+    e.stopPropagation();
     try {
-      const name = (document.getElementById("regName")?.value || "").trim();
-      const phone = (document.getElementById("regPhone")?.value || "").trim();
-      const email = (document.getElementById("regEmail")?.value || "").trim().toLowerCase();
-      const password = document.getElementById("regPassword")?.value || "";
+      const name = (document.getElementById("regName") && document.getElementById("regName").value || "").trim();
+      const phone = (document.getElementById("regPhone") && document.getElementById("regPhone").value || "").trim();
+      const email = (document.getElementById("regEmail") && document.getElementById("regEmail").value || "").trim().toLowerCase();
+      const password = (document.getElementById("regPassword") && document.getElementById("regPassword").value) || "";
       if (!name) return toast("اكتب الاسم");
-      if (!phone || phone.replace(/\D/g,"").length < 10) return toast("اكتب رقم هاتف صحيح");
-      if (!email || !email.includes("@")) return toast("اكتب بريد إلكتروني صحيح");
+      if (!phone || phone.replace(/\D/g, "").length < 10) return toast("اكتب رقم هاتف صحيح");
+      if (!email || email.indexOf("@") < 0) return toast("اكتب بريد إلكتروني صحيح");
       if (!password || password.length < 4) return toast("كلمة المرور ٤ أحرف على الأقل");
       let usersDB = [];
       try { usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]"); } catch (e0) { usersDB = []; }
       if (!Array.isArray(usersDB)) usersDB = [];
-      if (usersDB.some(function(u){ return (u.email || "").toLowerCase() === email; })) return toast("هذا البريد مسجّل بالفعل");
+      if (usersDB.some(function (u) { return (u.email || "").toLowerCase() === email; })) return toast("هذا البريد مسجّل بالفعل");
       const avatar = (typeof regAvatar !== "undefined" && regAvatar) ? regAvatar : null;
       const user = { name: name, phone: phone, email: email, password: password, address: "", avatar: avatar, createdAt: new Date().toISOString() };
       usersDB.push(user);
@@ -1286,7 +1287,7 @@ $("#profileAvatarInput")?.addEventListener("change", (e) => {
       toast("تم إنشاء الحساب بنجاح");
       try {
         if (typeof notifyAdmin === "function") {
-          notifyAdmin("register", "🆕 حساب جديد\\nالاسم: " + name + "\\nالهاتف: " + phone + "\\nالبريد: " + email);
+          notifyAdmin("register", "🆕 حساب جديد\nالاسم: " + name + "\nالهاتف: " + phone + "\nالبريد: " + email);
         }
       } catch (e4) {}
     } catch (err) {
@@ -1294,9 +1295,14 @@ $("#profileAvatarInput")?.addEventListener("change", (e) => {
       toast("تعذر إنشاء الحساب، حاولي مرة أخرى");
     }
   });
-})();
+}
 try { bindRegisterForm(); } catch (eR) {}
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ try { bindRegisterForm(); } catch(e){} });
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", function () { try { bindRegisterForm(); } catch (e) {} });
+} else {
+  try { bindRegisterForm(); } catch (e) {}
+}
+
 
 
 
