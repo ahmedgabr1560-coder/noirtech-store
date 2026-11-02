@@ -2,6 +2,7 @@
 var PRODUCTS = [];
 var __heroRotateTimer = null;
 var __heroRotateIdx = 0;
+function $(s, r) { return (r || document).querySelector(s); }
 var CATEGORIES = [];
 var BRANDS = [];
 var cart = [];
@@ -336,7 +337,7 @@ let usersDB = JSON.parse(localStorage.getItem("nx_users") || "[]");
 let regAvatar = null;
 let pendingAvatar = null;
 
-const $ = (s, r = document) => r.querySelector(s);
+/* $ helper at top */
 function normalizePhone(v) {
   const map = {"٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9"};
   return String(v || "").replace(/[٠-٩]/g, d => map[d] || d).replace(/[^0-9+]/g, "");
@@ -587,8 +588,8 @@ async function notifyAdmin(type, message, extra) {
   }
 }
 function saveCart() {
-  localStorage.setItem("nx_cart", JSON.stringify(cart));
-  updateCartUI();
+  try { localStorage.setItem("nx_cart", JSON.stringify(cart || [])); } catch (e) {}
+  try { updateCartUI(); } catch (e2) { console.warn(e2); }
 }
 function discountPct(p) {
   if (!p.oldPrice || p.oldPrice <= p.price) return null;
@@ -905,9 +906,10 @@ function applyCouponFromInput() {
 }
 
 function updateCartUI() {
-  const count = cart.reduce((s, i) => s + i.qty, 0);
-  $("#cartCount").textContent = count;
-  const box = $("#cartItems");
+  const count = (cart || []).reduce((s, i) => s + (Number(i.qty) || 0), 0);
+  const countEl = document.getElementById("cartCount") || (typeof $ === "function" ? $("#cartCount") : null);
+  if (countEl) countEl.textContent = String(count);
+  const box = document.getElementById("cartItems") || (typeof $ === "function" ? $("#cartItems") : null);
   const fields = $("#checkoutFields");
   if (!cart.length) {
     box.innerHTML = `<div class="empty-cart">السلة فارغة<br><small>أضف منتجات ثم أتمم الطلب</small></div>`;
