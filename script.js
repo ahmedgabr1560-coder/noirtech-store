@@ -1661,6 +1661,7 @@ function renderShop() {
 
   let list = PRODUCTS.filter(productMatches);
   list = sortedProducts(list);
+  if (__hpShopLimit && list.length > __hpShopLimit) list = list.slice(0, __hpShopLimit);
   const grid = document.getElementById("shopGrid");
   const empty = document.getElementById("shopEmpty");
   if (grid) {
