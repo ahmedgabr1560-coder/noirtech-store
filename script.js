@@ -1,4 +1,22 @@
 
+window.addEventListener("athar-homepage-applied", function() {
+  try {
+    if (typeof renderShop === "function") renderShop();
+    if (typeof renderBundles === "function") renderBundles();
+  } catch (e) {}
+});
+function atharSectionLimit(sectionId) {
+  try {
+    const el = document.getElementById(sectionId);
+    if (!el) return null;
+    const v = el.getAttribute("data-hp-limit");
+    if (v === "" || v == null) return null;
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch (e) { return null; }
+}
+
+
 (function atharSyncChannel(){
   try {
     if (!("BroadcastChannel" in window)) return;
@@ -1638,6 +1656,9 @@ function renderSubcatsBar() {
 }
 let _renderShopTimer = null;
 function renderShop() {
+  // homepage builder limit
+  var __hpShopLimit = typeof atharSectionLimit === "function" ? atharSectionLimit("shop") : null;
+
   let list = PRODUCTS.filter(productMatches);
   list = sortedProducts(list);
   const grid = document.getElementById("shopGrid");
