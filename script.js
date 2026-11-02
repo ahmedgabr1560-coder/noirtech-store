@@ -1486,6 +1486,11 @@ $("#checkoutBtn").addEventListener("click", async () => {
       } catch (e) { toast("تعذر فتح الدفع بالبطاقة"); }
     }
     try { await notifyAdmin("order", "", { order: orderRecord }); } catch (e) {}
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon("/api/notify", new Blob([JSON.stringify({ type: "order", order: orderRecord })], { type: "application/json" }));
+      }
+    } catch (eBe) {}
     cart = []; saveCart(); closeCart();
     if ($("#orderNote")) $("#orderNote").value = "";
     showOrderSuccess(orderId);
