@@ -3368,10 +3368,19 @@
             var pm = hsm ? Math.max(50, Math.min(140, parseInt(hsm.value,10)||100)) : 100;
             if (hs) hs.value = pv;
             if (hsm) hsm.value = pm;
-            var data = await api("update_hero", {
+            var layoutPatch = null;
+            try {
+              if (typeof hlReadForm === "function" && typeof HL_STATE !== "undefined") {
+                HL_STATE[HL_DEV || "desktop"] = hlReadForm();
+                layoutPatch = HL_STATE;
+              }
+            } catch (eL) {}
+            var payload = {
               heroScale: pv / 100,
               heroScaleMobile: pm / 100
-            });
+            };
+            if (layoutPatch) payload.heroLayout = layoutPatch;
+            var data = await api("update_hero", payload);
             if (!data.ok) throw new Error(data.error || "فشل الحفظ");
             if (msg) { msg.textContent = "تم حفظ الحجم — حدّثي المتجر"; msg.className = "hint"; msg.style.color = "#4ade80"; }
             try { localStorage.setItem("nx_catalog_bust", String(Date.now())); } catch (e) {}
