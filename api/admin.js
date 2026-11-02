@@ -996,6 +996,9 @@ export default async function handler(req, res) {
       if (body.heroLayout && typeof body.heroLayout === "object") {
         config.heroLayout = body.heroLayout;
       }
+      if (body.homepage && typeof body.homepage === "object") {
+        config.homepage = body.homepage;
+      }
       if (body.themeMode != null) {
         const m = String(body.themeMode).toLowerCase();
         config.themeMode = (m === "light" || m === "dark") ? m : "system";
