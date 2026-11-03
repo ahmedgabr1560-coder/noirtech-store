@@ -2652,21 +2652,42 @@ try {
 
 /* Hero gravity: once per full page load after images ready */
 (function atharHeroGravity() {
+  function ensureVisible(stack) {
+    if (!stack) return;
+    stack.classList.add("hero-gravity-done");
+    stack.classList.remove("hero-gravity-on");
+    stack.querySelectorAll(".phone, .phone img").forEach(function (el) {
+      try {
+        el.style.opacity = "1";
+        el.style.visibility = "visible";
+      } catch (e) {}
+    });
+  }
   function start() {
     try {
+      var stack = document.querySelector(".phones-stack");
+      if (!stack) return;
+      // دائماً: لو الأنيميشن اتعطل الصور تظهر
+      setTimeout(function () { ensureVisible(stack); }, 2500);
       if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        var s0 = document.querySelector(".phones-stack");
-        if (s0) s0.classList.add("hero-gravity-skip");
+        stack.classList.add("hero-gravity-skip");
+        ensureVisible(stack);
         return;
       }
-      var stack = document.querySelector(".phones-stack");
-      if (!stack || stack.dataset.gravityDone === "1") return;
+      if (stack.dataset.gravityDone === "1") {
+        ensureVisible(stack);
+        return;
+      }
       var imgs = stack.querySelectorAll("img");
       var pending = 0;
+      var started = false;
       function go() {
-        if (stack.dataset.gravityDone === "1") return;
+        if (started) return;
+        started = true;
         stack.dataset.gravityDone = "1";
         stack.classList.add("hero-gravity-on");
+        // بعد انتهاء السقوط رجّع الحالة الظاهرة
+        setTimeout(function () { ensureVisible(stack); }, 1600);
       }
       function one() {
         pending--;
@@ -2678,12 +2699,13 @@ try {
         if (img.complete && img.naturalWidth) one();
         else {
           img.addEventListener("load", one, { once: true });
-          img.addEventListener("error", one, { once: true });
+          img.addEventListener("error", function () { one(); ensureVisible(stack); }, { once: true });
         }
       });
-      // safety timeout
-      setTimeout(go, 1800);
-    } catch (e) {}
+      setTimeout(go, 1200);
+    } catch (e) {
+      try { ensureVisible(document.querySelector(".phones-stack")); } catch (e2) {}
+    }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
