@@ -478,11 +478,21 @@ function populateGovSelect() {
   const sel = document.getElementById("orderGov");
   if (!sel) return;
   const zones = SHIPPING_ZONES || {};
-  const list = zones.governorates || [];
+  const list = Array.isArray(zones.governorates) ? zones.governorates : [];
   const prev = sel.value;
-  sel.innerHTML = `<option value="">— اختاري المحافظة —</option>` +
-    list.map(g => `<option value="${g.id}">${g.name}</option>`).join("");
-  if (prev) sel.value = prev;
+  sel.innerHTML = '<option value="">— اختاري المحافظة —</option>' +
+    list.map(function (g) {
+      const id = g.id || g.name || "";
+      const name = g.name || g.id || "";
+      return '<option value="' + String(id).replace(/"/g, "") + '">' + String(name) + '</option>';
+    }).join("");
+  if (prev) {
+    sel.value = prev;
+  }
+  sel.disabled = false;
+  if (!list.length) {
+    sel.innerHTML = '<option value="">— جاري تحميل المحافظات… —</option>';
+  }
 }
 
 function populateCenterSelect() {
@@ -1093,7 +1103,22 @@ function openCart() {
   if (overlay) overlay.classList.add("open");
   if (drawer) drawer.classList.add("open");
   document.body.style.overflow = "hidden";
+  // سلّة واحدة: حدّث العرض + حمّل المحافظات
   try { updateCartUI(); } catch (e2) { console.warn(e2); }
+  try {
+    if (typeof loadShippingZones === "function") {
+      loadShippingZones().then(function () {
+        try { populateGovSelect(); } catch (e3) {}
+        try { bindShippingSelects(); } catch (e4) {}
+        try { populateCenterSelect(); } catch (e5) {}
+        try { updateCartUI(); } catch (e6) {}
+      }).catch(function () {
+        try { populateGovSelect(); } catch (e7) {}
+      });
+    } else {
+      populateGovSelect();
+    }
+  } catch (e8) {}
 }
 function closeCart() {
   try {
