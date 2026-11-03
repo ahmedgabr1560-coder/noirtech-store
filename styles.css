@@ -558,8 +558,8 @@ button, input, select, textarea { font-family: inherit; }
   top: 2%;
   z-index: 3;
   transform: rotate(-10deg) translateY(0);
-  opacity: 1 !important;
-  visibility: visible !important;
+  opacity: 1;
+  visibility: visible;
   animation: float1 7s ease-in-out infinite;
 }
 .phones-stack .p2 {
@@ -567,8 +567,8 @@ button, input, select, textarea { font-family: inherit; }
   top: 14%;
   z-index: 2;
   transform: rotate(11deg) translateY(0);
-  opacity: 1 !important;
-  visibility: visible !important;
+  opacity: 1;
+  visibility: visible;
   animation: float2 8s ease-in-out infinite;
 }
 .phones-stack .phone img {
@@ -3054,5 +3054,19 @@ html[data-theme="dark"] .mega-menu {
   border: 1px solid var(--input-border, rgba(255,255,255,.12));
   border-radius: 10px;
   padding: 10px 12px;
+}
+
+/* Collision must override float / done states while running */
+.phones-stack.hero-collision-on .p1 {
+  animation: heroCollisionRight var(--athar-hero-duration, 1.8s) cubic-bezier(0.22, 1.1, 0.36, 1) both !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  will-change: transform;
+}
+.phones-stack.hero-collision-on .p2 {
+  animation: heroCollisionLeft var(--athar-hero-duration, 1.8s) cubic-bezier(0.22, 1.1, 0.36, 1) both !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  will-change: transform;
 }
 
