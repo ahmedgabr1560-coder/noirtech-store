@@ -2430,7 +2430,7 @@
     renderSections();
   }
 
-  async function loadAnimSettings() {
+  async function loadAnimSettings() { window.loadAnimSettings = loadAnimSettings;
     ensureLibCss();
     renderLibrary();
     try {
@@ -2476,6 +2476,8 @@
       }
     });
   });
+  try { window.loadAnimSettings = loadAnimSettings; } catch (e) {}
+  window.addEventListener("athar-open-animations", function () { setTimeout(loadAnimSettings, 30); });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
   else bind();
 })();
@@ -4597,7 +4599,7 @@
     renderSections();
   }
 
-  async function loadAnimSettings() {
+  async function loadAnimSettings() { window.loadAnimSettings = loadAnimSettings;
     ensureLibCss();
     renderLibrary();
     try {
@@ -4643,6 +4645,8 @@
       }
     });
   });
+  try { window.loadAnimSettings = loadAnimSettings; } catch (e) {}
+  window.addEventListener("athar-open-animations", function () { setTimeout(loadAnimSettings, 30); });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
   else bind();
 })();
