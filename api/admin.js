@@ -704,6 +704,21 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, config });
     }
 
+    
+    if (action === "update_animations") {
+      let f = await ghGet("site-config.json");
+      if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
+      let config = {};
+      try { config = JSON.parse(f.content); } catch { config = {}; }
+      const incoming = body.animations || body.config || {};
+      config.animations = Object.assign({}, config.animations || {}, incoming);
+      if (incoming.hero) config.animations.hero = Object.assign({}, (config.animations && config.animations.hero) || {}, incoming.hero);
+      if (incoming.sections) config.animations.sections = Object.assign({}, (config.animations && config.animations.sections) || {}, incoming.sections);
+      const put = await ghPut("site-config.json", JSON.stringify(config, null, 2) + "\n", "Admin: update animations", f.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+      return res.status(200).json({ ok: true, animations: config.animations });
+    }
+
     if (action === "update_hero") {
       // always read latest sha
       let f = await ghGet("site-config.json");
