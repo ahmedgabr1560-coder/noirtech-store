@@ -2771,3 +2771,128 @@ html[data-theme="dark"] body {
   color: #f5f5f5 !important;
 }
 
+/* === STRICT INVERT THEME ===
+   داكن: أسود/رمادي غامق | فاتح: أبيض/فاتح — عكس الألوان الأساسية */
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  background: #000 !important;
+  color: #fff !important;
+}
+html[data-theme="light"],
+html[data-theme="light"] body {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+html[data-theme="light"] .site-header,
+html[data-theme="light"] header.site-header {
+  background: #fff !important;
+  color: #000 !important;
+  border-bottom-color: rgba(0,0,0,.1) !important;
+}
+html[data-theme="dark"] .site-header,
+html[data-theme="dark"] header.site-header {
+  background: #000 !important;
+  color: #fff !important;
+  border-bottom-color: rgba(255,255,255,.1) !important;
+}
+
+html[data-theme="light"] .site-header a,
+html[data-theme="light"] .main-nav a,
+html[data-theme="light"] .logo-text,
+html[data-theme="light"] .icon-btn,
+html[data-theme="light"] .action-label,
+html[data-theme="light"] .nav-drop-btn { color: #000 !important; }
+
+html[data-theme="dark"] .site-header a,
+html[data-theme="dark"] .main-nav a,
+html[data-theme="dark"] .logo-text,
+html[data-theme="dark"] .icon-btn,
+html[data-theme="dark"] .action-label,
+html[data-theme="dark"] .nav-drop-btn { color: #fff !important; }
+
+html[data-theme="light"] .product-card,
+html[data-theme="light"] .card,
+html[data-theme="light"] .drawer,
+html[data-theme="light"] .modal,
+html[data-theme="light"] .auth-modal {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: rgba(0,0,0,.12) !important;
+}
+html[data-theme="dark"] .product-card,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .drawer,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .auth-modal {
+  background: #0a0a0a !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,.12) !important;
+}
+
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] .product-card h3,
+html[data-theme="light"] .price,
+html[data-theme="light"] .section-head h2 { color: #000 !important; }
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] .product-card h3,
+html[data-theme="dark"] .price,
+html[data-theme="dark"] .section-head h2 { color: #fff !important; }
+
+html[data-theme="light"] .muted,
+html[data-theme="light"] .hint { color: #555 !important; }
+html[data-theme="dark"] .muted,
+html[data-theme="dark"] .hint { color: #aaa !important; }
+
+html[data-theme="light"] .add-btn { background: #000 !important; color: #fff !important; }
+html[data-theme="dark"] .add-btn { background: #fff !important; color: #000 !important; }
+
+html[data-theme="light"] .bg-stage .bg-black {
+  background: #fff !important;
+}
+html[data-theme="dark"] .bg-stage .bg-black {
+  background: #000 !important;
+}
+
+html[data-theme="light"] footer,
+html[data-theme="light"] .site-footer {
+  background: #f5f5f5 !important;
+  color: #000 !important;
+}
+html[data-theme="dark"] footer,
+html[data-theme="dark"] .site-footer {
+  background: #000 !important;
+  color: #fff !important;
+}
+
+html[data-theme="light"] input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] select {
+  background: #fff !important;
+  color: #000 !important;
+  border-color: #ccc !important;
+}
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background: #111 !important;
+  color: #fff !important;
+  border-color: #333 !important;
+}
+
+html[data-theme="light"] #catNav,
+html[data-theme="light"] .mega-menu {
+  background: #fff !important;
+  color: #000 !important;
+}
+html[data-theme="dark"] #catNav,
+html[data-theme="dark"] .mega-menu {
+  background: #0a0a0a !important;
+  color: #fff !important;
+}
+
