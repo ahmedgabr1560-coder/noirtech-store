@@ -883,6 +883,7 @@
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="animHeroEnabled" checked> تفعيل حركة صور الواجهة</label>
             <label>النوع
               <select id="animHeroType">
+                <option value="collision">تصادم من اليمين واليسار</option>
                 <option value="gravity">سقوط وارتداد</option>
                 <option value="float">طفو</option>
                 <option value="fadeIn">ظهور تدريجي</option>
@@ -892,7 +893,7 @@
             <label>المدة (ث) <input type="number" id="animHeroDuration" min="0.3" max="3" step="0.05" value="1.25" style="width:80px"></label>
             <label>تأخير بين الصور <input type="number" id="animHeroStagger" min="0" max="1" step="0.05" value="0.15" style="width:80px"></label>
             <label>قوة الارتداد (px) <input type="number" id="animHeroBounce" min="0" max="40" step="1" value="18" style="width:80px"></label>
-            <button type="button" class="btn" id="animHeroPreview">معاينة السقوط</button>
+            <button type="button" class="btn" id="animHeroPreview">معاينة الحركة</button>
           </div>
 
           <h4 style="margin:18px 0 8px">أقسام المتجر</h4>
@@ -2306,7 +2307,7 @@
   ];
   const DEFAULTS = {
     enabled: true, globalSpeed: 1,
-    hero: { enabled: true, type: "gravity", duration: 1.25, stagger: 0.15, bounce: 18, speed: 1 },
+    hero: { enabled: true, type: "collision", duration: 1.8, stagger: 0.15, bounce: 18, speed: 1 },
     sections: {
       hero: { enabled: false, type: "fadeIn", trigger: "load", duration: 0.7, delay: 0, intensity: 1, repeat: 1 },
       products: { enabled: true, type: "fadeUp", trigger: "scroll", duration: 0.6, delay: 0, intensity: 1, repeat: 1 },
@@ -4475,7 +4476,7 @@
   ];
   const DEFAULTS = {
     enabled: true, globalSpeed: 1,
-    hero: { enabled: true, type: "gravity", duration: 1.25, stagger: 0.15, bounce: 18, speed: 1 },
+    hero: { enabled: true, type: "collision", duration: 1.8, stagger: 0.15, bounce: 18, speed: 1 },
     sections: {
       hero: { enabled: false, type: "fadeIn", trigger: "load", duration: 0.7, delay: 0, intensity: 1, repeat: 1 },
       products: { enabled: true, type: "fadeUp", trigger: "scroll", duration: 0.6, delay: 0, intensity: 1, repeat: 1 },
