@@ -2866,6 +2866,7 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     }
     if (type === "gravity") {
       stack.classList.remove("hero-gravity-skip");
+      stack.classList.remove("hero-collision-on");
       stack.classList.add("hero-gravity-on");
       setTimeout(function () {
         stack.classList.remove("hero-gravity-on");
@@ -2875,6 +2876,33 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
           n.style.visibility = "visible";
         });
       }, ((Number(hero.duration) || 1.25) + (Number(hero.stagger) || 0.15) + 0.4) * 1000);
+      return;
+    }
+    if (type === "collision") {
+      stack.classList.remove("hero-gravity-skip");
+      stack.classList.remove("hero-gravity-on");
+      stack.classList.remove("hero-collision-done");
+      // duration via CSS var (default ~1.8s)
+      var dur = Number(hero.duration) || 1.8;
+      if (dur < 1.5) dur = 1.5;
+      if (dur > 2.2) dur = 2.2;
+      document.documentElement.style.setProperty("--athar-hero-duration", dur + "s");
+      stack.classList.add("hero-collision-on");
+      // force restart animation
+      var phones = stack.querySelectorAll(".p1, .p2");
+      phones.forEach(function (ph) {
+        ph.style.animation = "none";
+        void ph.offsetWidth;
+        ph.style.animation = "";
+      });
+      setTimeout(function () {
+        stack.classList.remove("hero-collision-on");
+        stack.classList.add("hero-collision-done");
+        stack.querySelectorAll(".phone, .phone img").forEach(function (n) {
+          n.style.opacity = "1";
+          n.style.visibility = "visible";
+        });
+      }, dur * 1000 + 80);
       return;
     }
     // other types on phones
