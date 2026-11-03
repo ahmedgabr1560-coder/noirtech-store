@@ -2935,13 +2935,13 @@ html[data-theme="dark"] .mega-menu {
 /* Hero collision: left/right meet, bounce, settle — once on load */
 .phones-stack.hero-collision-on .p1 {
   animation:
-    heroCollisionRight 1.8s cubic-bezier(0.22, 1.1, 0.36, 1) both,
-    float1 7s ease-in-out 1.85s infinite;
+    heroCollisionRight var(--athar-hero-duration, 1.8s) cubic-bezier(0.22, 1.1, 0.36, 1) both,
+    float1 7s ease-in-out calc(var(--athar-hero-duration, 1.8s) + 0.05s) infinite;
 }
 .phones-stack.hero-collision-on .p2 {
   animation:
-    heroCollisionLeft 1.8s cubic-bezier(0.22, 1.1, 0.36, 1) both,
-    float2 8s ease-in-out 1.85s infinite;
+    heroCollisionLeft var(--athar-hero-duration, 1.8s) cubic-bezier(0.22, 1.1, 0.36, 1) both,
+    float2 8s ease-in-out calc(var(--athar-hero-duration, 1.8s) + 0.05s) infinite;
 }
 /* p2 = left phone (left:6%), enters from further left toward center */
 @keyframes heroCollisionLeft {
