@@ -748,12 +748,42 @@
       const drawerCount = document.getElementById("cartItemsCount");
       if (drawerCount) drawerCount.textContent = String(total);
     }
-    function openCart() {
+    async function fillProductGovSelects() {
+      try {
+        const zones = await loadZones();
+        const list = (zones && zones.governorates) || [];
+        const gov = document.getElementById("orderGov");
+        const cen = document.getElementById("orderCenter");
+        if (gov) {
+          const prev = gov.value;
+          gov.innerHTML = '<option value="">— اختاري المحافظة —</option>' +
+            list.map(function (g) { return '<option value="' + (g.id || "") + '">' + (g.name || "") + '</option>'; }).join("");
+          if (prev) gov.value = prev;
+          gov.disabled = false;
+          if (!gov.dataset.boundAthar) {
+            gov.dataset.boundAthar = "1";
+            gov.addEventListener("change", function () {
+              const g = list.find(function (x) { return String(x.id) === String(gov.value); });
+              if (cen) {
+                const centers = (g && g.centers) || [];
+                cen.disabled = !centers.length;
+                cen.innerHTML = '<option value="">— اختاري المركز / الحي —</option>' +
+                  centers.map(function (c) { return '<option value="' + (c.id || "") + '">' + (c.name || "") + '</option>'; }).join("");
+              }
+              try { renderCart(); } catch (e) {}
+            });
+          }
+        }
+      } catch (e) {}
+    }
+    async function openCart() {
       document.getElementById("cartDrawer")?.classList.add("open");
       document.getElementById("cartOverlay")?.classList.add("open");
       document.body.style.overflow = "hidden";
+      try { await fillProductGovSelects(); } catch (e) {}
       renderCart();
     }
+    try { fillProductGovSelects(); } catch (ePre) {} /* preload zones */
     function closeCart() {
       document.getElementById("cartDrawer")?.classList.remove("open");
       document.getElementById("cartOverlay")?.classList.remove("open");
