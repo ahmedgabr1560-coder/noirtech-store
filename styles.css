@@ -3018,3 +3018,41 @@ html[data-theme="dark"] .mega-menu {
   }
 }
 
+/* Unified cart drawer — scroll entire content including checkout */
+#cartDrawer.drawer {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 100dvh !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+#cartDrawer .drawer-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain;
+}
+#cartDrawer .drawer-foot {
+  flex: 0 0 auto;
+}
+#cartDrawer .checkout-fields {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+#cartDrawer .checkout-fields select,
+#cartDrawer .checkout-fields input {
+  width: 100%;
+  min-height: 44px;
+  font-size: 16px;
+}
+#cartDrawer #orderGov,
+#cartDrawer #orderCenter {
+  color: inherit;
+  background: var(--input-bg, #0c0c12);
+  border: 1px solid var(--input-border, rgba(255,255,255,.12));
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
