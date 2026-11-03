@@ -417,5 +417,64 @@
     }
   },
   "forceDeployAt": "2026-11-02T10:50:43Z",
-  "assetVersion": "20261102-force1050"
+  "assetVersion": "20261102-force1050",
+  "animations": {
+    "enabled": true,
+    "globalSpeed": 1,
+    "hero": {
+      "enabled": true,
+      "type": "gravity",
+      "duration": 1.25,
+      "stagger": 0.15,
+      "bounce": 18,
+      "speed": 1
+    },
+    "sections": {
+      "hero": {
+        "enabled": false,
+        "type": "fadeIn",
+        "trigger": "load",
+        "duration": 0.7,
+        "delay": 0,
+        "intensity": 1,
+        "repeat": 1
+      },
+      "products": {
+        "enabled": true,
+        "type": "fadeUp",
+        "trigger": "scroll",
+        "duration": 0.6,
+        "delay": 0,
+        "intensity": 1,
+        "repeat": 1
+      },
+      "bundles": {
+        "enabled": true,
+        "type": "zoomIn",
+        "trigger": "scroll",
+        "duration": 0.65,
+        "delay": 0.05,
+        "intensity": 1,
+        "repeat": 1
+      },
+      "categories": {
+        "enabled": true,
+        "type": "fadeUp",
+        "trigger": "scroll",
+        "duration": 0.55,
+        "delay": 0,
+        "intensity": 1,
+        "repeat": 1
+      },
+      "cards": {
+        "enabled": true,
+        "type": "fadeUp",
+        "trigger": "scroll",
+        "duration": 0.5,
+        "delay": 0,
+        "intensity": 1,
+        "repeat": 1
+      }
+    }
+  }
 }
