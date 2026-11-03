@@ -2705,63 +2705,7 @@ try {
 
 /* Hero gravity: once per full page load after images ready */
 (function atharHeroGravity() {
-  function ensureVisible(stack) {
-    if (!stack) return;
-    stack.classList.add("hero-gravity-done");
-    stack.classList.remove("hero-gravity-on");
-    stack.querySelectorAll(".phone, .phone img").forEach(function (el) {
-      try {
-        el.style.opacity = "1";
-        el.style.visibility = "visible";
-      } catch (e) {}
-    });
-  }
-  function start() {
-    try {
-      var stack = document.querySelector(".phones-stack");
-      if (!stack) return;
-      // دائماً: لو الأنيميشن اتعطل الصور تظهر
-      setTimeout(function () { ensureVisible(stack); }, 2500);
-      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        stack.classList.add("hero-gravity-skip");
-        ensureVisible(stack);
-        return;
-      }
-      if (stack.dataset.gravityDone === "1") {
-        ensureVisible(stack);
-        return;
-      }
-      var imgs = stack.querySelectorAll("img");
-      var pending = 0;
-      var started = false;
-      function go() {
-        if (started) return;
-        started = true;
-        stack.dataset.gravityDone = "1";
-        stack.classList.add("hero-gravity-on");
-        // بعد انتهاء السقوط رجّع الحالة الظاهرة
-        setTimeout(function () { ensureVisible(stack); }, 1600);
-      }
-      function one() {
-        pending--;
-        if (pending <= 0) go();
-      }
-      if (!imgs.length) { go(); return; }
-      pending = imgs.length;
-      imgs.forEach(function (img) {
-        if (img.complete && img.naturalWidth) one();
-        else {
-          img.addEventListener("load", one, { once: true });
-          img.addEventListener("error", function () { one(); ensureVisible(stack); }, { once: true });
-        }
-      });
-      setTimeout(go, 1200);
-    } catch (e) {
-      try { ensureVisible(document.querySelector(".phones-stack")); } catch (e2) {}
-    }
-  }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
-  else start();
+  /* DISABLED: hero motion is controlled only by atharApplyAnimations + site-config.animations.hero */
 })();
 
 
@@ -2898,56 +2842,52 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
   function applyHero(hero) {
     var stack = document.querySelector(".phones-stack");
     if (!stack) return;
-    // always visible
+    // reset classes
+    stack.classList.remove("hero-gravity-on", "hero-gravity-done", "hero-gravity-skip", "hero-collision-on", "hero-collision-done");
     stack.querySelectorAll(".phone, .phone img").forEach(function (n) {
-      n.style.opacity = "1";
-      n.style.visibility = "visible";
+      try {
+        n.style.opacity = "1";
+        n.style.visibility = "visible";
+        n.style.animation = "";
+      } catch (e) {}
     });
-    if (!hero || hero.enabled === false || reduceMotion()) {
-      stack.classList.remove("hero-gravity-on");
-      stack.classList.add("hero-gravity-skip");
+    if (!hero || hero.enabled === false) {
+      stack.classList.add("hero-collision-done");
       return;
     }
-    var type = hero.type || "gravity";
-    document.documentElement.style.setProperty("--athar-hero-duration", (Number(hero.duration) || 1.25) + "s");
-    document.documentElement.style.setProperty("--athar-hero-stagger", (Number(hero.stagger) || 0.15) + "s");
-    document.documentElement.style.setProperty("--athar-hero-bounce", (Number(hero.bounce) || 18) + "px");
-    if (type === "none") {
-      stack.classList.remove("hero-gravity-on");
-      stack.classList.add("hero-gravity-skip");
+    if (reduceMotion()) {
+      stack.classList.add("hero-collision-done");
       return;
     }
-    if (type === "gravity") {
-      stack.classList.remove("hero-gravity-skip");
-      stack.classList.remove("hero-collision-on");
-      stack.classList.add("hero-gravity-on");
-      setTimeout(function () {
-        stack.classList.remove("hero-gravity-on");
-        stack.classList.add("hero-gravity-done");
-        stack.querySelectorAll(".phone, .phone img").forEach(function (n) {
-          n.style.opacity = "1";
-          n.style.visibility = "visible";
-        });
-      }, ((Number(hero.duration) || 1.25) + (Number(hero.stagger) || 0.15) + 0.4) * 1000);
-      return;
-    }
+    var type = String(hero.type || "collision");
+    var dur = Number(hero.duration) || (type === "collision" ? 1.8 : 1.25);
     if (type === "collision") {
-      stack.classList.remove("hero-gravity-skip");
-      stack.classList.remove("hero-gravity-on");
-      stack.classList.remove("hero-collision-done");
-      // duration via CSS var (default ~1.8s)
-      var dur = Number(hero.duration) || 1.8;
       if (dur < 1.5) dur = 1.5;
       if (dur > 2.2) dur = 2.2;
-      document.documentElement.style.setProperty("--athar-hero-duration", dur + "s");
-      stack.classList.add("hero-collision-on");
-      // force restart animation
-      var phones = stack.querySelectorAll(".p1, .p2");
-      phones.forEach(function (ph) {
+    }
+    document.documentElement.style.setProperty("--athar-hero-duration", dur + "s");
+    document.documentElement.style.setProperty("--athar-hero-stagger", (Number(hero.stagger) || 0.15) + "s");
+    document.documentElement.style.setProperty("--athar-hero-bounce", (Number(hero.bounce) || 18) + "px");
+
+    if (type === "none") {
+      stack.classList.add("hero-collision-done");
+      return;
+    }
+
+    // restart CSS animations cleanly
+    function restart(cls) {
+      stack.classList.remove(cls);
+      void stack.offsetWidth;
+      stack.classList.add(cls);
+      stack.querySelectorAll(".p1, .p2").forEach(function (ph) {
         ph.style.animation = "none";
         void ph.offsetWidth;
         ph.style.animation = "";
       });
+    }
+
+    if (type === "collision") {
+      restart("hero-collision-on");
       setTimeout(function () {
         stack.classList.remove("hero-collision-on");
         stack.classList.add("hero-collision-done");
@@ -2955,14 +2895,27 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
           n.style.opacity = "1";
           n.style.visibility = "visible";
         });
-      }, dur * 1000 + 80);
+      }, dur * 1000 + 120);
       return;
     }
-    // other types on phones
-    stack.classList.remove("hero-gravity-on");
+
+    if (type === "gravity") {
+      restart("hero-gravity-on");
+      setTimeout(function () {
+        stack.classList.remove("hero-gravity-on");
+        stack.classList.add("hero-gravity-done");
+        stack.querySelectorAll(".phone, .phone img").forEach(function (n) {
+          n.style.opacity = "1";
+          n.style.visibility = "visible";
+        });
+      }, (dur + (Number(hero.stagger) || 0.15) + 0.35) * 1000);
+      return;
+    }
+
+    // generic library animation on phones
     qs(".phones-stack .phone").forEach(function (ph, i) {
       runOn(ph, type, {
-        duration: hero.duration || 0.8,
+        duration: dur,
         delay: i * (Number(hero.stagger) || 0.12),
         intensity: 1,
         repeat: 1,
@@ -3035,25 +2988,64 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
       applySection(k, sections[k], gs);
     });
   }
-  function boot() {
+  var booted = false;
+  function boot(force) {
     try {
+      if (booted && !force) return;
+      function run(anim) {
+        booted = true;
+        // wait for hero images so collision starts when painted
+        var stack = document.querySelector(".phones-stack");
+        var imgs = stack ? stack.querySelectorAll("img") : [];
+        var pending = 0;
+        function go() {
+          applyAll(anim || {});
+        }
+        if (!imgs.length) { go(); return; }
+        pending = imgs.length;
+        var done = false;
+        function one() {
+          pending--;
+          if (pending <= 0 && !done) { done = true; go(); }
+        }
+        imgs.forEach(function (img) {
+          if (img.complete && img.naturalWidth) one();
+          else {
+            img.addEventListener("load", one, { once: true });
+            img.addEventListener("error", one, { once: true });
+          }
+        });
+        setTimeout(function () { if (!done) { done = true; go(); } }, 1000);
+      }
       var cfg = window.__SITE_CONFIG || window.SITE_CONFIG || null;
       if (cfg && cfg.animations) {
-        applyAll(cfg.animations);
+        run(cfg.animations);
         return;
       }
       fetch("/site-config.json?t=" + Date.now(), { cache: "no-store" })
         .then(function (r) { return r.json(); })
         .then(function (j) {
           window.__SITE_CONFIG = j;
-          applyAll(j.animations || {});
+          run(j.animations || {});
         })
-        .catch(function () {});
+        .catch(function () { run({}); });
     } catch (e) {}
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
-  // re-apply when products painted late
-  setTimeout(boot, 1800);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { boot(false); });
+  else boot(false);
+  // products late paint — section anims only, don't retrigger hero twice unless needed
+  setTimeout(function () {
+    try {
+      var anim = (window.__SITE_CONFIG && window.__SITE_CONFIG.animations) || {};
+      var sections = anim.sections || {};
+      var gs = Number(anim.globalSpeed) || 1;
+      if (anim.enabled === false) return;
+      Object.keys(sections).forEach(function (k) {
+        if (k === "hero") return;
+        applySection(k, sections[k], gs);
+      });
+    } catch (e) {}
+  }, 2000);
+  try { window.__ATHAR_REPLAY_HERO = function () { booted = false; boot(true); }; } catch (e) {}
 })();
 
