@@ -1281,6 +1281,7 @@
           if (panelId === "orders") loadOrders();
           else if (panelId === "labels") loadLabelsPanel();
           else if (panelId === "policy") loadPolicyPanel();
+          else if (panelId === "animations") { try { window.dispatchEvent(new CustomEvent("athar-open-animations")); } catch (e) {} }
           else if (panelId === "products") loadProducts();
           else if (panelId === "categories") loadCategories();
           else if (panelId === "dash") loadStats();
