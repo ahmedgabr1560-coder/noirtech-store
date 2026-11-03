@@ -1030,11 +1030,39 @@ function updateCartUI() {
   setTxt("cartSubtotal", typeof money === "function" ? money(sub) : String(sub));
   // keep existing shipping/discount logic if helpers exist
   let ship = 0;
+  let shipLabel = "الشحن";
   try {
-    if (typeof calcShippingFee === "function") ship = Number(calcShippingFee()) || 0;
-    else if (typeof getShippingFee === "function") ship = Number(getShippingFee()) || 0;
+    const govId = (document.getElementById("orderGov") && document.getElementById("orderGov").value) || "";
+    const cenId = (document.getElementById("orderCenter") && document.getElementById("orderCenter").value) || "";
+    if (typeof calcShipping === "function") {
+      const info = calcShipping(sub, govId, cenId);
+      if (info && typeof info === "object") {
+        ship = Number(info.amount != null ? info.amount : info.fee != null ? info.fee : info) || 0;
+        if (info.label) shipLabel = info.label;
+        if (info.free) ship = 0;
+      } else {
+        ship = Number(info) || 0;
+      }
+    } else if (typeof calcShippingFee === "function") {
+      ship = Number(calcShippingFee()) || 0;
+    }
   } catch (e4) {}
-  setTxt("cartShipping", typeof money === "function" ? money(ship) : String(ship));
+  const shipLbl = document.getElementById("cartShippingLabel");
+  if (shipLbl) shipLbl.textContent = shipLabel;
+  const shipHint = document.getElementById("cartShippingHint");
+  if (shipHint) {
+    if (!document.getElementById("orderGov")?.value) {
+      shipHint.style.display = "block";
+      shipHint.textContent = "اختاري المحافظة لحساب الشحن";
+      setTxt("cartShipping", "—");
+      ship = 0;
+    } else {
+      shipHint.style.display = "none";
+      setTxt("cartShipping", typeof money === "function" ? money(ship) : String(ship));
+    }
+  } else {
+    setTxt("cartShipping", typeof money === "function" ? money(ship) : String(ship));
+  }
   let discount = 0;
   try {
     if (typeof getCartDiscount === "function") discount = Number(getCartDiscount(sub)) || 0;
