@@ -196,3 +196,61 @@
 }
 /* Always visible safety */
 .phones-stack .phone, .phones-stack .phone img { opacity: 1; visibility: visible; }
+
+/* Hero collision: left/right meet, bounce, settle — once on load */
+.phones-stack.hero-collision-on .p1 {
+  animation:
+    heroCollisionRight 1.8s cubic-bezier(0.22, 1.1, 0.36, 1) both,
+    float1 7s ease-in-out 1.85s infinite;
+}
+.phones-stack.hero-collision-on .p2 {
+  animation:
+    heroCollisionLeft 1.8s cubic-bezier(0.22, 1.1, 0.36, 1) both,
+    float2 8s ease-in-out 1.85s infinite;
+}
+/* p2 = left phone (left:6%), enters from further left toward center */
+@keyframes heroCollisionLeft {
+  0%   { transform: rotate(11deg) translateX(-120%); opacity: 1; }
+  38%  { transform: rotate(8deg) translateX(28%); opacity: 1; } /* toward center / impact */
+  44%  { transform: rotate(10deg) translateX(22%) translateY(-2px); } /* micro shake */
+  50%  { transform: rotate(12deg) translateX(18%) translateY(1px); }
+  58%  { transform: rotate(10deg) translateX(-12%); } /* bounce back left */
+  72%  { transform: rotate(11deg) translateX(4%); }
+  86%  { transform: rotate(11deg) translateX(-1%); }
+  100% { transform: rotate(11deg) translateX(0) translateY(0); opacity: 1; }
+}
+/* p1 = right phone (right:4%), enters from further right toward center */
+@keyframes heroCollisionRight {
+  0%   { transform: rotate(-10deg) translateX(120%); opacity: 1; }
+  38%  { transform: rotate(-7deg) translateX(-28%); opacity: 1; }
+  44%  { transform: rotate(-9deg) translateX(-22%) translateY(2px); }
+  50%  { transform: rotate(-11deg) translateX(-18%) translateY(-1px); }
+  58%  { transform: rotate(-9deg) translateX(12%); } /* bounce back right */
+  72%  { transform: rotate(-10deg) translateX(-4%); }
+  86%  { transform: rotate(-10deg) translateX(1%); }
+  100% { transform: rotate(-10deg) translateX(0) translateY(0); opacity: 1; }
+}
+.phones-stack.hero-collision-done .p1 {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: rotate(-10deg) translateY(0);
+  animation: float1 7s ease-in-out infinite;
+}
+.phones-stack.hero-collision-done .p2 {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: rotate(11deg) translateY(0);
+  animation: float2 8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .phones-stack.hero-collision-on .p1,
+  .phones-stack.hero-collision-on .p2 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: rotate(-10deg) translateY(0);
+  }
+  .phones-stack.hero-collision-on .p2 {
+    transform: rotate(11deg) translateY(0) !important;
+  }
+}
+
