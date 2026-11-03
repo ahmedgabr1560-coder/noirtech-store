@@ -557,35 +557,57 @@ button, input, select, textarea { font-family: inherit; }
   right: 4%;
   top: 2%;
   z-index: 3;
-  transform: rotate(-10deg) translateY(-160%);
-  opacity: 0;
-  will-change: transform, opacity;
+  transform: rotate(-10deg) translateY(0);
+  opacity: 1;
+  visibility: visible;
+  animation: float1 7s ease-in-out infinite;
 }
 .phones-stack .p2 {
   left: 6%;
   top: 14%;
   z-index: 2;
-  transform: rotate(11deg) translateY(-160%);
-  opacity: 0;
-  will-change: transform, opacity;
+  transform: rotate(11deg) translateY(0);
+  opacity: 1;
+  visibility: visible;
+  animation: float2 8s ease-in-out infinite;
 }
-/* بعد التحميل: سقوط بالجاذبية + ارتداد ثم استقرار ثم طفو خفيف */
+/* صور الهيرو لازم تفضل ظاهرة دائمًا */
+.phones-stack .phone,
+.phones-stack .phone img {
+  opacity: 1;
+  visibility: visible;
+}
+.phones-stack .phone img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* حركة الجاذبية اختيارية — بعد انتهائها ترجع للحالة الظاهرة */
 .phones-stack.hero-gravity-on .p1 {
   animation:
-    heroGravity1 1.25s cubic-bezier(0.22, 1.15, 0.36, 1) 0.08s both,
-    float1 7s ease-in-out 1.4s infinite;
+    heroGravity1 1.25s cubic-bezier(0.22, 1.15, 0.36, 1) both,
+    float1 7s ease-in-out 1.3s infinite;
 }
 .phones-stack.hero-gravity-on .p2 {
   animation:
-    heroGravity2 1.35s cubic-bezier(0.22, 1.15, 0.36, 1) 0.22s both,
-    float2 8s ease-in-out 1.55s infinite;
+    heroGravity2 1.35s cubic-bezier(0.22, 1.15, 0.36, 1) 0.12s both,
+    float2 8s ease-in-out 1.5s infinite;
 }
-/* بدون JS (fallback): شغّل بعد لحظات */
-.phones-stack:not(.hero-gravity-on):not(.hero-gravity-skip) .p1 {
-  animation: heroGravity1 1.25s cubic-bezier(0.22, 1.15, 0.36, 1) 0.35s both, float1 7s ease-in-out 1.7s infinite;
+/* بعد الحركة أو عند التعطل: إظهار إجباري */
+.phones-stack.hero-gravity-done .p1,
+.phones-stack.hero-gravity-skip .p1 {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: rotate(-10deg) translateY(0);
+  animation: float1 7s ease-in-out infinite;
 }
-.phones-stack:not(.hero-gravity-on):not(.hero-gravity-skip) .p2 {
-  animation: heroGravity2 1.35s cubic-bezier(0.22, 1.15, 0.36, 1) 0.5s both, float2 8s ease-in-out 1.85s infinite;
+.phones-stack.hero-gravity-done .p2,
+.phones-stack.hero-gravity-skip .p2 {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: rotate(11deg) translateY(0);
+  animation: float2 8s ease-in-out infinite;
 }
 .phones-stack .p1:hover,
 .phones-stack .p2:hover {
@@ -2894,5 +2916,34 @@ html[data-theme="dark"] #catNav,
 html[data-theme="dark"] .mega-menu {
   background: #0a0a0a !important;
   color: #fff !important;
+}
+
+/* HERO IMAGES ALWAYS VISIBLE — safety net */
+.phones-stack .phone,
+.phones-stack .p1,
+.phones-stack .p2 {
+  visibility: visible !important;
+}
+.phones-stack:not(.hero-gravity-on) .phone,
+.phones-stack.hero-gravity-done .phone,
+.phones-stack.hero-gravity-skip .phone {
+  opacity: 1 !important;
+}
+.phones-stack .phone img {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .phones-stack .p1,
+  .phones-stack .p2 {
+    animation: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: rotate(-10deg) translateY(0);
+  }
+  .phones-stack .p2 {
+    transform: rotate(11deg) translateY(0) !important;
+  }
 }
 
