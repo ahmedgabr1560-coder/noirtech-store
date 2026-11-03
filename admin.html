@@ -2282,209 +2282,7 @@
         + '<span style="opacity:.8;font-size:12px">مقاس 10×15 سم — Save as PDF من نافذة الطباعة</span></div>';
       const html = "<!DOCTYPE html><html lang='ar' dir='rtl'><head><meta charset='utf-8'/><title>ملصقات ATHAR</title><style>"
         + css + "</style></head><body>" + bar + sheets
-        + "<script>" + autoScript + "<\/script><script>
-
-/* —— Animations admin —— */
-(function atharAnimAdmin() {
-  const LIB = [
-    ["fadeIn","Fade In"],["fadeUp","Fade Up"],["fadeDown","Fade Down"],["fadeLeft","Fade Left"],["fadeRight","Fade Right"],
-    ["slideUp","Slide Up"],["slideDown","Slide Down"],["slideLeft","Slide Left"],["slideRight","Slide Right"],
-    ["zoomIn","Zoom In"],["zoomOut","Zoom Out"],["zoomInUp","Zoom In Up"],["zoomInDown","Zoom In Down"],
-    ["bounceIn","Bounce In"],["flipIn","Flip In"],
-    ["bounce","Bounce"],["bounceUp","Bounce Up"],["bounceDown","Bounce Down"],["swing","Swing"],["wobble","Wobble"],
-    ["jello","Jello"],["rubberBand","Rubber Band"],["shake","Shake"],["pulse","Pulse"],["heartBeat","Heart Beat"],
-    ["rotateIn","Rotate In"],["rotateOut","Rotate Out"],["flipX","Flip X"],["flipY","Flip Y"],
-    ["lightSpeedIn","Light Speed"],["rollIn","Roll In"],["rollOut","Roll Out"],["hinge","Hinge"],
-    ["float","Float"],["smoothReveal","Smooth Reveal"],["blurIn","Blur In"],["scaleUp","Scale Up"],["scaleDown","Scale Down"],
-    ["glow","Glow"],["shimmer","Shimmer"]
-  ];
-  const SECTION_META = [
-    ["products","قسم المنتجات","#shop, #products, .products-grid"],
-    ["bundles","عروض القطع","#bundles, .bundles-section"],
-    ["categories","الأقسام","#categories, .cats-grid"],
-    ["cards","كروت المنتجات",".product-card"],
-    ["hero","قسم الواجهة",".hero, #home"]
-  ];
-  const DEFAULTS = {
-    enabled: true, globalSpeed: 1,
-    hero: { enabled: true, type: "collision", duration: 1.8, stagger: 0.15, bounce: 18, speed: 1 },
-    sections: {
-      hero: { enabled: false, type: "fadeIn", trigger: "load", duration: 0.7, delay: 0, intensity: 1, repeat: 1 },
-      products: { enabled: true, type: "fadeUp", trigger: "scroll", duration: 0.6, delay: 0, intensity: 1, repeat: 1 },
-      bundles: { enabled: true, type: "zoomIn", trigger: "scroll", duration: 0.65, delay: 0.05, intensity: 1, repeat: 1 },
-      categories: { enabled: true, type: "fadeUp", trigger: "scroll", duration: 0.55, delay: 0, intensity: 1, repeat: 1 },
-      cards: { enabled: true, type: "fadeUp", trigger: "scroll", duration: 0.5, delay: 0, intensity: 1, repeat: 1 }
-    }
-  };
-  let state = JSON.parse(JSON.stringify(DEFAULTS));
-
-  function ensureLibCss() {
-    if (!document.getElementById("atharAnimLibCss")) {
-      const l = document.createElement("link");
-      l.id = "atharAnimLibCss";
-      l.rel = "stylesheet";
-      l.href = "/animations.css?v=1";
-      document.head.appendChild(l);
-    }
-  }
-
-  function renderLibrary() {
-    const box = document.getElementById("animLibrary");
-    if (!box) return;
-    box.innerHTML = LIB.map(function (pair) {
-      const id = pair[0], label = pair[1];
-      return '<button type="button" class="btn" data-anim-preview="' + id + '" style="font-size:.8rem">' + label + '</button>';
-    }).join("");
-    box.querySelectorAll("[data-anim-preview]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        previewAnim(btn.getAttribute("data-anim-preview"));
-      });
-    });
-  }
-
-  function previewAnim(name) {
-    ensureLibCss();
-    const el = document.getElementById("animPreviewTarget");
-    if (!el) return;
-    el.className = "";
-    void el.offsetWidth;
-    el.className = "athar-anim-" + name + " athar-anim-run";
-    el.style.setProperty("--athar-anim-duration", "0.8s");
-    el.style.setProperty("--athar-anim-delay", "0s");
-    el.style.setProperty("--athar-anim-intensity", "1");
-    el.style.setProperty("--athar-anim-repeat", "1");
-  }
-
-  function renderSections() {
-    const box = document.getElementById("animSectionsBox");
-    if (!box) return;
-    box.innerHTML = SECTION_META.map(function (row) {
-      const key = row[0], title = row[1];
-      const s = (state.sections && state.sections[key]) || DEFAULTS.sections[key];
-      const opts = LIB.map(function (p) {
-        return '<option value="' + p[0] + '"' + (s.type === p[0] ? " selected" : "") + '>' + p[1] + '</option>';
-      }).join("");
-      return '<div class="card" style="margin:0;padding:12px" data-anim-sec="' + key + '">' +
-        '<div style="font-weight:800;margin-bottom:8px">' + title + '</div>' +
-        '<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">' +
-          '<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-f="enabled"' + (s.enabled ? " checked" : "") + '> مفعّل</label>' +
-          '<label>الحركة <select data-f="type">' + opts + '</select></label>' +
-          '<label>التشغيل <select data-f="trigger">' +
-            '<option value="load"' + (s.trigger==="load"?" selected":"") + '>عند التحميل</option>' +
-            '<option value="scroll"' + (s.trigger==="scroll"?" selected":"") + '>عند الظهور بالتمرير</option>' +
-            '<option value="hover"' + (s.trigger==="hover"?" selected":"") + '>عند المرور</option>' +
-          '</select></label>' +
-          '<label>المدة <input type="number" data-f="duration" min="0.2" max="3" step="0.05" value="' + (s.duration||0.6) + '" style="width:70px"></label>' +
-          '<label>تأخير <input type="number" data-f="delay" min="0" max="2" step="0.05" value="' + (s.delay||0) + '" style="width:70px"></label>' +
-          '<label>القوة <input type="number" data-f="intensity" min="0.3" max="2" step="0.1" value="' + (s.intensity||1) + '" style="width:70px"></label>' +
-          '<label>تكرار <input type="number" data-f="repeat" min="1" max="5" step="1" value="' + (s.repeat||1) + '" style="width:60px"></label>' +
-        '</div></div>';
-    }).join("");
-  }
-
-  function readUi() {
-    state.enabled = !!document.getElementById("animEnabled")?.checked;
-    state.globalSpeed = Number(document.getElementById("animGlobalSpeed")?.value) || 1;
-    state.hero = {
-      enabled: !!document.getElementById("animHeroEnabled")?.checked,
-      type: document.getElementById("animHeroType")?.value || "gravity",
-      duration: Number(document.getElementById("animHeroDuration")?.value) || 1.25,
-      stagger: Number(document.getElementById("animHeroStagger")?.value) || 0.15,
-      bounce: Number(document.getElementById("animHeroBounce")?.value) || 18,
-      speed: 1
-    };
-    state.sections = state.sections || {};
-    document.querySelectorAll("[data-anim-sec]").forEach(function (card) {
-      const key = card.getAttribute("data-anim-sec");
-      const get = function (f) { return card.querySelector('[data-f="' + f + '"]'); };
-      state.sections[key] = {
-        enabled: !!get("enabled")?.checked,
-        type: get("type")?.value || "fadeUp",
-        trigger: get("trigger")?.value || "scroll",
-        duration: Number(get("duration")?.value) || 0.6,
-        delay: Number(get("delay")?.value) || 0,
-        intensity: Number(get("intensity")?.value) || 1,
-        repeat: Number(get("repeat")?.value) || 1
-      };
-    });
-    return state;
-  }
-
-  function fillUi(cfg) {
-    state = Object.assign({}, DEFAULTS, cfg || {});
-    state.hero = Object.assign({}, DEFAULTS.hero, (cfg && cfg.hero) || {});
-    state.sections = Object.assign({}, DEFAULTS.sections, (cfg && cfg.sections) || {});
-    const en = document.getElementById("animEnabled");
-    if (en) en.checked = state.enabled !== false;
-    const gs = document.getElementById("animGlobalSpeed");
-    if (gs) gs.value = state.globalSpeed || 1;
-    const he = document.getElementById("animHeroEnabled");
-    if (he) he.checked = state.hero.enabled !== false;
-    const ht = document.getElementById("animHeroType");
-    if (ht) ht.value = state.hero.type || "gravity";
-    const hd = document.getElementById("animHeroDuration");
-    if (hd) hd.value = state.hero.duration || 1.25;
-    const hs = document.getElementById("animHeroStagger");
-    if (hs) hs.value = state.hero.stagger || 0.15;
-    const hb = document.getElementById("animHeroBounce");
-    if (hb) hb.value = state.hero.bounce || 18;
-    renderSections();
-  }
-
-  async function loadAnimSettings() { window.loadAnimSettings = loadAnimSettings;
-    ensureLibCss();
-    renderLibrary();
-    try {
-      const data = await api("get_config");
-      const cfg = (data && data.config && data.config.animations) || DEFAULTS;
-      fillUi(cfg);
-    } catch (e) {
-      fillUi(DEFAULTS);
-    }
-  }
-
-  async function saveAnimSettings() {
-    const msg = document.getElementById("animMsg");
-    try {
-      const animations = readUi();
-      const data = await api("update_animations", { animations: animations });
-      if (msg) msg.textContent = (data && data.ok) ? "تم الحفظ ✓ — سيظهر في المتجر بعد التحديث" : ("فشل الحفظ: " + ((data && data.error) || ""));
-    } catch (e) {
-      if (msg) msg.textContent = "خطأ في الحفظ";
-    }
-  }
-
-  function bind() {
-    document.getElementById("animSaveBtn")?.addEventListener("click", saveAnimSettings);
-    document.getElementById("animResetBtn")?.addEventListener("click", function () {
-      fillUi(DEFAULTS);
-      const msg = document.getElementById("animMsg");
-      if (msg) msg.textContent = "تم استعادة الافتراضي — اضغطي حفظ للتطبيق";
-    });
-    document.getElementById("animHeroPreview")?.addEventListener("click", function () {
-      previewAnim("bounceIn");
-      const msg = document.getElementById("animMsg");
-      if (msg) msg.textContent = "معاينة سريعة — احفظي لرؤية السقوط في المتجر";
-    });
-  }
-
-  // hook panel open
-  const _orig = window.loadPanel || null;
-  document.querySelectorAll("[data-panel]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      if (btn.getAttribute("data-panel") === "animations") {
-        setTimeout(loadAnimSettings, 50);
-      }
-    });
-  });
-  try { window.loadAnimSettings = loadAnimSettings; } catch (e) {}
-  window.addEventListener("athar-open-animations", function () { setTimeout(loadAnimSettings, 30); });
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
-  else bind();
-})();
-
-</script>
-</body></html>";
+        + "<script>" + autoScript + "<" + "\/script></" + "body></html>";
       const w = window.open("", "_blank");
       if (!w) {
         alert("اسمحي بالنوافذ المنبثقة لمعاينة الملصق");
@@ -4453,205 +4251,60 @@
   </script>
 <script>
 
-/* —— Animations admin —— */
-(function atharAnimAdmin() {
-  const LIB = [
-    ["fadeIn","Fade In"],["fadeUp","Fade Up"],["fadeDown","Fade Down"],["fadeLeft","Fade Left"],["fadeRight","Fade Right"],
-    ["slideUp","Slide Up"],["slideDown","Slide Down"],["slideLeft","Slide Left"],["slideRight","Slide Right"],
-    ["zoomIn","Zoom In"],["zoomOut","Zoom Out"],["zoomInUp","Zoom In Up"],["zoomInDown","Zoom In Down"],
-    ["bounceIn","Bounce In"],["flipIn","Flip In"],
-    ["bounce","Bounce"],["bounceUp","Bounce Up"],["bounceDown","Bounce Down"],["swing","Swing"],["wobble","Wobble"],
-    ["jello","Jello"],["rubberBand","Rubber Band"],["shake","Shake"],["pulse","Pulse"],["heartBeat","Heart Beat"],
-    ["rotateIn","Rotate In"],["rotateOut","Rotate Out"],["flipX","Flip X"],["flipY","Flip Y"],
-    ["lightSpeedIn","Light Speed"],["rollIn","Roll In"],["rollOut","Roll Out"],["hinge","Hinge"],
-    ["float","Float"],["smoothReveal","Smooth Reveal"],["blurIn","Blur In"],["scaleUp","Scale Up"],["scaleDown","Scale Down"],
-    ["glow","Glow"],["shimmer","Shimmer"]
-  ];
-  const SECTION_META = [
-    ["products","قسم المنتجات","#shop, #products, .products-grid"],
-    ["bundles","عروض القطع","#bundles, .bundles-section"],
-    ["categories","الأقسام","#categories, .cats-grid"],
-    ["cards","كروت المنتجات",".product-card"],
-    ["hero","قسم الواجهة",".hero, #home"]
-  ];
-  const DEFAULTS = {
-    enabled: true, globalSpeed: 1,
-    hero: { enabled: true, type: "collision", duration: 1.8, stagger: 0.15, bounce: 18, speed: 1 },
-    sections: {
-      hero: { enabled: false, type: "fadeIn", trigger: "load", duration: 0.7, delay: 0, intensity: 1, repeat: 1 },
-      products: { enabled: true, type: "fadeUp", trigger: "scroll", duration: 0.6, delay: 0, intensity: 1, repeat: 1 },
-      bundles: { enabled: true, type: "zoomIn", trigger: "scroll", duration: 0.65, delay: 0.05, intensity: 1, repeat: 1 },
-      categories: { enabled: true, type: "fadeUp", trigger: "scroll", duration: 0.55, delay: 0, intensity: 1, repeat: 1 },
-      cards: { enabled: true, type: "fadeUp", trigger: "scroll", duration: 0.5, delay: 0, intensity: 1, repeat: 1 }
-    }
-  };
-  let state = JSON.parse(JSON.stringify(DEFAULTS));
-
-  function ensureLibCss() {
-    if (!document.getElementById("atharAnimLibCss")) {
-      const l = document.createElement("link");
-      l.id = "atharAnimLibCss";
-      l.rel = "stylesheet";
-      l.href = "/animations.css?v=1";
-      document.head.appendChild(l);
-    }
-  }
-
-  function renderLibrary() {
-    const box = document.getElementById("animLibrary");
-    if (!box) return;
-    box.innerHTML = LIB.map(function (pair) {
-      const id = pair[0], label = pair[1];
-      return '<button type="button" class="btn" data-anim-preview="' + id + '" style="font-size:.8rem">' + label + '</button>';
-    }).join("");
-    box.querySelectorAll("[data-anim-preview]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        previewAnim(btn.getAttribute("data-anim-preview"));
-      });
-    });
-  }
-
-  function previewAnim(name) {
-    ensureLibCss();
-    const el = document.getElementById("animPreviewTarget");
-    if (!el) return;
-    el.className = "";
-    void el.offsetWidth;
-    el.className = "athar-anim-" + name + " athar-anim-run";
-    el.style.setProperty("--athar-anim-duration", "0.8s");
-    el.style.setProperty("--athar-anim-delay", "0s");
-    el.style.setProperty("--athar-anim-intensity", "1");
-    el.style.setProperty("--athar-anim-repeat", "1");
-  }
-
-  function renderSections() {
-    const box = document.getElementById("animSectionsBox");
-    if (!box) return;
-    box.innerHTML = SECTION_META.map(function (row) {
-      const key = row[0], title = row[1];
-      const s = (state.sections && state.sections[key]) || DEFAULTS.sections[key];
-      const opts = LIB.map(function (p) {
-        return '<option value="' + p[0] + '"' + (s.type === p[0] ? " selected" : "") + '>' + p[1] + '</option>';
-      }).join("");
-      return '<div class="card" style="margin:0;padding:12px" data-anim-sec="' + key + '">' +
-        '<div style="font-weight:800;margin-bottom:8px">' + title + '</div>' +
-        '<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">' +
-          '<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-f="enabled"' + (s.enabled ? " checked" : "") + '> مفعّل</label>' +
-          '<label>الحركة <select data-f="type">' + opts + '</select></label>' +
-          '<label>التشغيل <select data-f="trigger">' +
-            '<option value="load"' + (s.trigger==="load"?" selected":"") + '>عند التحميل</option>' +
-            '<option value="scroll"' + (s.trigger==="scroll"?" selected":"") + '>عند الظهور بالتمرير</option>' +
-            '<option value="hover"' + (s.trigger==="hover"?" selected":"") + '>عند المرور</option>' +
-          '</select></label>' +
-          '<label>المدة <input type="number" data-f="duration" min="0.2" max="3" step="0.05" value="' + (s.duration||0.6) + '" style="width:70px"></label>' +
-          '<label>تأخير <input type="number" data-f="delay" min="0" max="2" step="0.05" value="' + (s.delay||0) + '" style="width:70px"></label>' +
-          '<label>القوة <input type="number" data-f="intensity" min="0.3" max="2" step="0.1" value="' + (s.intensity||1) + '" style="width:70px"></label>' +
-          '<label>تكرار <input type="number" data-f="repeat" min="1" max="5" step="1" value="' + (s.repeat||1) + '" style="width:60px"></label>' +
-        '</div></div>';
-    }).join("");
-  }
-
-  function readUi() {
-    state.enabled = !!document.getElementById("animEnabled")?.checked;
-    state.globalSpeed = Number(document.getElementById("animGlobalSpeed")?.value) || 1;
-    state.hero = {
-      enabled: !!document.getElementById("animHeroEnabled")?.checked,
-      type: document.getElementById("animHeroType")?.value || "gravity",
-      duration: Number(document.getElementById("animHeroDuration")?.value) || 1.25,
-      stagger: Number(document.getElementById("animHeroStagger")?.value) || 0.15,
-      bounce: Number(document.getElementById("animHeroBounce")?.value) || 18,
-      speed: 1
-    };
-    state.sections = state.sections || {};
-    document.querySelectorAll("[data-anim-sec]").forEach(function (card) {
-      const key = card.getAttribute("data-anim-sec");
-      const get = function (f) { return card.querySelector('[data-f="' + f + '"]'); };
-      state.sections[key] = {
-        enabled: !!get("enabled")?.checked,
-        type: get("type")?.value || "fadeUp",
-        trigger: get("trigger")?.value || "scroll",
-        duration: Number(get("duration")?.value) || 0.6,
-        delay: Number(get("delay")?.value) || 0,
-        intensity: Number(get("intensity")?.value) || 1,
-        repeat: Number(get("repeat")?.value) || 1
-      };
-    });
-    return state;
-  }
-
-  function fillUi(cfg) {
-    state = Object.assign({}, DEFAULTS, cfg || {});
-    state.hero = Object.assign({}, DEFAULTS.hero, (cfg && cfg.hero) || {});
-    state.sections = Object.assign({}, DEFAULTS.sections, (cfg && cfg.sections) || {});
-    const en = document.getElementById("animEnabled");
-    if (en) en.checked = state.enabled !== false;
-    const gs = document.getElementById("animGlobalSpeed");
-    if (gs) gs.value = state.globalSpeed || 1;
-    const he = document.getElementById("animHeroEnabled");
-    if (he) he.checked = state.hero.enabled !== false;
-    const ht = document.getElementById("animHeroType");
-    if (ht) ht.value = state.hero.type || "gravity";
-    const hd = document.getElementById("animHeroDuration");
-    if (hd) hd.value = state.hero.duration || 1.25;
-    const hs = document.getElementById("animHeroStagger");
-    if (hs) hs.value = state.hero.stagger || 0.15;
-    const hb = document.getElementById("animHeroBounce");
-    if (hb) hb.value = state.hero.bounce || 18;
-    renderSections();
-  }
-
-  async function loadAnimSettings() { window.loadAnimSettings = loadAnimSettings;
-    ensureLibCss();
-    renderLibrary();
-    try {
-      const data = await api("get_config");
-      const cfg = (data && data.config && data.config.animations) || DEFAULTS;
-      fillUi(cfg);
-    } catch (e) {
-      fillUi(DEFAULTS);
-    }
-  }
-
-  async function saveAnimSettings() {
-    const msg = document.getElementById("animMsg");
-    try {
-      const animations = readUi();
-      const data = await api("update_animations", { animations: animations });
-      if (msg) msg.textContent = (data && data.ok) ? "تم الحفظ ✓ — سيظهر في المتجر بعد التحديث" : ("فشل الحفظ: " + ((data && data.error) || ""));
-    } catch (e) {
-      if (msg) msg.textContent = "خطأ في الحفظ";
-    }
-  }
-
-  function bind() {
-    document.getElementById("animSaveBtn")?.addEventListener("click", saveAnimSettings);
-    document.getElementById("animResetBtn")?.addEventListener("click", function () {
-      fillUi(DEFAULTS);
-      const msg = document.getElementById("animMsg");
-      if (msg) msg.textContent = "تم استعادة الافتراضي — اضغطي حفظ للتطبيق";
-    });
-    document.getElementById("animHeroPreview")?.addEventListener("click", function () {
-      previewAnim("bounceIn");
-      const msg = document.getElementById("animMsg");
-      if (msg) msg.textContent = "معاينة سريعة — احفظي لرؤية السقوط في المتجر";
-    });
-  }
-
-  // hook panel open
-  const _orig = window.loadPanel || null;
-  document.querySelectorAll("[data-panel]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      if (btn.getAttribute("data-panel") === "animations") {
-        setTimeout(loadAnimSettings, 50);
-      }
-    });
-  });
-  try { window.loadAnimSettings = loadAnimSettings; } catch (e) {}
-  window.addEventListener("athar-open-animations", function () { setTimeout(loadAnimSettings, 30); });
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
-  else bind();
-})();
-
 </script>
+
+<script>
+(function atharAdminLoginFix() {
+  var btn = document.getElementById("loginBtn");
+  var input = document.getElementById("adminSecret");
+  var msg = document.getElementById("loginMsg");
+  async function doLogin() {
+    try {
+      var saved = "";
+      try { saved = (localStorage.getItem("nx_admin_secret") || "").trim(); } catch (e0) {}
+      SECRET = ((input && input.value) || "").trim() || saved;
+      if (input && SECRET && !((input.value || "").trim())) input.value = SECRET;
+      if (!SECRET) {
+        if (msg) { msg.className = "msg err"; msg.textContent = "اكتبي كلمة سر الإدارة"; }
+        return;
+      }
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري التحقق..."; }
+      var data = await api("stats");
+      if (!data || !data.ok) {
+        if (msg) {
+          msg.className = "msg err";
+          msg.textContent = (data && data.error) ? data.error : "كلمة السر غير صحيحة — راجع ADMIN_SECRET في إعدادات Vercel";
+        }
+        return;
+      }
+      try { localStorage.setItem("nx_admin_secret", SECRET); } catch (e1) {}
+      showApp();
+      try { if (typeof refreshAll === "function") refreshAll(); } catch (e2) {}
+    } catch (err) {
+      if (msg) { msg.className = "msg err"; msg.textContent = "تعذر الاتصال بالخادم"; }
+    }
+  }
+  if (btn) btn.onclick = function (e) { e.preventDefault(); doLogin(); };
+  if (input) {
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); doLogin(); }
+    });
+  }
+  try {
+    var saved2 = (localStorage.getItem("nx_admin_secret") || "").trim();
+    if (saved2) {
+      SECRET = saved2;
+      api("stats").then(function (data) {
+        if (data && data.ok) showApp();
+        else {
+          try { localStorage.removeItem("nx_admin_secret"); } catch (e) {}
+          SECRET = "";
+        }
+      }).catch(function () {});
+    }
+  } catch (e) {}
+})();
+</script>
+
 </body>
 </html>
