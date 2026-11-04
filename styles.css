@@ -3070,3 +3070,13 @@ html[data-theme="dark"] .mega-menu {
   will-change: transform;
 }
 
+
+/* cart drawer above floats */
+#cartDrawer, #cartOverlay { z-index: 9990 !important; }
+#cartDrawer .checkout-fields select,
+#cartDrawer #orderGov,
+#cartDrawer #orderCenter {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto !important;
+}
