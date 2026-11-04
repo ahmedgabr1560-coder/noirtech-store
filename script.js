@@ -475,24 +475,27 @@ function calcShipping(subtotal, govId, centerId) {
 }
 
 function populateGovSelect() {
-  const sel = document.getElementById("orderGov");
+  var sel = document.getElementById("orderGov");
   if (!sel) return;
-  const zones = SHIPPING_ZONES || {};
-  const list = Array.isArray(zones.governorates) ? zones.governorates : [];
-  const prev = sel.value;
-  sel.innerHTML = '<option value="">— اختاري المحافظة —</option>' +
-    list.map(function (g) {
-      const id = g.id || g.name || "";
-      const name = g.name || g.id || "";
-      return '<option value="' + String(id).replace(/"/g, "") + '">' + String(name) + '</option>';
-    }).join("");
-  if (prev) {
-    sel.value = prev;
-  }
-  sel.disabled = false;
+  var zones = SHIPPING_ZONES || {};
+  var list = Array.isArray(zones.governorates) ? zones.governorates : [];
+  if (!list.length && zones.zones && Array.isArray(zones.zones.governorates)) list = zones.zones.governorates;
+  var prev = sel.value;
   if (!list.length) {
     sel.innerHTML = '<option value="">— جاري تحميل المحافظات… —</option>';
+    sel.disabled = true;
+    return;
   }
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">— اختاري المحافظة —</option>';
+  for (var i = 0; i < list.length; i++) {
+    var g = list[i] || {};
+    var opt = document.createElement("option");
+    opt.value = String(g.id || g.name || "");
+    opt.textContent = String(g.name || g.id || "");
+    sel.appendChild(opt);
+  }
+  if (prev) { try { sel.value = prev; } catch (e) {} }
 }
 
 function populateCenterSelect() {
@@ -864,7 +867,8 @@ let COUPON_CODES = {
   WELCOME10: 10,
   FIRST10: 10,
   SAVE10: 10,
-  EGYPT10: 10
+  EGYPT10: 10,
+  AHMED: 50
 };
 
 async function loadCoupons(force) {
@@ -931,19 +935,19 @@ function getCartDiscount(subtotal) {
 async function applyCouponFromInput() {
   const input = document.getElementById("couponInput");
   const msg = document.getElementById("couponMsg");
-  const raw = String(input?.value || "").trim().toUpperCase();
+  const raw = String((input && input.value) || "").trim().toUpperCase();
   if (!raw) {
-    try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
+    try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
     if (msg) msg.textContent = "اكتبي كود الخصم";
     if (typeof updateCartUI === "function") updateCartUI();
     return;
   }
   try {
-    if (!COUPON_CODES || !Object.keys(COUPON_CODES).length) {
-      if (msg) msg.textContent = "جاري التحقق من الكود…";
-      await loadCoupons(true);
-    }
+    if (msg) msg.textContent = "جاري التحقق من الكود…";
+    await loadCoupons(true);
   } catch (eLoad) {}
+  // دمج احتياطي
+  if (!COUPON_CODES[raw] && raw === "AHMED") COUPON_CODES.AHMED = 50;
   if (!COUPON_CODES[raw]) {
     try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
     if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";
@@ -1147,37 +1151,58 @@ function addToCart(id, opts) {
   toast(color ? ("تمت إضافة " + p.name + " — " + color) : ("تمت إضافة " + p.name));
 }
 
+
+async function ensureCartExtras() {
+  // 1) coupons
+  try { await loadCoupons(true); } catch (e) {}
+  // 2) shipping zones — always from JSON file as source of truth
+  try {
+    var r = await fetch("/shipping-zones.json?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) {
+      var data = await r.json();
+      var zones = data.zones || data;
+      if (zones && Array.isArray(zones.governorates) && zones.governorates.length) {
+        SHIPPING_ZONES = zones;
+        try { sessionStorage.setItem("nx_shipping_zones", JSON.stringify({ t: Date.now(), d: zones })); } catch (e) {}
+      }
+    }
+  } catch (e2) {}
+  if (!SHIPPING_ZONES || !Array.isArray(SHIPPING_ZONES.governorates) || !SHIPPING_ZONES.governorates.length) {
+    try { await loadShippingZones(true); } catch (e3) {}
+  }
+  try { populateGovSelect(); } catch (e4) {}
+  try { bindShippingSelects(); } catch (e5) {}
+  try { populateCenterSelect(); } catch (e6) {}
+  // bind coupon button every open (in case early bind missed)
+  try {
+    var btn = document.getElementById("applyCouponBtn");
+    if (btn && btn.dataset.boundCoupon !== "1") {
+      btn.dataset.boundCoupon = "1";
+      btn.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        applyCouponFromInput();
+      });
+    }
+    var inp = document.getElementById("couponInput");
+    if (inp && inp.dataset.boundCoupon !== "1") {
+      inp.dataset.boundCoupon = "1";
+      inp.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); applyCouponFromInput(); }
+      });
+    }
+  } catch (e7) {}
+  try { updateCartUI(); } catch (e8) {}
+}
+
 async function openCart() {
   try { loadCartFromStorage(); } catch (e) {}
-  const overlay = document.getElementById("cartOverlay");
-  const drawer = document.getElementById("cartDrawer");
+  var overlay = document.getElementById("cartOverlay");
+  var drawer = document.getElementById("cartDrawer");
   if (overlay) overlay.classList.add("open");
   if (drawer) drawer.classList.add("open");
   document.body.style.overflow = "hidden";
-  try { updateCartUI(); } catch (e2) { console.warn(e2); }
-  try {
-    // محفظات + أكواد خصم كل مرة تفتح السلة
-    try { await loadCoupons(false); } catch (eC) {}
-    try { await loadShippingZones(true); } catch (eZ) {}
-    try { populateGovSelect(); } catch (e3) {}
-    try { bindShippingSelects(); } catch (e4) {}
-    try { populateCenterSelect(); } catch (e5) {}
-    try { updateCartUI(); } catch (e6) {}
-    // لو المحافظات لسه فاضية حاول تاني من الملف مباشرة
-    var gov = document.getElementById("orderGov");
-    if (gov && gov.options.length <= 1) {
-      try {
-        var r = await fetch("/shipping-zones.json?t=" + Date.now(), { cache: "no-store" });
-        if (r.ok) {
-          var data = await r.json();
-          SHIPPING_ZONES = data.zones || data;
-          populateGovSelect();
-          bindShippingSelects();
-          updateCartUI();
-        }
-      } catch (e9) {}
-    }
-  } catch (e8) { console.warn(e8); }
+  try { updateCartUI(); } catch (e2) {}
+  try { await ensureCartExtras(); } catch (e3) { console.warn(e3); }
 }
 function closeCart() {
   try {
