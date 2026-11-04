@@ -1570,23 +1570,25 @@ window.__atharCheckoutRunner = async function () {
   const btn = document.getElementById("checkoutBtn");
   if (btn && (btn.disabled || btn.dataset.submitting === "1")) return;
   try {
-    if (!cart.length) return toast("السلة فارغة");
+    if (!cart || !cart.length) { try { loadCartFromStorage(); } catch(e){} }
+    if (!cart || !cart.length) { if (typeof toast==="function") toast("السلة فارغة"); else alert("السلة فارغة"); return; }
     try {
       const cfg = window.siteConfig || {};
       if (cfg.storeOpen === false) {
         return toast(cfg.storeClosedMessage || "المتجر متوقف مؤقتًا");
       }
     } catch (e0) {}
-    const name = ($("#orderName")?.value || "").trim();
-    const phoneRaw = normalizePhone($("#orderPhone")?.value || "");
-    const phone = phoneRaw.replace(/[^0-9]/g, "");
-    const address = ($("#orderAddress")?.value || "").trim();
-    const note = ($("#orderNote")?.value || "").trim();
+    const name = (document.getElementById("orderName")?.value || "").trim();
+    let phoneRaw = (document.getElementById("orderPhone")?.value || "");
+    try { if (typeof normalizePhone === "function") phoneRaw = normalizePhone(phoneRaw); } catch(ePh){}
+    const phone = String(phoneRaw).replace(/[^0-9]/g, "");
+    const address = (document.getElementById("orderAddress")?.value || "").trim();
+    const note = (document.getElementById("orderNote")?.value || "").trim();
     const payMethod = (document.querySelector('input[name="payMethod"]:checked')?.value || "cod");
     const govId = (document.getElementById("orderGov")?.value || "").trim();
     const centerId = (document.getElementById("orderCenter")?.value || "").trim();
-    if (!phone || phone.length < 10 || phone.length > 15) return toast("اكتب رقم هاتف صحيح");
-    if (!address) return toast("اكتب عنوان التوصيل");
+    if (!phone || phone.length < 10 || phone.length > 15) { if (typeof toast==="function") toast("اكتب رقم هاتف صحيح"); else alert("اكتب رقم هاتف صحيح"); return; }
+    if (!address) { if (typeof toast==="function") toast("اكتب عنوان التوصيل"); else alert("اكتب عنوان التوصيل"); return; }
     try {
       if (typeof getShippingConfig === "function" && getShippingConfig().enabled) {
         if (!govId) return toast("اختاري المحافظة");
