@@ -24,11 +24,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
-  <link rel="preload" href="/styles.css?v=20261104-cartinline" as="style" />
+  <link rel="preload" href="/styles.css?v=20261104-cartfix3" as="style" />
   <link rel="preload" href="/script.js?v=20261104-cartinline" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
-  <link rel="stylesheet" href="/styles.css?v=20261104-cartinline" />
+  <link rel="stylesheet" href="/styles.css?v=20261104-cartfix3" />
 <script>
 (function(){
   try {
@@ -335,12 +335,11 @@
         <div class="cart-total-row"><span id="cartShippingLabel">الشحن</span><strong id="cartShipping">—</strong></div>
         <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
         <div class="cart-total-row" id="cartDiscountRow" hidden><span>الخصم</span><strong id="cartDiscount">0 ج.م</strong></div>
-        <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center;direction:ltr">
+        <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center;direction:ltr;position:relative;z-index:20">
           <input type="text" id="couponInput" placeholder="كود الخصم" dir="ltr" autocomplete="off"
-            style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff;text-transform:uppercase;font-size:16px" />
-          <button type="button" class="btn btn-ghost" id="applyCouponBtn"
-            style="padding:10px 16px;white-space:nowrap;cursor:pointer;pointer-events:auto;position:relative;z-index:5"
-            onclick="return window.__atharApplyCoupon && window.__atharApplyCoupon()">تطبيق</button>
+            style="flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff;text-transform:uppercase;font-size:16px" />
+          <button type="button" id="applyCouponBtn" class="btn btn-ghost"
+            style="padding:10px 16px;white-space:nowrap;cursor:pointer;pointer-events:auto;position:relative;z-index:21">تطبيق</button>
         </div>
         <p id="couponMsg" style="font-size:.8rem;margin:0 0 8px;color:#c4b5fd;min-height:1.2em"></p>
         <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
@@ -598,7 +597,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261104-cartinline" defer></script>
+  <script src="/script.js?v=20261104-cartfix3" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
@@ -609,7 +608,7 @@
   </script>
   <script src="/go-home-patch.js" defer></script>
   <script>
-  // hero config applied from script.js?v=20261104-cartinline"undefined") { try { PRODUCTS = list; } catch (e) {} }
+   } catch (e) {} }
       window.__ATHAR_PRODUCTS = list;
       var grid = document.getElementById("shopGrid");
       if (!grid || !list || !list.length) return;
@@ -662,5 +661,112 @@
 })();
 </script>
 
+<script>
+/* ATHAR cart coupon + shipping — standalone, no dependencies */
+(function(){
+  var CODES = {NEXORA10:10,WELCOME10:10,FIRST10:10,SAVE10:10,EGYPT10:10,AHMED:50};
+  var GOV_FEES = {"g1": 90, "g2": 35, "g3": 45, "g4": 45, "g5": 45, "g6": 45, "g7": 50, "g8": 45, "g9": 55, "g10": 55, "g11": 55, "g12": 55, "g13": 55, "g14": 55, "g15": 75, "g16": 75, "g17": 55, "g18": 55, "g19": 55, "g20": 55, "g21": 55, "g22": 55, "g23": 55, "g24": 55, "g25": 75, "g26": 75, "g27": 75};
+  var CENTERS = {"g1": [{"id": "g1c1", "name": "حي شرق", "fee": 80}, {"id": "g1c2", "name": "حي غرب", "fee": 80}, {"id": "g1c3", "name": "حي وسط", "fee": 80}, {"id": "g1c4", "name": "حي شمال", "fee": 80}, {"id": "g1c5", "name": "المعادي", "fee": 80}, {"id": "g1c6", "name": "مدينة نصر", "fee": 80}, {"id": "g1c7", "name": "مصر الجديدة", "fee": 80}, {"id": "g1c8", "name": "الزمالك", "fee": 80}, {"id": "g1c9", "name": "شبرا", "fee": 80}, {"id": "g1c10", "name": "عين شمس", "fee": 80}, {"id": "g1c11", "name": "المرج", "fee": 80}, {"id": "g1c12", "name": "حلوان", "fee": 80}, {"id": "g1c13", "name": "التجمع الخامس", "fee": 80}, {"id": "g1c14", "name": "الشروق", "fee": 80}, {"id": "g1c15", "name": "بدر", "fee": 80}, {"id": "g1c16", "name": "15 مايو", "fee": 80}], "g2": [{"id": "g2c1", "name": "الجيزة", "fee": 35}, {"id": "g2c2", "name": "الدقي", "fee": 35}, {"id": "g2c3", "name": "المهندسين", "fee": 35}, {"id": "g2c4", "name": "العجوزة", "fee": 35}, {"id": "g2c5", "name": "الهرم", "fee": 35}, {"id": "g2c6", "name": "فيصل", "fee": 35}, {"id": "g2c7", "name": "6 أكتوبر", "fee": 35}, {"id": "g2c8", "name": "الشيخ زايد", "fee": 35}, {"id": "g2c9", "name": "الحوامدية", "fee": 35}, {"id": "g2c10", "name": "البدرشين", "fee": 35}, {"id": "g2c11", "name": "الصف", "fee": 35}, {"id": "g2c12", "name": "أطفيح", "fee": 35}, {"id": "g2c13", "name": "العياط", "fee": 35}, {"id": "g2c14", "name": "أوسيم", "fee": 35}, {"id": "g2c15", "name": "كرداسة", "fee": 35}, {"id": "g2c16", "name": "أبو النمرس", "fee": 35}], "g3": [{"id": "g3c1", "name": "حي شرق", "fee": 45}, {"id": "g3c2", "name": "حي وسط", "fee": 45}, {"id": "g3c3", "name": "حي غرب", "fee": 45}, {"id": "g3c4", "name": "المنتزه", "fee": 45}, {"id": "g3c5", "name": "الجمرك", "fee": 45}, {"id": "g3c6", "name": "العجمي", "fee": 45}, {"id": "g3c7", "name": "العامرية", "fee": 45}, {"id": "g3c8", "name": "برج العرب", "fee": 45}, {"id": "g3c9", "name": "سيدي جابر", "fee": 45}, {"id": "g3c10", "name": "محرم بك", "fee": 45}, {"id": "g3c11", "name": "ميامي", "fee": 45}, {"id": "g3c12", "name": "سموحة", "fee": 45}], "g4": [{"id": "g4c1", "name": "المنصورة", "fee": 45}, {"id": "g4c2", "name": "طلخا", "fee": 45}, {"id": "g4c3", "name": "ميت غمر", "fee": 45}, {"id": "g4c4", "name": "أجا", "fee": 45}, {"id": "g4c5", "name": "السنبلاوين", "fee": 45}, {"id": "g4c6", "name": "دكرنس", "fee": 45}, {"id": "g4c7", "name": "بلقاس", "fee": 45}, {"id": "g4c8", "name": "شربين", "fee": 45}, {"id": "g4c9", "name": "منية النصر", "fee": 45}, {"id": "g4c10", "name": "تمى الأمديد", "fee": 45}, {"id": "g4c11", "name": "نبروه", "fee": 45}, {"id": "g4c12", "name": "المطرية", "fee": 45}, {"id": "g4c13", "name": "الجمالية", "fee": 45}], "g5": [{"id": "g5c1", "name": "الزقازيق", "fee": 45}, {"id": "g5c2", "name": "العاشر من رمضان", "fee": 45}, {"id": "g5c3", "name": "بلبيس", "fee": 45}, {"id": "g5c4", "name": "منيا القمح", "fee": 45}, {"id": "g5c5", "name": "أبو حماد", "fee": 45}, {"id": "g5c6", "name": "ههيا", "fee": 45}, {"id": "g5c7", "name": "فاقوس", "fee": 45}, {"id": "g5c8", "name": "كفر صقر", "fee": 45}, {"id": "g5c9", "name": "أبو كبير", "fee": 45}, {"id": "g5c10", "name": "الإبراهيمية", "fee": 45}, {"id": "g5c11", "name": "ديرب نجم", "fee": 45}, {"id": "g5c12", "name": "أولاد صقر", "fee": 45}, {"id": "g5c13", "name": "مشتول السوق", "fee": 45}], "g6": [{"id": "g6c1", "name": "بنها", "fee": 45}, {"id": "g6c2", "name": "شبرا الخيمة", "fee": 45}, {"id": "g6c3", "name": "القناطر الخيرية", "fee": 45}, {"id": "g6c4", "name": "الخانكة", "fee": 45}, {"id": "g6c5", "name": "كفر شكر", "fee": 45}, {"id": "g6c6", "name": "طوخ", "fee": 45}, {"id": "g6c7", "name": "قليوب", "fee": 45}, {"id": "g6c8", "name": "شبين القناطر", "fee": 45}, {"id": "g6c9", "name": "العبور", "fee": 45}, {"id": "g6c10", "name": "الخصوص", "fee": 45}], "g7": [{"id": "g7c1", "name": "طنطا", "fee": 50}, {"id": "g7c2", "name": "المحلة الكبرى", "fee": 50}, {"id": "g7c3", "name": "كفر الزيات", "fee": 50}, {"id": "g7c4", "name": "زفتى", "fee": 50}, {"id": "g7c5", "name": "سمنود", "fee": 50}, {"id": "g7c6", "name": "بسيون", "fee": 50}, {"id": "g7c7", "name": "قطور", "fee": 50}, {"id": "g7c8", "name": "السنطة", "fee": 50}], "g8": [{"id": "g8c1", "name": "شبين الكوم", "fee": 45}, {"id": "g8c2", "name": "منوف", "fee": 45}, {"id": "g8c3", "name": "أشمون", "fee": 45}, {"id": "g8c4", "name": "قويسنا", "fee": 45}, {"id": "g8c5", "name": "تلا", "fee": 45}, {"id": "g8c6", "name": "الباجور", "fee": 45}, {"id": "g8c7", "name": "السادات", "fee": 45}, {"id": "g8c8", "name": "بركة السبع", "fee": 45}, {"id": "g8c9", "name": "الشهداء", "fee": 45}], "g9": [{"id": "g9c1", "name": "دمنهور", "fee": 55}, {"id": "g9c2", "name": "كفر الدوار", "fee": 55}, {"id": "g9c3", "name": "رشيد", "fee": 55}, {"id": "g9c4", "name": "إدكو", "fee": 55}, {"id": "g9c5", "name": "أبو المطامير", "fee": 55}, {"id": "g9c6", "name": "حوش عيسى", "fee": 55}, {"id": "g9c7", "name": "الدلنجات", "fee": 55}, {"id": "g9c8", "name": "كوم حمادة", "fee": 55}, {"id": "g9c9", "name": "المحمودية", "fee": 55}, {"id": "g9c10", "name": "إيتاي البارود", "fee": 55}, {"id": "g9c11", "name": "شبراخيت", "fee": 55}, {"id": "g9c12", "name": "الرحمانية", "fee": 55}, {"id": "g9c13", "name": "النوبارية", "fee": 55}], "g10": [{"id": "g10c1", "name": "كفر الشيخ", "fee": 55}, {"id": "g10c2", "name": "دسوق", "fee": 55}, {"id": "g10c3", "name": "فوه", "fee": 55}, {"id": "g10c4", "name": "مطوبس", "fee": 55}, {"id": "g10c5", "name": "بلطيم", "fee": 55}, {"id": "g10c6", "name": "سيدي سالم", "fee": 55}, {"id": "g10c7", "name": "قلين", "fee": 55}, {"id": "g10c8", "name": "بُيلا", "fee": 55}, {"id": "g10c9", "name": "الحامول", "fee": 55}, {"id": "g10c10", "name": "الرياض", "fee": 55}, {"id": "g10c11", "name": "مسير", "fee": 55}], "g11": [{"id": "g11c1", "name": "دمياط", "fee": 55}, {"id": "g11c2", "name": "فارسكور", "fee": 55}, {"id": "g11c3", "name": "كفر سعد", "fee": 55}, {"id": "g11c4", "name": "الزرقا", "fee": 55}, {"id": "g11c5", "name": "رأس البر", "fee": 55}, {"id": "g11c6", "name": "دمياط الجديدة", "fee": 55}, {"id": "g11c7", "name": "عزبة البرج", "fee": 55}], "g12": [{"id": "g12c1", "name": "حي الشرق", "fee": 55}, {"id": "g12c2", "name": "حي العرب", "fee": 55}, {"id": "g12c3", "name": "حي المناخ", "fee": 55}, {"id": "g12c4", "name": "حي الضواحي", "fee": 55}, {"id": "g12c5", "name": "بورفؤاد", "fee": 55}, {"id": "g12c6", "name": "الزهور", "fee": 55}], "g13": [{"id": "g13c1", "name": "الإسماعيلية", "fee": 55}, {"id": "g13c2", "name": "فايد", "fee": 55}, {"id": "g13c3", "name": "القنطرة شرق", "fee": 55}, {"id": "g13c4", "name": "القنطرة غرب", "fee": 55}, {"id": "g13c5", "name": "التل الكبير", "fee": 55}, {"id": "g13c6", "name": "أبو صوير", "fee": 55}, {"id": "g13c7", "name": "القصاصين", "fee": 55}], "g14": [{"id": "g14c1", "name": "حي السويس", "fee": 55}, {"id": "g14c2", "name": "الأربعين", "fee": 55}, {"id": "g14c3", "name": "عتاقة", "fee": 55}, {"id": "g14c4", "name": "الجناين", "fee": 55}, {"id": "g14c5", "name": "فيصل", "fee": 55}], "g15": [{"id": "g15c1", "name": "العريش", "fee": 75}, {"id": "g15c2", "name": "بئر العبد", "fee": 75}, {"id": "g15c3", "name": "الشيخ زويد", "fee": 75}, {"id": "g15c4", "name": "رفح", "fee": 75}, {"id": "g15c5", "name": "الحسنة", "fee": 75}, {"id": "g15c6", "name": "نخل", "fee": 75}], "g16": [{"id": "g16c1", "name": "الطور", "fee": 75}, {"id": "g16c2", "name": "شرم الشيخ", "fee": 75}, {"id": "g16c3", "name": "دهب", "fee": 75}, {"id": "g16c4", "name": "نويبع", "fee": 75}, {"id": "g16c5", "name": "طابا", "fee": 75}, {"id": "g16c6", "name": "رأس سدر", "fee": 75}, {"id": "g16c7", "name": "أبو رديس", "fee": 75}, {"id": "g16c8", "name": "سانت كاترين", "fee": 75}], "g17": [{"id": "g17c1", "name": "بني سويف", "fee": 55}, {"id": "g17c2", "name": "الواسطى", "fee": 55}, {"id": "g17c3", "name": "ناصر", "fee": 55}, {"id": "g17c4", "name": "إهناسيا", "fee": 55}, {"id": "g17c5", "name": "ببا", "fee": 55}, {"id": "g17c6", "name": "الفشن", "fee": 55}, {"id": "g17c7", "name": "سمسطا", "fee": 55}, {"id": "g17c8", "name": "إهناسيا المدينة", "fee": 55}], "g18": [{"id": "g18c1", "name": "الفيوم", "fee": 55}, {"id": "g18c2", "name": "سنورس", "fee": 55}, {"id": "g18c3", "name": "طامية", "fee": 55}, {"id": "g18c4", "name": "إطسا", "fee": 55}, {"id": "g18c5", "name": "يوسف الصديق", "fee": 55}, {"id": "g18c6", "name": "أبشواي", "fee": 55}, {"id": "g18c7", "name": "الفيوم الجديدة", "fee": 55}], "g19": [{"id": "g19c1", "name": "المنيا", "fee": 55}, {"id": "g19c2", "name": "ملوي", "fee": 55}, {"id": "g19c3", "name": "بني مزار", "fee": 55}, {"id": "g19c4", "name": "مغاغة", "fee": 55}, {"id": "g19c5", "name": "سمالوط", "fee": 55}, {"id": "g19c6", "name": "مطاي", "fee": 55}, {"id": "g19c7", "name": "أبو قرقاص", "fee": 55}, {"id": "g19c8", "name": "دير مواس", "fee": 55}, {"id": "g19c9", "name": "العدوة", "fee": 55}, {"id": "g19c10", "name": "المنيا الجديدة", "fee": 55}], "g20": [{"id": "g20c1", "name": "أسيوط", "fee": 55}, {"id": "g20c2", "name": "ديروط", "fee": 55}, {"id": "g20c3", "name": "منفلوط", "fee": 55}, {"id": "g20c4", "name": "القوصية", "fee": 55}, {"id": "g20c5", "name": "أبنوب", "fee": 55}, {"id": "g20c6", "name": "أبو تيج", "fee": 55}, {"id": "g20c7", "name": "صدفا", "fee": 55}, {"id": "g20c8", "name": "الغنايم", "fee": 55}, {"id": "g20c9", "name": "ساحل سليم", "fee": 55}, {"id": "g20c10", "name": "البداري", "fee": 55}, {"id": "g20c11", "name": "أسيوط الجديدة", "fee": 55}], "g21": [{"id": "g21c1", "name": "سوهاج", "fee": 55}, {"id": "g21c2", "name": "جرجا", "fee": 55}, {"id": "g21c3", "name": "طهطا", "fee": 55}, {"id": "g21c4", "name": "طما", "fee": 55}, {"id": "g21c5", "name": "أخميم", "fee": 55}, {"id": "g21c6", "name": "البلينا", "fee": 55}, {"id": "g21c7", "name": "المراغة", "fee": 55}, {"id": "g21c8", "name": "دار السلام", "fee": 55}, {"id": "g21c9", "name": "ساقلتة", "fee": 55}, {"id": "g21c10", "name": "جهينة", "fee": 55}, {"id": "g21c11", "name": "سوهاج الجديدة", "fee": 55}], "g22": [{"id": "g22c1", "name": "قنا", "fee": 55}, {"id": "g22c2", "name": "نجع حمادي", "fee": 55}, {"id": "g22c3", "name": "قوص", "fee": 55}, {"id": "g22c4", "name": "دشنا", "fee": 55}, {"id": "g22c5", "name": "أبو تشت", "fee": 55}, {"id": "g22c6", "name": "فرشوط", "fee": 55}, {"id": "g22c7", "name": "نقادة", "fee": 55}, {"id": "g22c8", "name": "الوقف", "fee": 55}, {"id": "g22c9", "name": "قنا الجديدة", "fee": 55}], "g23": [{"id": "g23c1", "name": "الأقصر", "fee": 55}, {"id": "g23c2", "name": "الزينية", "fee": 55}, {"id": "g23c3", "name": "البياضية", "fee": 55}, {"id": "g23c4", "name": "القرنة", "fee": 55}, {"id": "g23c5", "name": "أرمنت", "fee": 55}, {"id": "g23c6", "name": "الطود", "fee": 55}, {"id": "g23c7", "name": "إسنا", "fee": 55}], "g24": [{"id": "g24c1", "name": "أسوان", "fee": 55}, {"id": "g24c2", "name": "كوم أمبو", "fee": 55}, {"id": "g24c3", "name": "إدفو", "fee": 55}, {"id": "g24c4", "name": "نصر النوبة", "fee": 55}, {"id": "g24c5", "name": "دراو", "fee": 55}, {"id": "g24c6", "name": "كلابشة", "fee": 55}, {"id": "g24c7", "name": "أسوان الجديدة", "fee": 55}], "g25": [{"id": "g25c1", "name": "الغردقة", "fee": 75}, {"id": "g25c2", "name": "رأس غارب", "fee": 75}, {"id": "g25c3", "name": "سفاجا", "fee": 75}, {"id": "g25c4", "name": "القصير", "fee": 75}, {"id": "g25c5", "name": "مرسى علم", "fee": 75}, {"id": "g25c6", "name": "الشلاتين", "fee": 75}, {"id": "g25c7", "name": "حلايب", "fee": 75}], "g26": [{"id": "g26c1", "name": "الخارجة", "fee": 75}, {"id": "g26c2", "name": "الداخلة", "fee": 75}, {"id": "g26c3", "name": "الفرافرة", "fee": 75}, {"id": "g26c4", "name": "باريس", "fee": 75}, {"id": "g26c5", "name": "بلاط", "fee": 75}], "g27": [{"id": "g27c1", "name": "مرسى مطروح", "fee": 75}, {"id": "g27c2", "name": "العلمين", "fee": 75}, {"id": "g27c3", "name": "الحمام", "fee": 75}, {"id": "g27c4", "name": "الضبعة", "fee": 75}, {"id": "g27c5", "name": "النجيلة", "fee": 75}, {"id": "g27c6", "name": "سيدي براني", "fee": 75}, {"id": "g27c7", "name": "السلوم", "fee": 75}, {"id": "g27c8", "name": "سيوة", "fee": 75}]};
+  var DEFAULT_FEE = 80;
+  var FREE_ABOVE = 1500;
+
+  function money(n){ try { return Number(n).toLocaleString('ar-EG') + ' ج.م'; } catch(e){ return n + ' ج.م'; } }
+  function cart(){ try { var c=JSON.parse(localStorage.getItem('nx_cart')||'[]'); return Array.isArray(c)?c:[]; } catch(e){ return []; } }
+  function subtotal(){ return cart().reduce(function(s,i){ return s+(Number(i.price)||0)*(Number(i.qty)||1); },0); }
+  function setTxt(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+  function getCode(){ try { return String(sessionStorage.getItem('nx_coupon_code')||localStorage.getItem('nx_coupon_code')||'').trim().toUpperCase(); } catch(e){ return ''; } }
+
+  function refreshTotals(){
+    var sub=subtotal();
+    var code=getCode();
+    var pct=CODES[code]||0;
+    var discount=Math.round(sub*pct)/100;
+    var gov=document.getElementById('orderGov');
+    var cen=document.getElementById('orderCenter');
+    var govId=gov?gov.value:'';
+    var cenId=cen?cen.value:'';
+    var ship=0;
+    if(govId){
+      ship=Number(GOV_FEES[govId]!=null?GOV_FEES[govId]:DEFAULT_FEE)||DEFAULT_FEE;
+      var list=CENTERS[govId]||[];
+      for(var i=0;i<list.length;i++){
+        if(String(list[i].id)===String(cenId) && list[i].fee!=null){ ship=Number(list[i].fee)||ship; break; }
+      }
+      if(FREE_ABOVE>0 && sub>=FREE_ABOVE) ship=0;
+    }
+    setTxt('cartSubtotal', money(sub));
+    var discRow=document.getElementById('cartDiscountRow');
+    if(discRow) discRow.hidden = !(discount>0);
+    setTxt('cartDiscount', money(discount));
+    var shipHint=document.getElementById('cartShippingHint');
+    if(!govId){
+      setTxt('cartShipping','—');
+      if(shipHint){ shipHint.style.display='block'; shipHint.textContent='اختاري المحافظة لحساب الشحن'; }
+    } else {
+      setTxt('cartShipping', money(ship));
+      if(shipHint) shipHint.style.display='none';
+    }
+    setTxt('cartTotal', money(Math.max(0, sub+ship-discount)));
+    var input=document.getElementById('couponInput');
+    if(input && code && !input.value) input.value=code;
+  }
+
+  function applyCoupon(){
+    var input=document.getElementById('couponInput');
+    var msg=document.getElementById('couponMsg');
+    var raw=String((input&&input.value)||'').trim().toUpperCase();
+    if(!raw){
+      try{ sessionStorage.removeItem('nx_coupon_code'); localStorage.removeItem('nx_coupon_code'); }catch(e){}
+      if(msg) msg.textContent='اكتبي كود الخصم';
+      refreshTotals();
+      return false;
+    }
+    if(!CODES[raw]){
+      try{ sessionStorage.removeItem('nx_coupon_code'); localStorage.removeItem('nx_coupon_code'); }catch(e){}
+      if(msg) msg.textContent='الكود غير صالح أو غير مفعّل';
+      refreshTotals();
+      return false;
+    }
+    try{ sessionStorage.setItem('nx_coupon_code', raw); localStorage.setItem('nx_coupon_code', raw); }catch(e){}
+    if(msg) msg.textContent='تم تطبيق الخصم ✓ ('+CODES[raw]+'%)';
+    refreshTotals();
+    return false;
+  }
+
+  function fillCenters(){
+    var gov=document.getElementById('orderGov');
+    var cen=document.getElementById('orderCenter');
+    if(!gov||!cen) return;
+    var list=CENTERS[gov.value]||[];
+    cen.innerHTML='<option value="">— اختاري المركز / الحي —</option>';
+    cen.disabled=!list.length;
+    for(var i=0;i<list.length;i++){
+      var o=document.createElement('option');
+      o.value=list[i].id; o.textContent=list[i].name; cen.appendChild(o);
+    }
+    refreshTotals();
+  }
+
+  function bind(){
+    var btn=document.getElementById('applyCouponBtn');
+    if(btn){
+      btn.onclick=function(e){ if(e){e.preventDefault();e.stopPropagation();} applyCoupon(); return false; };
+    }
+    var gov=document.getElementById('orderGov');
+    if(gov && !gov.dataset.atharBound){ gov.dataset.atharBound='1'; gov.addEventListener('change', fillCenters); }
+    var cen=document.getElementById('orderCenter');
+    if(cen && !cen.dataset.atharBound){ cen.dataset.atharBound='1'; cen.addEventListener('change', refreshTotals); }
+    var drawer=document.getElementById('cartDrawer');
+    if(drawer){
+      new MutationObserver(function(){ if(drawer.classList.contains('open')) refreshTotals(); }).observe(drawer,{attributes:true,attributeFilter:['class']});
+    }
+  }
+
+  window.__atharApplyCoupon = applyCoupon;
+  window.__atharRefreshCartTotals = refreshTotals;
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+</script>
 </body>
 </html>
