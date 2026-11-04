@@ -601,6 +601,34 @@ async function notifyAdmin(type, message, extra) {
     return false;
   }
 }
+
+function findCartLine(id, colorHint) {
+  id = Number(id);
+  var col = String(colorHint || "").trim();
+  var list = Array.isArray(cart) ? cart : [];
+  if (!list.length) {
+    try { if (typeof loadCartFromStorage === "function") loadCartFromStorage(); list = cart || []; } catch (e) {}
+  }
+  // 1) match id + color
+  if (col) {
+    var hit = list.find(function (x) {
+      var xc = String(x.color || x.selectedColor || "").trim();
+      var xs = Array.isArray(x.colors) ? x.colors.filter(Boolean).join("، ") : "";
+      return Number(x.id) === id && (xc === col || xs === col || (x.colors && x.colors.indexOf(col) >= 0));
+    });
+    if (hit) return hit;
+  }
+  // 2) single line with same id
+  var same = list.filter(function (x) { return Number(x.id) === id; });
+  if (same.length === 1) return same[0];
+  if (same.length > 1 && col) {
+    var hit2 = same.find(function (x) { return String(x.color || "") === col; });
+    if (hit2) return hit2;
+  }
+  // 3) first match by id
+  return same[0] || null;
+}
+
 function loadCartFromStorage() {
   try {
     const raw = JSON.parse(localStorage.getItem("nx_cart") || "[]");
@@ -1040,9 +1068,9 @@ function updateCartUI() {
         '<div style="font-weight:700;margin-top:2px">' + (typeof money === "function" ? money(lineTotal) : lineTotal) + '</div>' +
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:4px">' +
-        '<button type="button" class="icon-btn" data-inc="' + i.id + '" data-color="' + String(i.color || "").replace(/"/g, "") + '" aria-label="زيادة">+</button>' +
-        '<button type="button" class="icon-btn" data-dec="' + i.id + '" data-color="' + String(i.color || "").replace(/"/g, "") + '" aria-label="نقص">−</button>' +
-        '<button type="button" class="icon-btn" data-remove="' + i.id + '" data-color="' + String(i.color || "").replace(/"/g, "") + '" aria-label="حذف">×</button>' +
+        '<button type="button" class="icon-btn cart-qty-btn" data-inc="' + i.id + '" data-color="' + String(colTxt || i.color || "").replace(/"/g, "") + '" aria-label="زيادة" style="min-width:36px;min-height:36px;font-size:18px;pointer-events:auto;z-index:5">+</button>' +
+        '<button type="button" class="icon-btn cart-qty-btn" data-dec="' + i.id + '" data-color="' + String(colTxt || i.color || "").replace(/"/g, "") + '" aria-label="نقص" style="min-width:36px;min-height:36px;font-size:18px;pointer-events:auto;z-index:5">−</button>' +
+        '<button type="button" class="icon-btn cart-qty-btn" data-remove="' + i.id + '" data-color="' + String(colTxt || i.color || "").replace(/"/g, "") + '" aria-label="حذف" style="min-width:36px;min-height:36px;pointer-events:auto;z-index:5">×</button>' +
       '</div>' +
     '</div>';
   }).join("");
@@ -1315,83 +1343,48 @@ document.addEventListener("click", (e) => {
   }
   const inc = e.target.closest("[data-inc]");
   if (inc) {
-    const col = inc.dataset.color || "";
-    const it = cart.find(x => Number(x.id) === Number(inc.dataset.inc) && String(x.color || "") === String(col));
-    if (it) { it.qty += 1; saveCart(); }
+    e.preventDefault();
+    e.stopPropagation();
+    try { if (typeof loadCartFromStorage === "function") loadCartFromStorage(); } catch (e0) {}
+    const it = findCartLine(inc.getAttribute("data-inc") || inc.dataset.inc, inc.getAttribute("data-color") || inc.dataset.color || "");
+    if (it) {
+      it.qty = (Number(it.qty) || 1) + 1;
+      saveCart();
+      try { if (window.__atharRefreshCartTotals) window.__atharRefreshCartTotals(); } catch (e1) {}
+    }
     return;
   }
   const dec = e.target.closest("[data-dec]");
   if (dec) {
-    const id = Number(dec.dataset.dec);
-    const col = dec.dataset.color || "";
-    const it = cart.find(x => Number(x.id) === id && String(x.color || "") === String(col));
-    if (it) { it.qty -= 1; if (it.qty <= 0) cart = cart.filter(x => !(Number(x.id) === id && String(x.color || "") === String(col))); saveCart(); }
+    e.preventDefault();
+    e.stopPropagation();
+    try { if (typeof loadCartFromStorage === "function") loadCartFromStorage(); } catch (e0) {}
+    const id = Number(dec.getAttribute("data-dec") || dec.dataset.dec);
+    const col = dec.getAttribute("data-color") || dec.dataset.color || "";
+    const it = findCartLine(id, col);
+    if (it) {
+      it.qty = (Number(it.qty) || 1) - 1;
+      if (it.qty <= 0) {
+        cart = (cart || []).filter(function (x) { return x !== it; });
+      }
+      saveCart();
+      try { if (window.__atharRefreshCartTotals) window.__atharRefreshCartTotals(); } catch (e1) {}
+    }
     return;
   }
   const rm = e.target.closest("[data-remove]");
-  if (rm) { const id = Number(rm.dataset.remove); const col = rm.dataset.color || "";
-    cart = cart.filter(x => !(Number(x.id) === id && String(x.color || "") === String(col))); saveCart(); }
-});
-
-function atharBindHeaderIcons() {
-  function on(id, fn) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      try { fn(e); } catch (err) { console.warn(err); }
-    });
-  }
-  on("cartBtn", function () { openCart(); });
-  on("closeCart", function () { closeCart(); });
-  on("cartOverlay", function () { closeCart(); });
-  on("closeProduct", function () { if (typeof closeProduct === "function") closeProduct(); });
-  on("productOverlay", function () { if (typeof closeProduct === "function") closeProduct(); });
-  on("closeAuth", function () { if (typeof closeAuth === "function") closeAuth(); });
-  on("authOverlay", function () { if (typeof closeAuth === "function") closeAuth(); });
-  on("closeProfile", function () { if (typeof closeProfile === "function") closeProfile(); });
-  on("profileOverlay", function () { if (typeof closeProfile === "function") closeProfile(); });
-  on("accountBtn", function () {
-    try {
-      if (typeof currentUser !== "undefined" && currentUser) openProfile();
-      else openAuth("login");
-    } catch (e) { try { openAuth("login"); } catch (e2) {} }
-  });
-  on("goToRegister", function () { if (typeof switchAuth === "function") switchAuth("register"); });
-  on("goToLogin", function () { if (typeof switchAuth === "function") switchAuth("login"); });
-  on("menuToggle", function () {
-    const nav = document.getElementById("catNav");
-    if (nav) nav.classList.toggle("open");
-    document.body.classList.toggle("nav-open");
-  });
-}
-try { atharBindHeaderIcons(); } catch (eBind) { console.warn(eBind); }
-// إعادة الربط بعد اكتمال التحميل (لو السكربت اتنفّذ بدري)
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", function () { try { atharBindHeaderIcons(); } catch (e) {} });
-}
-window.addEventListener("load", function () { try { atharBindHeaderIcons(); } catch (e) {} });
-
-$("#searchForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const q = $("#searchInput").value.trim().toLowerCase();
-  if (!q) return;
-  const found = PRODUCTS.filter(p => {
-      const blob = (p.name + " " + (p.brand||"") + " " + (p.category||"") + " " + (p.subcategory||"") + " " + (p.description||"")).toLowerCase();
-      return blob.includes(q);
-    });
-    if (found.length) {
-      activeCategory = "";
-      activeSubcategory = "";
-      activeBrand = "";
-      const grid = document.getElementById("shopGrid");
-      if (grid) renderGrid(grid, found.slice(0, 48));
-      document.getElementById("shop")?.scrollIntoView({ behavior: "smooth" });
-      const title = document.getElementById("shopTitle");
-      if (title) title.textContent = "نتائج البحث";
-      return;
+  if (rm) {
+    e.preventDefault();
+    e.stopPropagation();
+    try { if (typeof loadCartFromStorage === "function") loadCartFromStorage(); } catch (e0) {}
+    const it = findCartLine(rm.getAttribute("data-remove") || rm.dataset.remove, rm.getAttribute("data-color") || rm.dataset.color || "");
+    if (it) {
+      cart = (cart || []).filter(function (x) { return x !== it; });
+      saveCart();
+      try { if (window.__atharRefreshCartTotals) window.__atharRefreshCartTotals(); } catch (e1) {}
     }
+    return;
+  }
   renderGrid($("#bestGrid"), found.length ? found : []);
   toast(found.length ? `نتائج البحث: ${found.length}` : "لا توجد نتائج");
   document.getElementById("best").scrollIntoView({ behavior: "smooth" });
