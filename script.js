@@ -1207,6 +1207,7 @@ async function ensureCartExtras() {
     }
   } catch (e7) {}
   try { updateCartUI(); } catch (e8) {}
+  try { bindCheckoutButton(); } catch (e9) {}
 }
 
 async function openCart() {
@@ -1218,6 +1219,7 @@ async function openCart() {
   document.body.style.overflow = "hidden";
   try { updateCartUI(); } catch (e2) {}
   try { await ensureCartExtras(); } catch (e3) { console.warn(e3); }
+  try { bindCheckoutButton(); } catch (e4) {}
 }
 function closeCart() {
   try {
@@ -1570,8 +1572,9 @@ document.getElementById("orderSuccessClose")?.addEventListener("click", closeOrd
 document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeOrderSuccess);
 
 
-$("#checkoutBtn").addEventListener("click", async () => {
-  const btn = $("#checkoutBtn");
+window.__atharCheckoutRunner = async function () {
+  try { if (typeof loadCartFromStorage === 'function') loadCartFromStorage(); } catch(e){}
+  const btn = document.getElementById("checkoutBtn");
   if (btn && (btn.disabled || btn.dataset.submitting === "1")) return;
   try {
     if (!cart.length) return toast("السلة فارغة");
@@ -1603,8 +1606,8 @@ $("#checkoutBtn").addEventListener("click", async () => {
       const hasColors = p && Array.isArray(p.colors) && p.colors.length > 0;
       const qty = Number(i.qty) || 1;
       const picked = Array.isArray(i.colors) ? i.colors.filter(Boolean) : ((i.color || i.selectedColor) ? String(i.color || i.selectedColor).split(/،|,/).map(s=>s.trim()).filter(Boolean) : []);
-      if (hasColors && picked.length < qty) {
-        return toast("اختاري لون لكل قطعة قبل إتمام الطلب: " + (i.name || p.name || "") + " (مطلوب " + qty + " لون)");
+      if (hasColors && picked.length === 0) {
+        return toast("اختاري لون المنتج قبل إتمام الطلب: " + (i.name || p.name || ""));
       }
     }
     const btn = $("#checkoutBtn");
@@ -1731,7 +1734,23 @@ $("#checkoutBtn").addEventListener("click", async () => {
     const btn = $("#checkoutBtn");
     if (btn) { btn.disabled = false; btn.dataset.submitting = ""; btn.textContent = "إتمام الطلب الآن"; }
   }
-});
+};
+try { window.atharPlaceOrder = function(ev){ try{if(ev){ev.preventDefault();ev.stopPropagation();}}catch(e){} return window.__atharCheckoutRunner && window.__atharCheckoutRunner(); }; } catch(e) {}
+function bindCheckoutButton() {
+  var btn = document.getElementById("checkoutBtn");
+  if (!btn) return;
+  btn.hidden = false;
+  btn.disabled = false;
+  btn.style.pointerEvents = "auto";
+  btn.onclick = function (ev) {
+    try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+    try { if (window.__atharCheckoutRunner) window.__atharCheckoutRunner(); } catch (err) { console.warn(err); }
+    return false;
+  };
+}
+try { bindCheckoutButton(); } catch (e) {}
+document.addEventListener("DOMContentLoaded", function(){ try { bindCheckoutButton(); } catch(e){} });
+
 
 
 $("#contactForm").addEventListener("submit", async (e) => {
