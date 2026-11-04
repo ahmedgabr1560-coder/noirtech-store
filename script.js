@@ -910,9 +910,12 @@ async function loadCoupons(force) {
 
 function getCouponCode() {
   try {
-    localStorage.removeItem("nx_coupon_code");
-    const code = String(sessionStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
-    return Object.prototype.hasOwnProperty.call(COUPON_CODES, code) ? code : "";
+    let code = String(sessionStorage.getItem("nx_coupon_code") || localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+    if (!code) return "";
+    if (COUPON_CODES && Object.prototype.hasOwnProperty.call(COUPON_CODES, code)) return code;
+    // لو الأكواد لسه متحمّلتش اعتبر الكود مؤقتًا
+    if (!COUPON_CODES || !Object.keys(COUPON_CODES).length) return code;
+    return "";
   } catch (e) { return ""; }
 }
 function couponPercent(code = getCouponCode()) {
@@ -922,7 +925,10 @@ function couponDiscount(subtotal) {
   const amount = Math.max(0, Number(subtotal) || 0);
   return Math.round(amount * couponPercent()) / 100;
 }
-function applyCouponFromInput() {
+function getCartDiscount(subtotal) {
+  return couponDiscount(subtotal);
+}
+async function applyCouponFromInput() {
   const input = document.getElementById("couponInput");
   const msg = document.getElementById("couponMsg");
   const raw = String(input?.value || "").trim().toUpperCase();
@@ -932,6 +938,12 @@ function applyCouponFromInput() {
     if (typeof updateCartUI === "function") updateCartUI();
     return;
   }
+  try {
+    if (!COUPON_CODES || !Object.keys(COUPON_CODES).length) {
+      if (msg) msg.textContent = "جاري التحقق من الكود…";
+      await loadCoupons(true);
+    }
+  } catch (eLoad) {}
   if (!COUPON_CODES[raw]) {
     try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
     if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";
@@ -939,6 +951,7 @@ function applyCouponFromInput() {
     return;
   }
   try { sessionStorage.setItem("nx_coupon_code", raw); } catch (e) {}
+  try { localStorage.setItem("nx_coupon_code", raw); } catch (e2) {}
   if (msg) msg.textContent = "تم تطبيق الخصم ✓ (" + (typeof couponPercent==="function"?couponPercent():"") + "%)";
   if (typeof updateCartUI === "function") updateCartUI();
 }
@@ -1065,13 +1078,23 @@ function updateCartUI() {
   }
   let discount = 0;
   try {
-    if (typeof getCartDiscount === "function") discount = Number(getCartDiscount(sub)) || 0;
+    if (typeof couponDiscount === "function") discount = Number(couponDiscount(sub)) || 0;
+    else if (typeof getCartDiscount === "function") discount = Number(getCartDiscount(sub)) || 0;
   } catch (e5) {}
   const discRow = document.getElementById("cartDiscountRow");
   if (discRow) {
     discRow.hidden = !(discount > 0);
     setTxt("cartDiscount", typeof money === "function" ? money(discount) : String(discount));
   }
+  try {
+    const code = typeof getCouponCode === "function" ? getCouponCode() : "";
+    const msg = document.getElementById("couponMsg");
+    const input = document.getElementById("couponInput");
+    if (input && code && !input.value) input.value = code;
+    if (msg && code && discount > 0 && typeof couponPercent === "function") {
+      msg.textContent = "تم تطبيق الخصم ✓ (" + couponPercent(code) + "%)";
+    }
+  } catch (e6) {}
   const total = Math.max(0, sub + ship - discount);
   setTxt("cartTotal", typeof money === "function" ? money(total) : String(total));
 }
@@ -1124,29 +1147,37 @@ function addToCart(id, opts) {
   toast(color ? ("تمت إضافة " + p.name + " — " + color) : ("تمت إضافة " + p.name));
 }
 
-function openCart() {
+async function openCart() {
   try { loadCartFromStorage(); } catch (e) {}
   const overlay = document.getElementById("cartOverlay");
   const drawer = document.getElementById("cartDrawer");
   if (overlay) overlay.classList.add("open");
   if (drawer) drawer.classList.add("open");
   document.body.style.overflow = "hidden";
-  // سلّة واحدة: حدّث العرض + حمّل المحافظات
   try { updateCartUI(); } catch (e2) { console.warn(e2); }
   try {
-    if (typeof loadShippingZones === "function") {
-      loadShippingZones().then(function () {
-        try { populateGovSelect(); } catch (e3) {}
-        try { bindShippingSelects(); } catch (e4) {}
-        try { populateCenterSelect(); } catch (e5) {}
-        try { updateCartUI(); } catch (e6) {}
-      }).catch(function () {
-        try { populateGovSelect(); } catch (e7) {}
-      });
-    } else {
-      populateGovSelect();
+    // محفظات + أكواد خصم كل مرة تفتح السلة
+    try { await loadCoupons(false); } catch (eC) {}
+    try { await loadShippingZones(true); } catch (eZ) {}
+    try { populateGovSelect(); } catch (e3) {}
+    try { bindShippingSelects(); } catch (e4) {}
+    try { populateCenterSelect(); } catch (e5) {}
+    try { updateCartUI(); } catch (e6) {}
+    // لو المحافظات لسه فاضية حاول تاني من الملف مباشرة
+    var gov = document.getElementById("orderGov");
+    if (gov && gov.options.length <= 1) {
+      try {
+        var r = await fetch("/shipping-zones.json?t=" + Date.now(), { cache: "no-store" });
+        if (r.ok) {
+          var data = await r.json();
+          SHIPPING_ZONES = data.zones || data;
+          populateGovSelect();
+          bindShippingSelects();
+          updateCartUI();
+        }
+      } catch (e9) {}
     }
-  } catch (e8) {}
+  } catch (e8) { console.warn(e8); }
 }
 function closeCart() {
   try {
