@@ -602,6 +602,42 @@ async function notifyAdmin(type, message, extra) {
   }
 }
 
+
+function bindCartQtyButtons() {
+  try {
+    var box = document.getElementById("cartItems");
+    if (!box) return;
+    box.querySelectorAll("[data-inc], [data-dec], [data-remove]").forEach(function (btn) {
+      if (btn.dataset.qtyBound === "1") return;
+      btn.dataset.qtyBound = "1";
+      btn.style.pointerEvents = "auto";
+      btn.style.cursor = "pointer";
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        try { if (typeof loadCartFromStorage === "function") loadCartFromStorage(); } catch (e0) {}
+        var id = btn.getAttribute("data-inc") || btn.getAttribute("data-dec") || btn.getAttribute("data-remove");
+        var col = btn.getAttribute("data-color") || "";
+        var it = typeof findCartLine === "function" ? findCartLine(id, col) : null;
+        if (!it && Array.isArray(cart)) {
+          it = cart.find(function (x) { return Number(x.id) === Number(id); });
+        }
+        if (!it) return;
+        if (btn.hasAttribute("data-inc")) {
+          it.qty = (Number(it.qty) || 1) + 1;
+        } else if (btn.hasAttribute("data-dec")) {
+          it.qty = (Number(it.qty) || 1) - 1;
+          if (it.qty <= 0) cart = (cart || []).filter(function (x) { return x !== it; });
+        } else if (btn.hasAttribute("data-remove")) {
+          cart = (cart || []).filter(function (x) { return x !== it; });
+        }
+        try { saveCart(); } catch (e1) {}
+        try { if (window.__atharRefreshCartTotals) window.__atharRefreshCartTotals(); } catch (e2) {}
+      }, true);
+    });
+  } catch (err) { console.warn("bindCartQty", err); }
+}
+
 function findCartLine(id, colorHint) {
   id = Number(id);
   var col = String(colorHint || "").trim();
@@ -1144,6 +1180,7 @@ function updateCartUI() {
   } catch (e6) {}
   const total = Math.max(0, sub + ship - discount);
   setTxt("cartTotal", typeof money === "function" ? money(total) : String(total));
+  try { bindCartQtyButtons(); } catch (eBind) {}
 }
 
 function addToCart(id, opts) {
@@ -1248,6 +1285,7 @@ async function openCart() {
   try { updateCartUI(); } catch (e2) {}
   try { await ensureCartExtras(); } catch (e3) { console.warn(e3); }
   try { bindCheckoutButton(); } catch (e4) {}
+  try { bindCartQtyButtons(); } catch (e5) {}
 }
 function closeCart() {
   try {
