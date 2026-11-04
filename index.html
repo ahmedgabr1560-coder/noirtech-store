@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
   <link rel="preload" href="/styles.css?v=20261104-cart2" as="style" />
-  <link rel="preload" href="/script.js?v=20261104-cart2" as="script" />
+  <link rel="preload" href="/script.js?v=20261104-couponbtn" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
   <link rel="stylesheet" href="/styles.css?v=20261104-cart2" />
@@ -337,7 +337,7 @@
         <div class="cart-total-row" id="cartDiscountRow" hidden><span>الخصم</span><strong id="cartDiscount">0 ج.م</strong></div>
         <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center">
           <input type="text" id="couponInput" style="font-size:16px" placeholder="كود الخصم" dir="ltr" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff;text-transform:uppercase" />
-          <button type="button" class="btn btn-ghost" id="applyCouponBtn">تطبيق</button>
+          <button type="button" class="btn btn-ghost" id="applyCouponBtn" onclick="event.preventDefault();event.stopPropagation();try{window.applyCouponFromInput?window.applyCouponFromInput():applyCouponFromInput()}catch(e){console.warn(e)}">تطبيق</button>
         </div>
         <p id="couponMsg" style="font-size:.8rem;margin:0 0 8px;color:#c4b5fd;min-height:1.2em"></p>
         <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
@@ -568,7 +568,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261104-cart2" defer></script>
+  <script src="/script.js?v=20261104-couponbtn" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
@@ -579,7 +579,7 @@
   </script>
   <script src="/go-home-patch.js" defer></script>
   <script>
-  // hero config applied from script.js?v=20261104-cart2"undefined") { try { PRODUCTS = list; } catch (e) {} }
+  // hero config applied from script.js?v=20261104-couponbtn"undefined") { try { PRODUCTS = list; } catch (e) {} }
       window.__ATHAR_PRODUCTS = list;
       var grid = document.getElementById("shopGrid");
       if (!grid || !list || !list.length) return;
