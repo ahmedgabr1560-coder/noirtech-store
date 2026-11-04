@@ -914,12 +914,16 @@ async function loadCoupons(force) {
 
 function getCouponCode() {
   try {
-    let code = String(sessionStorage.getItem("nx_coupon_code") || localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+    var code = String(sessionStorage.getItem("nx_coupon_code") || localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
     if (!code) return "";
-    if (COUPON_CODES && Object.prototype.hasOwnProperty.call(COUPON_CODES, code)) return code;
-    // لو الأكواد لسه متحمّلتش اعتبر الكود مؤقتًا
-    if (!COUPON_CODES || !Object.keys(COUPON_CODES).length) return code;
-    return "";
+    if (COUPON_CODES && COUPON_CODES[code] != null) return code;
+    var FALLBACK = { NEXORA10: 10, WELCOME10: 10, FIRST10: 10, SAVE10: 10, EGYPT10: 10, AHMED: 50 };
+    if (FALLBACK[code] != null) {
+      if (!COUPON_CODES) COUPON_CODES = {};
+      COUPON_CODES[code] = FALLBACK[code];
+      return code;
+    }
+    return code; // احتفظ بالكود حتى لو القائمة ناقصة
   } catch (e) { return ""; }
 }
 function couponPercent(code = getCouponCode()) {
@@ -933,32 +937,43 @@ function getCartDiscount(subtotal) {
   return couponDiscount(subtotal);
 }
 async function applyCouponFromInput() {
-  const input = document.getElementById("couponInput");
-  const msg = document.getElementById("couponMsg");
-  const raw = String((input && input.value) || "").trim().toUpperCase();
-  if (!raw) {
-    try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
-    if (msg) msg.textContent = "اكتبي كود الخصم";
-    if (typeof updateCartUI === "function") updateCartUI();
-    return;
-  }
   try {
+    var input = document.getElementById("couponInput");
+    var msg = document.getElementById("couponMsg");
+    var raw = String((input && input.value) || "").trim().toUpperCase();
+    if (!raw) {
+      try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
+      if (msg) msg.textContent = "اكتبي كود الخصم";
+      try { updateCartUI(); } catch (e) {}
+      return false;
+    }
     if (msg) msg.textContent = "جاري التحقق من الكود…";
-    await loadCoupons(true);
-  } catch (eLoad) {}
-  // دمج احتياطي
-  if (!COUPON_CODES[raw] && raw === "AHMED") COUPON_CODES.AHMED = 50;
-  if (!COUPON_CODES[raw]) {
-    try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
-    if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";
-    if (typeof updateCartUI === "function") updateCartUI();
-    return;
+    try { await loadCoupons(true); } catch (eLoad) {}
+    if (typeof COUPON_CODES !== "object" || !COUPON_CODES) COUPON_CODES = {};
+    // أكواد احتياطية مضمونة
+    var FALLBACK = { NEXORA10: 10, WELCOME10: 10, FIRST10: 10, SAVE10: 10, EGYPT10: 10, AHMED: 50 };
+    if (!COUPON_CODES[raw] && FALLBACK[raw]) COUPON_CODES[raw] = FALLBACK[raw];
+    if (!COUPON_CODES[raw]) {
+      try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
+      if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";
+      try { updateCartUI(); } catch (e) {}
+      return false;
+    }
+    try { sessionStorage.setItem("nx_coupon_code", raw); } catch (e) {}
+    try { localStorage.setItem("nx_coupon_code", raw); } catch (e) {}
+    var pct = Number(COUPON_CODES[raw]) || 0;
+    if (msg) msg.textContent = "تم تطبيق الخصم ✓ (" + pct + "%)";
+    try { updateCartUI(); } catch (e) {}
+    return true;
+  } catch (err) {
+    console.warn("applyCoupon", err);
+    var msg2 = document.getElementById("couponMsg");
+    if (msg2) msg2.textContent = "تعذر تطبيق الكود، حاول مرة أخرى";
+    return false;
   }
-  try { sessionStorage.setItem("nx_coupon_code", raw); } catch (e) {}
-  try { localStorage.setItem("nx_coupon_code", raw); } catch (e2) {}
-  if (msg) msg.textContent = "تم تطبيق الخصم ✓ (" + (typeof couponPercent==="function"?couponPercent():"") + "%)";
-  if (typeof updateCartUI === "function") updateCartUI();
 }
+window.applyCouponFromInput = applyCouponFromInput;
+
 
 function updateCartUI() {
   try { loadCartFromStorage(); } catch (e0) {}
@@ -3105,3 +3120,26 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
   try { window.__ATHAR_REPLAY_HERO = function () { booted = false; boot(true); }; } catch (e) {}
 })();
 
+
+(function atharCouponBtnFix() {
+  function bind() {
+    var btn = document.getElementById("applyCouponBtn");
+    if (btn) {
+      btn.onclick = function (ev) {
+        try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+        try { applyCouponFromInput(); } catch (e2) { console.warn(e2); }
+        return false;
+      };
+    }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
+  else bind();
+  document.addEventListener("click", function (ev) {
+    var t = ev.target;
+    if (!t) return;
+    var btn = t.id === "applyCouponBtn" ? t : (t.closest && t.closest("#applyCouponBtn"));
+    if (!btn) return;
+    try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+    try { applyCouponFromInput(); } catch (e2) {}
+  }, true);
+})();
