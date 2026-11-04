@@ -405,7 +405,7 @@
         </div>
         <button type="button" class="btn btn-primary btn-block" id="checkoutBtn"
           style="display:block!important;visibility:visible!important;pointer-events:auto!important;cursor:pointer;position:relative;z-index:50;margin-top:12px;width:100%;padding:14px;font-size:1rem;font-weight:700"
-          onclick="try{return window.__atharDoCheckout(event);}catch(e){alert(e&&e.message||'خطأ');return false;}">إتمام الطلب الآن</button>
+          onclick="try{if(window.__atharDoCheckout)return window.__atharDoCheckout(event);alert('استني ثانية لتحميل الصفحة');}catch(e){alert(e&&e.message||'خطأ');return false;}">إتمام الطلب الآن</button>
         <p class="checkout-hint">أكملي البيانات ثم أكّدي الطلب</p>
       </div>
     </div>
@@ -599,7 +599,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261104-co3" defer></script>
+  <script src="/script.js?v=20261104-co4" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
