@@ -3080,3 +3080,22 @@ html[data-theme="dark"] .mega-menu {
   z-index: 2;
   pointer-events: auto !important;
 }
+
+/* Hide float buttons while cart is open so they don't block selects */
+body:has(#cartDrawer.open) .float-btn,
+body:has(#cartDrawer.open) .float-whatsapp,
+body:has(#cartDrawer.open) .float-ai,
+body:has(#cartDrawer.open) #floatWhatsapp,
+body:has(#cartDrawer.open) #floatAI,
+body:has(#cartDrawer.open) .fab,
+body:has(#cartOverlay.open) .float-btn,
+body:has(#cartOverlay.open) .float-whatsapp,
+body:has(#cartOverlay.open) .float-ai {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+#cartDrawer { z-index: 10000 !important; }
+#cartOverlay { z-index: 9995 !important; }
+#applyCouponBtn { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 6; }
+#couponBox { position: relative; z-index: 6; }
