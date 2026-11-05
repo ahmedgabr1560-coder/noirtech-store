@@ -518,6 +518,21 @@ export default async function handler(req, res) {
       const f = await ghGet("visitors.json");
       let data = { stats: {}, sessions: {}, recent: [] };
       try { data = f ? JSON.parse(f.content) : data; } catch {}
+      // صفّر عدّاد اليوم لو تغيّر التاريخ (توقيت مصر)
+      try {
+        let today;
+        try {
+          today = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+        } catch (eT) {
+          today = new Date(Date.now() + 2 * 3600 * 1000).toISOString().slice(0, 10);
+        }
+        if (!data.stats) data.stats = {};
+        if (data.stats.todayDate !== today) {
+          data.stats.todayDate = today;
+          data.stats.todayEnters = 0;
+          data.stats.todayLeaves = 0;
+        }
+      } catch (eRoll) {}
       const sessions = data.sessions || {};
       const now = Date.now();
       let online = 0;
