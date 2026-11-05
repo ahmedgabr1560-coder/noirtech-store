@@ -1173,7 +1173,7 @@ function updateCartUI() {
     const code = typeof getCouponCode === "function" ? getCouponCode() : "";
     const msg = document.getElementById("couponMsg");
     const input = document.getElementById("couponInput");
-    if (input && code && !input.value) input.value = code;
+    /* لا تملأ خانة الكود تلقائيًا */
     if (msg && code && discount > 0 && typeof couponPercent === "function") {
       msg.textContent = "تم تطبيق الخصم ✓ (" + couponPercent(code) + "%)";
     }
@@ -1273,6 +1273,12 @@ async function ensureCartExtras() {
   } catch (e7) {}
   try { updateCartUI(); } catch (e8) {}
   try { bindCheckoutButton(); } catch (e9) {}
+  try {
+    var ci = document.getElementById("couponInput");
+    if (ci) ci.value = "";
+    var cm = document.getElementById("couponMsg");
+    if (cm) cm.textContent = "";
+  } catch (e10) {}
 }
 
 async function openCart() {
@@ -1592,15 +1598,42 @@ function showOrderSuccess(orderId) {
   if (idEl) idEl.textContent = orderId || "—";
   const msg = document.getElementById("orderSuccessMsg");
   if (msg) msg.innerHTML = "شكرًا لطلبكِ من ATHAR | أثر.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.";
-  document.getElementById("orderSuccessOverlay")?.classList.add("open");
-  document.getElementById("orderSuccessModal")?.classList.add("open");
+  const ov = document.getElementById("orderSuccessOverlay");
+  const md = document.getElementById("orderSuccessModal");
+  if (ov) { ov.classList.add("open"); ov.style.display = "block"; }
+  if (md) { md.classList.add("open"); md.style.display = "block"; }
+  document.body.style.overflow = "hidden";
+  try { bindOrderSuccessClose(); } catch (e) {}
 }
+window.showOrderSuccess = showOrderSuccess;
 function closeOrderSuccess() {
-  document.getElementById("orderSuccessOverlay")?.classList.remove("open");
-  document.getElementById("orderSuccessModal")?.classList.remove("open");
+  try {
+    var ov = document.getElementById("orderSuccessOverlay");
+    var md = document.getElementById("orderSuccessModal");
+    if (ov) { ov.classList.remove("open"); ov.style.display = "none"; }
+    if (md) { md.classList.remove("open"); md.style.display = "none"; }
+    document.body.style.overflow = "";
+    try { if (typeof closeCart === "function") closeCart(); } catch (e0) {}
+    try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e1) { try { window.scrollTo(0, 0); } catch (e2) {} }
+  } catch (err) { console.warn(err); }
 }
-document.getElementById("orderSuccessClose")?.addEventListener("click", closeOrderSuccess);
-document.getElementById("orderSuccessOverlay")?.addEventListener("click", closeOrderSuccess);
+window.closeOrderSuccess = closeOrderSuccess;
+function bindOrderSuccessClose() {
+  var btn = document.getElementById("orderSuccessClose");
+  if (btn) {
+    btn.onclick = function (e) {
+      try { if (e) { e.preventDefault(); e.stopPropagation(); } } catch (e0) {}
+      closeOrderSuccess();
+      return false;
+    };
+  }
+  var ov = document.getElementById("orderSuccessOverlay");
+  if (ov) {
+    ov.onclick = function () { closeOrderSuccess(); };
+  }
+}
+try { bindOrderSuccessClose(); } catch (e) {}
+document.addEventListener("DOMContentLoaded", function () { try { bindOrderSuccessClose(); } catch (e) {} });
 
 
 window.__atharCheckoutRunner = async function () {
