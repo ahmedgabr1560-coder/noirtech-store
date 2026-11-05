@@ -1293,7 +1293,26 @@ async function openCart() {
   try { bindCheckoutButton(); } catch (e4) {}
   try { bindCartQtyButtons(); } catch (e5) {}
 }
+
+function clearCartCoupon() {
+  try { sessionStorage.removeItem("nx_coupon_code"); } catch (e) {}
+  try { localStorage.removeItem("nx_coupon_code"); } catch (e2) {}
+  try {
+    var input = document.getElementById("couponInput");
+    if (input) input.value = "";
+    var msg = document.getElementById("couponMsg");
+    if (msg) msg.textContent = "";
+    var discRow = document.getElementById("cartDiscountRow");
+    if (discRow) discRow.hidden = true;
+    var disc = document.getElementById("cartDiscount");
+    if (disc) disc.textContent = typeof money === "function" ? money(0) : "0 ج.م";
+  } catch (e3) {}
+  try { if (typeof updateCartUI === "function") updateCartUI(); } catch (e4) {}
+  try { if (window.__atharRefreshCartTotals) window.__atharRefreshCartTotals(); } catch (e5) {}
+}
+
 function closeCart() {
+  try { clearCartCoupon(); } catch (eClear) {}
   try {
     const overlay = document.getElementById("cartOverlay");
     const drawer = document.getElementById("cartDrawer");
@@ -3326,6 +3345,7 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     if (ok) {
       try {
         localStorage.setItem("nx_cart", "[]");
+        try { clearCartCoupon(); } catch (eC) {}
         if (typeof cart !== "undefined") cart = [];
         if (typeof saveCart === "function") saveCart();
         if (typeof updateCartUI === "function") updateCartUI();
