@@ -336,8 +336,7 @@
         <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
         <div class="cart-total-row" id="cartDiscountRow" hidden><span>الخصم</span><strong id="cartDiscount">0 ج.م</strong></div>
         <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center;direction:ltr;position:relative;z-index:20">
-          <input type="text" id="couponInput" placeholder="كود الخصم" dir="ltr" autocomplete="off"
-            style="flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff;text-transform:uppercase;font-size:16px" />
+          <input type="text" id="couponInput" placeholder="كود الخصم" dir="ltr" autocomplete="off">
           <button type="button" id="applyCouponBtn" class="btn btn-ghost"
             style="padding:10px 16px;white-space:nowrap;cursor:pointer;pointer-events:auto;position:relative;z-index:21">تطبيق</button>
         </div>
@@ -553,7 +552,9 @@
       <p class="muted" style="margin-bottom:4px">رقم الطلب</p>
       <p style="margin:0 0 12px;font-size:1.15rem;font-weight:800;letter-spacing:.03em;direction:ltr" id="orderSuccessId">—</p>
       <p class="muted" id="orderSuccessMsg" style="line-height:1.7">شكرًا لطلبكِ من ATHAR | أثر.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.</p>
-      <button type="button" class="btn btn-primary btn-block" id="orderSuccessClose">متابعة التسوق</button>
+      <button type="button" class="btn btn-primary btn-block" id="orderSuccessClose"
+          style="pointer-events:auto;cursor:pointer;position:relative;z-index:60"
+          onclick="try{if(window.closeOrderSuccess)window.closeOrderSuccess();else{document.getElementById('orderSuccessOverlay')&&document.getElementById('orderSuccessOverlay').classList.remove('open');document.getElementById('orderSuccessModal')&&document.getElementById('orderSuccessModal').classList.remove('open');document.body.style.overflow='';}}catch(e){console.warn(e)}">متابعة التسوق</button>
     </div>
   </div>
 
@@ -599,7 +600,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261104-co4" defer></script>
+  <script src="/script.js?v=20261105-ok1" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
@@ -713,7 +714,7 @@
     }
     setTxt('cartTotal', money(Math.max(0, sub+ship-discount)));
     var input=document.getElementById('couponInput');
-    if(input && code && !input.value) input.value=code;
+    /* لا تملأ كود الخصم تلقائيًا */
   }
 
   function applyCoupon(){
