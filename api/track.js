@@ -29,7 +29,13 @@ async function ghPut(path, content, message, sha) {
 }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  // توقيت مصر (UTC+2) — زوار اليوم حسب يوم القاهرة
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  } catch (e) {
+    const d = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    return d.toISOString().slice(0, 10);
+  }
 }
 
 function maskIp(value) {
@@ -146,6 +152,21 @@ export default async function handler(req, res) {
   if (!GH_TOKEN) return res.status(500).json({ ok: false, error: "token missing" });
 
   try {
+    // قراءة الإحصائيات مباشرة (بدون كاش Vercel لملف visitors.json)
+    if (req.method === "GET") {
+      const f = await ghGet("visitors.json");
+      let data = emptyVisitors();
+      try { if (f && f.content) data = JSON.parse(f.content); } catch (e) {}
+      if (!data.stats) data.stats = emptyVisitors().stats;
+      data.stats = rollDay(data.stats || emptyVisitors().stats);
+      const online = countOnline(data.sessions || {});
+      return res.status(200).json({
+        ok: true,
+        stats: { ...data.stats, onlineNow: online },
+        recent: (data.recent || []).slice(0, 30)
+      });
+    }
+
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const action = body.action || "ping";
 
@@ -182,11 +203,11 @@ export default async function handler(req, res) {
     // زيارات
     if (action === "enter" || action === "leave" || action === "ping") {
       // تحت الضغط العالي: تجاهل أغلب الـ ping لتقليل تعارض GitHub
-      if (action === "ping" && Math.random() > 0.15) {
+      // لا نتخطى enter أبدًا — العدّ يعتمد عليه
+      if (action === "ping" && Math.random() > 0.25) {
         return res.status(200).json({ ok: true, soft: true, skipped: true });
       }
-      // leave يمكن أن يكون كثير simultaneous — نكتفي بنسبة
-      if (action === "leave" && Math.random() > 0.4) {
+      if (action === "leave" && Math.random() > 0.5) {
         return res.status(200).json({ ok: true, soft: true, skipped: true });
       }
       const sid = String(body.sessionId || "").slice(0, 64);
