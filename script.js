@@ -2579,16 +2579,25 @@ function nxTrack(action) {
 }
 (function initVisitTrack() {
   try {
-    if (!sessionStorage.getItem("nx_enter_sent")) {
+    var today;
+    try {
+      today = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    } catch (e0) {
+      today = new Date().toISOString().slice(0, 10);
+    }
+    var dayKey = "nx_enter_day_" + today;
+    // دخول مرة لكل تبويب في اليوم — يضمن عدّ زوار اليوم
+    if (!sessionStorage.getItem(dayKey)) {
+      sessionStorage.setItem(dayKey, "1");
       sessionStorage.setItem("nx_enter_sent", "1");
       nxTrack("enter");
     } else {
       nxTrack("ping");
     }
-  } catch (e) { nxTrack("enter"); }
-  setInterval(() => nxTrack("ping"), 120000);
-  window.addEventListener("pagehide", () => nxTrack("leave"));
-  document.addEventListener("visibilitychange", () => {
+  } catch (e) { try { nxTrack("enter"); } catch (e2) {} }
+  setInterval(function () { nxTrack("ping"); }, 120000);
+  window.addEventListener("pagehide", function () { nxTrack("leave"); });
+  document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "hidden") nxTrack("leave");
     else nxTrack("ping");
   });
