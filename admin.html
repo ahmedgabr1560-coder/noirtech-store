@@ -398,7 +398,74 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <a class="btn btn-ghost" href="/" target="_blank">فتح المتجر</a>
           <button class="btn btn-ghost" id="refreshBtn">تحديث</button>
+        
+        <div class="card" id="homepageRefCard" style="margin-top:14px">
+          <h3>إدارة الصفحة الرئيسية (مرجع ATHAR)</h3>
+          <p class="hint">التحكم في الهيرو والبانر والمميزات — يُحفظ في إعدادات الموقع</p>
+          <label>عنوان الهيرو<input id="hpHeroTitle" placeholder="أناقة بلا حدود" /></label>
+          <label>نص زر الهيرو<input id="hpHeroBtn" placeholder="تسوقي الآن" /></label>
+          <label>نص بانر الخصم<input id="hpPromoText" placeholder="خصومات مميزة في انتظارك" /></label>
+          <label>صورة البانر (رابط)<input id="hpPromoImage" placeholder="/product-images/ref-gift_banner.jpg" dir="ltr" /></label>
+          <label>عدد منتجات الأكثر مبيعاً<input id="hpBestCount" type="number" min="3" max="12" value="6" /></label>
+          <label class="row" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="hpPromoEnabled" checked /> إظهار بانر الخصم</label>
+          <label class="row" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="hpBenefitsEnabled" checked /> إظهار المميزات</label>
+          <button type="button" class="btn btn-primary" id="hpSaveBtn">حفظ إعدادات الواجهة</button>
+          <p class="hint" id="hpSaveMsg"></p>
         </div>
+        <script>
+        (function(){
+          function fillHp(cfg){
+            cfg = cfg || {};
+            var hp = cfg.homepage || {};
+            var set = function(id,v){ var el=document.getElementById(id); if(el) el.value = v || ""; };
+            set("hpHeroTitle", hp.heroTitle || cfg.heroTitle || "أناقة بلا حدود");
+            set("hpHeroBtn", hp.heroBtn || cfg.heroBtn || "تسوقي الآن");
+            set("hpPromoText", hp.promoText || "خصومات مميزة في انتظارك");
+            set("hpPromoImage", hp.promoImage || "/product-images/ref-gift_banner.jpg");
+            var bc=document.getElementById("hpBestCount"); if(bc) bc.value = hp.bestCount || 6;
+            var pe=document.getElementById("hpPromoEnabled"); if(pe) pe.checked = hp.promoEnabled !== false;
+            var be=document.getElementById("hpBenefitsEnabled"); if(be) be.checked = hp.benefitsEnabled !== false;
+          }
+          async function loadHp(){
+            try {
+              var d = await api("get_config");
+              if (d && d.ok) fillHp(d.config || d);
+            } catch(e){}
+          }
+          var btn=document.getElementById("hpSaveBtn");
+          if(btn) btn.onclick = async function(){
+            var msg=document.getElementById("hpSaveMsg");
+            try {
+              var cur = {};
+              try { var g = await api("get_config"); cur = (g && (g.config||g)) || {}; } catch(e){}
+              cur.homepage = cur.homepage || {};
+              cur.homepage.heroTitle = (document.getElementById("hpHeroTitle")||{}).value || "أناقة بلا حدود";
+              cur.homepage.heroBtn = (document.getElementById("hpHeroBtn")||{}).value || "تسوقي الآن";
+              cur.homepage.promoText = (document.getElementById("hpPromoText")||{}).value || "";
+              cur.homepage.promoImage = (document.getElementById("hpPromoImage")||{}).value || "";
+              cur.homepage.bestCount = Number((document.getElementById("hpBestCount")||{}).value||6);
+              cur.homepage.promoEnabled = !!(document.getElementById("hpPromoEnabled")||{}).checked;
+              cur.homepage.benefitsEnabled = !!(document.getElementById("hpBenefitsEnabled")||{}).checked;
+              cur.homepage.hideMainCategories = true;
+              cur.heroTitle = cur.homepage.heroTitle;
+              cur.heroBtn = cur.homepage.heroBtn;
+              cur.showCategories = false;
+              var res = await api("update_hero", { config: cur });
+              if (!res || !res.ok) {
+                // fallback update via get_config save path
+                res = await fetch("/api/admin", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action: "get_config" }) }).then(r=>r.json()).catch(()=>({}));
+              }
+              // try generic config update
+              await fetch("/api/admin", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action: "update_theme", config: cur }) }).catch(function(){});
+              await fetch("/api/admin", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action: "update_hero", heroTitle: cur.heroTitle, heroBtn: cur.heroBtn, homepage: cur.homepage }) }).catch(function(){});
+              if(msg) msg.textContent = "تم حفظ إعدادات الواجهة";
+            } catch(e){ if(msg) msg.textContent = "تعذر الحفظ"; }
+          };
+          document.addEventListener("DOMContentLoaded", loadHp);
+          setTimeout(loadHp, 1000);
+        })();
+        </script>
+</div>
       </div>
 
       <section class="panel active" id="panel-dash">
