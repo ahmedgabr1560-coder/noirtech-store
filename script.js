@@ -1180,6 +1180,13 @@ function updateCartUI() {
   } catch (e6) {}
   const total = Math.max(0, sub + ship - discount);
   setTxt("cartTotal", typeof money === "function" ? money(total) : String(total));
+  try {
+    var n = (cart || []).reduce(function(s,i){ return s + (Number(i.qty)||1); }, 0);
+    var badge = document.getElementById("bnCartCount");
+    var topBadge = document.getElementById("cartCount");
+    if (badge) { badge.textContent = String(n); badge.hidden = n < 1; }
+    if (topBadge) { topBadge.textContent = String(n); topBadge.hidden = n < 1; }
+  } catch (eBn) {}
   try { bindCartQtyButtons(); } catch (eBind) {}
 }
 
