@@ -538,7 +538,7 @@ export default async function handler(req, res) {
       let online = 0;
       const sessionList = Object.entries(sessions).map(([id, s]) => {
         const last = new Date(s.lastSeen || 0).getTime();
-        const isOnline = s.status !== "left" && (now - last < 3 * 60 * 1000);
+        const isOnline = s.status !== "left" && (now - last < 8 * 60 * 1000);
         if (isOnline) online++;
         return {
           id: id.slice(0, 12) + "…",
