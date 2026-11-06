@@ -1356,8 +1356,8 @@ function openAuth(tab = "login") {
   try {
     const overlay = document.getElementById("authOverlay");
     const modal = document.getElementById("authModal");
-    if (overlay) overlay.classList.add("open");
-    if (modal) modal.classList.add("open");
+    if (overlay) { overlay.classList.add("open"); overlay.style.display = "block"; }
+    if (modal) { modal.classList.add("open"); modal.style.display = "block"; }
     document.body.style.overflow = "hidden";
     switchAuth(tab);
   } catch (e) { console.warn(e); }
@@ -1366,8 +1366,8 @@ function closeAuth() {
   try {
     const overlay = document.getElementById("authOverlay");
     const modal = document.getElementById("authModal");
-    if (overlay) overlay.classList.remove("open");
-    if (modal) modal.classList.remove("open");
+    if (overlay) { overlay.classList.remove("open"); overlay.style.display = "none"; }
+    if (modal) { modal.classList.remove("open"); modal.style.display = "none"; }
     document.body.style.overflow = "";
   } catch (e) { console.warn(e); }
 }
@@ -2651,6 +2651,7 @@ function nxTrack(action) {
 })();
 
 async function bootStore() {
+  try { if (typeof closeAuth === 'function') closeAuth(); } catch (eAuth) {}
   try { await loadCoupons(); } catch (e) {}
 
   bindCheckoutDraft();
