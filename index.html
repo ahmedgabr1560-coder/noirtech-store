@@ -24,11 +24,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
-  <link rel="preload" href="/styles.css?v=20261107-realprod" as="style" />
+  <link rel="preload" href="/styles.css?v=20261107-refexact" as="style" />
   <link rel="preload" href="/script.js?v=20261104-cartinline" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
-  <link rel="stylesheet" href="/styles.css?v=20261107-realprod" />
+  <link rel="stylesheet" href="/styles.css?v=20261107-refexact" />
 <script>
 (function(){
   try {
@@ -162,7 +162,8 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           <span class="action-label" id="accountLabel">حسابي</span>
         </button>
-        <button type="button" class="icon-btn cart-trigger" id="cartBtn" title="السلة" onclick="event.preventDefault();event.stopPropagation();try{openCart()}catch(e){}">
+        <button type="button" class="icon-btn cart-trigger" id="atharThemeToggle" class="icon-btn" title="المظهر" onclick="try{var m=localStorage.getItem('nx_theme_mode')||'system';var n=m==='dark'?'light':(m==='light'?'system':'dark');localStorage.setItem('nx_theme_mode',n);var dark=n==='dark'?true:(n==='light'?false:window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',dark?'dark':'light');document.documentElement.style.colorScheme=dark?'dark':'light';}catch(e){}" aria-label="تبديل المظهر">🌓</button>
+          <button type="button" class="icon-btn" id="cartBtn" title="السلة" onclick="event.preventDefault();event.stopPropagation();try{openCart()}catch(e){}">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
           <span class="action-label">السلة</span>
           <span class="badge-count" id="cartCount">0</span>
@@ -669,7 +670,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261107-guest" defer></script>
+  <script src="/script.js?v=20261107-refexact" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
