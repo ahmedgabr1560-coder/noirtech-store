@@ -24,11 +24,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
-  <link rel="preload" href="/styles.css?v=20261106-theme1" as="style" />
+  <link rel="preload" href="/styles.css?v=20261106-ref1" as="style" />
   <link rel="preload" href="/script.js?v=20261104-cartinline" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
-  <link rel="stylesheet" href="/styles.css?v=20261106-theme1" />
+  <link rel="stylesheet" href="/styles.css?v=20261106-ref1" />
 <script>
 (function(){
   try {
@@ -163,7 +163,7 @@
       <div class="container hero-grid">
         <div class="hero-copy">
           <p class="hero-eyebrow"><span class="dot"></span> <span id="heroBadgeText">مجموعة الموضة</span></p>
-          <h1 id="heroTitleLine">أناقة تليق بك.<br><span class="grad" id="heroHighlightText">موضة بلا حدود.</span></h1>
+          <h1 id="heroTitleLine"><span id="heroHighlightText">أناقة بلا حدود</span></h1>
           <p class="hero-desc" id="heroDescText">تسوقي أحدث الشنط والملابس والإكسسوارات الحريمي — قطع مختارة بعناية، جودة عالية، وتوصيل سريع لباب البيت.</p>
           <div class="hero-cta">
             <a href="#shop" class="btn btn-primary" id="heroBtnText">تسوقي الآن <span class="arrow">←</span></a>
@@ -192,12 +192,12 @@
             <div class="phone p1">
               <span class="phone-bezel" aria-hidden="true"></span>
               <span class="phone-shine" aria-hidden="true"></span>
-              <img id="heroImg1" fetchpriority="high" decoding="async" src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=700&h=1200&fit=crop&q=90" alt="صورة الواجهة 1" />
+              <img id="heroImg1" fetchpriority="high" decoding="async" src="/product-images/ref-hero_light_bag.jpg" alt="صورة الواجهة 1" />
             </div>
             <div class="phone p2">
               <span class="phone-bezel" aria-hidden="true"></span>
               <span class="phone-shine" aria-hidden="true"></span>
-              <img id="heroImg2" decoding="async" loading="eager" src="https://images.unsplash.com/photo-1590874103328-eac38a941346?w=700&h=1200&fit=crop&q=90" alt="صورة الواجهة 2" />
+              <img id="heroImg2" decoding="async" loading="eager" src="/product-images/ref-hero_dark_bag.jpg" alt="صورة الواجهة 2" />
             </div>
           </div>
           <a class="hero-chip" href="#shop">
@@ -211,6 +211,20 @@
         </div>
       </div>
     </section>
+    <!-- ATHAR benefits -->
+    <section class="container athar-benefits" id="atharBenefits" aria-label="مميزات المتجر">
+      <div class="bnf"><div class="ico">🎧</div><b>دعم فني مميز</b></div>
+      <div class="bnf"><div class="ico">🛡️</div><b>دفع آمن ومتنوع</b></div>
+      <div class="bnf"><div class="ico">🎁</div><b>تغليف راقي</b></div>
+      <div class="bnf"><div class="ico">🏅</div><b>جودة مضمونة</b></div>
+    </section>
+    <section class="container">
+      <div class="athar-promo-banner" id="atharPromoBanner">
+        <img src="/product-images/ref-gift_banner.jpg" alt="خصومات" width="88" height="88" />
+        <div class="txt"><b>خصومات مميزة في انتظارك</b><span style="opacity:.9;font-size:.85rem">عروض حصرية على أحدث التشكيلة</span></div>
+      </div>
+    </section>
+
 
     <!-- Categories -->
 
@@ -991,6 +1005,15 @@
   setInterval(wire, 3000);
 })();
 </script>
+
+
+<nav class="athar-bottom-nav" id="atharBottomNav" aria-label="التنقل السفلي">
+  <a href="/" class="active" data-bn="home"><span class="bn-ico">🏠</span><span>الرئيسية</span></a>
+  <a href="#shop" data-bn="cats"><span class="bn-ico">⊞</span><span>الأقسام</span></a>
+  <a href="#shop" data-bn="fav" id="bnFav"><span class="bn-ico">♡</span><span>المفضلة</span></a>
+  <a href="#" data-bn="cart" id="bnCart" onclick="try{if(window.openCart)openCart();return false;}catch(e){return false;}"><span class="bn-ico">🛒<span class="bn-badge" id="bnCartCount" hidden>0</span></span><span>السلة</span></a>
+  <a href="/profile.html" data-bn="account"><span class="bn-ico">👤</span><span>حسابي</span></a>
+</nav>
 
 </body>
 </html>
