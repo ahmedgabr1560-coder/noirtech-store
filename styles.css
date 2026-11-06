@@ -3481,3 +3481,227 @@ a { color: var(--link); }
   color: transparent !important;
 }
 
+
+
+/* ===== ATHAR Phase 2 — Hero + Best Sellers ===== */
+.hero.athar-hero-ref,
+.hero {
+  padding: 18px 0 10px !important;
+  min-height: auto !important;
+}
+.hero-grid {
+  display: grid !important;
+  grid-template-columns: 1.05fr 0.95fr !important;
+  gap: 16px !important;
+  align-items: center !important;
+}
+@media (max-width: 768px) {
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .hero-visual { order: -1; }
+}
+.athar-hero-title,
+#heroTitleLine {
+  font-size: clamp(1.8rem, 5vw, 2.6rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  color: var(--text-heading) !important;
+  margin: 0 0 14px !important;
+}
+[data-theme="dark"] .athar-hero-title {
+  color: #f0d78c !important;
+  text-shadow: 0 0 24px rgba(212,175,55,0.25);
+}
+.athar-hero-cta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+.athar-btn-shop {
+  border-radius: 999px !important;
+  padding: 12px 22px !important;
+  font-weight: 800 !important;
+  background: #7a1f3d !important;
+  box-shadow: 0 10px 28px rgba(122,31,61,0.28) !important;
+}
+.athar-btn-feedback {
+  border-radius: 999px !important;
+  padding: 12px 18px !important;
+  font-weight: 700 !important;
+  border: 1px solid var(--border-solid) !important;
+  background: var(--bg-card) !important;
+  color: var(--text-heading) !important;
+}
+.athar-ship-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.athar-ship-line .ti { font-size: 1.1rem; }
+
+/* Hero visual — product showcase */
+.hero-visual {
+  position: relative;
+  min-height: 280px;
+}
+.phones-stack {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 0 !important;
+  position: relative;
+}
+.phones-stack .phone {
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.25) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--bg-card) !important;
+}
+.phones-stack .phone img {
+  width: 100%;
+  height: auto;
+  max-height: 340px;
+  object-fit: cover;
+  display: block;
+}
+.phones-stack .phone.p2 {
+  display: none !important; /* show one main slide; JS toggles */
+}
+.phones-stack.show-second .phone.p1 { display: none !important; }
+.phones-stack.show-second .phone.p2 { display: block !important; }
+
+.athar-hero-arrows {
+  position: absolute;
+  inset-inline: 0;
+  top: 45%;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+  padding: 0 4px;
+}
+.athar-hero-arrow {
+  pointer-events: auto;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  color: #5c1630;
+  font-size: 1.4rem;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+[data-theme="dark"] .athar-hero-arrow {
+  background: rgba(20,16,24,0.85);
+  color: #f0d78c;
+  border: 1px solid rgba(212,175,55,0.3);
+}
+.hero-chip {
+  margin-top: 12px !important;
+  border-radius: 16px !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 8px 24px var(--shadow) !important;
+}
+
+/* Section titles */
+.athar-section-title, #shopTitle {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: var(--text-heading) !important;
+  text-align: center;
+}
+.section-head.row {
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 14px !important;
+}
+.athar-section-sub { color: var(--muted); font-size: 0.85rem; text-align: center; }
+
+/* Product cards — soft rounded like reference */
+.products-grid, .product-grid, #productsGrid, #grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 10px !important;
+}
+@media (max-width: 520px) {
+  .products-grid, .product-grid, #productsGrid, #grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+.product-card {
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 8px 24px var(--shadow) !important;
+  position: relative;
+}
+[data-theme="light"] .product-card {
+  background: #fff !important;
+  border-color: rgba(122,31,61,0.08) !important;
+  box-shadow: 0 8px 22px rgba(122,31,61,0.08) !important;
+}
+.product-card img, .product-card .thumb img {
+  border-radius: 16px 16px 0 0 !important;
+  aspect-ratio: 1 / 1 !important;
+  object-fit: cover !important;
+  width: 100% !important;
+}
+.product-card .fav, .product-card .wish, .product-card [data-fav] {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  border: none;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+}
+.product-card .name, .product-card h3 {
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: var(--text-heading) !important;
+  padding: 6px 8px 0 !important;
+  line-height: 1.35 !important;
+}
+.product-card .price {
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  color: var(--price) !important;
+  padding: 2px 8px 10px !important;
+}
+
+/* Benefits already exist — polish */
+.athar-benefits .bnf .ico {
+  width: 36px; height: 36px;
+  margin: 0 auto 6px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(122,31,61,0.08);
+}
+[data-theme="dark"] .athar-benefits .bnf .ico {
+  background: rgba(212,175,55,0.1);
+}
+
+/* Promo after products spacing */
+.athar-promo-banner {
+  margin-top: 8px !important;
+}
+
