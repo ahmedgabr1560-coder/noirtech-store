@@ -4304,6 +4304,23 @@
     }
   } catch (e) {}
 })();
+
+    var visitorsRefreshTimer = null;
+    function startVisitorsAutoRefresh() {
+      try { if (visitorsRefreshTimer) clearInterval(visitorsRefreshTimer); } catch (e) {}
+      visitorsRefreshTimer = setInterval(function () {
+        try {
+          var panel = document.querySelector('.panel.active, [data-panel].active, #panel-visitors.active');
+          var visPanel = document.getElementById("panel-visitors");
+          if (visPanel && (visPanel.classList.contains("active") || visPanel.style.display === "block")) {
+            if (typeof loadVisit === "function") loadVisit();
+            else if (typeof loadVisitors === "function") loadVisitors();
+          }
+        } catch (e) {}
+      }, 20000);
+    }
+    try { startVisitorsAutoRefresh(); } catch (e) {}
+
 </script>
 
 </body>
