@@ -2574,26 +2574,26 @@ function nxDeviceType() {
   return "other";
 }
 function nxTrack(action) {
-  // تقليل الضغط على السيرفر
   try {
     const payload = JSON.stringify({
-      action: action,
+      action: action || "ping",
       sessionId: nxSessionId(),
       deviceId: nxDeviceId(),
       deviceType: nxDeviceType(),
-      path: (location.pathname + location.search).slice(0, 120)
+      path: (location.pathname + (location.search || "")).slice(0, 120)
     });
     if (action === "leave" && navigator.sendBeacon) {
-      const blob = new Blob([payload], { type: "application/json" });
-      navigator.sendBeacon("/api/track", blob);
-      return;
+      try {
+        navigator.sendBeacon("/api/track", new Blob([payload], { type: "application/json" }));
+      } catch (eB) {}
     }
     fetch("/api/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: payload,
-      keepalive: action === "leave"
-    }).catch(() => {});
+      keepalive: true,
+      cache: "no-store"
+    }).catch(function () {});
   } catch (e) {}
 }
 (function initVisitTrack() {
@@ -2605,7 +2605,7 @@ function nxTrack(action) {
       today = new Date().toISOString().slice(0, 10);
     }
     var dayKey = "nx_enter_day_" + today;
-    // دخول مرة لكل تبويب في اليوم — يضمن عدّ زوار اليوم
+    // أول فتح للتبويب في اليوم = enter
     if (!sessionStorage.getItem(dayKey)) {
       sessionStorage.setItem(dayKey, "1");
       sessionStorage.setItem("nx_enter_sent", "1");
@@ -2614,11 +2614,19 @@ function nxTrack(action) {
       nxTrack("ping");
     }
   } catch (e) { try { nxTrack("enter"); } catch (e2) {} }
-  setInterval(function () { nxTrack("ping"); }, 120000);
-  window.addEventListener("pagehide", function () { nxTrack("leave"); });
+  // ping كل 45 ثانية للحفاظ على "متصل الآن"
+  setInterval(function () {
+    try {
+      if (document.visibilityState === "hidden") return;
+      nxTrack("ping");
+    } catch (e) {}
+  }, 45000);
+  window.addEventListener("pagehide", function () { try { nxTrack("leave"); } catch (e) {} });
   document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "hidden") nxTrack("leave");
-    else nxTrack("ping");
+    try {
+      if (document.visibilityState === "hidden") nxTrack("leave");
+      else nxTrack("ping");
+    } catch (e) {}
   });
 })();
 
