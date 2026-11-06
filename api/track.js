@@ -114,10 +114,11 @@ function countOnline(sessions) {
   let n = 0;
   for (const s of Object.values(sessions || {})) {
     if (!s) continue;
-    if (s.status === "left") continue;
     const last = new Date(s.lastSeen || 0).getTime();
-    // متصل خلال آخر 8 دقائق
-    if (now - last < 8 * 60 * 1000) n++;
+    if (!last || Number.isNaN(last)) continue;
+    // متصل فقط لو آخر نشاط خلال 5 دقائق ولم يسجّل مغادرة
+    if (s.status === "left") continue;
+    if (now - last <= 5 * 60 * 1000) n++;
   }
   return n;
 }
@@ -227,6 +228,20 @@ export default async function handler(req, res) {
         if (!v.devices) v.devices = {};
         if (!Array.isArray(v.recent)) v.recent = [];
         v.stats = rollDay(v.stats);
+
+        // تنظيف الجلسات القديمة حتى لا يبقى "متصل الآن" وهمي
+        try {
+          const nowMs = Date.now();
+          for (const [id, sess] of Object.entries(v.sessions || {})) {
+            if (!sess) continue;
+            const last = new Date(sess.lastSeen || 0).getTime();
+            if (sess.status !== "left" && last && nowMs - last > 10 * 60 * 1000) {
+              sess.status = "left";
+              v.sessions[id] = sess;
+            }
+          }
+        } catch (eStale) {}
+
 
         const isNew = !v.sessions[sid];
         const deviceId = String(body.deviceId || "").slice(0, 80);
