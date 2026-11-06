@@ -3705,3 +3705,49 @@ a { color: var(--link); }
   margin-top: 8px !important;
 }
 
+
+
+/* Best sellers + real products presentation */
+.athar-best { margin: 8px auto 18px; }
+.athar-best-head { text-align: center; margin-bottom: 12px; }
+.athar-best-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 10px !important;
+}
+.athar-more-wrap { text-align: center; margin-top: 12px; }
+.athar-more-link {
+  display: inline-block;
+  color: var(--primary);
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.product-card { position: relative !important; }
+.product-card .btn-fav {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 4;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.92);
+  color: #7a1f3d;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+[data-theme="dark"] .product-card .btn-fav {
+  background: rgba(20,16,24,0.85);
+  color: #f0d78c;
+}
+.product-card .btn-fav.on { color: #e11d48; }
+.phones-stack .phone img {
+  object-fit: cover !important;
+  background: var(--bg-card);
+}
+
