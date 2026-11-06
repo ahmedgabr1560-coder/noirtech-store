@@ -96,6 +96,43 @@
 
   </style>
 <!-- deploy 20261102-force1050 -->
+
+<style id="athar-admin-ref">
+  :root {
+    --a-burgundy: #7a1f3d;
+    --a-pink: #fce8ef;
+    --a-pink2: #fff5f8;
+    --a-gold: #d4af37;
+  }
+  body { background: #fff5f8 !important; }
+  .sidebar, aside.sidebar, #sidebar {
+    background: linear-gradient(180deg, #5c1630 0%, #3d1020 100%) !important;
+    color: #fff !important;
+  }
+  .sidebar a, .sidebar button, aside a, #sidebar button {
+    color: rgba(255,255,255,0.88) !important;
+  }
+  .sidebar a.active, .sidebar button.active, #sidebar button.active {
+    background: rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+    border-right: 3px solid var(--a-gold);
+  }
+  .btn-primary, button.primary {
+    background: var(--a-burgundy) !important;
+    border-color: var(--a-burgundy) !important;
+  }
+  .card, .panel .card {
+    border-radius: 16px;
+    border: 1px solid rgba(122,31,61,0.1);
+    box-shadow: 0 8px 24px rgba(122,31,61,0.06);
+  }
+  h1,h2,h3 { color: #5c1630; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0c0a10 !important; }
+    h1,h2,h3 { color: #f5efe8; }
+  }
+</style>
+
 </head>
 <body>
   <div class="login-wrap" id="loginView">
@@ -2281,7 +2318,44 @@
         + '<button type="button" class="c" onclick="window.close()">إغلاق</button>'
         + '<span style="opacity:.8;font-size:12px">مقاس 10×15 سم — Save as PDF من نافذة الطباعة</span></div>';
       const html = "<!DOCTYPE html><html lang='ar' dir='rtl'><head><meta charset='utf-8'/><title>ملصقات ATHAR</title><style>"
-        + css + "</style></head><body>" + bar + sheets
+        + css + "</style>
+<style id="athar-admin-ref">
+  :root {
+    --a-burgundy: #7a1f3d;
+    --a-pink: #fce8ef;
+    --a-pink2: #fff5f8;
+    --a-gold: #d4af37;
+  }
+  body { background: #fff5f8 !important; }
+  .sidebar, aside.sidebar, #sidebar {
+    background: linear-gradient(180deg, #5c1630 0%, #3d1020 100%) !important;
+    color: #fff !important;
+  }
+  .sidebar a, .sidebar button, aside a, #sidebar button {
+    color: rgba(255,255,255,0.88) !important;
+  }
+  .sidebar a.active, .sidebar button.active, #sidebar button.active {
+    background: rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+    border-right: 3px solid var(--a-gold);
+  }
+  .btn-primary, button.primary {
+    background: var(--a-burgundy) !important;
+    border-color: var(--a-burgundy) !important;
+  }
+  .card, .panel .card {
+    border-radius: 16px;
+    border: 1px solid rgba(122,31,61,0.1);
+    box-shadow: 0 8px 24px rgba(122,31,61,0.06);
+  }
+  h1,h2,h3 { color: #5c1630; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0c0a10 !important; }
+    h1,h2,h3 { color: #f5efe8; }
+  }
+</style>
+
+</head><body>" + bar + sheets
         + "<script>" + autoScript + "<" + "\/script></" + "body></html>";
       const w = window.open("", "_blank");
       if (!w) {
