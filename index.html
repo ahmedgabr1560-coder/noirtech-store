@@ -70,6 +70,27 @@
 })();
 </script>
 
+
+<script id="athar-guest-boot">
+(function(){
+  function forceGuestOpen(){
+    try {
+      var ov = document.getElementById("authOverlay");
+      var md = document.getElementById("authModal");
+      if (ov) { ov.classList.remove("open"); ov.style.display = "none"; }
+      if (md) { md.classList.remove("open"); md.style.display = "none"; }
+      document.body.style.overflow = "";
+      document.body.classList.remove("modal-open", "drawer-open");
+    } catch(e) {}
+  }
+  forceGuestOpen();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", forceGuestOpen);
+  else forceGuestOpen();
+  setTimeout(forceGuestOpen, 50);
+  setTimeout(forceGuestOpen, 300);
+})();
+</script>
+
 </head>
 <body>
     <div class="bg-stage" aria-hidden="true">
@@ -466,7 +487,7 @@
   </div>
 
   <!-- Auth modal -->
-      <div class="modal-overlay" id="authOverlay"></div>
+      <div class="modal-overlay" id="authOverlay" data-guest-ok="1"></div>
   <div class="modal auth-modal" id="authModal" role="dialog" aria-modal="true">
     <button type="button" class="icon-close modal-close" id="closeAuth" aria-label="إغلاق" data-close="auth" onclick="event.preventDefault();event.stopPropagation();try{closeAuth()}catch(e){}">×</button>
 
@@ -648,7 +669,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261107-realprod" defer></script>
+  <script src="/script.js?v=20261107-guest" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
