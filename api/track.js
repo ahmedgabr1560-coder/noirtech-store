@@ -113,9 +113,11 @@ function countOnline(sessions) {
   const now = Date.now();
   let n = 0;
   for (const s of Object.values(sessions || {})) {
+    if (!s) continue;
     if (s.status === "left") continue;
-    const t = new Date(s.lastSeen || 0).getTime();
-    if (now - t < 3 * 60 * 1000) n++;
+    const last = new Date(s.lastSeen || 0).getTime();
+    // متصل خلال آخر 8 دقائق
+    if (now - last < 8 * 60 * 1000) n++;
   }
   return n;
 }
@@ -204,10 +206,11 @@ export default async function handler(req, res) {
     if (action === "enter" || action === "leave" || action === "ping") {
       // تحت الضغط العالي: تجاهل أغلب الـ ping لتقليل تعارض GitHub
       // لا نتخطى enter أبدًا — العدّ يعتمد عليه
-      if (action === "ping" && Math.random() > 0.25) {
+      // ping: نقبل نسبة أعلى عشان "متصل الآن" يبقى دقيق
+      if (action === "ping" && Math.random() > 0.55) {
         return res.status(200).json({ ok: true, soft: true, skipped: true });
       }
-      if (action === "leave" && Math.random() > 0.5) {
+      if (action === "leave" && Math.random() > 0.55) {
         return res.status(200).json({ ok: true, soft: true, skipped: true });
       }
       const sid = String(body.sessionId || "").slice(0, 64);
