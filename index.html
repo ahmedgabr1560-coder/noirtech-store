@@ -41,6 +41,35 @@
 })();
 </script>
   <link rel="stylesheet" href="/animations.css?v=20261103-collide" />
+
+<script id="athar-early-track">
+(function(){
+  try {
+    function sid(){
+      var k="nx_sid";
+      var v=sessionStorage.getItem(k);
+      if(!v){ v="s_"+Math.random().toString(36).slice(2)+Date.now().toString(36); sessionStorage.setItem(k,v); }
+      return v;
+    }
+    function did(){
+      var k="nx_did";
+      var v=localStorage.getItem(k);
+      if(!v){ v="d_"+Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem(k,v); }
+      return v;
+    }
+    var today;
+    try { today=new Intl.DateTimeFormat("en-CA",{timeZone:"Africa/Cairo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }
+    catch(e){ today=new Date().toISOString().slice(0,10); }
+    var dayKey="nx_enter_day_"+today;
+    var action=sessionStorage.getItem(dayKey)?"ping":"enter";
+    if(action==="enter") sessionStorage.setItem(dayKey,"1");
+    var ua=navigator.userAgent||"";
+    var dt=/iPhone|iPod/i.test(ua)?"iphone":/iPad/i.test(ua)?"ipad":/Android/i.test(ua)?"android":/Windows|Macintosh|Linux/i.test(ua)?"desktop":"other";
+    fetch("/api/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:action,sessionId:sid(),deviceId:did(),deviceType:dt,path:(location.pathname||"/").slice(0,120)}),keepalive:true,cache:"no-store"}).catch(function(){});
+  } catch(e) {}
+})();
+</script>
+
 </head>
 <body>
     <div class="bg-stage" aria-hidden="true">
@@ -600,7 +629,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261106-couponclear" defer></script>
+  <script src="/script.js?v=20261106-vis2" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
