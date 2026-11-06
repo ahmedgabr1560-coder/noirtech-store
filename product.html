@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+
+  <script>
+  (function(){
+    try {
+      var mode = localStorage.getItem("nx_theme_mode") || "system";
+      var dark = mode === "dark" ? true : mode === "light" ? false : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      document.documentElement.style.colorScheme = dark ? "dark" : "light";
+      window.__ATHAR_THEME_MODE = mode;
+      if (window.matchMedia && !window.__ATHAR_SCHEME_BOUND_PP) {
+        window.__ATHAR_SCHEME_BOUND_PP = true;
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(e) {
+          if ((localStorage.getItem("nx_theme_mode") || "system") !== "system") return;
+          document.documentElement.setAttribute("data-theme", e.matches ? "dark" : "light");
+          document.documentElement.style.colorScheme = e.matches ? "dark" : "light";
+        });
+      }
+    } catch (e) {}
+  })();
+  </script>
+
   <meta name="color-scheme" content="dark light" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -14,7 +35,7 @@
   <meta name="theme-color" content="#0a0a0c" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20261102-force1050" />
+  <link rel="stylesheet" href="styles.css?v=20261106-theme1" />
   <style>
     body { min-height: 100vh; }
     .pp-wrap { width: min(1100px, 94vw); margin: 0 auto; padding: 24px 0 60px; position: relative; z-index: 2; }
@@ -120,8 +141,29 @@
       .pd-thumb img{width:56px;height:56px}
     }
 
-  </style>
-  <link rel="preload" href="/styles.css?v=20261102-force1050" as="style" />
+  
+    /* Light mode product page */
+    [data-theme="light"] .pp-card {
+      background: rgba(255,255,255,0.96) !important;
+      border-color: rgba(15,23,42,0.1) !important;
+      color: #0f172a !important;
+      box-shadow: 0 10px 40px rgba(15,23,42,0.08);
+    }
+    [data-theme="light"] .pp-top a { color: #4f46e5 !important; }
+    [data-theme="light"] .pp-card h1,
+    [data-theme="light"] .pp-card h2,
+    [data-theme="light"] .pp-card h3,
+    [data-theme="light"] .pp-card p,
+    [data-theme="light"] .pp-card label,
+    [data-theme="light"] .pp-card span,
+    [data-theme="light"] .pp-loading,
+    [data-theme="light"] .pp-error { color: #0f172a !important; }
+    [data-theme="light"] .pp-card .muted { color: #64748b !important; }
+    [data-theme="light"] .pp-card button.btn-ghost {
+      background: #f8fafc; color: #0f172a; border-color: #e2e8f0;
+    }
+</style>
+  <link rel="preload" href="/styles.css?v=20261106-theme1" as="style" />
   <link rel="preload" href="/script.js?v=20261102-force1050" as="script" />
   <meta http-equiv="x-dns-prefetch-control" content="on" />
 </head>
