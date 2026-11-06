@@ -24,11 +24,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
-  <link rel="preload" href="/styles.css?v=20261107-colors1" as="style" />
+  <link rel="preload" href="/styles.css?v=20261107-phase2" as="style" />
   <link rel="preload" href="/script.js?v=20261104-cartinline" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
-  <link rel="stylesheet" href="/styles.css?v=20261107-colors1" />
+  <link rel="stylesheet" href="/styles.css?v=20261107-phase2" />
 <script>
 (function(){
   try {
@@ -161,34 +161,28 @@
     <!-- Hero -->
     <section class="hero" id="home">
       <div class="container hero-grid">
-        <div class="hero-copy">
-          <p class="hero-eyebrow"><span class="dot"></span> <span id="heroBadgeText">مجموعة الموضة</span></p>
-          <h1 id="heroTitleLine"><span id="heroHighlightText">أناقة بلا حدود</span></h1>
-          <p class="hero-desc" id="heroDescText">تسوقي أحدث الشنط والملابس والإكسسوارات الحريمي — قطع مختارة بعناية، جودة عالية، وتوصيل سريع لباب البيت.</p>
-          <div class="hero-cta">
-            <a href="#shop" class="btn btn-primary" id="heroBtnText">تسوقي الآن <span class="arrow">←</span></a>
-            <a href="/feedback.html" class="btn btn-ghost feedback-cta"><span aria-hidden="true">💬</span> رأيك يهمنا</a>
+        <div class="hero-copy athar-hero-copy">
+          <h1 id="heroTitleLine" class="athar-hero-title"><span id="heroHighlightText">أناقة بلا حدود</span></h1>
+          <div class="hero-cta athar-hero-cta">
+            <a href="#shop" class="btn btn-primary athar-btn-shop" id="heroBtnText">تسوقي الآن 🛍️</a>
+            <a href="/feedback.html" class="btn btn-ghost athar-btn-feedback feedback-cta">⭐ رأيك يهمنا</a>
           </div>
-          <div class="hero-trust">
-            <div class="trust-item">
-              <span class="ti">🚚</span>
-              <div><b>شحن سريع</b><small>لجميع المحافظات</small></div>
-            </div>
-            <div class="trust-item">
-              <span class="ti">✨</span>
-              <div><b>قطع مختارة</b><small>جودة مضمونة</small></div>
-            </div>
-            <div class="trust-item">
-              <span class="ti">💬</span>
-              <div><b>دعم مباشر</b><small>نحن هنا لمساعدتك</small></div>
-            </div>
+          <div class="athar-ship-line" id="heroShipLine">
+            <span class="ti">🚚</span>
+            <span>شحن سريع</span>
           </div>
+          <p class="hero-desc athar-hero-desc" id="heroDescText" hidden>تسوقي أحدث الشنط والملابس والإكسسوارات الحريمي</p>
+          <p class="hero-eyebrow" hidden><span id="heroBadgeText">مجموعة الموضة</span></p>
         </div>
         <div class="hero-visual">
           <div class="hero-light" aria-hidden="true"></div>
           <div class="hero-glow hero-glow-a" aria-hidden="true"></div>
           <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
-          <div class="phones-stack">
+          <div class="athar-hero-arrows">
+            <button type="button" class="athar-hero-arrow" id="heroCarouselPrev" aria-label="السابق">‹</button>
+            <button type="button" class="athar-hero-arrow" id="heroCarouselNext" aria-label="التالي">›</button>
+          </div>
+          <div class="phones-stack" id="heroPhonesStack">
             <div class="phone p1">
               <span class="phone-bezel" aria-hidden="true"></span>
               <span class="phone-shine" aria-hidden="true"></span>
@@ -253,8 +247,8 @@
       <div class="container">
         <div class="section-head row">
           <div>
-            <h2 id="shopTitle">موضة وأزياء</h2>
-            <p id="shopSubtitle">كل منتجات الموضة</p>
+            <h2 id="shopTitle" class="athar-section-title">الأكثر مبيعًا</h2>
+            <p id="shopSubtitle" class="athar-section-sub">تشكيلة مختارة لكِ</p>
           </div>
           <div class="shop-filters">
             <select id="filterBrand" class="filter-select">
@@ -643,7 +637,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261106-vis2" defer></script>
+  <script src="/script.js?v=20261107-phase2" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
