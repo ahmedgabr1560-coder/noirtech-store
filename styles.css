@@ -3153,3 +3153,222 @@ body:has(#cartOverlay.open) .float-ai {
   color: #0f172a !important;
 }
 
+
+
+/* ===== ATHAR Reference Palette (exact redesign) ===== */
+:root, [data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07060a;
+  --bg-section: #0c0a10;
+  --bg-card: #141018;
+  --text: #f5efe8;
+  --text-heading: #fff8f0;
+  --muted: #b8a99a;
+  --primary: #7a1f3d;
+  --primary-hover: #9a284e;
+  --burgundy: #6b1a36;
+  --burgundy-deep: #4a1026;
+  --gold: #d4af37;
+  --gold-light: #f0d78c;
+  --champagne: #e8d5a3;
+  --bronze: #b08d57;
+  --border: rgba(212, 175, 55, 0.18);
+  --border-solid: #2a2230;
+  --link: #e8d5a3;
+  --btn-primary-bg: #7a1f3d;
+  --btn-primary-text: #fff8f0;
+  --btn-secondary-bg: rgba(255,255,255,0.06);
+  --btn-secondary-text: #f5efe8;
+  --btn-hover: #9a284e;
+  --header-bg: rgba(7,6,10,0.92);
+  --footer-bg: #05040a;
+  --nav-bg: #0c0a10;
+  --price: #f0d78c;
+  --price-old: #8a7f74;
+  --badge: #7a1f3d;
+  --cart-icon: #d4af37;
+  --input-bg: #121018;
+  --input-border: #2a2230;
+  --success: #16a34a;
+  --error: #ef4444;
+  --accent: #d4af37;
+  --shadow: rgba(0,0,0,0.55);
+  --radius: 18px;
+  --font: "Cairo", system-ui, -apple-system, sans-serif;
+  --bottom-nav-bg: rgba(12,10,16,0.96);
+  --hero-pink: transparent;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #fce8ef;
+  --bg-section: #fff5f8;
+  --bg-card: #ffffff;
+  --text: #3b1224;
+  --text-heading: #5c1630;
+  --muted: #9a6b7d;
+  --primary: #7a1f3d;
+  --primary-hover: #9a284e;
+  --burgundy: #6b1a36;
+  --burgundy-deep: #4a1026;
+  --gold: #b08d57;
+  --gold-light: #d4af37;
+  --champagne: #c9a86c;
+  --bronze: #a67c52;
+  --border: rgba(122, 31, 61, 0.12);
+  --border-solid: #f0d4de;
+  --link: #7a1f3d;
+  --btn-primary-bg: #7a1f3d;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #fff5f8;
+  --btn-secondary-text: #5c1630;
+  --btn-hover: #9a284e;
+  --header-bg: rgba(255, 245, 248, 0.92);
+  --footer-bg: #fff0f5;
+  --nav-bg: #fff5f8;
+  --price: #7a1f3d;
+  --price-old: #b89aa6;
+  --badge: #7a1f3d;
+  --cart-icon: #7a1f3d;
+  --input-bg: #ffffff;
+  --input-border: #f0d4de;
+  --success: #16a34a;
+  --error: #ef4444;
+  --accent: #7a1f3d;
+  --shadow: rgba(122, 31, 61, 0.12);
+  --radius: 18px;
+  --bottom-nav-bg: rgba(255, 245, 248, 0.97);
+  --hero-pink: #fce8ef;
+}
+
+/* Bottom navigation — reference */
+.athar-bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 180;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px max(8px, env(safe-area-inset-bottom));
+  background: var(--bottom-nav-bg);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 -8px 30px var(--shadow);
+}
+.athar-bottom-nav a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 2px;
+  min-width: 0;
+}
+.athar-bottom-nav a.active,
+.athar-bottom-nav a:hover {
+  color: var(--primary);
+}
+.athar-bottom-nav .bn-ico {
+  font-size: 1.2rem;
+  line-height: 1;
+  position: relative;
+}
+.athar-bottom-nav .bn-badge {
+  position: absolute;
+  top: -6px; left: -8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.6rem;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 99px;
+  display: grid;
+  place-items: center;
+  padding: 0 4px;
+}
+body { padding-bottom: 72px; }
+
+/* Benefits grid reference style */
+.athar-benefits {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 18px 0 8px;
+}
+.athar-benefits .bnf {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: 0 6px 20px var(--shadow);
+}
+.athar-benefits .bnf .ico { font-size: 1.35rem; margin-bottom: 6px; }
+.athar-benefits .bnf b { display: block; font-size: 0.78rem; color: var(--text-heading); }
+@media (max-width: 640px) {
+  .athar-benefits { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .athar-benefits .bnf { padding: 10px 4px; border-radius: 14px; }
+  .athar-benefits .bnf b { font-size: 0.65rem; }
+}
+
+/* Promo gift banner */
+.athar-promo-banner {
+  margin: 18px 0 24px;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  min-height: 110px;
+  background: linear-gradient(90deg, #7a1f3d, #b8325e);
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  color: #fff;
+  box-shadow: 0 12px 40px rgba(122,31,61,0.25);
+}
+.athar-promo-banner img {
+  width: 88px; height: 88px; object-fit: contain; margin-left: 10px;
+}
+.athar-promo-banner .txt { flex: 1; }
+.athar-promo-banner .txt b { font-size: 1.05rem; display: block; }
+[data-theme="dark"] .athar-promo-banner {
+  background: linear-gradient(90deg, #3d1524, #7a1f3d 55%, #d4af37);
+}
+
+/* Soft pink page wash in light */
+[data-theme="light"] body {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, #ffe4ee 0%, transparent 55%),
+    var(--bg);
+}
+[data-theme="light"] .hero {
+  background: transparent;
+}
+[data-theme="dark"] .hero {
+  background: radial-gradient(ellipse 70% 60% at 70% 20%, rgba(122,31,61,0.25), transparent 60%);
+}
+
+/* Product cards soft pink in light */
+[data-theme="light"] .product-card,
+[data-theme="light"] .card {
+  background: #fff;
+  border: 1px solid rgba(122,31,61,0.08);
+  box-shadow: 0 8px 28px rgba(122,31,61,0.08);
+}
+[data-theme="dark"] .product-card,
+[data-theme="dark"] .card {
+  background: var(--bg-card);
+  border: 1px solid rgba(212,175,55,0.12);
+}
+
+/* Hide homepage categories section if present */
+#homeCategories,
+.home-categories,
+section.categories-home {
+  display: none !important;
+}
+
