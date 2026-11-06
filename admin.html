@@ -12,7 +12,7 @@
   <style>
     :root {
       --bg:#0b0b10; --panel:#12121a; --card:#181822; --border:rgba(255,255,255,.08);
-      --text:#f4f4f8; --muted:#9a9aa8; --accent:#8b5cf6; --accent2:#6366f1;
+      --text:#f4f4f8; --muted:#9a9aa8; --accent:#7a1f3d; --accent2:#6366f1;
       --ok:#22c55e; --warn:#f59e0b; --danger:#ef4444; --side:260px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
@@ -1336,18 +1336,18 @@
 
     /* ===== Theme / Store Colors ===== */
     const THEME_DEFAULTS = {
-      primary: "#a78bfa", secondary: "#c9a227", bg: "#07070a", bgSection: "#0a0a0c", bgCard: "#0f0f14",
+      primary: "#7a1f3d", secondary: "#c9a227", bg: "#07070a", bgSection: "#0a0a0c", bgCard: "#0f0f14",
       border: "#2a2a32", text: "#f4f4f8", textHeading: "#ffffff", textMuted: "#9898a6", link: "#c4b5fd",
-      btnPrimaryBg: "#8b5cf6", btnPrimaryText: "#ffffff", btnSecondaryBg: "#1a1a22", btnSecondaryText: "#f5f5f7",
-      btnHover: "#7c5cf0", headerBg: "#0a0a0c", footerBg: "#07070a", navBg: "#0a0a0c", price: "#f0b429",
-      priceOld: "#9898a6", badge: "#f97316", cartIcon: "#a78bfa", inputBg: "#0c0c12", inputBorder: "#2a2a32",
+      btnPrimaryBg: "#7a1f3d", btnPrimaryText: "#ffffff", btnSecondaryBg: "#1a1a22", btnSecondaryText: "#f5f5f7",
+      btnHover: "#9a284e", headerBg: "#0a0a0c", footerBg: "#07070a", navBg: "#0a0a0c", price: "#f0b429",
+      priceOld: "#9898a6", badge: "#f97316", cartIcon: "#7a1f3d", inputBg: "#0c0c12", inputBorder: "#2a2a32",
       success: "#16a34a", error: "#ef4444", gold: "#f0b429", goldLight: "#ffd666", goldDark: "#d4920a",
       accent: "#7c5cff", shadow: "rgba(0,0,0,0.45)", radius: "14"
     };
     const THEME_PRESETS = {
       luxury_black_gold: { ...THEME_DEFAULTS, primary: "#c9a227", secondary: "#f0b429", btnPrimaryBg: "#c9a227", btnPrimaryText: "#111", link: "#f0b429", accent: "#d4af37", cartIcon: "#f0b429" },
       minimal_beige: { ...THEME_DEFAULTS, bg: "#f5f0e8", bgSection: "#efe8dc", bgCard: "#ffffff", text: "#2a241c", textHeading: "#1a1510", textMuted: "#7a6f62", border: "#e0d6c8", primary: "#8b6914", secondary: "#c9a227", btnPrimaryBg: "#8b6914", headerBg: "#efe8dc", footerBg: "#e8dfd0", navBg: "#efe8dc", inputBg: "#fff", inputBorder: "#d4c9b8", link: "#8b6914" },
-      elegant_white: { ...THEME_DEFAULTS, bg: "#ffffff", bgSection: "#f8f8fa", bgCard: "#ffffff", text: "#1a1a1a", textHeading: "#0a0a0a", textMuted: "#6b6b76", border: "#e5e5ea", primary: "#6d28d9", secondary: "#a78bfa", btnPrimaryBg: "#6d28d9", headerBg: "#ffffff", footerBg: "#f4f4f6", navBg: "#ffffff", inputBg: "#fff", inputBorder: "#ddd", link: "#6d28d9", cartIcon: "#6d28d9" },
+      elegant_white: { ...THEME_DEFAULTS, bg: "#ffffff", bgSection: "#f8f8fa", bgCard: "#ffffff", text: "#1a1a1a", textHeading: "#0a0a0a", textMuted: "#6b6b76", border: "#e5e5ea", primary: "#6d28d9", secondary: "#7a1f3d", btnPrimaryBg: "#6d28d9", headerBg: "#ffffff", footerBg: "#f4f4f6", navBg: "#ffffff", inputBg: "#fff", inputBorder: "#ddd", link: "#6d28d9", cartIcon: "#6d28d9" },
       modern_dark: { ...THEME_DEFAULTS },
       classic_brown: { ...THEME_DEFAULTS, primary: "#8B4513", secondary: "#D2691E", btnPrimaryBg: "#8B4513", accent: "#A0522D", gold: "#CD853F", link: "#D2691E", cartIcon: "#D2691E", price: "#CD853F" }
     };
@@ -1783,7 +1783,7 @@
           + '<label style="margin:0;font-size:.78rem">خلفية<section></section><input type="color" data-hp="bg" value="'+(d.bg&&/^#/.test(d.bg)?d.bg:"#0a0a0c")+'" style="width:100%;height:34px;padding:0;border:0"></label>'
           + '<label style="margin:0;font-size:.78rem">لون العنوان<input type="color" data-hp="titleColor" value="'+(d.titleColor&&/^#/.test(d.titleColor)?d.titleColor:"#ffffff")+'" style="width:100%;height:34px;padding:0;border:0"></label>'
           + '<label style="margin:0;font-size:.78rem">لون النص<input type="color" data-hp="textColor" value="'+(d.textColor&&/^#/.test(d.textColor)?d.textColor:"#c8c8d0")+'" style="width:100%;height:34px;padding:0;border:0"></label>'
-          + '<label style="margin:0;font-size:.78rem">لون زر<input type="color" data-hp="btnColor" value="'+(d.btnColor&&/^#/.test(d.btnColor)?d.btnColor:"#8b5cf6")+'" style="width:100%;height:34px;padding:0;border:0"></label>'
+          + '<label style="margin:0;font-size:.78rem">لون زر<input type="color" data-hp="btnColor" value="'+(d.btnColor&&/^#/.test(d.btnColor)?d.btnColor:"#7a1f3d")+'" style="width:100%;height:34px;padding:0;border:0"></label>'
           + '</div>'
           + '<p class="hint" style="margin:8px 0 0">الإعدادات للجهاز: <b>'+(HP_DEV==="desktop"?"كمبيوتر":HP_DEV==="tablet"?"تابلت":"هاتف")+'</b>'+(id==="home"||id==="contact"?" — عدد المنتجات/الأعمدة أقل تأثيرًا هنا":"")+'</p>'
           + '</div>';
@@ -3995,7 +3995,7 @@
       document.querySelectorAll("#colorPalette [data-preset]").forEach(btn => {
         const n = btn.getAttribute("data-preset");
         const on = selectedProductColors.some(c => c.name === n);
-        btn.style.outline = on ? "2px solid #a78bfa" : "none";
+        btn.style.outline = on ? "2px solid #7a1f3d" : "none";
         btn.style.outlineOffset = "2px";
       });
     }
