@@ -24,11 +24,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin />
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com" />
-  <link rel="preload" href="/styles.css?v=20261107-phase2" as="style" />
+  <link rel="preload" href="/styles.css?v=20261107-realprod" as="style" />
   <link rel="preload" href="/script.js?v=20261104-cartinline" as="script" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript></noscript>
-  <link rel="stylesheet" href="/styles.css?v=20261107-phase2" />
+  <link rel="stylesheet" href="/styles.css?v=20261107-realprod" />
 <script>
 (function(){
   try {
@@ -243,7 +243,18 @@
     </section>
 
     <!-- Dynamic shop with filters -->
-    <section class="section alt" id="shop">
+    
+    <!-- الأكثر مبيعاً — منتجات حقيقية -->
+    <section class="container athar-best" id="atharBestSection">
+      <div class="athar-best-head">
+        <h2 class="athar-section-title">الأكثر مبيعاً</h2>
+      </div>
+      <div class="products-grid athar-best-grid" id="bestGrid"></div>
+      <div class="athar-more-wrap">
+        <a href="#shop" class="athar-more-link">عرض المزيد ←</a>
+      </div>
+    </section>
+<section class="section alt" id="shop">
       <div class="container">
         <div class="section-head row">
           <div>
@@ -637,7 +648,7 @@
   </div>
 
   <script src="/config-loader.js?v=20261103-themepro" defer></script>
-  <script src="/script.js?v=20261107-phase2" defer></script>
+  <script src="/script.js?v=20261107-realprod" defer></script>
   <script>
   // ريفرش/رجوع أسرع من كاش المتصفح
   window.addEventListener("pageshow", function(e) {
