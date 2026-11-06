@@ -3392,3 +3392,28 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
   setInterval(wireBtn, 2500);
 })();
 
+
+
+/* ATHAR hero carousel */
+(function () {
+  function bindHeroCarousel() {
+    var stack = document.getElementById("heroPhonesStack") || document.querySelector(".phones-stack");
+    var prev = document.getElementById("heroCarouselPrev");
+    var next = document.getElementById("heroCarouselNext");
+    if (!stack) return;
+    var idx = 0;
+    function show(i) {
+      idx = i % 2;
+      if (idx < 0) idx = 1;
+      if (idx === 1) stack.classList.add("show-second");
+      else stack.classList.remove("show-second");
+    }
+    if (prev) prev.addEventListener("click", function () { show(idx - 1); });
+    if (next) next.addEventListener("click", function () { show(idx + 1); });
+    // auto every 5s
+    setInterval(function () { show(idx + 1); }, 5000);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bindHeroCarousel);
+  else bindHeroCarousel();
+})();
+
