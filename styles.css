@@ -3100,3 +3100,56 @@ body:has(#cartOverlay.open) .float-ai {
 #cartOverlay { z-index: 9995 !important; }
 #applyCouponBtn { pointer-events: auto !important; cursor: pointer !important; position: relative; z-index: 6; }
 #couponBox { position: relative; z-index: 6; }
+
+
+/* Cart + drawer light mode */
+[data-theme="light"] #cartDrawer,
+[data-theme="light"] #cartDrawer.drawer {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+[data-theme="light"] #cartDrawer .cart-head,
+[data-theme="light"] #cartDrawer .drawer-foot,
+[data-theme="light"] #cartDrawer .cart-total-row,
+[data-theme="light"] #cartDrawer label,
+[data-theme="light"] #cartDrawer span,
+[data-theme="light"] #cartDrawer strong,
+[data-theme="light"] #cartDrawer p,
+[data-theme="light"] #cartDrawer h2,
+[data-theme="light"] #cartDrawer h3 {
+  color: #0f172a !important;
+}
+[data-theme="light"] #cartDrawer .muted,
+[data-theme="light"] #cartShippingHint,
+[data-theme="light"] #couponMsg {
+  color: #64748b !important;
+}
+[data-theme="light"] #cartDrawer input,
+[data-theme="light"] #cartDrawer select,
+[data-theme="light"] #cartDrawer textarea,
+[data-theme="light"] #couponInput {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] #cartDrawer input::placeholder,
+[data-theme="light"] #couponInput::placeholder {
+  color: #94a3b8 !important;
+}
+[data-theme="light"] #cartDrawer .icon-btn,
+[data-theme="light"] #cartDrawer .btn-ghost {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+[data-theme="light"] #cartOverlay,
+[data-theme="light"] .drawer-overlay.open {
+  background: rgba(15, 23, 42, 0.45) !important;
+}
+[data-theme="light"] .order-success-modal,
+[data-theme="light"] #orderSuccessModal {
+  background: #fff !important;
+  color: #0f172a !important;
+}
+
