@@ -867,6 +867,7 @@ function getMixedOfferImages(p) {
 function productCard(p) {
   const off = discountPct(p);
   return `<article class="product-card" data-id="${p.id}">
+    <button type="button" class="btn-fav" data-fav="${p.id}" aria-label="مفضلة" onclick="event.preventDefault();event.stopPropagation();try{toggleFav&&toggleFav(${p.id})}catch(e){}">♡</button>
     <a class="product-media ${isMixedBundle(p) ? "mixed-split" : ""}" href="/product.html?id=${p.id}" data-open="${p.id}">
       ${isMixedBundle(p) ? (function(){
           const imgs = getMixedOfferImages(p);
@@ -915,7 +916,19 @@ function renderAll() {
   renderCatNav();
   renderCatsDirectory();
   // خصومات فقط (من غير عروض ٢/٣ قطع)
-  renderGrid($("#bestGrid"), PRODUCTS.filter(p => isDiscountOffer(p) || (p.best && !isBundleOffer(p))).slice(0, 12));
+  (function(){
+    var bestEl = $("#bestGrid");
+    if (!bestEl) return;
+    var list = PRODUCTS.filter(function(p){ return !p.hidden && !isBundleOffer(p); });
+    // فضّل الشنط والمنتجات اللي فيها صور
+    list.sort(function(a,b){
+      var sa = /شنط|حقيبة|bag/i.test(String(a.name||"")) || a.best ? 0 : 1;
+      var sb = /شنط|حقيبة|bag/i.test(String(b.name||"")) || b.best ? 0 : 1;
+      return sa - sb;
+    });
+    if (!list.length) list = PRODUCTS.slice(0, 6);
+    renderGrid(bestEl, list.slice(0, 6));
+  })();
   // عروض القطع — بأقسام
   renderBundleSection();
   renderGrid($("#newGrid"), PRODUCTS.filter(p => !p.isOffer && !isBundleOffer(p)).slice(0, 12));
@@ -3415,5 +3428,48 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bindHeroCarousel);
   else bindHeroCarousel();
+})();
+
+
+
+/* ATHAR hero from real products */
+(function(){
+  function applyHeroProducts(){
+    try {
+      if (typeof PRODUCTS === "undefined" || !PRODUCTS || !PRODUCTS.length) return;
+      var list = PRODUCTS.filter(function(p){
+        return p && !p.hidden && p.image && !((typeof isBundleOffer==="function") && isBundleOffer(p));
+      });
+      if (!list.length) list = PRODUCTS.filter(function(p){ return p && p.image; });
+      if (!list.length) return;
+      var a = list[0], b = list[1] || list[0];
+      var img1 = document.getElementById("heroImg1");
+      var img2 = document.getElementById("heroImg2");
+      if (img1 && a.image) { img1.src = a.image; img1.alt = a.name || "منتج"; img1.dataset.pid = a.id; }
+      if (img2 && b.image) { img2.src = b.image; img2.alt = b.name || "منتج"; img2.dataset.pid = b.id; }
+      var chip = document.getElementById("heroChipTitle");
+      if (chip && a.name) chip.textContent = String(a.name).slice(0, 28);
+      // click hero image -> product
+      [img1, img2].forEach(function(img){
+        if (!img) return;
+        img.style.cursor = "pointer";
+        img.onclick = function(){
+          var id = img.dataset.pid;
+          if (id) location.href = "/product.html?id=" + id;
+        };
+      });
+    } catch(e) { console.warn(e); }
+  }
+  window.__atharApplyHeroProducts = applyHeroProducts;
+  // after products load
+  var tries = 0;
+  var t = setInterval(function(){
+    tries++;
+    if (typeof PRODUCTS !== "undefined" && PRODUCTS && PRODUCTS.length) {
+      applyHeroProducts();
+      clearInterval(t);
+    }
+    if (tries > 40) clearInterval(t);
+  }, 250);
 })();
 
