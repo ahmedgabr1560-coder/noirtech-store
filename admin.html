@@ -4909,7 +4909,7 @@
     (async () => {
       if (!SECRET) return;
       try {
-        const data = await api("stats");
+        const data = await api("auth_check");
         if (data.ok) showApp();
         else { localStorage.removeItem(SECRET_KEY); SECRET=""; showLogin(); }
       } catch (e) { showLogin(); }
@@ -4936,7 +4936,7 @@
         return;
       }
       if (msg) { msg.className = "msg"; msg.textContent = "جاري التحقق..."; }
-      var data = await api("stats");
+      var data = await api("auth_check");
       if (!data || !data.ok) {
         if (msg) {
           msg.className = "msg err";
@@ -4961,7 +4961,7 @@
     var saved2 = (localStorage.getItem("nx_admin_secret") || "").trim();
     if (saved2) {
       SECRET = saved2;
-      api("stats").then(function (data) {
+      api("auth_check").then(function (data) {
         if (data && data.ok) showApp();
         else {
           try { localStorage.removeItem("nx_admin_secret"); } catch (e) {}

@@ -97,6 +97,11 @@ export default async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "غير مصرح" });
     }
 
+    // Fast login handshake: authenticate without loading multiple GitHub files.
+    if (action === "auth_check") {
+      return res.status(200).json({ ok: true });
+    }
+
     if (action === "stats" || (req.method === "GET" && !body.action)) {
       const prodFile = await ghGet("products.json");
       const catFile = await ghGet("categories.json");
