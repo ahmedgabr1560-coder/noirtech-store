@@ -3751,3 +3751,432 @@ a { color: var(--link); }
   background: var(--bg-card);
 }
 
+
+
+/* ============================================================================
+   ATHAR REFERENCE RECONSTRUCTION — final visual layer
+   This layer intentionally comes last so it wins over the older experimental
+   NovaMart/ATHAR rules above without removing any storefront behavior.
+   ============================================================================ */
+
+/* The mobile reference owns the chrome; desktop keeps the existing storefront. */
+.athar-bottom-nav { display: none; }
+body { padding-bottom: 0; }
+.athar-promo-wrap { position: relative; }
+
+@media (max-width: 768px) {
+  :root {
+    --athar-mobile-gutter: 12px;
+    --athar-pink: #fce8ef;
+    --athar-pink-soft: #fff5f8;
+    --athar-burgundy: #7a1f3d;
+    --athar-burgundy-deep: #5c1630;
+    --athar-gold: #c9a86c;
+  }
+
+  html, body { min-width: 0; }
+  body {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+    background: var(--athar-pink) !important;
+    color: #3b1224 !important;
+  }
+  html[data-theme="dark"] body {
+    background: #050505 !important;
+    color: #f5efe8 !important;
+  }
+  .bg-stage { display: none !important; }
+  .top-bar { display: none !important; }
+
+  /* Compact reference header: menu left, wordmark centered, search/cart right. */
+  .site-header {
+    position: sticky !important;
+    top: 0;
+    min-height: 62px;
+    background: rgba(255,245,248,.96) !important;
+    border-bottom: 1px solid rgba(122,31,61,.10) !important;
+    box-shadow: 0 3px 18px rgba(122,31,61,.07);
+    backdrop-filter: blur(18px);
+  }
+  html[data-theme="dark"] .site-header {
+    background: rgba(5,5,5,.96) !important;
+    border-bottom-color: rgba(212,175,55,.20) !important;
+    box-shadow: 0 3px 18px rgba(0,0,0,.28);
+  }
+  .site-header .header-row {
+    position: relative;
+    display: block !important;
+    width: 100% !important;
+    min-height: 62px !important;
+    padding: 0 8px !important;
+  }
+  .site-header .logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    display: flex;
+    gap: 7px;
+    z-index: 2;
+  }
+  .site-header .logo-mark { display: none !important; }
+  .site-header .logo-text,
+  .site-header .logo-text span {
+    color: var(--athar-burgundy) !important;
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.12rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap;
+    letter-spacing: .01em;
+  }
+  html[data-theme="dark"] .site-header .logo-text,
+  html[data-theme="dark"] .site-header .logo-text span { color: #f5efe8 !important; }
+  .site-header .main-nav,
+  .site-header .cat-nav { display: none !important; }
+  .site-header .header-actions { display: block !important; position: static !important; }
+  .site-header #accountBtn { display: none !important; }
+  .site-header #menuToggle,
+  .site-header #cartBtn,
+  .site-header #atharThemeToggle {
+    display: grid !important;
+    position: absolute !important;
+    top: 11px;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+    color: var(--athar-burgundy) !important;
+    background: transparent !important;
+  }
+  html[data-theme="dark"] .site-header #menuToggle,
+  html[data-theme="dark"] .site-header #cartBtn,
+  html[data-theme="dark"] .site-header #atharThemeToggle { color: #f5efe8 !important; }
+  .site-header #menuToggle { left: 7px; right: auto; }
+  .site-header #cartBtn { right: 7px; left: auto; }
+  .site-header #atharThemeToggle {
+    right: 48px;
+    left: auto;
+    font-size: 0;
+    display: none !important;
+  }
+  .site-header #atharThemeToggle::after {
+    content: "☼";
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  .site-header #cartBtn .action-label,
+  .site-header #cartBtn .badge-count { display: none !important; }
+  .site-header #cartBtn svg { width: 23px; height: 23px; }
+  .site-header #menuToggle svg { width: 24px; height: 24px; }
+  .site-header .search-box {
+    display: grid !important;
+    position: absolute !important;
+    top: 11px;
+    right: 86px;
+    width: 40px !important;
+    height: 40px;
+    z-index: 3;
+  }
+  .site-header .search-box input { display: none !important; }
+  .site-header .search-box button {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    color: var(--athar-burgundy);
+    background: transparent;
+    cursor: pointer;
+  }
+  html[data-theme="dark"] .site-header .search-box button { color: #f5efe8; }
+  .site-header .search-box button svg { width: 22px; height: 22px; }
+
+  /* Main flow is intentionally the same order as the reference image. */
+  main {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100%;
+    overflow: hidden;
+  }
+  #home { order: 1; }
+  #atharBenefits { order: 2; }
+  #atharBestSection { order: 3; }
+  .athar-promo-wrap { order: 4; }
+  #shop { order: 5; }
+  #contact { order: 6; }
+  #bundles { display: none !important; }
+
+  /* The supplied hero assets are the exact reference artwork. Crop only the
+     embedded lower utility strip; the real benefits remain live HTML cards. */
+  .hero,
+  .hero.athar-hero-ref {
+    order: 1;
+    padding: 10px 0 0 !important;
+    min-height: 0 !important;
+    background: transparent !important;
+  }
+  .hero-grid {
+    display: block !important;
+    width: 100% !important;
+  }
+  .hero-copy { display: none !important; }
+  .hero-visual {
+    display: block !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+  }
+  .hero-light,
+  .hero-glow,
+  .hero-chip,
+  .athar-hero-arrows { display: none !important; }
+  .phones-stack,
+  .phones-stack.show-second {
+    display: block !important;
+    position: relative !important;
+    width: min(calc(100% - 24px), 403px) !important;
+    height: auto !important;
+    aspect-ratio: 403 / 280;
+    margin: 0 auto !important;
+    transform: none !important;
+  }
+  .phones-stack .phone,
+  .phones-stack .phone.p1,
+  .phones-stack .phone.p2,
+  .phones-stack.show-second .phone.p1,
+  .phones-stack.show-second .phone.p2 {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 18px !important;
+    transform: none !important;
+    box-shadow: 0 8px 24px rgba(122,31,61,.13) !important;
+    border: 1px solid rgba(122,31,61,.10) !important;
+    background: var(--athar-pink-soft) !important;
+    overflow: hidden !important;
+  }
+  .phones-stack .phone.p2 { display: none !important; }
+  .phones-stack.show-second .phone.p1 { display: none !important; }
+  .phones-stack.show-second .phone.p2 { display: block !important; }
+  html[data-theme="dark"] .phones-stack .phone.p1 { display: none !important; }
+  html[data-theme="dark"] .phones-stack .phone.p2 { display: block !important; }
+  .phones-stack .phone::before,
+  .phones-stack .phone .phone-bezel,
+  .phones-stack .phone .phone-shine { display: none !important; }
+  .phones-stack .phone img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    object-fit: cover !important;
+    object-position: top center !important;
+    transform: none !important;
+    border-radius: 18px !important;
+  }
+
+  /* Four live feature cards. */
+  .athar-benefits {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+    gap: 6px !important;
+    width: calc(100% - 24px) !important;
+    margin: 10px auto 0 !important;
+  }
+  .athar-benefits .bnf {
+    min-width: 0;
+    padding: 9px 3px 8px !important;
+    border-radius: 14px !important;
+    background: #fff0f5 !important;
+    border: 1px solid rgba(122,31,61,.08) !important;
+    box-shadow: 0 5px 14px rgba(122,31,61,.08) !important;
+  }
+  .athar-benefits .bnf .ico {
+    width: 28px !important;
+    height: 28px !important;
+    margin: 0 auto 5px !important;
+    border-radius: 10px !important;
+    font-size: 1rem !important;
+    background: rgba(122,31,61,.08) !important;
+  }
+  .athar-benefits .bnf b {
+    font-size: .62rem !important;
+    line-height: 1.35 !important;
+    color: var(--athar-burgundy-deep) !important;
+  }
+  html[data-theme="dark"] .athar-benefits .bnf {
+    background: #171116 !important;
+    border-color: rgba(212,175,55,.18) !important;
+    box-shadow: 0 5px 16px rgba(0,0,0,.24) !important;
+  }
+  html[data-theme="dark"] .athar-benefits .bnf b { color: #f5efe8 !important; }
+  html[data-theme="dark"] .athar-benefits .bnf .ico { background: rgba(212,175,55,.12) !important; }
+
+  /* Best-selling strip */
+  .athar-best {
+    width: calc(100% - 24px) !important;
+    margin: 13px auto 0 !important;
+  }
+  .athar-best-head { margin: 0 0 7px !important; }
+  .athar-best-head::before,
+  .athar-best-head::after {
+    content: "";
+    display: inline-block;
+    width: 23%;
+    height: 1px;
+    vertical-align: middle;
+    background: rgba(122,31,61,.28);
+    margin: 0 8px;
+  }
+  html[data-theme="dark"] .athar-best-head::before,
+  html[data-theme="dark"] .athar-best-head::after { background: rgba(212,175,55,.36); }
+  .athar-section-title,
+  #shopTitle {
+    display: inline-block;
+    font-size: 1.05rem !important;
+    line-height: 1.2 !important;
+    color: var(--athar-burgundy-deep) !important;
+  }
+  html[data-theme="dark"] .athar-section-title,
+  html[data-theme="dark"] #shopTitle { color: #f0d78c !important; }
+  .athar-best-grid,
+  .products-grid,
+  .products-grid.athar-best-grid {
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    gap: 7px !important;
+  }
+  .athar-best-grid .product-card {
+    min-width: 0;
+    border-radius: 14px !important;
+    box-shadow: 0 5px 14px rgba(122,31,61,.08) !important;
+  }
+  .athar-best-grid .product-media,
+  .athar-best-grid .product-card img {
+    aspect-ratio: 1 / 1.06 !important;
+  }
+  .athar-best-grid .product-body { padding: 7px 7px 8px !important; gap: 3px !important; }
+  .athar-best-grid .product-name {
+    font-size: .68rem !important;
+    line-height: 1.35 !important;
+    min-height: 2.6em;
+  }
+  .athar-best-grid .rating { display: none !important; }
+  .athar-best-grid .price-row { margin-top: 0 !important; }
+  .athar-best-grid .price { font-size: .70rem !important; }
+  .athar-best-grid .old-price { font-size: .58rem !important; }
+  .athar-best-grid .add-btn {
+    padding: 6px 2px !important;
+    margin-top: 3px !important;
+    border-radius: 9px !important;
+    font-size: .62rem !important;
+    color: var(--athar-burgundy) !important;
+    border-color: rgba(122,31,61,.18) !important;
+    background: rgba(122,31,61,.05) !important;
+  }
+  html[data-theme="dark"] .athar-best-grid .add-btn {
+    color: #f0d78c !important;
+    border-color: rgba(212,175,55,.25) !important;
+    background: rgba(212,175,55,.08) !important;
+  }
+  .athar-best-grid .btn-fav { width: 24px !important; height: 24px !important; top: 5px !important; left: 5px !important; font-size: .8rem !important; }
+  .athar-more-wrap { margin-top: 7px !important; }
+  .athar-more-link { font-size: .72rem !important; }
+
+  /* Reference promo banner: crop the supplied screenshot strip at the bottom. */
+  .athar-promo-wrap { width: calc(100% - 24px) !important; margin: 11px auto 0 !important; }
+  .athar-promo-banner {
+    min-height: 82px !important;
+    height: 82px !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    border-radius: 17px !important;
+    background: linear-gradient(90deg,#b32155,#e12b6b) !important;
+    box-shadow: 0 9px 22px rgba(122,31,61,.20) !important;
+  }
+  .athar-promo-banner img {
+    width: 112px !important;
+    height: 68px !important;
+    object-fit: cover !important;
+    object-position: top center !important;
+    margin-left: 6px !important;
+    border-radius: 12px !important;
+  }
+  .athar-promo-banner .txt b { font-size: .85rem !important; line-height: 1.4; }
+  .athar-promo-banner .txt span { font-size: .62rem !important; }
+  html[data-theme="dark"] .athar-promo-banner {
+    background: linear-gradient(90deg,#2a101b,#681a36 60%,#a67c52) !important;
+    border: 1px solid rgba(212,175,55,.35);
+  }
+
+  /* Keep the full product catalogue and shopping functions live below the ref. */
+  #shop {
+    width: 100% !important;
+    padding: 22px 0 12px !important;
+    background: transparent !important;
+  }
+  #shop > .container { width: calc(100% - 24px) !important; }
+  #shop .section-head.row { margin-bottom: 10px !important; }
+  #shop .shop-filters { width: 100%; display: flex; gap: 6px; }
+  #shop .filter-select { flex: 1; min-width: 0; font-size: .72rem; padding: 8px 6px; }
+  #shop .products-grid { grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+  #contact, .site-footer { margin-top: 12px; }
+
+  /* Fixed bottom navigation matching the reference and never covering content. */
+  .athar-bottom-nav {
+    display: flex !important;
+    position: fixed !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    min-height: 68px;
+    padding: 7px 7px max(7px, env(safe-area-inset-bottom)) !important;
+    background: rgba(255,248,250,.97) !important;
+    border-top: 1px solid rgba(122,31,61,.12) !important;
+    box-shadow: 0 -7px 22px rgba(122,31,61,.12) !important;
+    z-index: 999 !important;
+  }
+  html[data-theme="dark"] .athar-bottom-nav {
+    background: rgba(8,8,8,.98) !important;
+    border-top-color: rgba(212,175,55,.22) !important;
+    box-shadow: 0 -7px 22px rgba(0,0,0,.36) !important;
+  }
+  .athar-bottom-nav a {
+    color: #725d68 !important;
+    gap: 4px !important;
+    padding: 3px 2px !important;
+    font-size: .60rem !important;
+    font-weight: 700 !important;
+  }
+  .athar-bottom-nav a.active,
+  .athar-bottom-nav a:hover { color: var(--athar-burgundy) !important; }
+  html[data-theme="dark"] .athar-bottom-nav a { color: #b8a99a !important; }
+  html[data-theme="dark"] .athar-bottom-nav a.active,
+  html[data-theme="dark"] .athar-bottom-nav a:hover { color: #f0d78c !important; }
+  .athar-bottom-nav .bn-ico { width: 24px; height: 24px; font-size: 0 !important; }
+  .athar-bottom-nav .bn-ico svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .athar-bottom-nav a.active .bn-ico svg { stroke-width: 2.1; }
+  .athar-bottom-nav .bn-badge { top: -5px; left: -7px; }
+
+  /* Floaters sit above the page but below the fixed navigation. */
+  .float-buttons { display: none !important; }
+}
+
+@media (max-width: 360px) {
+  .site-header .logo-text, .site-header .logo-text span { font-size: 1rem !important; }
+  .athar-benefits .bnf b { font-size: .57rem !important; }
+  .athar-best-grid .product-name { font-size: .62rem !important; }
+}
+
+@media (min-width: 769px) {
+  .athar-bottom-nav { display: none !important; }
+  body { padding-bottom: 0 !important; }
+}

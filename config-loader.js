@@ -214,7 +214,11 @@
     }
 
     window.__ATHAR_BRAND_COLORS = c.colors || null;
-    window.__ATHAR_THEME_MODE = c.themeMode || "system";
+    // A visitor's explicit storefront choice must win over the CMS default;
+    // otherwise the loader would silently turn dark mode back into system mode.
+    var storedTheme = "";
+    try { storedTheme = localStorage.getItem("nx_theme_mode") || ""; } catch (eTheme) {}
+    window.__ATHAR_THEME_MODE = (storedTheme === "dark" || storedTheme === "light") ? storedTheme : (c.themeMode || "system");
     applySystemSurfaces(c.colors);
     if (c.heroLayout) applyHeroLayout(c.heroLayout);
     if (c.homepage) applyHomepageConfig(c.homepage);

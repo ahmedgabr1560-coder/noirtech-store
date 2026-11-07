@@ -345,6 +345,88 @@
 })();
 </script>
 
+<style id="athar-admin-final">
+  /* ATHAR admin reference reconstruction — burgundy rail + blush workspace. */
+  :root {
+    --admin-rail: #5b1230;
+    --admin-rail-deep: #350817;
+    --admin-pink: #fff4f7;
+    --admin-pink-2: #fce8ef;
+    --admin-ink: #421126;
+    --admin-muted: #95667a;
+    --admin-line: rgba(122,31,61,.12);
+  }
+  html[data-admin-theme="light"] body,
+  html[data-admin-theme="light"] .main,
+  html[data-admin-theme="light"] #app.app.on { background: var(--admin-pink) !important; }
+  html[data-admin-theme="light"] .main { color: var(--admin-ink) !important; }
+  .app.on { grid-template-columns: 168px minmax(0,1fr) !important; min-height: 100vh; background: var(--admin-pink) !important; }
+  .side {
+    width: 168px !important;
+    padding: 14px 8px 18px !important;
+    background: linear-gradient(180deg, var(--admin-rail) 0%, #4a0d25 45%, var(--admin-rail-deep) 100%) !important;
+    border: 0 !important;
+    box-shadow: 8px 0 30px rgba(65,12,32,.16) !important;
+  }
+  .side .brand-row { padding: 4px 5px 14px !important; border-bottom: 1px solid rgba(255,255,255,.12); margin-bottom: 10px; }
+  .side .brand-row > span { color: #f0d78c !important; }
+  .side .brand-row > div > div:first-child { color: #fff !important; font-family: Georgia,serif; font-size: 1.02rem !important; }
+  .side .brand-row > div > div:last-child { color: rgba(255,255,255,.64) !important; }
+  .side .brand { display: none !important; }
+  .side .nav button,
+  .side > .btn { color: rgba(255,255,255,.88) !important; background: transparent !important; border-radius: 9px !important; margin: 2px 0 !important; padding: 9px 9px !important; font-size: .72rem !important; }
+  .side .nav button:hover { background: rgba(255,255,255,.10) !important; color: #fff !important; }
+  .side .nav button.active { background: rgba(255,255,255,.13) !important; color: #fff !important; border-right: 3px solid #f0d78c !important; box-shadow: none !important; }
+  .side > .btn { margin-top: 14px !important; border-color: rgba(255,255,255,.22) !important; }
+  .main { padding: 18px 22px 28px !important; min-width: 0; background: var(--admin-pink) !important; }
+  .top { display: block !important; margin-bottom: 14px !important; }
+  .top > div:first-of-type { display: flex !important; justify-content: flex-start; gap: 8px; margin-bottom: 12px; }
+  .top h2 { color: var(--admin-ink) !important; font-size: 1.28rem !important; }
+  html[data-admin-theme="dark"] .main,
+  html[data-admin-theme="dark"] .top h2 { color: var(--text) !important; }
+  #homepageRefCard { max-width: 100% !important; margin-top: 0 !important; padding: 18px !important; background: rgba(255,255,255,.72) !important; border-color: var(--admin-line) !important; box-shadow: 0 14px 30px rgba(122,31,61,.07) !important; }
+  html[data-admin-theme="dark"] #homepageRefCard { background: var(--card) !important; }
+  #homepageRefCard h3 { color: var(--admin-ink) !important; font-size: 1.05rem !important; }
+  html[data-admin-theme="dark"] #homepageRefCard h3 { color: var(--text) !important; }
+  #homepageRefCard > .hint { color: var(--admin-muted) !important; margin-bottom: 14px !important; }
+  .athar-editor-workbench { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(290px,.7fr); gap: 16px; align-items: start; margin: 0 0 16px; padding: 14px; border-radius: 16px; background: var(--admin-pink-2); border: 1px solid var(--admin-line); }
+  html[data-admin-theme="dark"] .athar-editor-workbench { background: rgba(255,255,255,.04); }
+  .athar-editor-toolbar { grid-column: 1/-1; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: var(--admin-ink); }
+  html[data-admin-theme="dark"] .athar-editor-toolbar { color: var(--text); }
+  .athar-device-switcher { display: inline-flex; gap: 5px; padding: 4px; border-radius: 11px; background: rgba(122,31,61,.08); }
+  .athar-device-btn { border: 0; border-radius: 8px; padding: 7px 9px; background: transparent; color: var(--admin-muted); font: 700 .72rem Cairo,sans-serif; cursor: pointer; }
+  .athar-device-btn.active { color: #fff; background: var(--admin-rail); box-shadow: 0 4px 10px rgba(122,31,61,.18); }
+  .athar-live-preview { min-height: 210px; display: grid; place-items: center; align-content: start; overflow: hidden; padding: 11px; border-radius: 15px; background: #fff; border: 1px solid rgba(122,31,61,.13); transition: .2s ease; }
+  .athar-live-preview[data-preview-device="tablet"] { max-width: 470px; justify-self: center; }
+  .athar-live-preview[data-preview-device="mobile"] { max-width: 280px; justify-self: center; }
+  .athar-preview-browser { width: 100%; display: flex; gap: 4px; padding: 0 0 8px; }
+  .athar-preview-browser span { width: 6px; height: 6px; border-radius: 50%; background: #e8b6c7; }
+  .athar-live-preview img { width: 100%; max-height: 260px; object-fit: cover; object-position: top; border-radius: 11px; border: 1px solid #f0d4de; }
+  .athar-preview-benefits { width: 100%; display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; margin-top: 6px; }
+  .athar-preview-benefits span { min-width: 0; padding: 5px 2px; border-radius: 6px; color: var(--admin-ink); background: var(--admin-pink-2); font-size: .55rem; text-align: center; }
+  #homepageRefCard label { color: var(--admin-muted) !important; }
+  #homepageRefCard input, #homepageRefCard select, #homepageRefCard textarea { background: #fff !important; color: var(--admin-ink) !important; border-color: var(--admin-line) !important; }
+  html[data-admin-theme="dark"] #homepageRefCard input, html[data-admin-theme="dark"] #homepageRefCard select, html[data-admin-theme="dark"] #homepageRefCard textarea { background: rgba(255,255,255,.05) !important; color: var(--text) !important; }
+  #homepageRefCard .btn-primary { background: linear-gradient(135deg,#7a1f3d,#9a284e) !important; }
+  .admin-theme-toggle { bottom: 18px !important; left: 18px !important; }
+  @media (max-width: 900px) {
+    .app.on { grid-template-columns: 1fr !important; }
+    .side { width: 100% !important; max-width: none !important; height: auto !important; position: relative !important; padding: 10px 10px 8px !important; }
+    .side .brand-row { margin-bottom: 7px; }
+    .side .nav { display: flex !important; gap: 5px; overflow-x: auto; padding-bottom: 2px; }
+    .side .nav button { flex: 0 0 auto; white-space: nowrap; font-size: .70rem !important; }
+    .side > .btn { width: auto !important; margin: 7px 0 0 !important; }
+    .main { padding: 14px 12px 24px !important; }
+    .athar-editor-workbench { grid-template-columns: 1fr; }
+    .athar-live-preview { grid-column: 1; }
+  }
+  @media (max-width: 520px) {
+    .athar-device-btn { padding: 6px 6px; font-size: .64rem; }
+    .athar-editor-workbench { padding: 10px; }
+    #homepageRefCard { padding: 12px !important; }
+  }
+</style>
+
 </head>
 <body>
   <div class="login-wrap" id="loginView">
@@ -402,8 +484,27 @@
         <div class="card" id="homepageRefCard" style="margin-top:14px">
           <h3>إدارة الصفحة الرئيسية (مرجع ATHAR)</h3>
           <p class="hint">التحكم في الهيرو والبانر والمميزات — يُحفظ في إعدادات الموقع</p>
+          <div class="athar-editor-workbench" aria-label="معاينة الصفحة الرئيسية">
+            <div class="athar-editor-toolbar">
+              <strong>المعاينة المباشرة</strong>
+              <div class="athar-device-switcher" role="tablist" aria-label="حجم المعاينة">
+                <button type="button" class="athar-device-btn active" data-preview-device="desktop">▣ سطح المكتب</button>
+                <button type="button" class="athar-device-btn" data-preview-device="tablet">▤ التابلت</button>
+                <button type="button" class="athar-device-btn" data-preview-device="mobile">▯ الموبايل</button>
+              </div>
+            </div>
+            <div class="athar-live-preview" id="atharLivePreview" data-preview-device="desktop">
+              <div class="athar-preview-browser"><span></span><span></span><span></span></div>
+              <img id="hpHeroPreview" src="/product-images/ref-hero_light_bag.jpg" alt="معاينة هيرو ATHAR" />
+              <div class="athar-preview-benefits"><span>🎧 دعم فني مميز</span><span>🛡️ دفع آمن</span><span>🎁 تغليف راقي</span><span>🏅 جودة مضمونة</span></div>
+            </div>
+          </div>
           <label>عنوان الهيرو<input id="hpHeroTitle" placeholder="أناقة بلا حدود" /></label>
           <label>نص زر الهيرو<input id="hpHeroBtn" placeholder="تسوقي الآن" /></label>
+          <div class="form-grid">
+            <label>صورة الهيرو الفاتح<input id="hpHeroImage1" placeholder="/product-images/ref-hero_light_bag.jpg" dir="ltr" /></label>
+            <label>صورة الهيرو الداكن<input id="hpHeroImage2" placeholder="/product-images/ref-hero_dark_bag.jpg" dir="ltr" /></label>
+          </div>
           <label>نص بانر الخصم<input id="hpPromoText" placeholder="خصومات مميزة في انتظارك" /></label>
           <label>صورة البانر (رابط)<input id="hpPromoImage" placeholder="/product-images/ref-gift_banner.jpg" dir="ltr" /></label>
           <label>عدد منتجات الأكثر مبيعاً<input id="hpBestCount" type="number" min="3" max="12" value="6" /></label>
@@ -420,6 +521,8 @@
             var set = function(id,v){ var el=document.getElementById(id); if(el) el.value = v || ""; };
             set("hpHeroTitle", hp.heroTitle || cfg.heroTitle || "أناقة بلا حدود");
             set("hpHeroBtn", hp.heroBtn || cfg.heroBtn || "تسوقي الآن");
+            set("hpHeroImage1", cfg.heroImage1 || "/product-images/ref-hero_light_bag.jpg");
+            set("hpHeroImage2", cfg.heroImage2 || "/product-images/ref-hero_dark_bag.jpg");
             set("hpPromoText", hp.promoText || "خصومات مميزة في انتظارك");
             set("hpPromoImage", hp.promoImage || "/product-images/ref-gift_banner.jpg");
             var bc=document.getElementById("hpBestCount"); if(bc) bc.value = hp.bestCount || 6;
@@ -441,6 +544,9 @@
               cur.homepage = cur.homepage || {};
               cur.homepage.heroTitle = (document.getElementById("hpHeroTitle")||{}).value || "أناقة بلا حدود";
               cur.homepage.heroBtn = (document.getElementById("hpHeroBtn")||{}).value || "تسوقي الآن";
+              cur.heroImage1 = (document.getElementById("hpHeroImage1")||{}).value || "/product-images/ref-hero_light_bag.jpg";
+              cur.heroImage2 = (document.getElementById("hpHeroImage2")||{}).value || "/product-images/ref-hero_dark_bag.jpg";
+              cur.heroRotateFromProducts = false;
               cur.homepage.promoText = (document.getElementById("hpPromoText")||{}).value || "";
               cur.homepage.promoImage = (document.getElementById("hpPromoImage")||{}).value || "";
               cur.homepage.bestCount = Number((document.getElementById("hpBestCount")||{}).value||6);
@@ -458,11 +564,26 @@
               // try generic config update
               await fetch("/api/admin", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action: "update_theme", config: cur }) }).catch(function(){});
               await fetch("/api/admin", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ action: "update_hero", heroTitle: cur.heroTitle, heroBtn: cur.heroBtn, homepage: cur.homepage }) }).catch(function(){});
+              var preview = document.getElementById("hpHeroPreview");
+              if (preview) preview.src = cur.heroImage1;
               if(msg) msg.textContent = "تم حفظ إعدادات الواجهة";
             } catch(e){ if(msg) msg.textContent = "تعذر الحفظ"; }
           };
           document.addEventListener("DOMContentLoaded", loadHp);
           setTimeout(loadHp, 1000);
+          document.addEventListener("input", function(e){
+            if(e.target && e.target.id === "hpHeroImage1"){
+              var preview=document.getElementById("hpHeroPreview");
+              if(preview && e.target.value) preview.src=e.target.value;
+            }
+          });
+          document.addEventListener("click", function(e){
+            var b=e.target.closest("[data-preview-device]");
+            if(!b) return;
+            document.querySelectorAll(".athar-device-btn").forEach(function(x){x.classList.toggle("active",x===b)});
+            var p=document.getElementById("atharLivePreview");
+            if(p) p.setAttribute("data-preview-device", b.getAttribute("data-preview-device"));
+          });
         })();
         </script>
 </div>

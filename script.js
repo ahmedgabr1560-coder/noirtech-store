@@ -2473,7 +2473,9 @@ function stopHeroProductRotate() {
 function startHeroProductRotate(config) {
   stopHeroProductRotate();
   config = config || window.siteConfig || window.__SITE_CONFIG__ || {};
-  const enabled = config.heroRotateFromProducts !== false;
+  // The reference artwork is the source of truth. Product rotation is opt-in
+  // so an early call made before site-config.json arrives cannot replace it.
+  const enabled = config.heroRotateFromProducts === true;
   if (!enabled) return;
   const secs = Math.max(2, Math.min(60, Number(config.heroRotateSeconds) || 3));
 
@@ -3473,4 +3475,3 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     if (tries > 40) clearInterval(t);
   }, 250);
 })();
-
