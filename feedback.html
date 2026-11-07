@@ -43,6 +43,25 @@
     .feedback-privacy { color:#858391; font-size:.75rem; line-height:1.7; margin:0; }
     .feedback-brand { color:#fff; font-weight:900; letter-spacing:.04em; }
     @media (max-width:520px) { .feedback-shell { width:min(100% - 22px, 720px); } .feedback-top { margin-bottom:28px; } .feedback-card { border-radius:22px; padding:24px 18px; } }
+
+    /* ATHAR brand palette */
+    :root { --bg:#07060a; --muted:#b8a99a; --burgundy:#7a1f3d; --gold:#d4af37; --gold-light:#f0d78c; }
+    body.feedback-page { background:radial-gradient(circle at 15% 10%, rgba(122,31,61,.34), transparent 34%), var(--bg); color:#f5efe8; }
+    .logo-mark { border-color:rgba(212,175,55,.55); color:var(--gold-light); background:rgba(122,31,61,.2); }
+    .feedback-back { color:#e8d5a3; }
+    .feedback-back:hover { color:#fff8f0; }
+    .feedback-card { border-color:rgba(212,175,55,.32); background:linear-gradient(145deg,rgba(20,16,24,.98),rgba(12,10,16,.98)); box-shadow:0 28px 80px rgba(0,0,0,.45); }
+    .feedback-kicker,.feedback-status { color:var(--gold-light); }
+    .feedback-card h1 { color:#fff8f0; }
+    .feedback-intro { color:#b8a99a; }
+    .feedback-form label { color:#f5efe8; }
+    .feedback-form input,.feedback-form textarea { border-color:rgba(212,175,55,.24); background:#121018; color:#f5efe8; }
+    .feedback-form input:focus,.feedback-form textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,55,.14); }
+    .feedback-rating label { border-color:rgba(212,175,55,.24); color:#8f8177; }
+    .feedback-rating label:hover,.feedback-rating input:checked + label { color:var(--gold-light); border-color:var(--gold); background:rgba(122,31,61,.22); }
+    .feedback-hint,.feedback-privacy { color:#a99588; }
+    .feedback-form .btn-primary { background:linear-gradient(135deg,#7a1f3d,#9a284e); color:#fff8f0; border:0; box-shadow:0 10px 28px rgba(122,31,61,.3); }
+    .feedback-form .btn-primary:hover { background:linear-gradient(135deg,#9a284e,#b63460); }
   </style>
 </head>
 <body class="feedback-page">
