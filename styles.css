@@ -4251,3 +4251,19 @@ main { display:flex !important; flex-direction:column !important; }
 #contact { order:7 !important; }
 .athar-flat-banner .hero-chip { display:flex !important; }
 .athar-flat-banner .athar-hero-arrows { display:flex !important; }
+
+
+/* Gift-box icon for the promo banner, replacing the old decorative image. */
+.athar-promo-banner .athar-promo-icon {
+  width:88px; height:88px; flex:0 0 88px; display:grid; place-items:center;
+  border-radius:18px; background:linear-gradient(145deg,#f0c95c,#9d193e);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25), 0 8px 20px rgba(0,0,0,.18);
+}
+.athar-promo-banner .athar-promo-icon svg {
+  width:56px; height:56px; fill:none; stroke:#fff7dc; stroke-width:2.8;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+@media (max-width:768px) {
+  .athar-promo-banner .athar-promo-icon { width:68px; height:68px; flex-basis:68px; border-radius:15px; }
+  .athar-promo-banner .athar-promo-icon svg { width:43px; height:43px; }
+}
