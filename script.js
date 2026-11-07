@@ -2473,9 +2473,8 @@ function stopHeroProductRotate() {
 function startHeroProductRotate(config) {
   stopHeroProductRotate();
   config = config || window.siteConfig || window.__SITE_CONFIG__ || {};
-  // The reference artwork is the source of truth. Product rotation is opt-in
-  // so an early call made before site-config.json arrives cannot replace it.
-  const enabled = config.heroRotateFromProducts === true;
+  // الهيدر يعرض منتجات المتجر الحقيقية افتراضيًا؛ يمكن تعطيله فقط صراحةً.
+  const enabled = config.heroRotateFromProducts !== false;
   if (!enabled) return;
   const secs = Math.max(2, Math.min(60, Number(config.heroRotateSeconds) || 3));
 

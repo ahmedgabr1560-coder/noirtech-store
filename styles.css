@@ -4180,3 +4180,74 @@ body { padding-bottom: 0; }
   .athar-bottom-nav { display: none !important; }
   body { padding-bottom: 0 !important; }
 }
+
+
+/* ===== Flat product hero — reference-inspired storefront banner ===== */
+.athar-flat-hero { padding: 14px 0 18px !important; }
+.athar-flat-banner {
+  position: relative; min-height: clamp(360px, 57vw, 540px); overflow: hidden;
+  border: 1px solid rgba(211,174,74,.42); border-radius: 24px;
+  background: #150f12; box-shadow: 0 20px 55px rgba(0,0,0,.3);
+  isolation: isolate;
+}
+.athar-flat-media, .athar-flat-media .phone, .athar-flat-media .phone img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+}
+.athar-flat-media { z-index: 0; }
+.athar-flat-media .phone { display: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+.athar-flat-media .phone.p1 { display: block !important; }
+.athar-flat-media .phone img { object-fit: cover; object-position: center; display: block; transition: opacity .45s ease, transform 6s ease; }
+.athar-flat-banner:hover .athar-flat-media .phone.p1 img { transform: scale(1.035); }
+.athar-flat-shade { position:absolute; inset:0; z-index:1; background: linear-gradient(90deg, rgba(12,7,10,.9) 0%, rgba(20,9,13,.58) 38%, rgba(20,9,13,.08) 73%), linear-gradient(0deg, rgba(8,6,8,.55), transparent 42%); pointer-events:none; }
+.athar-flat-copy { position:relative; z-index:3; width:min(54%, 520px); padding:clamp(34px, 6vw, 76px) clamp(22px, 6vw, 78px); color:#fff; }
+.athar-flat-copy .athar-hero-title { color:#fff !important; font-size:clamp(2.4rem, 6vw, 5.2rem) !important; line-height:1.05 !important; text-shadow:0 3px 18px rgba(0,0,0,.5); margin:0 0 24px !important; }
+.athar-flat-copy .athar-hero-title span { color:#fff !important; background:none !important; -webkit-text-fill-color:#fff !important; }
+.athar-flat-copy .athar-hero-cta { gap:10px !important; margin-bottom:22px !important; }
+.athar-flat-copy .athar-hero-cta .btn { min-height:46px; padding:11px 18px !important; }
+.athar-flat-copy .athar-hero-cta svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.athar-flat-copy .athar-btn-shop { background:#951b45 !important; color:#fff !important; border-color:rgba(255,255,255,.18) !important; }
+.athar-flat-copy .athar-btn-feedback { background:rgba(10,8,10,.48) !important; color:#fff !important; border-color:rgba(244,215,141,.65) !important; }
+.athar-flat-benefits { display:flex; flex-wrap:wrap; gap:9px; max-width:490px; }
+.athar-flat-benefits span { display:inline-flex; align-items:center; gap:7px; padding:8px 10px; border:1px solid rgba(244,215,141,.42); border-radius:11px; background:rgba(20,13,17,.58); color:#fff; font-size:.77rem; font-weight:800; backdrop-filter:blur(7px); }
+.athar-flat-benefits svg { width:18px; height:18px; fill:none; stroke:#f3d787; stroke-width:1.65; stroke-linecap:round; stroke-linejoin:round; }
+.athar-flat-banner .athar-hero-arrows { position:absolute; inset-inline:18px; top:50%; z-index:5; transform:translateY(-50%); display:flex; justify-content:space-between; pointer-events:none; padding:0; }
+.athar-flat-banner .athar-hero-arrow { pointer-events:auto; width:42px; height:42px; background:rgba(8,7,9,.58); color:#fff; border:1px solid rgba(255,255,255,.7); box-shadow:0 5px 18px rgba(0,0,0,.25); }
+.athar-flat-banner .hero-chip { position:absolute; z-index:4; inset-inline-end:26px; bottom:24px; margin:0 !important; display:flex; align-items:center; gap:9px; min-width:180px; padding:10px 12px !important; border-radius:14px !important; background:rgba(8,7,9,.68) !important; border:1px solid rgba(244,215,141,.5) !important; color:#fff; backdrop-filter:blur(8px); }
+.athar-flat-banner .hero-chip .chip-icon { display:grid; place-items:center; width:27px; height:27px; border-radius:9px; background:#6c1937; color:#f3d787; }
+.athar-flat-banner .hero-chip .chip-text { flex:1; min-width:0; }
+.athar-flat-banner .hero-chip strong { color:#fff !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.athar-flat-banner .hero-chip span { color:#dfd2b1 !important; }
+.athar-flat-banner .hero-chip .chip-go { color:#f3d787 !important; font-size:1.1rem; }
+@media (max-width: 700px) {
+  .athar-flat-hero { padding:8px 0 12px !important; }
+  .athar-flat-banner { min-height:clamp(430px, 110vw, 590px); border-radius:18px; }
+  .athar-flat-shade { background:linear-gradient(180deg, rgba(10,6,9,.1) 8%, rgba(15,8,12,.12) 34%, rgba(10,6,9,.9) 78%), linear-gradient(90deg, rgba(12,7,10,.16), transparent); }
+  .athar-flat-copy { width:100%; padding:24px 18px 20px; position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; }
+  .athar-flat-copy .athar-hero-title { font-size:clamp(2.1rem, 11vw, 3.1rem) !important; margin-bottom:16px !important; }
+  .athar-flat-copy .athar-hero-cta { margin-bottom:14px !important; }
+  .athar-flat-copy .athar-hero-cta .btn { font-size:.78rem; padding:10px 13px !important; }
+  .athar-flat-benefits { gap:6px; max-width:100%; }
+  .athar-flat-benefits span { padding:7px 8px; font-size:.64rem; }
+  .athar-flat-benefits svg { width:15px; height:15px; }
+  .athar-flat-banner .athar-hero-arrows { inset-inline:8px; top:42%; }
+  .athar-flat-banner .athar-hero-arrow { width:34px; height:34px; }
+  .athar-flat-banner .hero-chip { inset-inline-end:14px; top:14px; bottom:auto; min-width:145px; padding:7px 9px !important; }
+  .athar-flat-banner .hero-chip strong { font-size:.7rem; }
+  .athar-flat-banner .hero-chip span { font-size:.59rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .athar-flat-media .phone img { transition:none; }
+}
+
+
+/* Keep the flat hero first on every viewport, matching the reference header flow. */
+main { display:flex !important; flex-direction:column !important; }
+#home { order:1 !important; }
+#atharBenefits { order:2 !important; }
+.athar-promo-wrap { order:3 !important; }
+#atharBestSection { order:4 !important; }
+#bundles { order:5 !important; }
+#shop { order:6 !important; }
+#contact { order:7 !important; }
+.athar-flat-banner .hero-chip { display:flex !important; }
+.athar-flat-banner .athar-hero-arrows { display:flex !important; }

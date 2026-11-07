@@ -181,49 +181,37 @@
 
   <main>
     <!-- Hero -->
-    <section class="hero" id="home">
-      <div class="container hero-grid">
-        <div class="hero-copy athar-hero-copy">
-          <h1 id="heroTitleLine" class="athar-hero-title"><span id="heroHighlightText">أناقة بلا حدود</span></h1>
-          <div class="hero-cta athar-hero-cta">
-            <a href="#shop" class="btn btn-primary athar-btn-shop" id="heroBtnText">تسوقي الآن 🛍️</a>
-            <a href="/feedback.html" class="btn btn-ghost athar-btn-feedback feedback-cta">⭐ رأيك يهمنا</a>
-          </div>
-          <div class="athar-ship-line" id="heroShipLine">
-            <span class="ti">🚚</span>
-            <span>شحن سريع</span>
-          </div>
-          <p class="hero-desc athar-hero-desc" id="heroDescText" hidden>تسوقي أحدث الشنط والملابس والإكسسوارات الحريمي</p>
-          <p class="hero-eyebrow" hidden><span id="heroBadgeText">مجموعة الموضة</span></p>
-        </div>
-        <div class="hero-visual">
-          <div class="hero-light" aria-hidden="true"></div>
-          <div class="hero-glow hero-glow-a" aria-hidden="true"></div>
-          <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
-          <div class="athar-hero-arrows">
-            <button type="button" class="athar-hero-arrow" id="heroCarouselPrev" aria-label="السابق">‹</button>
-            <button type="button" class="athar-hero-arrow" id="heroCarouselNext" aria-label="التالي">›</button>
-          </div>
-          <div class="phones-stack" id="heroPhonesStack">
+    <section class="hero athar-flat-hero" id="home">
+      <div class="container">
+        <div class="athar-flat-banner">
+          <div class="athar-flat-media" id="heroPhonesStack">
             <div class="phone p1">
-              <span class="phone-bezel" aria-hidden="true"></span>
-              <span class="phone-shine" aria-hidden="true"></span>
-              <img id="heroImg1" fetchpriority="high" decoding="async" src="/product-images/ref-hero_light_bag.jpg" alt="صورة الواجهة 1" />
+              <img id="heroImg1" fetchpriority="high" decoding="async" src="/product-images/ref-hero_light_bag.jpg" alt="منتج من تشكيلتنا" />
             </div>
-            <div class="phone p2">
-              <span class="phone-bezel" aria-hidden="true"></span>
-              <span class="phone-shine" aria-hidden="true"></span>
-              <img id="heroImg2" decoding="async" loading="eager" src="/product-images/ref-hero_dark_bag.jpg" alt="صورة الواجهة 2" />
+            <div class="phone p2" aria-hidden="true">
+              <img id="heroImg2" decoding="async" loading="eager" src="/product-images/ref-hero_dark_bag.jpg" alt="منتج من تشكيلتنا" />
             </div>
           </div>
-          <a class="hero-chip" href="#shop">
-            <span class="chip-icon" aria-hidden="true">◇</span>
-            <div class="chip-text">
-              <strong id="heroChipTitle">شنط حريمي</strong>
-              <span id="heroChipSub">أحدث التشكيلة</span>
+          <div class="athar-flat-shade" aria-hidden="true"></div>
+          <div class="athar-flat-copy">
+            <p class="hero-eyebrow" hidden><span id="heroBadgeText">مجموعة الموضة</span></p>
+            <h1 id="heroTitleLine" class="athar-hero-title"><span id="heroHighlightText">أناقة بلا حدود</span></h1>
+            <p class="hero-desc athar-hero-desc" id="heroDescText" hidden>تسوقي أحدث الشنط والملابس والإكسسوارات الحريمي</p>
+            <div class="hero-cta athar-hero-cta">
+              <a href="#shop" class="btn btn-primary athar-btn-shop" id="heroBtnText"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H7"/><circle cx="10" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></svg> تسوقي الآن</a>
+              <a href="/feedback.html" class="btn btn-ghost athar-btn-feedback feedback-cta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.2 8.2 0 0 1-3-.6L4 20l1.6-4A7.4 7.4 0 0 1 4.5 11.5 7.5 7.5 0 0 1 20 11.5Z"/><path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01"/></svg> رأيك يهمنا</a>
             </div>
-            <span class="chip-go" aria-hidden="true">←</span>
-          </a>
+            <div class="athar-flat-benefits" aria-label="مميزات المتجر">
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg> شحن سريع</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg> جودة مضمونة</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.8 8 7 10 4.2-2 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg> دفع آمن</span>
+            </div>
+          </div>
+          <div class="athar-hero-arrows">
+            <button type="button" class="athar-hero-arrow" id="heroCarouselPrev" aria-label="المنتج السابق">‹</button>
+            <button type="button" class="athar-hero-arrow" id="heroCarouselNext" aria-label="المنتج التالي">›</button>
+          </div>
+          <a class="hero-chip" href="#shop"><span class="chip-icon" aria-hidden="true">✦</span><div class="chip-text"><strong id="heroChipTitle">منتج من تشكيلتنا</strong><span id="heroChipSub">تشكيلة جديدة</span></div><span class="chip-go" aria-hidden="true">←</span></a>
         </div>
       </div>
     </section>
