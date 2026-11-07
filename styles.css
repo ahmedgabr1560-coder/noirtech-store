@@ -4267,3 +4267,27 @@ main { display:flex !important; flex-direction:column !important; }
   .athar-promo-banner .athar-promo-icon { width:68px; height:68px; flex-basis:68px; border-radius:15px; }
   .athar-promo-banner .athar-promo-icon svg { width:43px; height:43px; }
 }
+
+
+/* Compact product badge: never cover the hero title or CTA buttons. */
+.athar-flat-banner .hero-chip {
+  top:18px !important; bottom:auto !important; inset-inline-end:22px !important;
+  width:min(190px, 30%) !important; min-width:0 !important; max-width:190px !important;
+  height:auto !important; min-height:0 !important; max-height:58px !important;
+  padding:8px 10px !important; border-radius:12px !important;
+}
+.athar-flat-banner .hero-chip .chip-icon { width:22px !important; height:22px !important; flex:0 0 22px; border-radius:7px; font-size:.8rem; }
+.athar-flat-banner .hero-chip .chip-text { line-height:1.15; }
+.athar-flat-banner .hero-chip strong { display:block; font-size:.72rem !important; }
+.athar-flat-banner .hero-chip span { font-size:.59rem !important; }
+.athar-flat-banner .hero-chip .chip-go { font-size:.85rem !important; }
+@media (max-width:768px) {
+  .athar-flat-banner .hero-chip {
+    top:12px !important; inset-inline-end:12px !important;
+    width:154px !important; max-width:154px !important; max-height:48px !important;
+    padding:6px 8px !important; border-radius:10px !important;
+  }
+  .athar-flat-banner .hero-chip .chip-icon { width:19px !important; height:19px !important; flex-basis:19px; font-size:.7rem; }
+  .athar-flat-banner .hero-chip strong { font-size:.64rem !important; }
+  .athar-flat-banner .hero-chip span { font-size:.53rem !important; }
+}
