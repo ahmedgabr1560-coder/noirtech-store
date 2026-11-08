@@ -110,12 +110,29 @@
   </main>
   <script>
     (function(){
-      var mode=localStorage.getItem("nx_theme_mode")||"system";
-      var dark=mode==="dark"?true:mode==="light"?false:window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.setAttribute("data-theme",dark?"dark":"light"); document.documentElement.style.colorScheme=dark?"dark":"light";
+      var media=window.matchMedia("(prefers-color-scheme: dark)");
+      function currentMode(){ return localStorage.getItem("nx_theme_mode")||"system"; }
+      function apply(){
+        var mode=currentMode();
+        var dark=mode==="dark"?true:mode==="light"?false:media.matches;
+        document.documentElement.setAttribute("data-theme",dark?"dark":"light");
+        document.documentElement.style.colorScheme=dark?"dark":"light";
+        sync();
+      }
       var b=document.getElementById("feedbackThemeToggle");
-      function sync(){ var isDark=document.documentElement.getAttribute("data-theme")==="dark"; if(b){ b.textContent=isDark?"☀":"☾"; b.title=isDark?"الوضع الفاتح":"الوضع الداكن"; } }
-      b&&b.addEventListener("click",function(){ var next=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"; localStorage.setItem("nx_theme_mode",next); document.documentElement.setAttribute("data-theme",next); document.documentElement.style.colorScheme=next; sync(); }); sync();
+      function sync(){
+        var isDark=document.documentElement.getAttribute("data-theme")==="dark";
+        var mode=currentMode();
+        if(b){ b.textContent=isDark?"☀":"☾"; b.title=mode==="system"?"تلقائي حسب الجهاز — اضغطي للتغيير":(isDark?"الوضع الفاتح":"الوضع الداكن"); }
+      }
+      b&&b.addEventListener("click",function(){
+        var mode=currentMode();
+        localStorage.setItem("nx_theme_mode",mode==="system"?"dark":mode==="dark"?"light":"system");
+        apply();
+      });
+      if(media.addEventListener) media.addEventListener("change",function(){ if(currentMode()==="system") apply(); });
+      else if(media.addListener) media.addListener(function(){ if(currentMode()==="system") apply(); });
+      apply();
     })();
     const form = document.getElementById("feedbackForm");
     const status = document.getElementById("feedbackStatus");
