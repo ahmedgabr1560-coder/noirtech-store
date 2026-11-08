@@ -1969,6 +1969,14 @@ a.product-link:hover { color:#e8d5a3; }
   gap: 10px !important;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
 }
+.athar-visible-cats { margin: 0 0 18px; }
+.athar-products-subhead {
+  display: flex; align-items: center; gap: 12px; margin: 8px 0 12px;
+  font-weight: 800; color: var(--text-heading, #fff8f0);
+}
+.athar-products-subhead::after {
+  content: ""; height: 1px; flex: 1; background: var(--border, rgba(255,255,255,.14));
+}
 @media (max-width: 640px) {
   .dir-main img { height: 96px !important; }
   .cats-grid { grid-template-columns: repeat(2, 1fr) !important; }

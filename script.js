@@ -909,6 +909,22 @@ function renderGrid(el, list) {
   el.innerHTML = list.map(productCard).join("");
 }
 
+function renderVisibleHomeCategories() {
+  const el = $("#visibleCatsGrid");
+  if (!el) return;
+  const list = (CATEGORIES || []).filter(c => c && c.visible !== false);
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state">لا توجد أقسام ظاهرة حاليًا.</div>`;
+    return;
+  }
+  el.innerHTML = list.map(c => `
+    <button type="button" class="cat-card" data-cat="${String(c.id || "").replace(/"/g, "&quot;")}">
+      <div class="ico">${c.icon || "📦"}</div>
+      <h3>${c.name_ar || c.name_en || "قسم"}</h3>
+      <small>${(c.subs || []).filter(s => s && s.visible !== false).length} قسم فرعي</small>
+    </button>`).join("");
+}
+
 function renderAll() {
   const catsGrid = $("#catsGrid");
   if (catsGrid) {
@@ -923,6 +939,7 @@ function renderAll() {
   renderMegaMenu();
   renderCatNav();
   renderCatsDirectory();
+  renderVisibleHomeCategories();
   // خصومات فقط (من غير عروض ٢/٣ قطع)
   (function(){
     var bestEl = $("#bestGrid");
