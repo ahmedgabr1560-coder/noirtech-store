@@ -1035,9 +1035,12 @@
           <div class="form-grid">
             <label>عنوان الواجهة<input id="hTitle" placeholder="أناقة بلا حدود" /></label>
             <label>نص زر التسوق<input id="hBtn" placeholder="تسوقي الآن" /></label>
+            <label>الشارة الصغيرة<input id="hBadge" placeholder="مجموعة الموضة" /></label>
+            <label>العنوان المميز<input id="hHighlight" placeholder="أناقة بلا حدود" /></label>
             <label>عنوان بطاقة المنتج<input id="hChipTitle" placeholder="منتج من تشكيلتنا" /></label>
             <label>وصف بطاقة المنتج<input id="hChipSub" placeholder="تشكيلة جديدة" /></label>
           </div>
+          <label>وصف الواجهة<textarea id="hDesc" rows="2" placeholder="وصف قصير تحت العنوان"></textarea></label>
           <div class="form-grid">
             <label>صورة الهيدر الأولى
               <input id="hImg1Url" placeholder="رابط صورة المنتج" dir="ltr" />
@@ -1053,18 +1056,41 @@
           <div class="form-grid" style="margin-top:12px">
             <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hRotateProducts" /> تدوير صور منتجات حقيقية داخل الهيدر</label>
             <label>مدة التبديل (ثوانٍ)<input id="hRotateSeconds" type="number" min="2" max="60" step="1" value="4" dir="ltr" /></label>
+            <label>حجم الهيدر على الكمبيوتر (%)<input id="hScale" type="number" min="50" max="160" step="1" value="128" dir="ltr" /></label>
+            <label>حجم الهيدر على الهاتف (%)<input id="hScaleMobile" type="number" min="50" max="140" step="1" value="105" dir="ltr" /></label>
           </div>
           <div style="margin-top:18px;padding:15px;border-radius:14px;border:1px solid rgba(201,162,39,.35);background:rgba(201,162,39,.06)">
             <h4 style="margin:0 0 8px">بانر الخصومات والمميزات</h4>
             <div class="form-grid">
               <label>نص بانر الخصومات<input id="hpPromoText" placeholder="خصومات مميزة في انتظارك" /></label>
               <label>صورة البانر أو رابطها<input id="hpPromoImage" placeholder="/product-images/ref-gift_banner.jpg" dir="ltr" /></label>
+              <label>النص الفرعي للبانر<input id="hpPromoSub" placeholder="عروض حصرية على أحدث التشكيلة" /></label>
+              <label>رابط البانر<input id="hpPromoLink" placeholder="#shop" dir="ltr" /></label>
               <label>عدد المنتجات المعروضة<input id="hpBestCount" type="number" min="3" max="12" value="6" dir="ltr" /></label>
+              <label>عنوان قسم الأكثر مبيعًا<input id="hpBestTitle" placeholder="الأكثر مبيعًا" /></label>
             </div>
             <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+              <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hpBestEnabled" checked /> إظهار الأكثر مبيعًا</label>
               <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hpPromoEnabled" checked /> إظهار بانر الخصومات</label>
               <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hpBenefitsEnabled" checked /> إظهار شريط المميزات</label>
             </div>
+          </div>
+          <div style="margin-top:18px;padding:15px;border-radius:14px;border:1px solid var(--border)">
+            <h4 style="margin:0 0 8px">بيانات المميزات المحفوظة</h4>
+            <div class="form-grid">
+              <label>الميزة الأولى<input id="hpBenefit1" placeholder="دعم فني مميز" /></label>
+              <label>الميزة الثانية<input id="hpBenefit2" placeholder="دفع آمن ومتنوع" /></label>
+              <label>الميزة الثالثة<input id="hpBenefit3" placeholder="تغليف راقي" /></label>
+              <label>الميزة الرابعة<input id="hpBenefit4" placeholder="جودة مضمونة" /></label>
+            </div>
+          </div>
+          <div style="margin-top:18px;padding:15px;border-radius:14px;border:1px solid var(--border)">
+            <h4 style="margin:0 0 8px">بيانات الدفع المحفوظة</h4>
+            <div class="form-grid">
+              <label>فودافون كاش<input id="payVodafone" placeholder="01xxxxxxxxx" dir="ltr" /></label>
+              <label>InstaPay<input id="payInstapay" placeholder="رقم أو حساب InstaPay" dir="ltr" /></label>
+            </div>
+            <label>ملاحظة الدفع<textarea id="payNote" rows="2" placeholder="بعد التحويل ابعتي الإيصال..."></textarea></label>
           </div>
           <div style="margin-top:18px;padding:14px;border:1px solid var(--border);border-radius:14px">
             <strong>معاينة سريعة</strong>
@@ -1074,7 +1100,7 @@
             </div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:16px">
-            <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة الجديدة</button>
+            <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ كل بيانات الواجهة</button>
             <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">فتح الواجهة</a>
             <span class="msg" id="heroMsg"></span>
           </div>
@@ -1235,7 +1261,7 @@
           else if (panelId === "dash") loadStats();
           else if (panelId === "finance") loadFinanceDashboard();
           else if (panelId === "theme") loadThemePanel();
-          else if (panelId === "visitors") { if (typeof loadVisitors === "function") loadVisitors(); }
+          else if (panelId === "visitors") { if (typeof loadVisitorsPanel === "function") loadVisitorsPanel(); }
           else if (panelId === "coupons") { if (typeof loadCouponsPanel === "function") loadCouponsPanel(); }
           else if (panelId === "shipping") { if (typeof loadShippingSettings === "function") loadShippingSettings(); }
         } catch (e) { console.warn(e); }
