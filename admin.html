@@ -417,6 +417,46 @@
   html[data-admin-theme="dark"] #homepageRefCard input, html[data-admin-theme="dark"] #homepageRefCard select, html[data-admin-theme="dark"] #homepageRefCard textarea { background: rgba(255,255,255,.05) !important; color: var(--text) !important; }
   #homepageRefCard .btn-primary { background: linear-gradient(135deg,#7a1f3d,#9a284e) !important; }
   .admin-theme-toggle { bottom: 18px !important; left: 18px !important; }
+  /* Dark mode finish: keep the whole workspace dark, including the reference editor. */
+  html[data-admin-theme="dark"] body,
+  html[data-admin-theme="dark"] #app.app.on,
+  html[data-admin-theme="dark"] .app.on,
+  html[data-admin-theme="dark"] .main,
+  html[data-admin-theme="dark"] .content,
+  html[data-admin-theme="dark"] main { background: #0c0a10 !important; color: #f5efe8 !important; }
+  html[data-admin-theme="dark"] .top,
+  html[data-admin-theme="dark"] .top > div,
+  html[data-admin-theme="dark"] .toolbar { color: #f5efe8 !important; }
+  html[data-admin-theme="dark"] .card,
+  html[data-admin-theme="dark"] .stat,
+  html[data-admin-theme="dark"] .panel,
+  html[data-admin-theme="dark"] .vis-card,
+  html[data-admin-theme="dark"] .sub-row,
+  html[data-admin-theme="dark"] #homepageRefCard { background: #1a1520 !important; color: #f5efe8 !important; border-color: rgba(212,175,55,.22) !important; box-shadow: 0 12px 30px rgba(0,0,0,.28) !important; }
+  html[data-admin-theme="dark"] .athar-editor-workbench { background: #120e16 !important; border-color: rgba(212,175,55,.20) !important; }
+  html[data-admin-theme="dark"] .athar-live-preview { background: #0f0c13 !important; border-color: rgba(212,175,55,.22) !important; }
+  html[data-admin-theme="dark"] .athar-preview-benefits span { background: #251b25 !important; color: #f5efe8 !important; }
+  html[data-admin-theme="dark"] #homepageRefCard h3,
+  html[data-admin-theme="dark"] #homepageRefCard label,
+  html[data-admin-theme="dark"] h1,
+  html[data-admin-theme="dark"] h2,
+  html[data-admin-theme="dark"] h3,
+  html[data-admin-theme="dark"] h4,
+  html[data-admin-theme="dark"] td { color: #f5efe8 !important; }
+  html[data-admin-theme="dark"] .hint,
+  html[data-admin-theme="dark"] th,
+  html[data-admin-theme="dark"] #homepageRefCard > .hint { color: #b8a99a !important; }
+  html[data-admin-theme="dark"] input,
+  html[data-admin-theme="dark"] select,
+  html[data-admin-theme="dark"] textarea,
+  html[data-admin-theme="dark"] #homepageRefCard input,
+  html[data-admin-theme="dark"] #homepageRefCard select,
+  html[data-admin-theme="dark"] #homepageRefCard textarea { background: #100d14 !important; color: #f5efe8 !important; border-color: rgba(212,175,55,.25) !important; }
+  html[data-admin-theme="dark"] input::placeholder,
+  html[data-admin-theme="dark"] textarea::placeholder { color: #8f8178 !important; }
+  html[data-admin-theme="dark"] .btn-ghost { color: #f5efe8 !important; border-color: rgba(212,175,55,.28) !important; }
+  html[data-admin-theme="dark"] tr:hover td { background: rgba(212,175,55,.08) !important; }
+  html[data-admin-theme="dark"] a { color: #f0d78c; }
   @media (max-width: 900px) {
     .app.on { grid-template-columns: 1fr !important; }
     .side { width: 100% !important; max-width: none !important; height: auto !important; position: relative !important; padding: 10px 10px 8px !important; }
