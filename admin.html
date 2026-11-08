@@ -1083,6 +1083,7 @@
           <div class="form-grid">
             <label>عنوان الواجهة<input id="hTitle" placeholder="أناقة بلا حدود" /></label>
             <label>نص زر التسوق<input id="hBtn" placeholder="تسوقي الآن" /></label>
+            <label>رابط زر التسوق<input id="hBtnLink" placeholder="#shop" dir="ltr" /></label>
             <label>الشارة الصغيرة<input id="hBadge" placeholder="مجموعة الموضة" /></label>
             <label>العنوان المميز<input id="hHighlight" placeholder="أناقة بلا حدود" /></label>
             <label>عنوان بطاقة المنتج<input id="hChipTitle" placeholder="منتج من تشكيلتنا" /></label>
@@ -1102,6 +1103,7 @@
             </label>
           </div>
           <div class="form-grid" style="margin-top:12px">
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hHeroEnabled" checked /> إظهار الواجهة الجديدة</label>
             <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hRotateProducts" /> تدوير صور منتجات حقيقية داخل الهيدر</label>
             <label>مدة التبديل (ثوانٍ)<input id="hRotateSeconds" type="number" min="2" max="60" step="1" value="4" dir="ltr" /></label>
             <label>حجم الهيدر على الكمبيوتر (%)<input id="hScale" type="number" min="50" max="160" step="1" value="128" dir="ltr" /></label>
@@ -3317,6 +3319,7 @@
       set("hHighlight", c.heroHighlight);
       set("hBadge", c.heroBadge);
       set("hBtn", c.heroBtn);
+      set("hBtnLink", c.heroBtnLink || (c.homepage && c.homepage.heroBtnLink) || "#shop");
       set("hChipTitle", c.heroChipTitle);
       set("hChipSub", c.heroChipSub);
       set("hDesc", c.heroDesc);
@@ -3338,6 +3341,7 @@
       if ($("hpBenefitsEnabled")) $("hpBenefitsEnabled").checked = hp.benefitsEnabled !== false;
       if ($("heroAdminPreviewTitle")) $("heroAdminPreviewTitle").textContent = c.heroTitle || "أناقة بلا حدود";
       if ($("heroAdminPreviewImg")) $("heroAdminPreviewImg").src = c.heroImage1 || "/product-images/ref-hero_light_bag.jpg";
+      if ($("hHeroEnabled")) $("hHeroEnabled").checked = c.heroEnabled !== false;
       if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
       if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
       if ($("hScale")) {
@@ -3520,9 +3524,11 @@
           heroHighlight: $("hHighlight")?.value.trim() || "",
           heroBadge: $("hBadge")?.value.trim() || "",
           heroBtn: $("hBtn")?.value.trim() || "",
+          heroBtnLink: $("hBtnLink")?.value.trim() || "#shop",
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
           heroDesc: $("hDesc")?.value.trim() || "",
+          heroEnabled: $("hHeroEnabled")?.checked !== false,
           heroRotateFromProducts: $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
           heroImage1: pendingHero1 || $("hImg1Url")?.value.trim() || "",

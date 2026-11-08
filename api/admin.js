@@ -802,7 +802,7 @@ export default async function handler(req, res) {
       let config = {};
       try { config = JSON.parse(f.content); } catch { config = {}; }
 
-      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroChipTitle","heroChipSub","heroScale","heroScaleMobile","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email","siteName","siteTagline","logoMark","favicon","address","footerText","aboutText","ownerName","telegramBot","storeClosedMessage"];
+      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroBtnLink","heroChipTitle","heroChipSub","heroScale","heroScaleMobile","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email","siteName","siteTagline","logoMark","favicon","address","footerText","aboutText","ownerName","telegramBot","storeClosedMessage"];
       for (const k of textFields) {
         if (body[k] != null && k !== "heroScale" && k !== "heroScaleMobile") config[k] = String(body[k]);
       }
@@ -817,7 +817,7 @@ export default async function handler(req, res) {
       // تأكيد أرقام حتى لو قديمة كنص
       if (config.heroScale != null) config.heroScale = Math.max(0.4, Math.min(1.6, Number(config.heroScale) || 1.28));
       if (config.heroScaleMobile != null) config.heroScaleMobile = Math.max(0.4, Math.min(1.5, Number(config.heroScaleMobile) || 1.05));
-      for (const k of ["showFloatWhatsapp","showFloatTelegram","showFloatAI","showContact","showCategories","heroRotateFromProducts","storeOpen"]) {
+      for (const k of ["showFloatWhatsapp","showFloatTelegram","showFloatAI","showContact","showCategories","heroRotateFromProducts","heroEnabled","storeOpen"]) {
         if (body[k] != null) config[k] = body[k] === true || body[k] === "true" || body[k] === 1 || body[k] === "1";
       }
       if (body.heroRotateSeconds != null) {

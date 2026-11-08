@@ -111,18 +111,35 @@
   function applyHomepageConfig(hp) {
     if (!hp || typeof hp !== "object") return;
     try {
+      const source = Object.assign({}, hp, window.siteConfig || {});
+      const hero = document.getElementById("home");
       const heroTitle = document.getElementById("heroTitleLine");
+      const heroHighlight = document.getElementById("heroHighlightText");
+      const heroBadge = document.getElementById("heroBadgeText");
+      const heroDesc = document.getElementById("heroDescText");
       const heroButton = document.getElementById("heroBtnText");
       const chipTitle = document.getElementById("heroChipTitle");
       const chipSub = document.getElementById("heroChipSub");
-      if (hp.heroTitle && heroTitle) heroTitle.textContent = hp.heroTitle;
-      if (hp.heroBtn && heroButton) {
+      if (hero) hero.style.display = source.heroEnabled === false ? "none" : "";
+      if (heroTitle && source.heroTitle != null) heroTitle.textContent = source.heroTitle;
+      if (heroHighlight && source.heroHighlight != null) heroHighlight.textContent = source.heroHighlight;
+      if (heroBadge) {
+        heroBadge.textContent = source.heroBadge || "";
+        const badge = heroBadge.closest(".hero-eyebrow");
+        if (badge) badge.hidden = !source.heroBadge;
+      }
+      if (heroDesc) {
+        heroDesc.textContent = source.heroDesc || "";
+        heroDesc.hidden = !source.heroDesc;
+      }
+      if (source.heroBtnLink && heroButton) heroButton.href = source.heroBtnLink;
+      if (source.heroBtn != null && heroButton) {
         const icon = heroButton.querySelector("svg");
-        heroButton.textContent = hp.heroBtn + " ";
+        heroButton.textContent = source.heroBtn + " ";
         if (icon) heroButton.prepend(icon);
       }
-      if (hp.heroChipTitle && chipTitle) chipTitle.textContent = hp.heroChipTitle;
-      if (hp.heroChipSub && chipSub) chipSub.textContent = hp.heroChipSub;
+      if (chipTitle && source.heroChipTitle != null) chipTitle.textContent = source.heroChipTitle;
+      if (chipSub && source.heroChipSub != null) chipSub.textContent = source.heroChipSub;
       const promo = document.getElementById("atharPromoBanner");
       if (promo) {
         promo.style.display = hp.promoEnabled === false ? "none" : "";
