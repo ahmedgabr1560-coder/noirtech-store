@@ -27,7 +27,15 @@ async function ghGet(path) {
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
     headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Admin" }
   });
-  if (!r.ok) return null;
+  if (!r.ok) {
+    // Read-only fallback: the JSON files are public source-of-truth files.
+    // Keep sha empty so a failed/expired token can never overwrite data.
+    const raw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
+      headers: { "User-Agent": "NEXORA-Admin-Read" }
+    });
+    if (!raw.ok) return null;
+    return { content: await raw.text(), sha: null };
+  }
   const data = await r.json();
   // GitHub does not return `content` for files larger than 1 MB. Use the raw
   // endpoint as a fallback so large products.json files remain manageable.

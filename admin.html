@@ -888,10 +888,10 @@
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center">
             <label style="margin:0">الفترة
               <select id="finPeriod">
-                <option value="all">الكل</option>
+                <option value="all" selected>الكل</option>
                 <option value="today">اليوم</option>
                 <option value="7d">آخر 7 أيام</option>
-                <option value="month" selected>هذا الشهر</option>
+                <option value="month">هذا الشهر</option>
                 <option value="prev_month">الشهر السابق</option>
                 <option value="year">هذه السنة</option>
               </select>
@@ -2401,7 +2401,7 @@
     };
 
     async function loadFinanceDashboard() {
-      const period = ($("finPeriod") && $("finPeriod").value) || "month";
+      const period = ($("finPeriod") && $("finPeriod").value) || "all";
       const data = await api("stats", { period: period });
       const box = $("finStats");
       if (!data || !data.ok || !box) return;
