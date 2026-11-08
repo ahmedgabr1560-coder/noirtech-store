@@ -248,7 +248,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, total: products.length });
     }
 
-    
+
     if (action === "update_product") {
       const id = Number(body.id);
       if (!id) return res.status(400).json({ ok: false, error: "id required" });
@@ -638,9 +638,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, order: o });
     }
 
-    
-    
-    
+
+
+
     if (action === "get_coupons") {
       const f = await ghGet("coupons.json");
       if (!f) return res.status(200).json({ ok: true, codes: [] });
@@ -724,7 +724,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, config });
     }
 
-    
+
     if (action === "update_animations") {
       let f = await ghGet("site-config.json");
       if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
@@ -767,6 +767,26 @@ export default async function handler(req, res) {
       if (body.heroRotateSeconds != null) {
         const sec = Math.max(2, Math.min(60, Number(body.heroRotateSeconds) || 5));
         config.heroRotateSeconds = sec;
+      }
+
+      // Homepage editor settings are stored with the storefront config.
+      // Accept only the homepage object so unrelated site settings cannot be overwritten.
+      const homepage = body.homepage || (body.config && body.config.homepage);
+      if (homepage && typeof homepage === "object" && !Array.isArray(homepage)) {
+        const current = (config.homepage && typeof config.homepage === "object") ? config.homepage : {};
+        const next = { ...current };
+        const textKeys = ["heroTitle", "heroBtn", "promoText", "promoImage"];
+        for (const k of textKeys) {
+          if (homepage[k] != null) next[k] = String(homepage[k]).slice(0, 500);
+        }
+        if (homepage.bestCount != null) {
+          const count = Number(homepage.bestCount);
+          if (Number.isFinite(count)) next.bestCount = Math.max(3, Math.min(12, Math.round(count)));
+        }
+        for (const k of ["promoEnabled", "benefitsEnabled", "hideMainCategories"]) {
+          if (homepage[k] != null) next[k] = homepage[k] === true || homepage[k] === "true" || homepage[k] === 1 || homepage[k] === "1";
+        }
+        config.homepage = next;
       }
 
       async function saveImage(dataOrUrl, key) {
@@ -883,7 +903,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, expense: item });
     }
 
-    
+
     if (action === "mark_label_printed") {
       const ids = Array.isArray(body.ids) ? body.ids.map(String) : (body.id ? [String(body.id)] : []);
       if (!ids.length) return res.status(400).json({ ok: false, error: "ids required" });
@@ -906,7 +926,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, updated: n });
     }
 
-    
+
     if (action === "update_return_policy") {
       const policy = body.policy;
       if (!policy || typeof policy !== "object") return res.status(400).json({ ok: false, error: "policy required" });
@@ -940,7 +960,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    
+
     if (action === "adjust_stock") {
       const id = body.id;
       const delta = Number(body.delta);
@@ -979,7 +999,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, log });
     }
 
-    
+
     if (action === "get_label_templates") {
       const f = await ghGet("label-templates.json");
       let data = { defaultId: "default", templates: [] };
@@ -1015,7 +1035,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    
+
     if (action === "update_theme") {
       let f = await ghGet("site-config.json");
       if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
