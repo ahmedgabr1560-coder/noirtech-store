@@ -758,6 +758,15 @@
           colors: picks
         });
         addLocalCart(payload, qty);
+        // Keep the product-page header and drawer badge in sync immediately.
+        try {
+          const total = JSON.parse(localStorage.getItem("nx_cart") || "[]")
+            .reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
+          const headerCount = document.getElementById("ppCartCount");
+          const drawerCount = document.getElementById("cartItemsCount");
+          if (headerCount) headerCount.textContent = String(total);
+          if (drawerCount) drawerCount.textContent = String(total);
+        } catch (e) {}
         let note = "تمت الإضافة ✓";
         if (picks.length) note += " | " + picks.join("، ");
         if (p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) {
