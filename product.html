@@ -597,6 +597,7 @@
         ppFavBtn.classList.add("fav-pulse");
         window.setTimeout(() => ppFavBtn.classList.remove("fav-pulse"), 650);
         window.dispatchEvent(new CustomEvent("athar:favorites", { detail: { id: key, added: !exists } }));
+        if (!exists) window.setTimeout(() => { location.href = "/favorites.html"; }, 550);
       });
       window.addEventListener("storage", function (e) {
         if (e.key === "athar_favorites") syncProductFavorite();
