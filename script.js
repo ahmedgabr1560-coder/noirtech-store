@@ -910,13 +910,15 @@ function getFavoriteIds() {
 function saveFavoriteIds(ids) {
   try { localStorage.setItem(ATHAR_FAV_KEY, JSON.stringify([...new Set(ids.map(String))])); } catch (e) {}
 }
-function syncFavoriteButtons(root) {
+function syncFavoriteButtons(root, pulseId) {
   const scope = root || document;
   const ids = new Set(getFavoriteIds());
+  const pulseKey = pulseId == null ? null : String(pulseId);
   scope.querySelectorAll("[data-fav]").forEach(btn => {
-    const on = ids.has(String(btn.getAttribute("data-fav")));
+    const key = String(btn.getAttribute("data-fav"));
+    const on = ids.has(key);
     btn.classList.toggle("on", on);
-    btn.classList.toggle("fav-pulse", on);
+    btn.classList.toggle("fav-pulse", pulseKey === key);
     btn.textContent = on ? "♥" : "♡";
     btn.setAttribute("aria-pressed", on ? "true" : "false");
   });
@@ -926,7 +928,10 @@ function toggleFav(id) {
   const ids = getFavoriteIds();
   const exists = ids.includes(key);
   saveFavoriteIds(exists ? ids.filter(x => x !== key) : ids.concat(key));
-  syncFavoriteButtons();
+  syncFavoriteButtons(null, key);
+  window.setTimeout(() => {
+    document.querySelectorAll('[data-fav="' + key + '"]').forEach(btn => btn.classList.remove("fav-pulse"));
+  }, 650);
   window.dispatchEvent(new CustomEvent("athar:favorites", { detail: { id: key, added: !exists } }));
   return !exists;
 }

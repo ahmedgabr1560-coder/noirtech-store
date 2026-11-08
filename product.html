@@ -506,7 +506,10 @@
               ${sub ? `<span>/</span><span>${esc(sub.name_ar)}</span>` : ""}
             </div>
             ${p.brand ? `<div class="pd-brand">${esc(p.brand)}</div>` : ""}
-            <h1 class="pd-title">${esc(p.name)}</h1>
+            <div class="pd-title-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <h1 class="pd-title" style="margin-bottom:0">${esc(p.name)}</h1>
+              <button type="button" class="pp-fav-btn" id="ppFavBtn" data-fav="${id}" aria-label="إضافة المنتج إلى المفضلة" aria-pressed="false">♡</button>
+            </div>
             <div class="rating pd-rating">${stars(p.rating)} <span>(${p.reviews || 0} تقييم)</span></div>
             <div class="price-row pd-price">
               <span class="price" style="font-size:1.5rem">${money(p.price)}</span>
@@ -563,6 +566,40 @@
           </div>
         </div>` : ""}
       `;
+
+      const ppFavBtn = document.getElementById("ppFavBtn");
+      function readProductFavorites() {
+        try {
+          const ids = JSON.parse(localStorage.getItem("athar_favorites") || "[]");
+          return Array.isArray(ids) ? ids.map(String) : [];
+        } catch (e) { return []; }
+      }
+      function syncProductFavorite() {
+        if (!ppFavBtn) return;
+        const on = readProductFavorites().includes(String(id));
+        ppFavBtn.classList.toggle("on", on);
+        ppFavBtn.setAttribute("aria-pressed", on ? "true" : "false");
+        ppFavBtn.setAttribute("aria-label", on ? "إزالة المنتج من المفضلة" : "إضافة المنتج إلى المفضلة");
+        ppFavBtn.textContent = on ? "♥" : "♡";
+      }
+      ppFavBtn?.addEventListener("click", function () {
+        const ids = readProductFavorites();
+        const key = String(id);
+        const exists = ids.includes(key);
+        try {
+          localStorage.setItem("athar_favorites", JSON.stringify(exists ? ids.filter(x => x !== key) : ids.concat(key)));
+        } catch (e) {}
+        syncProductFavorite();
+        ppFavBtn.classList.remove("fav-pulse");
+        void ppFavBtn.offsetWidth;
+        ppFavBtn.classList.add("fav-pulse");
+        window.setTimeout(() => ppFavBtn.classList.remove("fav-pulse"), 650);
+        window.dispatchEvent(new CustomEvent("athar:favorites", { detail: { id: key, added: !exists } }));
+      });
+      window.addEventListener("storage", function (e) {
+        if (e.key === "athar_favorites") syncProductFavorite();
+      });
+      syncProductFavorite();
 
       function showGalleryImage(idx) {
         if (!galleryImgs.length) return;

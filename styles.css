@@ -3742,8 +3742,7 @@ a { color: var(--link); }
   font-size: 0.9rem;
 }
 .product-card { position: relative !important; }
-.product-card .btn-fav {
-  position: absolute;
+.product-card .btn-fav, .pp-fav-btn {
   top: 8px;
   left: 8px;
   z-index: 4;
@@ -3759,18 +3758,20 @@ a { color: var(--link); }
   place-items: center;
   line-height: 1;
 }
-[data-theme="dark"] .product-card .btn-fav {
+.product-card .btn-fav { position: absolute; }
+.pp-fav-btn { position: relative; top: auto; left: auto; flex: 0 0 36px; }
+[data-theme="dark"] .product-card .btn-fav, [data-theme="dark"] .pp-fav-btn {
   background: rgba(20,16,24,0.85);
   color: #f0d78c;
 }
-.product-card .btn-fav.on { color: #e11d48; }
+.product-card .btn-fav.on, .pp-fav-btn.on { color: #e11d48; }
 @keyframes atharFavPulse {
   0%, 100% { transform: scale(1); }
   35% { transform: scale(1.28); }
   65% { transform: scale(.92); }
 }
-.product-card .btn-fav.fav-pulse { animation: atharFavPulse .55s ease both; }
-.product-card .btn-fav.on { background: rgba(225,29,72,.12); }
+.product-card .btn-fav.fav-pulse, .pp-fav-btn.fav-pulse { animation: atharFavPulse .55s ease both; }
+.product-card .btn-fav.on, .pp-fav-btn.on { background: rgba(225,29,72,.12); }
 .phones-stack .phone img {
   object-fit: cover !important;
   background: var(--bg-card);
