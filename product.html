@@ -277,8 +277,7 @@
           </div>
         </div>
         <button type="button" class="btn btn-primary btn-block" id="checkoutBtn"
-          style="display:block!important;visibility:visible!important;pointer-events:auto!important;cursor:pointer;position:relative;z-index:50;margin-top:12px;width:100%;padding:14px;font-size:1rem;font-weight:700"
-          onclick="try{if(window.__atharDoCheckout)return window.__atharDoCheckout(event);alert('استني ثانية لتحميل الصفحة');}catch(e){alert(e&&e.message||'خطأ');return false;}">إتمام الطلب الآن</button>
+          style="display:block!important;visibility:visible!important;pointer-events:auto!important;cursor:pointer;position:relative;z-index:50;margin-top:12px;width:100%;padding:14px;font-size:1rem;font-weight:700">إتمام الطلب الآن</button>
         <p class="checkout-hint">أكملي البيانات ثم أكّدي الطلب</p>
       </div>
     </div>
@@ -1048,7 +1047,6 @@
     document.getElementById("checkoutBtn")?.addEventListener("click", async function () {
       const btn = document.getElementById("checkoutBtn");
       if (btn && (btn.disabled || btn.dataset.submitting === "1")) return;
-      if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "جاري تنفيذ الطلب..."; }
       const cart = readCart();
       if (!cart.length) return alert("السلة فارغة");
       const phone = (document.getElementById("orderPhone")?.value || "").trim();
@@ -1064,6 +1062,7 @@
       }
       if (!phone) return alert("أدخلي رقم الهاتف");
       if (!address) return alert("أدخلي العنوان");
+      if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "جاري تنفيذ الطلب..."; }
       const sub = cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.qty) || 1), 0);
       const ship = calcShip(sub);
       let coupon = "";
