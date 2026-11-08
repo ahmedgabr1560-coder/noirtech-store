@@ -146,7 +146,7 @@
     "category": "fashion",
     "subcategory": "bags",
     "brand": "Zara",
-    "price": 270,
+    "price": 250,
     "costPrice": 0,
     "oldPrice": 350,
     "image": "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/product-images/44_3.jpg?t=1793392963147",
@@ -160,35 +160,46 @@
     "colors": [
       {
         "name": "أسود",
-        "code": "#111111"
+        "code": "#888888"
       },
       {
         "name": "أبيض",
-        "code": "#f5f5f5"
+        "code": "#888888"
       },
       {
         "name": "رمادي",
-        "code": "#9ca3af"
+        "code": "#888888"
       },
       {
         "name": "بيج",
-        "code": "#d2b48c"
+        "code": "#888888"
       },
       {
         "name": "برجاندي",
-        "code": "#6B1E3C"
+        "code": "#888888"
       }
     ],
-    "isOffer": false,
-    "sourceProductId": null,
-    "offerType": "discount",
-    "offerMeta": null,
+    "isOffer": true,
+    "sourceProductId": "44",
+    "offerType": "mixed_bundle",
+    "offerMeta": {
+      "type": "bundle",
+      "tiers": [
+        {
+          "qty": 2,
+          "price": 480
+        }
+      ],
+      "sourceProductId": "44"
+    },
     "rating": 4.5,
     "reviews": 0,
     "best": false,
     "newest": true,
     "hidden": false,
-    "createdAt": "2026-10-30T20:42:43.505Z"
+    "createdAt": "2026-10-30T20:42:43.505Z",
+    "updatedAt": "2026-11-08T20:31:48.803Z",
+    "offerSection": ""
   },
   {
     "id": 43,
