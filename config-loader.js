@@ -1,8 +1,13 @@
 (async function applySiteConfig() {
   try {
-    const r = await fetch("/site-config.json?t=" + Date.now());
-    if (!r.ok) return;
-    const c = await r.json();
+    let r = await fetch("/api/catalog?type=config&t=" + Date.now(), { cache: "no-store" });
+    let payload = r.ok ? await r.json() : null;
+    let c = payload && payload.config ? payload.config : payload;
+    if (!c || typeof c !== "object" || Array.isArray(c)) {
+      r = await fetch("/site-config.json?t=" + Date.now(), { cache: "no-store" });
+      if (!r.ok) return;
+      c = await r.json();
+    }
     window.siteConfig = c;
     try { if (typeof applyStoreOpenState === "function") applyStoreOpenState(c); } catch (e) {}
     const root = document.documentElement;

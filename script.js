@@ -727,6 +727,14 @@ function buildBundleCategoryTabs() {
 async function ensureCategoriesLoaded() {
   if (window.CATEGORIES && window.CATEGORIES.length) return window.CATEGORIES;
   try {
+    const r = await fetch("/api/catalog?type=categories&t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) {
+      const d = await r.json();
+      window.CATEGORIES = Array.isArray(d) ? d : (d.categories || []);
+      return window.CATEGORIES;
+    }
+  } catch (e) {}
+  try {
     const r = await fetch("/categories.json?t=" + Date.now(), { cache: "no-store" });
     if (r.ok) {
       const d = await r.json();

@@ -313,8 +313,8 @@
   }
   async function load(){
     try{
-      var r=await fetch("/products.json?t="+Date.now(),{cache:"no-store"});
-      if(!r.ok) r=await fetch("/api/catalog?type=products&t="+Date.now(),{cache:"no-store"});
+      var r=await fetch("/api/catalog?type=products&t="+Date.now(),{cache:"no-store"});
+      if(!r.ok) r=await fetch("/products.json?t="+Date.now(),{cache:"no-store"});
       var d=await r.json();
       var list=Array.isArray(d)?d:(d.products||[]);
       list=(list||[]).filter(function(p){return p&&p.hidden!==true&&p.active!==false;});
