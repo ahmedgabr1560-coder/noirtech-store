@@ -128,17 +128,10 @@
         promo.style.display = hp.promoEnabled === false ? "none" : "";
         const title = promo.querySelector(".txt b");
         if (title && hp.promoText) title.textContent = hp.promoText;
-        const image = hp.promoImage;
-        if (image) {
-          let bg = promo.querySelector(".athar-promo-image");
-          if (!bg) {
-            bg = document.createElement("img");
-            bg.className = "athar-promo-image";
-            bg.alt = "";
-            promo.appendChild(bg);
-          }
-          bg.src = image;
-        }
+        // The promo banner is text-only by design; remove any legacy image
+        // left by older saved configurations.
+        const legacyImage = promo.querySelector(".athar-promo-image");
+        if (legacyImage) legacyImage.remove();
       }
       const benefits = document.getElementById("atharBenefits");
       if (benefits) benefits.style.display = hp.benefitsEnabled === false ? "none" : "";
