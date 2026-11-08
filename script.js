@@ -1976,7 +1976,6 @@ function productMatches(p) {
   if (activeSubcategory && String(p.subcategory || "") !== String(activeSubcategory)) {
     if (!(activeSubcategory === "mobiles" && (p.tags || []).includes("phone-accessory"))) return false;
   }
-  if (activeBrand && String(p.brand || "") !== String(activeBrand)) return false;
   return true;
 }
 function sortedProducts(list) {
@@ -2106,14 +2105,15 @@ function renderShop() {
       }
     }
   }
-  // brands dropdown from visible catalog
-  const brandSel = document.getElementById("filterBrand");
-  if (brandSel) {
-    const cur = activeBrand;
-    const brands = [...new Set(PRODUCTS.map(p => p.brand).filter(Boolean))].sort();
-    brandSel.innerHTML = `<option value="">كل الماركات</option>` + brands.map(b =>
-      `<option value="${b}" ${b === cur ? "selected" : ""}>${b}</option>`
-    ).join("");
+  // category dropdown from the visible catalog
+  const categorySel = document.getElementById("filterCategory");
+  if (categorySel) {
+    const cur = String(activeCategory || "");
+    const cats = (CATEGORIES || []).filter(c => c && c.visible !== false);
+    categorySel.innerHTML = `<option value="">كل الأقسام</option>` + cats.map(c => {
+      const id = String(c.id || "");
+      return `<option value="${id}" ${id === cur ? "selected" : ""}>${c.name_ar || c.name_en || categoryLabel(id)}</option>`;
+    }).join("");
   }
 }
 
@@ -2147,9 +2147,8 @@ function bindCategoryUI() {
     }
   });
 
-  document.getElementById("filterBrand")?.addEventListener("change", (e) => {
-    activeBrand = e.target.value || "";
-    renderShop();
+  document.getElementById("filterCategory")?.addEventListener("change", (e) => {
+    setShopFilter(e.target.value || "", "", { scroll: false });
   });
   document.getElementById("filterSort")?.addEventListener("change", (e) => {
     activeSort = e.target.value || "newest";
