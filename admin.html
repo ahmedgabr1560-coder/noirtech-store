@@ -1638,7 +1638,9 @@
     async function api(action, payload = {}) {
       const r = await fetch("/api/admin", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-secret": SECRET },
+        headers: { "Content-Type": "application/json", "x-admin-secret": SECRET, "Cache-Control": "no-cache" },
+        cache: "no-store",
+        credentials: "same-origin",
         body: JSON.stringify({ secret: SECRET, action, ...payload })
       });
       const text = await r.text();
@@ -4936,7 +4938,18 @@
         return;
       }
       if (msg) { msg.className = "msg"; msg.textContent = "جاري التحقق..."; }
-      var data = await api("auth_check");
+      var data;
+      var lastError;
+      for (var attempt = 0; attempt < 2; attempt++) {
+        try {
+          data = await api("auth_check", { _ts: Date.now() });
+          break;
+        } catch (networkError) {
+          lastError = networkError;
+          if (attempt === 0) await new Promise(function(resolve){ setTimeout(resolve, 450); });
+        }
+      }
+      if (!data && lastError) throw lastError;
       if (!data || !data.ok) {
         if (msg) {
           msg.className = "msg err";
@@ -4948,7 +4961,11 @@
       showApp();
       try { if (typeof refreshAll === "function") refreshAll(); } catch (e2) {}
     } catch (err) {
-      if (msg) { msg.className = "msg err"; msg.textContent = "تعذر الاتصال بالخادم"; }
+      if (msg) {
+        msg.className = "msg err";
+        var detail = String(err && err.message || "").trim();
+        msg.textContent = detail ? "تعذر الاتصال بالخادم: " + detail : "تعذر الاتصال بالخادم — حاولي مرة أخرى";
+      }
     }
   }
   if (btn) btn.onclick = function (e) { e.preventDefault(); doLogin(); };
