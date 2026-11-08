@@ -1,6 +1,18 @@
 {
   "buildCommand": "node scripts/validate-site.mjs || true",
   "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/cart.html",
+      "destination": "/?openCart=1",
+      "permanent": false
+    },
+    {
+      "source": "/cart",
+      "destination": "/?openCart=1",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/return-policy",
