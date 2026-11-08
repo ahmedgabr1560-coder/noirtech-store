@@ -900,6 +900,37 @@ function productCard(p) {
   </article>`;
 }
 
+const ATHAR_FAV_KEY = "athar_favorites";
+function getFavoriteIds() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(ATHAR_FAV_KEY) || "[]");
+    return Array.isArray(raw) ? raw.map(String) : [];
+  } catch (e) { return []; }
+}
+function saveFavoriteIds(ids) {
+  try { localStorage.setItem(ATHAR_FAV_KEY, JSON.stringify([...new Set(ids.map(String))])); } catch (e) {}
+}
+function syncFavoriteButtons(root) {
+  const scope = root || document;
+  const ids = new Set(getFavoriteIds());
+  scope.querySelectorAll("[data-fav]").forEach(btn => {
+    const on = ids.has(String(btn.getAttribute("data-fav")));
+    btn.classList.toggle("on", on);
+    btn.classList.toggle("fav-pulse", on);
+    btn.textContent = on ? "♥" : "♡";
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+function toggleFav(id) {
+  const key = String(id);
+  const ids = getFavoriteIds();
+  const exists = ids.includes(key);
+  saveFavoriteIds(exists ? ids.filter(x => x !== key) : ids.concat(key));
+  syncFavoriteButtons();
+  window.dispatchEvent(new CustomEvent("athar:favorites", { detail: { id: key, added: !exists } }));
+  return !exists;
+}
+
 function renderGrid(el, list) {
   if (!el) return;
   if (!list.length) {
@@ -907,6 +938,7 @@ function renderGrid(el, list) {
     return;
   }
   el.innerHTML = list.map(productCard).join("");
+  syncFavoriteButtons(el);
 }
 
 function renderVisibleHomeCategories() {

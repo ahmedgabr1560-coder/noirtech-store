@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>المفضلة | ATHAR</title>
+  <link rel="stylesheet" href="/styles.css?v=20261108-favorites" />
+  <style>
+    .favorites-page { min-height:100vh; padding:28px 0 110px; }
+    .favorites-head { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:20px; }
+    .favorites-head h1 { color:var(--text-heading); font-size:clamp(1.35rem,4vw,2rem); }
+    .favorites-head p { color:var(--muted); font-size:.86rem; margin-top:3px; }
+    .favorites-back { display:inline-flex; align-items:center; gap:7px; color:var(--link); font-weight:800; }
+    .favorites-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; }
+    .favorite-card { position:relative; overflow:hidden; border:1px solid var(--border); border-radius:18px; background:var(--bg-card); box-shadow:0 12px 30px var(--shadow); }
+    .favorite-media { display:block; aspect-ratio:1/1; background:rgba(255,255,255,.05); }
+    .favorite-media img { width:100%; height:100%; object-fit:cover; }
+    .favorite-body { padding:12px; }
+    .favorite-name { color:var(--text-heading); font-weight:800; font-size:.92rem; min-height:2.7em; }
+    .favorite-price { color:var(--price); font-weight:900; margin:8px 0 10px; }
+    .favorite-open { display:flex; justify-content:center; padding:9px; border-radius:11px; background:var(--primary); color:#fff; font-weight:800; }
+    .favorite-heart { position:absolute; top:9px; inset-inline-start:9px; width:38px; height:38px; border:1px solid rgba(255,255,255,.22); border-radius:50%; background:rgba(7,6,10,.72); color:#fff; font-size:1.35rem; cursor:pointer; z-index:2; }
+    .favorite-heart.on { color:#ff3d70; background:rgba(225,29,72,.16); animation:atharFavPulse .55s ease both; }
+    .favorites-empty { text-align:center; padding:70px 20px; border:1px dashed var(--border); border-radius:20px; color:var(--muted); }
+    .favorites-empty strong { display:block; color:var(--text-heading); font-size:1.1rem; margin-bottom:8px; }
+    .favorites-nav { position:fixed; z-index:20; right:0; left:0; bottom:0; display:flex; justify-content:center; gap:22px; padding:12px max(16px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-bottom)); background:var(--nav-bg); border-top:1px solid var(--border); }
+    .favorites-nav a { color:var(--muted); font-weight:800; }
+    .favorites-nav a.active { color:var(--gold-light); }
+    @media(max-width:520px){ .favorites-page{padding-top:20px}.favorites-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.favorite-body{padding:9px}.favorite-name{font-size:.8rem}.favorite-open{font-size:.78rem;padding:8px}.favorites-head{align-items:flex-start;flex-direction:column} }
+  </style>
+</head>
+<body>
+  <main class="favorites-page">
+    <div class="container">
+      <div class="favorites-head">
+        <div><h1>المفضلة</h1><p id="favoritesCount">المنتجات التي اخترتيها</p></div>
+        <a class="favorites-back" href="/">← العودة للمتجر</a>
+      </div>
+      <div id="favoritesGrid" class="favorites-grid"></div>
+    </div>
+  </main>
+  <nav class="favorites-nav" aria-label="التنقل">
+    <a href="/">الرئيسية</a><a class="active" href="/favorites.html">♡ المفضلة</a>
+  </nav>
+  <script>
+    (function(){
+      const KEY="athar_favorites";
+      let products=[];
+      const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+      const ids=()=>{try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(x)?x.map(String):[]}catch(e){return[]}};
+      const save=x=>{try{localStorage.setItem(KEY,JSON.stringify([...new Set(x.map(String))]))}catch(e){}};
+      function render(){
+        const grid=document.getElementById("favoritesGrid"), fav=ids(), set=new Set(fav);
+        const list=fav.map(id=>products.find(p=>String(p.id)===id)).filter(Boolean);
+        document.getElementById("favoritesCount").textContent=list.length?`${list.length} منتج محفوظ`:"المنتجات التي اخترتيها";
+        if(!list.length){grid.innerHTML='<div class="favorites-empty" style="grid-column:1/-1"><strong>المفضلة فارغة</strong><span>اضغطي على القلب بجانب أي منتج لإضافته هنا.</span><br><a class="favorites-back" href="/" style="display:inline-flex;margin-top:18px">ابدئي التسوق ←</a></div>';return}
+        grid.innerHTML=list.map(p=>{const img=p.image||(p.images&&p.images[0])||"";return `<article class="favorite-card"><button class="favorite-heart on" data-remove="${esc(p.id)}" aria-label="إزالة من المفضلة">♥</button><a class="favorite-media" href="/product.html?id=${encodeURIComponent(p.id)}"><img src="${esc(img)}" alt="${esc(p.name)}" loading="lazy"></a><div class="favorite-body"><div class="favorite-name">${esc(p.name)}</div><div class="favorite-price">${Number(p.price||0).toLocaleString("ar-EG")} ج.م</div><a class="favorite-open" href="/product.html?id=${encodeURIComponent(p.id)}">عرض المنتج</a></div></article>`}).join("");
+        grid.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>{save(ids().filter(x=>x!==String(b.dataset.remove)));render()});
+      }
+      async function load(){
+        try{let r=await fetch("/api/catalog?type=products&t="+Date.now(),{cache:"no-store"});if(!r.ok)r=await fetch("/products.json?t="+Date.now(),{cache:"no-store"});const d=await r.json();products=(Array.isArray(d)?d:(d.products||[])).filter(p=>p&&p.hidden!==true&&p.active!==false)}catch(e){products=[]}render();
+      }
+      load();
+    })();
+  </script>
+</body>
+</html>

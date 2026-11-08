@@ -3754,6 +3754,13 @@ a { color: var(--link); }
   color: #f0d78c;
 }
 .product-card .btn-fav.on { color: #e11d48; }
+@keyframes atharFavPulse {
+  0%, 100% { transform: scale(1); }
+  35% { transform: scale(1.28); }
+  65% { transform: scale(.92); }
+}
+.product-card .btn-fav.fav-pulse { animation: atharFavPulse .55s ease both; }
+.product-card .btn-fav.on { background: rgba(225,29,72,.12); }
 .phones-stack .phone img {
   object-fit: cover !important;
   background: var(--bg-card);
