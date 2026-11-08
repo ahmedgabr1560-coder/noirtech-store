@@ -81,7 +81,7 @@ async function ghPut(path, content, message, sha, rawBase64) {
       body: JSON.stringify(body)
     });
     const data = await r.json().catch(() => ({}));
-    last = { ok: r.ok, data };
+    last = { ok: r.ok, status: r.status, data };
     if (r.ok) return last;
     if (r.status !== 401 && r.status !== 403) break;
   }
@@ -629,14 +629,21 @@ export default async function handler(req, res) {
     if (action === "delete_order") {
       const id = String(body.id || body.orderId || "");
       if (!id) return res.status(400).json({ ok: false, error: "id required" });
-      const f = await ghGet("orders.json");
-      if (!f) return res.status(200).json({ ok: true, total: 0 });
-      let orders = [];
-      try { orders = JSON.parse(f.content); } catch { orders = []; }
-      const next = orders.filter(x => String(x.id) !== id);
-      const put = await ghPut("orders.json", JSON.stringify(next, null, 2), `Admin: delete order ${id}`, f.sha);
-      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر الحذف", detail: put.data });
-      return res.status(200).json({ ok: true, total: next.length });
+      let lastPut = null;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const f = await ghGet("orders.json");
+        if (!f) return res.status(404).json({ ok: false, error: "orders file missing" });
+        let orders = [];
+        try { orders = JSON.parse(f.content); } catch { orders = []; }
+        if (!Array.isArray(orders)) orders = [];
+        const next = orders.filter(x => String(x.id) !== id);
+        if (next.length === orders.length) return res.status(200).json({ ok: true, total: next.length, alreadyMissing: true });
+        lastPut = await ghPut("orders.json", JSON.stringify(next, null, 2), `Admin: delete order ${id}`, f.sha);
+        if (lastPut.ok) return res.status(200).json({ ok: true, total: next.length });
+        if (lastPut.status !== 409 && lastPut.status !== 422) break;
+        await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)));
+      }
+      return res.status(500).json({ ok: false, error: lastPut?.data?.message || "تعذر الحذف", detail: lastPut?.data });
     }
 
     if (action === "clear_orders") {
