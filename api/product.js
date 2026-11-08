@@ -1,17 +1,34 @@
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
-const GH_TOKEN = process.env.GITHUB_TOKEN1 || process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
+const GH_TOKENS = [...new Set([
+  process.env.GH_TOKEN,
+  process.env.GITHUB_TOKEN1,
+  process.env.GITHUB_TOKEN
+].filter(Boolean))];
+const GH_TOKEN = GH_TOKENS[0] || "";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT = String(process.env.TELEGRAM_ADMIN_CHAT || "");
 
 async function ghGet(path) {
-  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
-    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA" }
-  });
-  if (!r.ok) return null;
+  let r = null;
+  for (const token of GH_TOKENS) {
+    const attempt = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA" }
+    });
+    if (attempt.ok) { r = attempt; break; }
+  }
+  if (!r) return null;
   const data = await r.json();
-  return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha, raw: data };
+  let content = "";
+  if (typeof data.content === "string" && data.content.trim()) {
+    content = Buffer.from(data.content, "base64").toString("utf8");
+  } else {
+    const raw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`);
+    if (!raw.ok) return null;
+    content = await raw.text();
+  }
+  return { content, sha: data.sha, raw: data };
 }
 
 async function ghPut(path, content, message, sha, binaryBase64) {
@@ -21,18 +38,24 @@ async function ghPut(path, content, message, sha, binaryBase64) {
     branch: "main"
   };
   if (sha) body.sha = sha;
-  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${GH_TOKEN}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
-      "User-Agent": "NEXORA"
-    },
-    body: JSON.stringify(body)
-  });
-  const data = await r.json();
-  return { ok: r.ok, data };
+  let last = { ok: false, data: { message: "GitHub write failed" } };
+  for (const token of GH_TOKENS) {
+    const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+        "User-Agent": "NEXORA"
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json().catch(() => ({}));
+    last = { ok: r.ok, status: r.status, data };
+    if (r.ok) return last;
+    if (r.status !== 401 && r.status !== 403) break;
+  }
+  return last;
 }
 
 async function notifyTelegram(text) {
