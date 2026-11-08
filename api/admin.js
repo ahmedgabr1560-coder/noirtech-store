@@ -831,9 +831,9 @@ export default async function handler(req, res) {
       if (homepage && typeof homepage === "object" && !Array.isArray(homepage)) {
         const current = (config.homepage && typeof config.homepage === "object") ? config.homepage : {};
         const next = { ...current };
-        const textKeys = ["heroTitle", "heroBtn", "promoText", "promoImage"];
+        const textKeys = ["heroTitle", "heroBtn", "promoText", "promoSub", "promoIcon", "promoCta", "promoImage", "promoLink", "promoBg", "promoTextColor"];
         for (const k of textKeys) {
-          if (homepage[k] != null) next[k] = String(homepage[k]).slice(0, 500);
+          if (homepage[k] != null) next[k] = String(homepage[k]).slice(0, k === "promoImage" || k === "promoLink" ? 1000 : 500);
         }
         if (homepage.bestCount != null) {
           const count = Number(homepage.bestCount);

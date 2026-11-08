@@ -126,8 +126,22 @@
       const promo = document.getElementById("atharPromoBanner");
       if (promo) {
         promo.style.display = hp.promoEnabled === false ? "none" : "";
+        promo.href = hp.promoLink || "#shop";
+        if (hp.promoBg) promo.style.setProperty("--promo-bg", hp.promoBg); else promo.style.removeProperty("--promo-bg");
+        if (hp.promoTextColor) promo.style.setProperty("--promo-text", hp.promoTextColor); else promo.style.removeProperty("--promo-text");
+        const icon = promo.querySelector(".promo-icon");
+        if (icon) icon.textContent = hp.promoIcon || "🎁";
         const title = promo.querySelector(".txt b");
-        if (title && hp.promoText) title.textContent = hp.promoText;
+        if (title && hp.promoText != null) title.textContent = hp.promoText;
+        const sub = promo.querySelector(".txt span");
+        if (sub && hp.promoSub != null) sub.textContent = hp.promoSub;
+        const cta = promo.querySelector(".promo-cta");
+        if (cta) cta.textContent = hp.promoCta || "تسوقي الآن ←";
+        const image = promo.querySelector(".promo-image");
+        if (image) {
+          image.src = hp.promoImage || "";
+          image.style.display = hp.promoImage ? "block" : "none";
+        }
         // The promo banner is text-only by design; remove any legacy image
         // left by older saved configurations.
         const legacyImage = promo.querySelector(".athar-promo-image");
