@@ -4367,8 +4367,9 @@
           var panel = document.querySelector('.panel.active, [data-panel].active, #panel-visitors.active');
           var visPanel = document.getElementById("panel-visitors");
           if (visPanel && (visPanel.classList.contains("active") || visPanel.style.display === "block")) {
-            if (typeof loadVisit === "function") loadVisit();
-            else if (typeof loadVisitors === "function") loadVisitors();
+            // تحديث الإحصائيات من الخادم باستمرار: الدالة الصحيحة هي loadVisitorsPanel.
+            // كان الكود يستدعي loadVisit/loadVisitors غير الموجودتين، فكان العداد يتوقف بعد أول تحميل.
+            if (typeof loadVisitorsPanel === "function") loadVisitorsPanel();
           }
         } catch (e) {}
       }, 20000);
