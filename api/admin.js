@@ -28,11 +28,28 @@ function parseDataUrl(dataUrl) {
   return { mime: m[1], b64: m[2] };
 }
 
+async function githubFetch(url, options = {}, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal, cache: "no-store" });
+  } catch (err) {
+    if (err && err.name === "AbortError") {
+      const timeoutError = new Error("انتهت مهلة الاتصال بـ GitHub");
+      timeoutError.code = "GITHUB_TIMEOUT";
+      throw timeoutError;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function ghGet(path) {
   let r = null;
   let tokenUsed = GH_TOKEN;
   for (const token of GH_TOKENS) {
-    const attempt = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+    const attempt = await githubFetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
       headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Admin" }
     });
     if (attempt.ok) { r = attempt; tokenUsed = token; break; }
@@ -40,7 +57,7 @@ async function ghGet(path) {
   if (!r || !r.ok) {
     // Read-only fallback: the JSON files are public source-of-truth files.
     // Keep sha empty so a failed/expired token can never overwrite data.
-    const raw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
+    const raw = await githubFetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
       headers: { "User-Agent": "NEXORA-Admin-Read" }
     });
     if (!raw.ok) return null;
@@ -53,7 +70,7 @@ async function ghGet(path) {
   if (typeof data.content === "string" && data.content.trim()) {
     content = Buffer.from(data.content, "base64").toString("utf8");
   } else {
-    const raw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
+    const raw = await githubFetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
       headers: { "User-Agent": "NEXORA-Admin" },
     });
     if (!raw.ok) return null;
@@ -70,16 +87,22 @@ async function ghPut(path, content, message, sha, rawBase64) {
   if (sha) body.sha = sha;
   let last = { ok: false, data: { message: "GitHub write failed" } };
   for (const token of GH_TOKENS) {
-    const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json",
-        "User-Agent": "NEXORA-Admin"
-      },
-      body: JSON.stringify(body)
-    });
+    let r;
+    try {
+      r = await githubFetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json",
+          "User-Agent": "NEXORA-Admin"
+        },
+        body: JSON.stringify(body)
+      });
+    } catch (err) {
+      last = { ok: false, status: 504, data: { message: err.message || "تعذر الاتصال بـ GitHub" } };
+      continue;
+    }
     const data = await r.json().catch(() => ({}));
     last = { ok: r.ok, status: r.status, data };
     if (r.ok) return last;
@@ -279,6 +302,7 @@ export default async function handler(req, res) {
       if (!id) return res.status(400).json({ ok: false, error: "id required" });
       const f = await ghGet("products.json");
       if (!f) return res.status(404).json({ ok: false, error: "products missing" });
+      if (!f.sha || !f.token) return res.status(502).json({ ok: false, error: "تمت قراءة المنتجات لكن توكن GitHub لا يملك صلاحية الكتابة" });
       let products = [];
       try { products = JSON.parse(f.content); } catch { products = []; }
       if (!Array.isArray(products)) products = [];
