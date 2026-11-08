@@ -6,8 +6,13 @@ async function ghGet(path) {
   const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
     headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Track" }
   });
-  if (r.status === 404) return null;
-  if (!r.ok) return null;
+  if (!r.ok) {
+    const raw = await fetch(`https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/${path}?t=${Date.now()}`, {
+      headers: { "User-Agent": "NEXORA-Track-Read" }
+    });
+    if (!raw.ok) return null;
+    return { content: await raw.text(), sha: null };
+  }
   const data = await r.json();
   return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
