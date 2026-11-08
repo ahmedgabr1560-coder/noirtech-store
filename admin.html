@@ -309,15 +309,20 @@
 </style>
 <script>
 (function(){
+  var media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  function currentMode(){
+    try {
+      var saved = localStorage.getItem("athar_admin_theme");
+      return saved === "light" || saved === "dark" ? saved : "system";
+    } catch(e) { return "system"; }
+  }
+  function applyMode(mode){
+    var effective = mode === "system" ? (media && media.matches ? "dark" : "light") : mode;
+    document.documentElement.setAttribute("data-admin-theme", effective);
+    document.documentElement.setAttribute("data-admin-theme-mode", mode);
+  }
   try {
-    var saved = localStorage.getItem("athar_admin_theme");
-    if (saved === "light" || saved === "dark") {
-      document.documentElement.setAttribute("data-admin-theme", saved);
-    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
-      document.documentElement.setAttribute("data-admin-theme", "light");
-    } else {
-      document.documentElement.setAttribute("data-admin-theme", "dark");
-    }
+    applyMode(currentMode());
   } catch(e) {}
   function ensureToggle(){
     if (document.getElementById("adminThemeToggle")) return;
@@ -325,21 +330,24 @@
     b.id = "adminThemeToggle";
     b.className = "admin-theme-toggle";
     b.type = "button";
-    b.title = "تبديل المظهر";
+    b.title = "تلقائي / فاتح / داكن";
     function sync(){
-      var t = document.documentElement.getAttribute("data-admin-theme") || "dark";
-      b.textContent = t === "light" ? "🌙" : "☀️";
+      var mode = currentMode();
+      b.textContent = mode === "system" ? "◐" : (mode === "light" ? "🌙" : "☀️");
+      b.title = mode === "system" ? "المظهر تلقائي حسب الجهاز" : (mode === "light" ? "المظهر فاتح — اضغطي للتغيير" : "المظهر داكن — اضغطي للتغيير");
     }
     sync();
     b.onclick = function(){
-      var cur = document.documentElement.getAttribute("data-admin-theme") || "dark";
-      var next = cur === "light" ? "dark" : "light";
-      document.documentElement.setAttribute("data-admin-theme", next);
+      var cur = currentMode();
+      var next = cur === "system" ? "light" : (cur === "light" ? "dark" : "system");
       try { localStorage.setItem("athar_admin_theme", next); } catch(e) {}
+      applyMode(next);
       sync();
     };
     document.body.appendChild(b);
   }
+  if (media && media.addEventListener) media.addEventListener("change", function(){ if (currentMode() === "system") applyMode("system"); });
+  else if (media && media.addListener) media.addListener(function(){ if (currentMode() === "system") applyMode("system"); });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensureToggle);
   else ensureToggle();
 })();
