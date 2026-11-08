@@ -2,7 +2,12 @@
 // /api/admin — unified admin API for NEXORA (GitHub JSON CMS)
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
-const GH_TOKEN = process.env.GH_TOKEN || process.env.GITHUB_TOKEN1 || process.env.GITHUB_TOKEN || "";
+const GH_TOKENS = [...new Set([
+  process.env.GH_TOKEN,
+  process.env.GITHUB_TOKEN1,
+  process.env.GITHUB_TOKEN
+].filter(Boolean))];
+const GH_TOKEN = GH_TOKENS[0] || "";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "";
 const __rlA = globalThis.__ATHAR_RL_ADMIN || (globalThis.__ATHAR_RL_ADMIN = new Map());
 function adminAuthRate(req) {
@@ -24,17 +29,22 @@ function parseDataUrl(dataUrl) {
 }
 
 async function ghGet(path) {
-  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
-    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Admin" }
-  });
-  if (!r.ok) {
+  let r = null;
+  let tokenUsed = GH_TOKEN;
+  for (const token of GH_TOKENS) {
+    const attempt = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Admin" }
+    });
+    if (attempt.ok) { r = attempt; tokenUsed = token; break; }
+  }
+  if (!r || !r.ok) {
     // Read-only fallback: the JSON files are public source-of-truth files.
     // Keep sha empty so a failed/expired token can never overwrite data.
     const raw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}?t=${Date.now()}`, {
       headers: { "User-Agent": "NEXORA-Admin-Read" }
     });
     if (!raw.ok) return null;
-    return { content: await raw.text(), sha: null };
+    return { content: await raw.text(), sha: null, token: null };
   }
   const data = await r.json();
   // GitHub does not return `content` for files larger than 1 MB. Use the raw
@@ -49,7 +59,7 @@ async function ghGet(path) {
     if (!raw.ok) return null;
     content = await raw.text();
   }
-  return { content, sha: data.sha };
+  return { content, sha: data.sha, token: tokenUsed };
 }
 async function ghPut(path, content, message, sha, rawBase64) {
   // rawBase64: optional already-base64 binary (for images); content used as utf8 text otherwise
@@ -58,17 +68,24 @@ async function ghPut(path, content, message, sha, rawBase64) {
     : Buffer.from(content == null ? "" : content, "utf8").toString("base64");
   const body = { message, content: encoded, branch: "main" };
   if (sha) body.sha = sha;
-  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${GH_TOKEN}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
-      "User-Agent": "NEXORA-Admin"
-    },
-    body: JSON.stringify(body)
-  });
-  return { ok: r.ok, data: await r.json() };
+  let last = { ok: false, data: { message: "GitHub write failed" } };
+  for (const token of GH_TOKENS) {
+    const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+        "User-Agent": "NEXORA-Admin"
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json().catch(() => ({}));
+    last = { ok: r.ok, data };
+    if (r.ok) return last;
+    if (r.status !== 401 && r.status !== 403) break;
+  }
+  return last;
 }
 
 function okAuth(req, body) {
