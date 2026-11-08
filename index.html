@@ -91,6 +91,29 @@
 })();
 </script>
 
+<style id="legacy-product-cart-style">
+#cartDrawer{width:min(380px,100%);background:#0a0a0c!important;border-color:rgba(255,255,255,.08)!important}
+#cartDrawer .drawer-head{padding:12px 14px;border-color:rgba(255,255,255,.08)!important;background:#0a0a0c!important}
+#cartDrawer .drawer-body{padding:10px 12px}
+#cartDrawer .drawer-foot{padding:12px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:#0a0a0c!important;border-color:rgba(255,255,255,.08)!important}
+#cartDrawer .cart-summary{display:grid;gap:10px;margin:0;padding:0;border:0;background:transparent}
+#cartDrawer input,#cartDrawer select{border-color:rgba(255,255,255,.1)!important;background:rgba(255,255,255,.04)!important}
+#cartDrawer input:focus,#cartDrawer select:focus{outline:2px solid rgba(167,139,250,.55);outline-offset:1px}
+#cartDrawer .cart-line{border-color:rgba(255,255,255,.08)!important}
+#cartDrawer .drawer-foot label{font-size:.78rem;color:#c9c6d5;font-weight:700}
+#cartDrawer #checkoutBtn{margin-top:4px;padding:13px;border-radius:13px;font-weight:900}
+@media (max-width:460px){#cartDrawer{width:100%}.drawer-head,.drawer-body,.drawer-foot{padding-left:12px;padding-right:12px}.cart-line{grid-template-columns:52px 1fr auto}.cart-line img{width:52px;height:52px}}
+#cartDrawer{background:#0c0a10!important;border-color:rgba(212,175,55,.25)!important}
+#cartDrawer .drawer-head{background:linear-gradient(135deg,#7a1f3d,#4d1429)!important;border-color:rgba(212,175,55,.28)!important}
+#cartDrawer .drawer-foot{background:#100b12!important;border-color:rgba(212,175,55,.2)!important}
+#cartDrawer input,#cartDrawer select{border-color:rgba(212,175,55,.22)!important;background:#121018!important;color:#f5efe8!important}
+#cartDrawer input:focus,#cartDrawer select:focus{outline-color:rgba(212,175,55,.6)}
+#cartDrawer .cart-total-row strong{color:#f0d78c}.cart-summary{border-color:rgba(212,175,55,.22);background:rgba(122,31,61,.12)}
+.cart-line{border-color:rgba(212,175,55,.14)}.cart-remove{border-color:rgba(212,175,55,.28);background:rgba(122,31,61,.2);color:#f0d78c}
+[data-theme="light"] #cartDrawer{background:#fff5f8!important;color:#3b1224!important}[data-theme="light"] #cartDrawer .drawer-foot{background:#fff!important}
+[data-theme="light"] #cartDrawer input,[data-theme="light"] #cartDrawer select{background:#fff!important;color:#3b1224!important;border-color:#f0d4de!important}
+[data-theme="light"] .cart-line h4,[data-theme="light"] .cart-summary-row strong{color:#5c1630!important}
+</style>
 </head>
 <body>
     <div class="bg-stage" aria-hidden="true">
@@ -395,86 +418,64 @@
   <div class="drawer-overlay" id="cartOverlay"></div>
   <aside class="drawer" id="cartDrawer" aria-label="سلة التسوق">
     <div class="drawer-head">
-      <h3>سلة التسوق</h3>
-      <button type="button" class="icon-close" id="closeCart" aria-label="إغلاق" data-close="cart" onclick="event.preventDefault();event.stopPropagation();try{closeCart()}catch(e){}">×</button>
+      <div>
+        <h3 style="margin:0;color:#fff;font-size:1.08rem">سلة التسوق</h3>
+        <small style="display:block;color:#b8b2c8;margin-top:3px">راجعي المنتجات قبل تأكيد الطلب</small>
+      </div>
+      <span id="cartItemsCount" style="min-width:28px;height:28px;padding:0 8px;border-radius:999px;display:grid;place-items:center;background:#8b5cf6;color:#fff;font-weight:900;font-size:.8rem">0</span>
+      <button type="button" class="icon-close" id="closeCart" aria-label="إغلاق">×</button>
     </div>
     <div class="drawer-scroll">
       <div class="drawer-body" id="cartItems"></div>
       <div class="drawer-foot">
-        <div class="cart-total-row"><span>المنتجات</span><strong id="cartSubtotal">0 ج.م</strong></div>
-        <div class="cart-total-row"><span id="cartShippingLabel">الشحن</span><strong id="cartShipping">—</strong></div>
-        <p id="cartShippingHint" style="font-size:.8rem;color:#c4b5fd;margin:0 0 10px;display:none"></p>
-        <div class="cart-total-row" id="cartDiscountRow" hidden><span>الخصم</span><strong id="cartDiscount">0 ج.م</strong></div>
-        <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center;direction:ltr;position:relative;z-index:20">
-          <input type="text" id="couponInput" placeholder="كود الخصم" dir="ltr" autocomplete="off">
-          <button type="button" id="applyCouponBtn" class="btn btn-ghost"
-            style="padding:10px 16px;white-space:nowrap;cursor:pointer;pointer-events:auto;position:relative;z-index:21">تطبيق</button>
+        <div class="cart-summary">
+          <div class="cart-total-row"><span>المنتجات</span><strong id="cartSubtotal">0 ج.م</strong></div>
+          <div class="cart-total-row"><span id="cartShippingLabel">الشحن</span><strong id="cartShipping">—</strong></div>
+          <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
         </div>
-        <p id="couponMsg" style="font-size:.8rem;margin:0 0 8px;color:#c4b5fd;min-height:1.2em"></p>
-        <div class="cart-total-row"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
-        <div id="checkoutFields" class="checkout-fields" hidden>
-          <label>الاسم (اختياري)
-            <input type="text" id="orderName" placeholder="اسم المستلم" autocomplete="name" />
+
+          <div id="cartDiscountRow" class="cart-total-row" hidden style="color:#86efac"><span id="cartDiscountLabel">الخصم</span><strong id="cartDiscount">- 0 ج.م</strong></div>
+          <div id="couponBox" style="display:flex;gap:8px;margin:10px 0;align-items:center">
+            <input type="text" id="couponInput" placeholder="كود الخصم" dir="ltr" autocomplete="off"
+              style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff;text-transform:uppercase;font-size:16px" />
+            <button type="button" class="btn btn-ghost" id="applyCouponBtn">تطبيق</button>
+          </div>
+          <p id="couponMsg" style="font-size:.8rem;margin:0 0 8px;color:var(--link, #7a1f3d);min-height:1.2em"></p>
+        <p id="cartShippingHint" style="font-size:.8rem;color:var(--link, #7a1f3d);margin:0 0 10px;display:none"></p>
+        <div id="checkoutFields" hidden>
+          <label style="display:block;margin-bottom:8px">الاسم
+            <input type="text" id="orderName" placeholder="اسم المستلم" style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff" />
           </label>
-          <label>رقم الهاتف *
-            <input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" inputmode="tel" autocomplete="tel" />
+          <label style="display:block;margin-bottom:8px">الهاتف *
+            <input type="tel" id="orderPhone" placeholder="01xxxxxxxxx" style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff" />
           </label>
-          <label>المحافظة *
-            <select id="orderGov" autocomplete="address-level1">
+          <label style="display:block;margin-bottom:8px">المحافظة *
+            <select id="orderGov" style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff">
               <option value="">— اختاري المحافظة —</option>
-              <option value="g1">القاهرة</option>
-              <option value="g2">الجيزة</option>
-              <option value="g3">الإسكندرية</option>
-              <option value="g4">الدقهلية</option>
-              <option value="g5">الشرقية</option>
-              <option value="g6">القليوبية</option>
-              <option value="g7">الغربية</option>
-              <option value="g8">المنوفية</option>
-              <option value="g9">البحيرة</option>
-              <option value="g10">كفر الشيخ</option>
-              <option value="g11">دمياط</option>
-              <option value="g12">بورسعيد</option>
-              <option value="g13">الإسماعيلية</option>
-              <option value="g14">السويس</option>
-              <option value="g15">شمال سيناء</option>
-              <option value="g16">جنوب سيناء</option>
-              <option value="g17">بني سويف</option>
-              <option value="g18">الفيوم</option>
-              <option value="g19">المنيا</option>
-              <option value="g20">أسيوط</option>
-              <option value="g21">سوهاج</option>
-              <option value="g22">قنا</option>
-              <option value="g23">الأقصر</option>
-              <option value="g24">أسوان</option>
-              <option value="g25">البحر الأحمر</option>
-              <option value="g26">الوادي الجديد</option>
-              <option value="g27">مطروح</option>
             </select>
           </label>
-          <label>المركز / الحي *
-            <select id="orderCenter" autocomplete="address-level2" disabled>
-              <option value="">— اختاري المركز / الحي —</option>
+          <label style="display:block;margin-bottom:8px">المركز / الحي *
+            <select id="orderCenter" disabled style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff">
+              <option value="">— اختاري المركز —</option>
             </select>
           </label>
-          <label>العنوان بالتفصيل *
-            <input type="text" id="orderAddress" placeholder="المحافظة - المنطقة - الشارع" autocomplete="street-address" />
+          <label style="display:block;margin-bottom:8px">العنوان *
+            <input type="text" id="orderAddress" placeholder="الشارع - علامة مميزة" style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff" />
           </label>
-          <label>ملاحظات (اختياري)
-            <input type="text" id="orderNote" placeholder="موعد التواصل / ملاحظات" />
+          <label style="display:block;margin-bottom:10px">ملاحظات
+            <input type="text" id="orderNote" style="width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c0c12;color:#fff" />
           </label>
-          <div class="pay-methods">
-            <div class="pay-title">طريقة الدفع</div>
-            <label class="pay-option"><input type="radio" name="payMethod" value="cod" checked /> عند الاستلام</label>
-            <label class="pay-option"><input type="radio" name="payMethod" value="vodafone" /> فودافون كاش</label>
-            <label class="pay-option"><input type="radio" name="payMethod" value="instapay" /> إنستا باي (InstaPay)</label>
-            <label class="pay-option"><input type="radio" name="payMethod" value="transfer" /> تحويل بنكي</label>
-            <label class="pay-option"><input type="radio" name="payMethod" value="card" /> بطاقة ائتمان</label>
+          <div class="pay-methods" style="display:grid;gap:7px;margin:8px 0 10px">
+            <div style="font-weight:800;color:#c9c6d5;font-size:.8rem">طريقة الدفع</div>
+            <label><input type="radio" name="payMethod" value="cod" checked /> عند الاستلام</label>
+            <label><input type="radio" name="payMethod" value="vodafone" /> فودافون كاش</label>
+            <label><input type="radio" name="payMethod" value="instapay" /> إنستا باي (InstaPay)</label>
+            <label><input type="radio" name="payMethod" value="transfer" /> تحويل بنكي</label>
+            <label><input type="radio" name="payMethod" value="card" /> بطاقة ائتمان</label>
             <div id="payInstructions" class="pay-instructions" hidden></div>
           </div>
         </div>
-        <button type="button" class="btn btn-primary btn-block" id="checkoutBtn"
-          style="display:block!important;visibility:visible!important;pointer-events:auto!important;cursor:pointer;position:relative;z-index:50;margin-top:12px;width:100%;padding:14px;font-size:1rem;font-weight:700">إتمام الطلب الآن</button>
-        <p class="checkout-hint">أكملي البيانات ثم أكّدي الطلب</p>
+        <button type="button" class="btn btn-primary" id="checkoutBtn" hidden style="width:100%">إتمام الطلب الآن</button>
       </div>
     </div>
   </aside>
