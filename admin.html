@@ -454,7 +454,6 @@
       <div class="brand"><span>NX</span> الإدارة</div>
       <nav class="nav" id="nav">
         <button data-panel="dash" class="active">الرئيسية</button>
-        <button data-panel="homepage">إدارة الصفحة الرئيسية</button>
         <button data-panel="categories">الأقسام (إظهار/إخفاء)</button>
         <button data-panel="products">المنتجات</button>
         <button data-panel="add">إضافة منتج</button>
@@ -468,7 +467,7 @@
         <button data-panel="finance">المالية والمخزون</button>
         <button data-panel="general">إعدادات الموقع</button>
         <button data-panel="brand">الاسم والأيقونة</button>
-        <button data-panel="hero">الصور والتخطيط</button>
+        <button data-panel="hero">إدارة الصفحة الرئيسية والواجهة</button>
         <button data-panel="settings">إعدادات</button>
       </nav>
       <button class="btn btn-ghost" id="logoutBtn" style="width:100%;margin-top:12px">خروج</button>
@@ -481,114 +480,7 @@
           <button class="btn btn-ghost" id="refreshBtn">تحديث</button>
         </div>
       </div>
-      <section class="panel" id="panel-homepage">
-        <div class="card" id="homepageRefCard" style="margin-top:14px">
-          <h3>إدارة الصفحة الرئيسية (مرجع ATHAR)</h3>
-          <p class="hint">التحكم في الهيرو والبانر والمميزات — يُحفظ في إعدادات الموقع</p>
-          <div class="athar-editor-workbench" aria-label="معاينة الصفحة الرئيسية">
-            <div class="athar-editor-toolbar">
-              <strong>المعاينة المباشرة</strong>
-              <div class="athar-device-switcher" role="tablist" aria-label="حجم المعاينة">
-                <button type="button" class="athar-device-btn active" data-preview-device="desktop">▣ سطح المكتب</button>
-                <button type="button" class="athar-device-btn" data-preview-device="tablet">▤ التابلت</button>
-                <button type="button" class="athar-device-btn" data-preview-device="mobile">▯ الموبايل</button>
-              </div>
-            </div>
-            <div class="athar-live-preview" id="atharLivePreview" data-preview-device="desktop">
-              <div class="athar-preview-browser"><span></span><span></span><span></span></div>
-              <img id="hpHeroPreview" src="/product-images/ref-hero_light_bag.jpg" alt="معاينة هيرو ATHAR" />
-              <div class="athar-preview-benefits"><span>🎧 دعم فني مميز</span><span>🛡️ دفع آمن</span><span>🎁 تغليف راقي</span><span>🏅 جودة مضمونة</span></div>
-            </div>
-          </div>
-          <label>عنوان الهيرو<input id="hpHeroTitle" placeholder="أناقة بلا حدود" /></label>
-          <label>نص زر الهيرو<input id="hpHeroBtn" placeholder="تسوقي الآن" /></label>
-          <div class="form-grid">
-            <label>صورة الهيرو الفاتح<input id="hpHeroImage1" placeholder="/product-images/ref-hero_light_bag.jpg" dir="ltr" /></label>
-            <label>صورة الهيرو الداكن<input id="hpHeroImage2" placeholder="/product-images/ref-hero_dark_bag.jpg" dir="ltr" /></label>
-          </div>
-          <label>نص بانر الخصم<input id="hpPromoText" placeholder="خصومات مميزة في انتظارك" /></label>
-          <label>صورة البانر (رابط)<input id="hpPromoImage" placeholder="/product-images/ref-gift_banner.jpg" dir="ltr" /></label>
-          <label>عدد منتجات الأكثر مبيعاً<input id="hpBestCount" type="number" min="3" max="12" value="6" /></label>
-          <label class="row" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="hpPromoEnabled" checked /> إظهار بانر الخصم</label>
-          <label class="row" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="hpBenefitsEnabled" checked /> إظهار المميزات</label>
-          <button type="button" class="btn btn-primary" id="hpSaveBtn">حفظ إعدادات الواجهة</button>
-          <p class="hint" id="hpSaveMsg"></p>
-        </div>
-        <script>
-        (function(){
-          function fillHp(cfg){
-            cfg = cfg || {};
-            var hp = cfg.homepage || {};
-            var set = function(id,v){ var el=document.getElementById(id); if(el) el.value = v || ""; };
-            set("hpHeroTitle", hp.heroTitle || cfg.heroTitle || "أناقة بلا حدود");
-            set("hpHeroBtn", hp.heroBtn || cfg.heroBtn || "تسوقي الآن");
-            set("hpHeroImage1", cfg.heroImage1 || "/product-images/ref-hero_light_bag.jpg");
-            set("hpHeroImage2", cfg.heroImage2 || "/product-images/ref-hero_dark_bag.jpg");
-            set("hpPromoText", hp.promoText || "خصومات مميزة في انتظارك");
-            set("hpPromoImage", hp.promoImage || "/product-images/ref-gift_banner.jpg");
-            var bc=document.getElementById("hpBestCount"); if(bc) bc.value = hp.bestCount || 6;
-            var pe=document.getElementById("hpPromoEnabled"); if(pe) pe.checked = hp.promoEnabled !== false;
-            var be=document.getElementById("hpBenefitsEnabled"); if(be) be.checked = hp.benefitsEnabled !== false;
-          }
-          async function loadHp(){
-            try {
-              var d = await api("get_config");
-              if (d && d.ok) fillHp(d.config || d);
-            } catch(e){}
-          }
-          var btn=document.getElementById("hpSaveBtn");
-          if(btn) btn.onclick = async function(){
-            var msg=document.getElementById("hpSaveMsg");
-            try {
-              var cur = {};
-              try { var g = await api("get_config"); cur = (g && (g.config||g)) || {}; } catch(e){}
-              cur.homepage = cur.homepage || {};
-              cur.homepage.heroTitle = (document.getElementById("hpHeroTitle")||{}).value || "أناقة بلا حدود";
-              cur.homepage.heroBtn = (document.getElementById("hpHeroBtn")||{}).value || "تسوقي الآن";
-              cur.heroImage1 = (document.getElementById("hpHeroImage1")||{}).value || "/product-images/ref-hero_light_bag.jpg";
-              cur.heroImage2 = (document.getElementById("hpHeroImage2")||{}).value || "/product-images/ref-hero_dark_bag.jpg";
-              cur.heroRotateFromProducts = false;
-              cur.homepage.promoText = (document.getElementById("hpPromoText")||{}).value || "";
-              cur.homepage.promoImage = (document.getElementById("hpPromoImage")||{}).value || "";
-              cur.homepage.bestCount = Number((document.getElementById("hpBestCount")||{}).value||6);
-              cur.homepage.promoEnabled = !!(document.getElementById("hpPromoEnabled")||{}).checked;
-              cur.homepage.benefitsEnabled = !!(document.getElementById("hpBenefitsEnabled")||{}).checked;
-              cur.homepage.hideMainCategories = true;
-              cur.heroTitle = cur.homepage.heroTitle;
-              cur.heroBtn = cur.homepage.heroBtn;
-              cur.showCategories = false;
-              var res = await api("update_hero", {
-                heroTitle: cur.heroTitle,
-                heroBtn: cur.heroBtn,
-                heroImage1: cur.heroImage1,
-                heroImage2: cur.heroImage2,
-                showCategories: false,
-                homepage: cur.homepage
-              });
-              if (!res || !res.ok) throw new Error((res && res.error) || "تعذر حفظ إعدادات الصفحة الرئيسية");
-              var preview = document.getElementById("hpHeroPreview");
-              if (preview) preview.src = cur.heroImage1;
-              if(msg) { msg.textContent = "تم حفظ إعدادات الصفحة الرئيسية"; msg.style.color = "#4ade80"; }
-            } catch(e){ if(msg) { msg.textContent = e.message || "تعذر الحفظ"; msg.style.color = "#f87171"; } }
-          };
-          document.addEventListener("DOMContentLoaded", loadHp);
-          setTimeout(loadHp, 1000);
-          document.addEventListener("input", function(e){
-            if(e.target && e.target.id === "hpHeroImage1"){
-              var preview=document.getElementById("hpHeroPreview");
-              if(preview && e.target.value) preview.src=e.target.value;
-            }
-          });
-          document.addEventListener("click", function(e){
-            var b=e.target.closest("[data-preview-device]");
-            if(!b) return;
-            document.querySelectorAll(".athar-device-btn").forEach(function(x){x.classList.toggle("active",x===b)});
-            var p=document.getElementById("atharLivePreview");
-            if(p) p.setAttribute("data-preview-device", b.getAttribute("data-preview-device"));
-          });
-        })();
-        </script>
-      </section>
+
 
       <section class="panel active" id="panel-dash">
         <div class="grid" id="statsGrid"></div>
@@ -1138,170 +1030,54 @@
 
       <section class="panel" id="panel-hero">
         <div class="card">
-          <h3>التحكم في واجهة المتجر</h3>
-          <p class="hint" style="margin-bottom:14px">ارفعى الصورة فتظهر وتُحفظ تلقائيًا. النصوص احفظيها بزر «حفظ الواجهة».</p>
+          <h3>إدارة الواجهة الجديدة</h3>
+          <p class="hint" style="margin-bottom:14px">تحكّمي في الهيدر المسطح الظاهر للزوار: الصور، النصوص، البطاقة العائمة، تدوير المنتجات، وبانر الخصومات.</p>
           <div class="form-grid">
-            <label>شارة أعلى العنوان<input id="hBadge" placeholder="مجموعة الموضة" /></label>
+            <label>عنوان الواجهة<input id="hTitle" placeholder="أناقة بلا حدود" /></label>
             <label>نص زر التسوق<input id="hBtn" placeholder="تسوقي الآن" /></label>
-            <label>العنوان الرئيسي<input id="hTitle" placeholder="أناقة تليق بك." /></label>
-            <label>الجزء الملوّن من العنوان<input id="hHighlight" placeholder="موضة بلا حدود." /></label>
-            <label>عنوان البطاقة على الصورة<input id="hChipTitle" placeholder="شنط حريمي" /></label>
-            <label>وصف البطاقة<input id="hChipSub" placeholder="أحدث التشكيلة" /></label>
+            <label>عنوان بطاقة المنتج<input id="hChipTitle" placeholder="منتج من تشكيلتنا" /></label>
+            <label>وصف بطاقة المنتج<input id="hChipSub" placeholder="تشكيلة جديدة" /></label>
           </div>
-          <label>وصف الواجهة
-            <textarea id="hDesc" placeholder="وصف قصير تحت العنوان"></textarea>
-          </label>
           <div class="form-grid">
-            <label>الصورة الأولى
-              <input id="hImg1Url" placeholder="رابط الصورة أو ارفعي من الجهاز" />
+            <label>صورة الهيدر الأولى
+              <input id="hImg1Url" placeholder="رابط صورة المنتج" dir="ltr" />
               <input id="hImg1File" type="file" accept="image/*" style="margin-top:8px" />
-              <img id="hImg1Prev" alt="معاينة 1" style="margin-top:8px;width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
+              <img id="hImg1Prev" alt="معاينة الهيدر الأولى" style="margin-top:8px;width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:none" />
             </label>
-            <label>الصورة الثانية
-              <input id="hImg2Url" placeholder="رابط الصورة أو ارفعي من الجهاز" />
+            <label>صورة الهيدر الثانية
+              <input id="hImg2Url" placeholder="رابط صورة المنتج" dir="ltr" />
               <input id="hImg2File" type="file" accept="image/*" style="margin-top:8px" />
-              <img id="hImg2Prev" alt="معاينة 2" style="margin-top:8px;width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:none;border:1px solid rgba(255,255,255,.1)" />
+              <img id="hImg2Prev" alt="معاينة الهيدر الثانية" style="margin-top:8px;width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:none" />
             </label>
           </div>
-          <div style="margin-top:14px;padding:14px;border-radius:14px;border:1px solid rgba(167,139,250,.45);background:rgba(139,92,246,.1)">
-            <h4 style="margin:0 0 8px">① نسبة حجم صور الواجهة (الموبايلين في الصورة)</h4>
-            <p class="hint" style="margin:0 0 10px">يكبّر ويصغّر إطارات صور الشنط في الواجهة الرئيسية كما في الموقع. اكتبي الرقم % ثم احفظي. كرت «شنط حريمي» أرقامه في القسم التالي ②.</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <label>كمبيوتر (%)
-                <div style="display:flex;align-items:center;gap:6px">
-                  <input id="hScale" type="number" min="50" max="160" step="1" value="128" dir="ltr" style="flex:1;font-family:monospace;font-size:1.05rem" />
-                  <span class="hint">%</span>
-                </div>
-              </label>
-              <label>موبايل (%)
-                <div style="display:flex;align-items:center;gap:6px">
-                  <input id="hScaleMobile" type="number" min="50" max="140" step="1" value="105" dir="ltr" style="flex:1;font-family:monospace;font-size:1.05rem" />
-                  <span class="hint">%</span>
-                </div>
-              </label>
-            </div>
-            <p class="hint" style="margin:8px 0 0">مثال: 100 = عادي · 120 = أكبر · 80 = أصغر</p>
-            <button type="button" class="btn btn-primary" id="saveHeroScaleBtn" style="margin-top:10px">حفظ ① نسبة صور الواجهة</button>
-            <span class="hint" id="heroScaleMsg" style="margin-right:8px"></span>
-            <span id="hScaleVal" style="display:none"></span>
-            <span id="hScaleMobileVal" style="display:none"></span>
+          <div class="form-grid" style="margin-top:12px">
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hRotateProducts" /> تدوير صور منتجات حقيقية داخل الهيدر</label>
+            <label>مدة التبديل (ثوانٍ)<input id="hRotateSeconds" type="number" min="2" max="60" step="1" value="4" dir="ltr" /></label>
           </div>
-
-          <div style="margin-top:18px;padding:16px;border-radius:14px;border:1px solid rgba(201,162,39,.35);background:rgba(201,162,39,.06)" id="heroLayoutBox">
-            <h4 style="margin:0 0 6px">② أرقام تفصيلية — صور الواجهة + كرت شنط حريمي</h4>
-            <p class="hint" style="margin:0 0 12px">نفس الشكل الحالي على الموقع. اختاري الجهاز (كمبيوتر / تابلت / هاتف) وعدّلي الأرقام ثم احفظي. القسم ① الصورة الرئيسية · القسم ② كرت شنط حريمي.</p>
-
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="hlDeviceTabs">
-              <button type="button" class="btn btn-primary hl-dev" data-dev="desktop">كمبيوتر</button>
-              <button type="button" class="btn btn-ghost hl-dev" data-dev="tablet">تابلت</button>
-              <button type="button" class="btn btn-ghost hl-dev" data-dev="mobile">هاتف</button>
+          <div style="margin-top:18px;padding:15px;border-radius:14px;border:1px solid rgba(201,162,39,.35);background:rgba(201,162,39,.06)">
+            <h4 style="margin:0 0 8px">بانر الخصومات والمميزات</h4>
+            <div class="form-grid">
+              <label>نص بانر الخصومات<input id="hpPromoText" placeholder="خصومات مميزة في انتظارك" /></label>
+              <label>صورة البانر أو رابطها<input id="hpPromoImage" placeholder="/product-images/ref-gift_banner.jpg" dir="ltr" /></label>
+              <label>عدد المنتجات المعروضة<input id="hpBestCount" type="number" min="3" max="12" value="6" dir="ltr" /></label>
             </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" class="hl-grid">
-              <div style="padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.2)">
-                <h4 style="margin:0 0 10px;font-size:.95rem">① صور الواجهة — الموبايلين (العرض / الارتفاع / التحريك)</h4>
-                <label>العرض (px)<input type="number" id="hl_main_w" min="120" max="700" step="1" value="440" dir="ltr" /></label>
-                <label>الارتفاع (px)<input type="number" id="hl_main_h" min="120" max="800" step="1" value="460" dir="ltr" /></label>
-                <label>التكبير %<input type="number" id="hl_main_scale" min="40" max="160" step="1" value="100" dir="ltr" /></label>
-                <label>تحريك أفقي (px)<input type="number" id="hl_main_x" min="-120" max="120" step="1" value="0" dir="ltr" /></label>
-                <label>تحريك رأسي (px)<input type="number" id="hl_main_y" min="-120" max="120" step="1" value="0" dir="ltr" /></label>
-                <label>احتواء الصورة
-                  <select id="hl_main_fit">
-                    <option value="cover">cover — ملء المساحة</option>
-                    <option value="contain">contain — إظهار كاملة</option>
-                    <option value="fill">fill — تمديد</option>
-                  </select>
-                </label>
-                <button type="button" class="btn btn-ghost" id="hlMainReset" style="margin-top:8px">إعادة افتراضي للصورة</button>
-              </div>
-
-              <div style="padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.2)">
-                <h4 style="margin:0 0 10px;font-size:.95rem">② كرت «شنط حريمي – تشكيلة جديدة» (العرض / الخط / الأيقونة / التحريك)</h4>
-                <label>عرض الكارت (px)<input type="number" id="hl_chip_w" min="90" max="360" step="1" value="150" dir="ltr" /></label>
-                <label>ارتفاع الكارت (px) — 0=تلقائي<input type="number" id="hl_chip_h" min="0" max="200" step="1" value="0" dir="ltr" /></label>
-                <label>حجم أيقونة الكارت (px)<input type="number" id="hl_chip_icon" min="16" max="48" step="1" value="22" dir="ltr" /></label>
-                <label>حجم النص (px)<input type="number" id="hl_chip_text" min="10" max="22" step="1" value="12" dir="ltr" /></label>
-                <label>تحريك أفقي (px)<input type="number" id="hl_chip_x" min="-80" max="80" step="1" value="0" dir="ltr" /></label>
-                <label>تحريك رأسي (px)<input type="number" id="hl_chip_y" min="-80" max="80" step="1" value="0" dir="ltr" /></label>
-                <label>المسافات الداخلية (px)<input type="number" id="hl_chip_pad" min="4" max="28" step="1" value="8" dir="ltr" /></label>
-                <button type="button" class="btn btn-ghost" id="hlChipReset" style="margin-top:8px">إعادة افتراضي للكارت</button>
-              </div>
-            </div>
-
-            <div style="margin-top:14px;padding:12px;border-radius:12px;border:1px dashed rgba(255,255,255,.15);background:rgba(0,0,0,.25)">
-              <div class="hint" style="margin-bottom:8px">معاينة مباشرة (تقريبية)</div>
-              <div id="hlPreview" style="position:relative;height:220px;border-radius:12px;background:radial-gradient(circle at 50% 40%,rgba(167,139,250,.15),transparent 60%),#0a0a0c;overflow:hidden">
-                <div id="hlPrevMain" style="position:absolute;left:50%;top:50%;background:linear-gradient(145deg,#2a2a35,#121218);border-radius:16px;border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 30px rgba(0,0,0,.45);transform:translate(-50%,-50%)"></div>
-                <div id="hlPrevChip" style="position:absolute;display:flex;align-items:center;gap:8px;background:rgba(12,12,16,.85);border:1px solid rgba(255,255,255,.14);border-radius:14px;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.35)">
-                  <span style="width:22px;height:22px;border-radius:8px;background:rgba(240,180,41,.2);display:grid;place-items:center;font-size:10px;color:#f0b429">◇</span>
-                  <div style="line-height:1.2"><b id="hlPrevChipTitle">شنط حريمي</b><div style="opacity:.7;font-size:.75em" id="hlPrevChipSub">أحدث التشكيلة</div></div>
-                </div>
-              </div>
-            </div>
-
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center">
-              <button type="button" class="btn btn-primary" id="hlSaveBtn">حفظ ② أرقام الصور والكرت</button>
-              <button type="button" class="btn btn-ghost" id="hlResetAllBtn">إعادة كل الافتراضي للجهاز الحالي</button>
-              <span class="hint" id="hlSaveMsg"></span>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px">
+              <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hpPromoEnabled" checked /> إظهار بانر الخصومات</label>
+              <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="hpBenefitsEnabled" checked /> إظهار شريط المميزات</label>
             </div>
           </div>
-          <style>
-            @media (max-width:700px){ .hl-grid{ grid-template-columns:1fr !important; } }
-            #heroLayoutBox label{ display:block; margin-bottom:8px; font-size:.85rem; }
-            #heroLayoutBox label input, #heroLayoutBox label select{ width:100%; margin-top:4px; }
-          </style>
-
-          <div style="margin-top:20px;padding:16px;border-radius:14px;border:1px solid rgba(167,139,250,.4);background:rgba(139,92,246,.07)" id="homepageBuilderBox">
-            <h4 style="margin:0 0 6px">نظام التحكم المتقدم في الواجهة الرئيسية</h4>
-            <p class="hint" style="margin:0 0 12px">تحكّمي في أقسام الصفحة الرئيسية فقط: الإظهار، الترتيب، الأحجام، الألوان، وعدد المنتجات — لكل جهاز على حدة. الهيدر والفوتر وصفحات المنتج خارج هذا النظام.</p>
-
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="hpDevTabs">
-              <button type="button" class="btn btn-primary hp-dev" data-dev="desktop">كمبيوتر</button>
-              <button type="button" class="btn btn-ghost hp-dev" data-dev="tablet">تابلت</button>
-              <button type="button" class="btn btn-ghost hp-dev" data-dev="mobile">هاتف</button>
-            </div>
-
-            <div id="hpSectionsList" style="display:flex;flex-direction:column;gap:10px"></div>
-
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center">
-              <button type="button" class="btn btn-primary" id="hpSaveBtn">حفظ إعدادات الواجهة الرئيسية</button>
-              <button type="button" class="btn btn-ghost" id="hpResetBtn">استعادة الافتراضي</button>
-              <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">معاينة المتجر</a>
-              <span class="hint" id="hpSaveMsg"></span>
+          <div style="margin-top:18px;padding:14px;border:1px solid var(--border);border-radius:14px">
+            <strong>معاينة سريعة</strong>
+            <div id="heroAdminPreview" style="margin-top:10px;min-height:150px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#32101f,#0c0a10);overflow:hidden">
+              <img id="heroAdminPreviewImg" src="/product-images/ref-hero_light_bag.jpg" alt="معاينة الواجهة" style="width:100%;height:150px;object-fit:cover;opacity:.72" />
+              <strong id="heroAdminPreviewTitle" style="position:absolute;color:#fff;font-size:1.25rem;text-shadow:0 2px 8px #000">أناقة بلا حدود</strong>
             </div>
           </div>
-
-
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center">
-            <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة</button>
-            <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">معاينة المتجر</a>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:16px">
+            <button type="button" class="btn btn-primary" id="saveHeroBtn">حفظ الواجهة الجديدة</button>
+            <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">فتح الواجهة</a>
+            <span class="msg" id="heroMsg"></span>
           </div>
-
-          <div style="margin-top:14px;padding:14px;border-radius:14px;border:1px solid rgba(167,139,250,.3);background:rgba(139,92,246,.08)">
-            <h4 style="margin:0 0 8px">تدوير صور الواجهة من المنتجات</h4>
-            <p class="hint" style="margin:0 0 10px">لو مفعّل: صور الهيرو تتغيّر تلقائي من منتجات المتجر (منتج بعد منتج).</p>
-<label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
-              <input type="checkbox" id="hRotateProducts" style="width:auto" />
-              <span>تفعيل تدوير الصور من المنتجات</span>
-            </label>
-            <label>كل كام ثانية؟
-              <input id="hRotateSeconds" type="number" min="2" max="60" value="5" style="max-width:120px" />
-            </label>
-            <p class="hint">الافتراضي 5 ثواني. بيغيّر الصورتين بالتناوب من كتالوج المنتجات.</p>
-          </div>
-
-          <div class="msg" id="heroMsg"></div>
-        </div>
-        <div class="card">
-          <h3>طرق الدفع (فودافون كاش / إنستا باي)</h3>
-          <p class="hint" style="margin-bottom:10px">تظهر للعميل عند اختيار طريقة الدفع في السلة.</p>
-          <div class="form-grid">
-            <label>رقم فودافون كاش<input id="payVodafone" placeholder="01xxxxxxxxx" dir="ltr" /></label>
-            <label>إنستا باي<input id="payInstapay" placeholder="رقم أو حساب InstaPay" dir="ltr" /></label>
-          </div>
-          <label>ملاحظة الدفع<input id="payNote" placeholder="بعد التحويل ابعتي الإيصال..." /></label>
-          <button type="button" class="btn btn-primary" id="savePayBtn">حفظ بيانات الدفع</button>
-          <div class="msg" id="payMsg"></div>
         </div>
       </section>
 
@@ -1454,7 +1230,6 @@
           if (panelId === "orders") loadOrders();
           else if (panelId === "labels") loadLabelsPanel();
           else if (panelId === "policy") loadPolicyPanel();
-          else if (panelId === "animations") { try { window.dispatchEvent(new CustomEvent("athar-open-animations")); } catch (e) {} }
           else if (panelId === "products") loadProducts();
           else if (panelId === "categories") loadCategories();
           else if (panelId === "dash") loadStats();
@@ -3471,6 +3246,14 @@
       set("hImg2Url", c.heroImage2);
       setPrev("hImg1Prev", c.heroImage1);
       setPrev("hImg2Prev", c.heroImage2);
+      const hp = c.homepage || {};
+      set("hpPromoText", hp.promoText || "خصومات مميزة في انتظارك");
+      set("hpPromoImage", hp.promoImage || "/product-images/ref-gift_banner.jpg");
+      if ($("hpBestCount")) $("hpBestCount").value = hp.bestCount || 6;
+      if ($("hpPromoEnabled")) $("hpPromoEnabled").checked = hp.promoEnabled !== false;
+      if ($("hpBenefitsEnabled")) $("hpBenefitsEnabled").checked = hp.benefitsEnabled !== false;
+      if ($("heroAdminPreviewTitle")) $("heroAdminPreviewTitle").textContent = c.heroTitle || "أناقة بلا حدود";
+      if ($("heroAdminPreviewImg")) $("heroAdminPreviewImg").src = c.heroImage1 || "/product-images/ref-hero_light_bag.jpg";
       if ($("hRotateProducts")) $("hRotateProducts").checked = c.heroRotateFromProducts === true;
       if ($("hRotateSeconds")) $("hRotateSeconds").value = c.heroRotateSeconds || 5;
       if ($("hScale")) {
@@ -3661,7 +3444,17 @@
           heroImage1: pendingHero1 || $("hImg1Url")?.value.trim() || "",
           heroImage2: pendingHero2 || $("hImg2Url")?.value.trim() || "",
           heroScale: $("hScale") ? Number($("hScale").value) / 100 : 1,
-          heroScaleMobile: $("hScaleMobile") ? Number($("hScaleMobile").value) / 100 : 1.05
+          heroScaleMobile: $("hScaleMobile") ? Number($("hScaleMobile").value) / 100 : 1.05,
+          homepage: {
+            heroTitle: $("hTitle")?.value.trim() || "أناقة بلا حدود",
+            heroBtn: $("hBtn")?.value.trim() || "تسوقي الآن",
+            promoText: $("hpPromoText")?.value.trim() || "خصومات مميزة في انتظارك",
+            promoImage: $("hpPromoImage")?.value.trim() || "/product-images/ref-gift_banner.jpg",
+            bestCount: Number($("hpBestCount")?.value || 6),
+            promoEnabled: $("hpPromoEnabled")?.checked !== false,
+            benefitsEnabled: $("hpBenefitsEnabled")?.checked !== false,
+            hideMainCategories: true
+          }
         };
         const data = await api("update_hero", payload);
         if (!data.ok) throw new Error(data.error || "فشل الحفظ");

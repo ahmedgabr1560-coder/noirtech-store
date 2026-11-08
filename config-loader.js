@@ -8,7 +8,7 @@
     const root = document.documentElement;
     const text = (sel, val) => { const el = document.querySelector(sel); if (el && val != null) el.textContent = val; };
 
-    
+
   function applyHeroScale(c) {
     if (!c) return;
     try {
@@ -27,7 +27,7 @@
     } catch (e) {}
   }
 
-  
+
   const SYSTEM_LIGHT = {
     bg: "#f8f7f4", bgSection: "#f1efe9", bgCard: "#ffffff", text: "#1a1814",
     textHeading: "#0c0b0a", textMuted: "#6b6560", border: "#e6e1d8",
@@ -75,7 +75,7 @@
     } catch (e) {}
   }
 
-  
+
   function applyHeroLayout(layout) {
     if (!layout || typeof layout !== "object") return;
     try {
@@ -102,10 +102,41 @@
     } catch (e) {}
   }
 
-  
+
   function applyHomepageConfig(hp) {
     if (!hp || typeof hp !== "object") return;
     try {
+      const heroTitle = document.getElementById("heroTitleLine");
+      const heroButton = document.getElementById("heroBtnText");
+      const chipTitle = document.getElementById("heroChipTitle");
+      const chipSub = document.getElementById("heroChipSub");
+      if (hp.heroTitle && heroTitle) heroTitle.textContent = hp.heroTitle;
+      if (hp.heroBtn && heroButton) {
+        const icon = heroButton.querySelector("svg");
+        heroButton.textContent = hp.heroBtn + " ";
+        if (icon) heroButton.prepend(icon);
+      }
+      if (hp.heroChipTitle && chipTitle) chipTitle.textContent = hp.heroChipTitle;
+      if (hp.heroChipSub && chipSub) chipSub.textContent = hp.heroChipSub;
+      const promo = document.getElementById("atharPromoBanner");
+      if (promo) {
+        promo.style.display = hp.promoEnabled === false ? "none" : "";
+        const title = promo.querySelector(".txt b");
+        if (title && hp.promoText) title.textContent = hp.promoText;
+        const image = hp.promoImage;
+        if (image) {
+          let bg = promo.querySelector(".athar-promo-image");
+          if (!bg) {
+            bg = document.createElement("img");
+            bg.className = "athar-promo-image";
+            bg.alt = "";
+            promo.appendChild(bg);
+          }
+          bg.src = image;
+        }
+      }
+      const benefits = document.getElementById("atharBenefits");
+      if (benefits) benefits.style.display = hp.benefitsEnabled === false ? "none" : "";
       const w = window.innerWidth || 1200;
       const dev = w <= 700 ? "mobile" : (w <= 1024 ? "tablet" : "desktop");
       const order = Array.isArray(hp.order) ? hp.order : ["home","bundles","shop","contact"];
@@ -132,6 +163,9 @@
         if (!el) return;
         if (sec.visible === false) { el.style.display = "none"; } else { el.style.display = ""; el.style.visibility = "visible"; }
         const d = sec[dev] || sec.desktop || {};
+        if (id === "shop" && hp.bestCount != null && (!sec.desktop || sec.desktop.limit == null)) {
+          el.setAttribute("data-hp-limit", Math.max(3, Math.min(12, Number(hp.bestCount) || 6)));
+        }
         el.style.setProperty("--hp-pad-y", (d.padY != null ? d.padY : 40) + "px");
         el.style.setProperty("--hp-title", (d.titleSize != null ? d.titleSize : 28) + "px");
         el.style.setProperty("--hp-text", (d.textSize != null ? d.textSize : 15) + "px");
