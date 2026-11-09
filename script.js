@@ -1695,9 +1695,6 @@ document.addEventListener("click", (e) => {
     }
     return;
   }
-  renderGrid($("#bestGrid"), found.length ? found : []);
-  toast(found.length ? `نتائج البحث: ${found.length}` : "لا توجد نتائج");
-  document.getElementById("best").scrollIntoView({ behavior: "smooth" });
 });
 
 $("#regAvatarInput")?.addEventListener("change", (e) => {
