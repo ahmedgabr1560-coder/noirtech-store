@@ -1182,6 +1182,7 @@ window.applyCouponFromInput = applyCouponFromInput;
       if (btn) setTimeout(function() { btn.classList.remove("is-opening"); }, 500);
     }
   }
+  window.openGiftCoupon = claimGift;
   function bind() {
     const gift = document.getElementById("promoGiftBtn");
     if (gift && gift.dataset.bound !== "1") {
