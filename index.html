@@ -632,14 +632,14 @@
   <div class="modal order-success-modal" id="orderSuccessModal" role="dialog">
     <div class="order-success">
       <div class="order-success-icon">✓</div>
-      <span class="order-success-kicker">تم التأكيد بنجاح</span>
-      <h3>طلبك وصلنا يا جميلة</h3>
+      <span class="order-success-kicker" id="orderSuccessKicker">تم التأكيد بنجاح</span>
+      <h3 id="orderSuccessTitle">طلبك وصلنا يا جميلة</h3>
       <p class="muted" style="margin-bottom:4px">رقم الطلب</p>
       <p class="order-success-id" id="orderSuccessId">—</p>
       <p class="muted" id="orderSuccessMsg" style="line-height:1.7">شكرًا لطلبكِ من ATHAR | أثر.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.</p>
       <div class="order-success-actions">
         <a class="btn order-success-whatsapp" id="orderSuccessWhatsapp" data-whatsapp-link href="https://wa.me/201283431213" target="_blank" rel="noopener">
-          <span aria-hidden="true">◔</span> تواصلي معنا على واتساب
+          <span aria-hidden="true">◔</span> <span id="orderSuccessWhatsappLabel">تواصلي معنا على واتساب</span>
         </a>
         <button type="button" class="btn btn-primary btn-block" id="orderSuccessClose"
           style="pointer-events:auto;cursor:pointer;position:relative;z-index:60"

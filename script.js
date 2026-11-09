@@ -1857,14 +1857,30 @@ $("#logoutBtn").addEventListener("click", () => {
 
 
 function showOrderSuccess(orderId) {
+  const cfg = window.siteConfig || {};
+  const defaults = {
+    orderSuccessKicker: "تم التأكيد بنجاح",
+    orderSuccessTitle: "طلبك وصلنا يا جميلة",
+    orderSuccessMessage: "شكرًا لطلبكِ من ATHAR | أثر.\nهنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.",
+    orderSuccessWhatsappLabel: "تواصلي معنا على واتساب",
+    orderSuccessCloseLabel: "متابعة التسوق"
+  };
+  const text = (key) => String(cfg[key] || defaults[key]).trim() || defaults[key];
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  setText("orderSuccessKicker", text("orderSuccessKicker"));
+  setText("orderSuccessTitle", text("orderSuccessTitle"));
+  setText("orderSuccessWhatsappLabel", text("orderSuccessWhatsappLabel"));
+  setText("orderSuccessClose", text("orderSuccessCloseLabel"));
   const idEl = document.getElementById("orderSuccessId");
   if (idEl) idEl.textContent = orderId || "—";
   const msg = document.getElementById("orderSuccessMsg");
-  if (msg) msg.innerHTML = "شكرًا لطلبكِ من ATHAR | أثر.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.";
+  if (msg) {
+    msg.textContent = text("orderSuccessMessage");
+    msg.style.whiteSpace = "pre-line";
+  }
   const wa = document.getElementById("orderSuccessWhatsapp");
   if (wa) {
     try {
-      const cfg = window.siteConfig || {};
       const number = String(cfg.whatsapp || cfg.phone || "01283431213").replace(/\D/g, "");
       const normalized = number.startsWith("20") ? number : (number.startsWith("0") ? "20" + number.slice(1) : "20" + number);
       const text = "مرحبًا أثر، أريد الاستفسار عن طلبي رقم " + (orderId || "—");

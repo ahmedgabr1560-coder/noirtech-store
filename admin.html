@@ -1036,6 +1036,17 @@
           </div>
           <label>نص الفوتر<input id="gFooter" placeholder="© 2026 ATHAR | أثر" /></label>
           <label>نبذة عن المتجر<textarea id="gAbout"></textarea></label>
+          <div style="margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:14px">
+            <h4 style="margin-bottom:6px">رسالة تأكيد الطلب</h4>
+            <p class="hint" style="margin-bottom:10px">النصوص دي بتظهر للعميل بعد الضغط على «إتمام الطلب». اكتبِي كل سطر في سطر منفصل.</p>
+            <div class="form-grid">
+              <label>الشريط العلوي<input id="gOrderSuccessKicker" placeholder="تم التأكيد بنجاح" /></label>
+              <label>عنوان الرسالة<input id="gOrderSuccessTitle" placeholder="طلبك وصلنا يا جميلة" /></label>
+              <label>نص الرسالة<textarea id="gOrderSuccessMessage" rows="3" placeholder="شكرًا لطلبكِ من ATHAR | أثر.&#10;هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل."></textarea></label>
+              <label>زر واتساب<input id="gOrderSuccessWhatsappLabel" placeholder="تواصلي معنا على واتساب" /></label>
+              <label>زر الإغلاق<input id="gOrderSuccessCloseLabel" placeholder="متابعة التسوق" /></label>
+            </div>
+          </div>
           <div class="form-grid">
             <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="gShowWa" /> إظهار زر واتساب</label>
             <label style="display:flex;align-items:center;gap:8px;flex-direction:row"><input type="checkbox" id="gShowTg" /> إظهار زر تليجرام</label>
@@ -3737,6 +3748,11 @@
       set("gOwner", c.ownerName);
       set("gFooter", c.footerText);
       set("gAbout", c.aboutText);
+      set("gOrderSuccessKicker", c.orderSuccessKicker || "تم التأكيد بنجاح");
+      set("gOrderSuccessTitle", c.orderSuccessTitle || "طلبك وصلنا يا جميلة");
+      set("gOrderSuccessMessage", c.orderSuccessMessage || "شكرًا لطلبكِ من ATHAR | أثر.\nهنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.");
+      set("gOrderSuccessWhatsappLabel", c.orderSuccessWhatsappLabel || "تواصلي معنا على واتساب");
+      set("gOrderSuccessCloseLabel", c.orderSuccessCloseLabel || "متابعة التسوق");
       if ($("gShowWa")) $("gShowWa").checked = c.showFloatWhatsapp !== false;
       if ($("gShowTg")) $("gShowTg").checked = c.showFloatTelegram !== false;
       if ($("gShowAi")) $("gShowAi").checked = c.showFloatAI !== false;
@@ -3756,6 +3772,11 @@
           ownerName: $("gOwner")?.value.trim() || "",
           footerText: $("gFooter")?.value.trim() || "",
           aboutText: $("gAbout")?.value.trim() || "",
+          orderSuccessKicker: $("gOrderSuccessKicker")?.value.trim() || "تم التأكيد بنجاح",
+          orderSuccessTitle: $("gOrderSuccessTitle")?.value.trim() || "طلبك وصلنا يا جميلة",
+          orderSuccessMessage: $("gOrderSuccessMessage")?.value.trim() || "شكرًا لطلبكِ من ATHAR | أثر.\nهنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.",
+          orderSuccessWhatsappLabel: $("gOrderSuccessWhatsappLabel")?.value.trim() || "تواصلي معنا على واتساب",
+          orderSuccessCloseLabel: $("gOrderSuccessCloseLabel")?.value.trim() || "متابعة التسوق",
           showFloatWhatsapp: !!$("gShowWa")?.checked,
           showFloatTelegram: !!$("gShowTg")?.checked,
           showFloatAI: !!$("gShowAi")?.checked,

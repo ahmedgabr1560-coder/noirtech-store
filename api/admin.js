@@ -816,7 +816,7 @@ export default async function handler(req, res) {
       let config = {};
       try { config = JSON.parse(f.content); } catch { config = {}; }
 
-      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroBtnLink","heroChipTitle","heroChipSub","heroScale","heroScaleMobile","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email","siteName","siteTagline","logoMark","favicon","address","footerText","aboutText","ownerName","telegramBot","storeClosedMessage"];
+      const textFields = ["heroBadge","heroTitle","heroHighlight","heroDesc","heroBtn","heroBtnLink","heroChipTitle","heroChipSub","heroScale","heroScaleMobile","vodafoneCash","instapay","instapayLabel","paymentNote","phone","whatsapp","email","siteName","siteTagline","logoMark","favicon","address","footerText","aboutText","ownerName","telegramBot","storeClosedMessage","orderSuccessKicker","orderSuccessTitle","orderSuccessMessage","orderSuccessWhatsappLabel","orderSuccessCloseLabel"];
       for (const k of textFields) {
         if (body[k] != null && k !== "heroScale" && k !== "heroScaleMobile") config[k] = String(body[k]);
       }
