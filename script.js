@@ -1163,6 +1163,21 @@ window.applyCouponFromInput = applyCouponFromInput;
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
     modal.classList.remove("is-revealing");
+    const card = modal.querySelector(".gift-modal-card");
+    if (card) {
+      card.querySelectorAll(".gift-confetti").forEach(function (node) { node.remove(); });
+      const confettiColors = ["#d4af37", "#f8d98b", "#b8325e", "#7a1f3d", "#fff1bd"];
+      for (let i = 0; i < 18; i++) {
+        const piece = document.createElement("i");
+        piece.className = "gift-confetti";
+        piece.style.setProperty("--gift-x", ((i % 2 ? 1 : -1) * (38 + Math.random() * 125)).toFixed(0) + "px");
+        piece.style.setProperty("--gift-y", (-35 - Math.random() * 125).toFixed(0) + "px");
+        piece.style.setProperty("--gift-r", (Math.random() * 300 - 150).toFixed(0) + "deg");
+        piece.style.setProperty("--gift-delay", (Math.random() * .18).toFixed(2) + "s");
+        piece.style.setProperty("--gift-color", confettiColors[i % confettiColors.length]);
+        card.appendChild(piece);
+      }
+    }
     void modal.offsetWidth;
     modal.classList.add("is-revealing");
     setTimeout(function () { modal.classList.remove("is-revealing"); }, 1100);
