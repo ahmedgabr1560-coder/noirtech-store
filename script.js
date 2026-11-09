@@ -1143,6 +1143,10 @@ window.applyCouponFromInput = applyCouponFromInput;
     if (msgEl) msgEl.textContent = "تم تطبيق الكود على السلة تلقائيًا";
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
+    modal.classList.remove("is-revealing");
+    void modal.offsetWidth;
+    modal.classList.add("is-revealing");
+    setTimeout(function () { modal.classList.remove("is-revealing"); }, 1100);
     document.body.classList.add("gift-modal-open");
   }
   function closeGiftModal() {
@@ -1178,7 +1182,7 @@ window.applyCouponFromInput = applyCouponFromInput;
       if (modal) { modal.hidden = false; modal.setAttribute("aria-hidden", "false"); document.body.classList.add("gift-modal-open"); }
       if (msg) msg.textContent = "مفيش أكواد متاحة حاليًا، جربي مرة تانية قريبًا.";
     } finally {
-      if (btn) setTimeout(function() { btn.classList.remove("is-opening"); }, 500);
+      if (btn) setTimeout(function() { btn.classList.remove("is-opening"); }, 850);
     }
   }
   window.openGiftCoupon = claimGift;
