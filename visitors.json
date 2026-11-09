@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3156,
-    "totalLeaves": 928,
+    "totalLeaves": 929,
     "uniqueSessions": 3147,
     "todayEnters": 6,
-    "todayLeaves": 8,
+    "todayLeaves": 9,
     "todayDate": "2026-11-10",
     "accountsTotal": 0,
     "uniqueDevices": 1893,
@@ -25,13 +25,13 @@
   "sessions": {
     "s_8jlbrbe7jkymw9ttyor": {
       "firstSeen": "2026-11-09T22:22:27.516Z",
-      "lastSeen": "2026-11-09T22:22:27.516Z",
+      "lastSeen": "2026-11-09T22:22:41.024Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 1,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.203.242.xxx"
     },
     "s_r8u8g3xybeemw9tmnja": {
@@ -4426,6 +4426,12 @@
   },
   "recent": [
     {
+      "type": "leave",
+      "sessionId": "s_8jlbrbe7…",
+      "path": "/",
+      "at": "2026-11-09T22:22:41.024Z"
+    },
+    {
       "type": "enter",
       "sessionId": "s_8jlbrbe7…",
       "path": "/",
@@ -4898,26 +4904,20 @@
       "sessionId": "s_am2m7vta…",
       "path": "/",
       "at": "2026-11-09T19:31:59.237Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_rs6x19qv…",
-      "path": "/",
-      "at": "2026-11-09T19:31:58.922Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-09T22:22:41.024Z",
+      "type": "ipad",
+      "ipMasked": "156.203.242.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-09T22:22:27.516Z",
       "type": "desktop",
       "ipMasked": "156.203.242.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-09T22:19:12.995Z",
-      "type": "ipad",
-      "ipMasked": "156.203.196.xxx"
     },
     "d_3s208it7jk7mw9tmy8v": {
       "firstSeen": "2026-11-09T22:17:00.608Z",
