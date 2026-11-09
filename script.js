@@ -1511,6 +1511,64 @@ function closeCart() {
   } catch (e) { console.warn(e); }
 }
 
+// The cart can be dismissed only by swiping its colored top header downward.
+(function bindCartHeaderSwipeDismiss() {
+  function bind() {
+    const drawer = document.getElementById("cartDrawer");
+    const header = drawer && drawer.querySelector(".drawer-head");
+    if (!header || header.dataset.swipeDismissBound === "1") return;
+    header.dataset.swipeDismissBound = "1";
+    let startX = 0;
+    let startY = 0;
+    let startAt = 0;
+    let dragging = false;
+
+    header.addEventListener("touchstart", function (event) {
+      if (!drawer.classList.contains("open") || !event.touches || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      startAt = Date.now();
+      dragging = true;
+      drawer.style.transition = "none";
+    }, { passive: true });
+
+    header.addEventListener("touchmove", function (event) {
+      if (!dragging || !event.touches || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+      if (dy <= 0 || Math.abs(dy) <= Math.abs(dx)) return;
+      drawer.style.transform = "translate3d(0, " + Math.min(dy, 260) + "px, 0)";
+      if (event.cancelable) event.preventDefault();
+    }, { passive: false });
+
+    header.addEventListener("touchend", function (event) {
+      if (!dragging) return;
+      dragging = false;
+      const touch = event.changedTouches && event.changedTouches[0];
+      const dy = touch ? touch.clientY - startY : 0;
+      const elapsed = Math.max(1, Date.now() - startAt);
+      const fastEnough = dy / elapsed >= 0.45;
+      drawer.style.transition = "transform .22s ease";
+      if (dy >= 120 || (dy >= 70 && fastEnough)) {
+        closeCart();
+      } else {
+        drawer.style.transform = "";
+        window.setTimeout(function () { drawer.style.transition = ""; }, 240);
+      }
+    }, { passive: true });
+
+    header.addEventListener("touchcancel", function () {
+      dragging = false;
+      drawer.style.transition = "transform .22s ease";
+      drawer.style.transform = "";
+    }, { passive: true });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
+  else bind();
+})();
+
 function openProduct(id) {
   // dedicated page with colors & stock
   window.location.href = "/product.html?id=" + encodeURIComponent(id);
