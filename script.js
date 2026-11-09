@@ -1146,6 +1146,15 @@ window.applyCouponFromInput = applyCouponFromInput;
     } catch (e) {}
   }
   window.markGiftCouponUsed = markGiftCouponUsed;
+  function trackGiftEvent(action, bag) {
+    try {
+      const deviceId = localStorage.getItem("nx_did") || "";
+      const sessionId = sessionStorage.getItem("nx_sid") || "";
+      const payload = { action: action, deviceId: deviceId, sessionId: sessionId };
+      if (bag) { payload.bagId = String(bag.id || "").slice(0, 80); payload.bagName = String(bag.name || "").slice(0, 120); }
+      fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), keepalive: true }).catch(function () {});
+    } catch (e) {}
+  }
   function renderGiftBagChoices(giftConfig) {
     const wrap = document.getElementById("giftBagsChoice");
     const list = document.getElementById("giftBagsList");
@@ -1185,6 +1194,7 @@ window.applyCouponFromInput = applyCouponFromInput;
           localStorage.setItem("nx_gift_bag_choice", JSON.stringify({ id: id, name: String(bag.name), image: String(bag.image || "") }));
           localStorage.setItem("nx_gift_bag_claimed", "1");
         } catch (e) {}
+        trackGiftEvent("gift_bag_select", { id: id, name: bag.name });
         list.querySelectorAll(".gift-bag-option").forEach(function (item) { item.disabled = true; });
         button.classList.add("selected");
         if (msg) msg.textContent = "تم اختيار شنطة هديتك ✓";
@@ -1207,6 +1217,7 @@ window.applyCouponFromInput = applyCouponFromInput;
     if (pctEl) pctEl.textContent = "خصم " + percent + "% على طلبك";
     if (textEl) textEl.textContent = giftConfig.message || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.";
     if (msgEl) msgEl.textContent = "تم تطبيق الكود على السلة تلقائيًا";
+    trackGiftEvent("gift_open");
     renderGiftBagChoices(giftConfig);
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");

@@ -83,7 +83,8 @@ function emptyVisitors() {
       todayDate: todayStr(),
       accountsTotal: 0,
       uniqueDevices: 0,
-      deviceTypes: { android: 0, iphone: 0, ipad: 0, desktop: 0, other: 0 }
+      deviceTypes: { android: 0, iphone: 0, ipad: 0, desktop: 0, other: 0 },
+      gift: { opens: 0, bagSelections: 0, bags: {}, bagNames: {} }
     },
     sessions: {},
     devices: {},
@@ -178,6 +179,45 @@ export default async function handler(req, res) {
 
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const action = body.action || "ping";
+
+    if (action === "gift_open" || action === "gift_bag_select") {
+      const visitorKey = String(body.deviceId || body.sessionId || "").slice(0, 100);
+      if (!visitorKey) return res.status(400).json({ ok: false, error: "visitor id" });
+      const bagId = String(body.bagId || "").trim().slice(0, 80);
+      if (action === "gift_bag_select" && !bagId) return res.status(400).json({ ok: false, error: "bagId" });
+      const result = await withRetry((v) => {
+        if (!v || typeof v !== "object") v = emptyVisitors();
+        if (!v.stats) v.stats = emptyVisitors().stats;
+        if (!v.stats.gift) v.stats.gift = { opens: 0, bagSelections: 0, bags: {}, bagNames: {} };
+        if (!v.stats.gift.bags || typeof v.stats.gift.bags !== "object") v.stats.gift.bags = {};
+        if (!v.stats.gift.bagNames || typeof v.stats.gift.bagNames !== "object") v.stats.gift.bagNames = {};
+        if (!v.giftEventDevices || typeof v.giftEventDevices !== "object") v.giftEventDevices = { opens: {}, bags: {} };
+        if (!v.giftEventDevices.opens || typeof v.giftEventDevices.opens !== "object") v.giftEventDevices.opens = {};
+        if (!v.giftEventDevices.bags || typeof v.giftEventDevices.bags !== "object") v.giftEventDevices.bags = {};
+        if (action === "gift_open") {
+          if (!v.giftEventDevices.opens[visitorKey]) {
+            v.giftEventDevices.opens[visitorKey] = new Date().toISOString();
+            v.stats.gift.opens = (v.stats.gift.opens || 0) + 1;
+          }
+        } else {
+          const eventKey = visitorKey + "::" + bagId;
+          if (!v.giftEventDevices.bags[eventKey]) {
+            v.giftEventDevices.bags[eventKey] = new Date().toISOString();
+            v.stats.gift.bagSelections = (v.stats.gift.bagSelections || 0) + 1;
+            v.stats.gift.bags[bagId] = (v.stats.gift.bags[bagId] || 0) + 1;
+            v.stats.gift.bagNames[bagId] = String(body.bagName || bagId).slice(0, 120);
+          }
+        }
+        // Keep the anonymous dedupe index bounded.
+        const keys = Object.keys(v.giftEventDevices.opens).slice(-5000);
+        v.giftEventDevices.opens = Object.fromEntries(keys.map(k => [k, v.giftEventDevices.opens[k]]));
+        const bagKeys = Object.keys(v.giftEventDevices.bags).slice(-10000);
+        v.giftEventDevices.bags = Object.fromEntries(bagKeys.map(k => [k, v.giftEventDevices.bags[k]]));
+        return v;
+      }, "visitors.json", "track: " + action);
+      if (!result.ok) return res.status(200).json({ ok: true, soft: true, error: result.error || "save failed" });
+      return res.status(200).json({ ok: true, gift: result.data.stats.gift });
+    }
 
     // تسجيل حساب (بدون كلمة مرور)
     if (action === "register_account") {

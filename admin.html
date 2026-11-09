@@ -905,6 +905,15 @@
               <div id="giftBagsList"></div>
               <button type="button" class="btn btn-ghost" id="addGiftBagRow" style="margin-top:8px">+ إضافة شنطة هدية</button>
             </div>
+            <div class="card" style="margin:14px 0 0;padding:14px;border:1px solid var(--border,#ead7df)">
+              <h4 style="margin:0 0 8px">تقرير تفاعل العملاء مع الهدية</h4>
+              <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+                <div class="stat-card"><span>فتحوا الهدية</span><b id="giftOpensReport">—</b></div>
+                <div class="stat-card"><span>اختاروا شنطة</span><b id="giftBagSelectionsReport">—</b></div>
+              </div>
+              <div id="giftBagsReport" class="hint" style="margin-top:10px">لا توجد اختيارات شنط حتى الآن</div>
+              <button type="button" class="btn btn-ghost" id="refreshGiftReport" style="margin-top:10px">تحديث التقرير</button>
+            </div>
             <p id="giftCouponStats" class="hint" style="margin:10px 0 0"></p>
           </div>
           <div id="couponsList"></div>
@@ -3167,6 +3176,16 @@
         set("vDesktop", fmt(types.desktop || 0));
         const accounts = (aData && aData.accounts) || [];
         set("vAccounts", fmt(accounts.length || st.accountsTotal || 0));
+        const gift = st.gift || {};
+        set("giftOpensReport", fmt(gift.opens || 0));
+        set("giftBagSelectionsReport", fmt(gift.bagSelections || 0));
+        const giftReport = $("giftBagsReport");
+        const bagCounts = gift.bags || {};
+        const bagNames = gift.bagNames || {};
+        const bagRows = Object.keys(bagCounts).sort((a, b) => Number(bagCounts[b] || 0) - Number(bagCounts[a] || 0));
+        if (giftReport) giftReport.innerHTML = bagRows.length
+          ? bagRows.map(id => `<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--border,#ead7df)"><span>${bagNames[id] || id}</span><b>${fmt(bagCounts[id])}</b></div>`).join("")
+          : "لا توجد اختيارات شنط حتى الآن";
         const ab = $("accountsBody");
         if (ab) {
           ab.innerHTML = accounts.length ? accounts.slice(0, 30).map(u => `<tr>
@@ -3192,6 +3211,7 @@
     }
 
     $("btnRefreshVisitors")?.addEventListener("click", loadVisitorsPanel);
+    $("refreshGiftReport")?.addEventListener("click", loadVisitorsPanel);
     document.getElementById("accountsBody")?.addEventListener("click", async (e) => {
       const btn = e.target.closest("[data-del-acc]");
       if (!btn) return;
@@ -3968,6 +3988,21 @@
       });
     }
 
+    async function refreshGiftReportData() {
+      try {
+        const data = await api("list_visitors");
+        const gift = (data && data.stats && data.stats.gift) || {};
+        const fmt = n => String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        if ($("giftOpensReport")) $("giftOpensReport").textContent = fmt(gift.opens);
+        if ($("giftBagSelectionsReport")) $("giftBagSelectionsReport").textContent = fmt(gift.bagSelections);
+        const counts = gift.bags || {}, names = gift.bagNames || {}, box = $("giftBagsReport");
+        if (box) {
+          const ids = Object.keys(counts).sort((a, b) => Number(counts[b] || 0) - Number(counts[a] || 0));
+          box.innerHTML = ids.length ? ids.map(id => `<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--border,#ead7df)"><span>${names[id] || id}</span><b>${fmt(counts[id])}</b></div>`).join("") : "لا توجد اختيارات شنط حتى الآن";
+        }
+      } catch (e) { console.warn("gift report", e); }
+    }
+
     async function loadCouponsPanel() {
       try {
         const data = await api("get_coupons");
@@ -3988,6 +4023,7 @@
           ];
         }
         renderCouponRows();
+        refreshGiftReportData();
       } catch (e) {
         alert("تعذر تحميل الأكواد");
       }
