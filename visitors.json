@@ -1,22 +1,33 @@
 {
   "stats": {
-    "totalEnters": 3036,
+    "totalEnters": 3037,
     "totalLeaves": 806,
-    "uniqueSessions": 3030,
-    "todayEnters": 30,
+    "uniqueSessions": 3031,
+    "todayEnters": 31,
     "todayLeaves": 0,
     "todayDate": "2026-11-09",
     "accountsTotal": 0,
-    "uniqueDevices": 1771,
+    "uniqueDevices": 1772,
     "deviceTypes": {
       "android": 58,
       "iphone": 45,
       "ipad": 4,
-      "desktop": 1646,
+      "desktop": 1647,
       "other": 2
     }
   },
   "sessions": {
+    "s_houip7c0p69mw8p9fs9": {
+      "firstSeen": "2026-11-09T03:26:45.494Z",
+      "lastSeen": "2026-11-09T03:26:45.494Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_f6zc6641avimw8p9fs9",
+      "deviceType": "desktop",
+      "ipMasked": "54.183.149.xxx"
+    },
     "s_vmkxyo5aqkjmw8p9fry": {
       "firstSeen": "2026-11-09T03:26:45.113Z",
       "lastSeen": "2026-11-09T03:26:45.113Z",
@@ -4405,20 +4416,15 @@
       "deviceId": "d_test",
       "deviceType": "iphone",
       "ipMasked": "34.48.254.xxx"
-    },
-    "s_health_1793712574": {
-      "firstSeen": "2026-11-03T13:29:34.446Z",
-      "lastSeen": "2026-11-03T13:29:34.446Z",
-      "path": "/health",
-      "status": "left",
-      "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_health",
-      "deviceType": "desktop",
-      "ipMasked": "34.21.3.xxx"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_houip7c0…",
+      "path": "/",
+      "at": "2026-11-09T03:26:45.494Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_vmkxyo5a…",
@@ -4892,15 +4898,15 @@
       "sessionId": "s_tvtjd6zh…",
       "path": "/",
       "at": "2026-11-08T18:38:34.117Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_x9ixn4ag…",
-      "path": "/",
-      "at": "2026-11-08T18:38:27.128Z"
     }
   ],
   "devices": {
+    "d_f6zc6641avimw8p9fs9": {
+      "firstSeen": "2026-11-09T03:26:45.494Z",
+      "lastSeen": "2026-11-09T03:26:45.494Z",
+      "type": "desktop",
+      "ipMasked": "54.183.149.xxx"
+    },
     "d_khyf2igdq8jmw8p9fry": {
       "firstSeen": "2026-11-09T03:26:45.113Z",
       "lastSeen": "2026-11-09T03:26:45.113Z",
