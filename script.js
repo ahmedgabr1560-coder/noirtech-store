@@ -900,7 +900,10 @@ function productCard(p) {
   </article>`;
 }
 
-const ATHAR_FAV_KEY = "athar_favorites";
+// Keep the key on window so inline cards and dynamically loaded scripts share
+// exactly the same favorites store without a temporal-dead-zone collision.
+var ATHAR_FAV_KEY = window.__ATHAR_FAV_KEY || "athar_favorites";
+window.__ATHAR_FAV_KEY = ATHAR_FAV_KEY;
 function getFavoriteIds() {
   try {
     const raw = JSON.parse(localStorage.getItem(ATHAR_FAV_KEY) || "[]");
@@ -908,7 +911,11 @@ function getFavoriteIds() {
   } catch (e) { return []; }
 }
 function saveFavoriteIds(ids) {
-  try { localStorage.setItem(ATHAR_FAV_KEY, JSON.stringify([...new Set(ids.map(String))])); } catch (e) {}
+  try {
+    const clean = [...new Set((Array.isArray(ids) ? ids : []).map(String))];
+    localStorage.setItem(ATHAR_FAV_KEY, JSON.stringify(clean));
+    return clean;
+  } catch (e) { return []; }
 }
 function syncFavoriteButtons(root, pulseId) {
   const scope = root || document;
