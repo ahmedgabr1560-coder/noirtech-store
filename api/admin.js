@@ -856,6 +856,14 @@ export default async function handler(req, res) {
         for (const k of ["promoEnabled", "benefitsEnabled", "hideMainCategories", "giftCouponEnabled", "giftCouponOnePerBrowser"]) {
           if (homepage[k] != null) next[k] = homepage[k] === true || homepage[k] === "true" || homepage[k] === 1 || homepage[k] === "1";
         }
+        if (Array.isArray(homepage.giftBags)) {
+          next.giftBags = homepage.giftBags.slice(0, 50).map((bag, i) => ({
+            id: String(bag.id || ("gift-bag-" + (i + 1))).slice(0, 80),
+            name: String(bag.name || "").trim().slice(0, 120),
+            image: String(bag.image || "").trim().slice(0, 1000),
+            active: bag.active !== false
+          })).filter(bag => bag.name);
+        }
         config.homepage = next;
       }
 

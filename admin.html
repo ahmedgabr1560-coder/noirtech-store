@@ -899,6 +899,12 @@
               <label>عنوان رسالة الهدية<input id="giftCouponTitle" placeholder="هديتك وصلتلك بكل حب" /></label>
               <label>النص أسفل العنوان<input id="giftCouponMessage" placeholder="اختارتلك أثر هديتك بحب.." /></label>
             </div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border,#ead7df)">
+              <h4 style="margin:0 0 6px">شنط الهدايا — اختيارات مستقلة</h4>
+              <p class="hint" style="margin:0 0 10px">أضيفي شنطًا تظهر كاختيارات بعد فتح الهدية. دي ليست منتجات ولا عروض قطعتين، والعميل يختار شنطة واحدة فقط لكل متصفح.</p>
+              <div id="giftBagsList"></div>
+              <button type="button" class="btn btn-ghost" id="addGiftBagRow" style="margin-top:8px">+ إضافة شنطة هدية</button>
+            </div>
             <p id="giftCouponStats" class="hint" style="margin:10px 0 0"></p>
           </div>
           <div id="couponsList"></div>
@@ -3904,6 +3910,31 @@
 
 
     let COUPON_ROWS = [];
+    let GIFT_BAGS = [];
+
+    function giftBagEsc(value) {
+      return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    function renderGiftBagRows() {
+      const box = $("giftBagsList");
+      if (!box) return;
+      if (!GIFT_BAGS.length) { box.innerHTML = `<p class="hint">لا توجد شنط مضافة — اضغطي «إضافة شنطة هدية»</p>`; return; }
+      box.innerHTML = GIFT_BAGS.map((bag, i) => `<div class="sub-row" style="align-items:flex-start;margin-bottom:8px">
+        <div style="flex:1;min-width:160px;display:grid;gap:7px">
+          <input data-gift-bag="name" data-i="${i}" value="${giftBagEsc(bag.name)}" placeholder="اسم الشنطة" />
+          <input data-gift-bag="image" data-i="${i}" value="${giftBagEsc(bag.image)}" placeholder="رابط صورة الشنطة — اختياري" dir="ltr" />
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;margin:8px 0 0"><input type="checkbox" data-gift-bag="active" data-i="${i}" ${bag.active !== false ? "checked" : ""} style="width:auto" /> مفعّلة</label>
+        <button type="button" class="btn btn-ghost" data-del-gift-bag="${i}" style="color:#f87171;margin-top:2px">حذف</button>
+      </div>`).join("");
+    }
+    function syncGiftBagRowsFromUI() {
+      document.querySelectorAll("#giftBagsList [data-gift-bag]").forEach(el => {
+        const i = Number(el.getAttribute("data-i"));
+        const key = el.getAttribute("data-gift-bag");
+        if (GIFT_BAGS[i]) GIFT_BAGS[i][key] = key === "active" ? !!el.checked : el.value.trim();
+      });
+    }
 
     function renderCouponRows() {
       const box = $("couponsList");
@@ -3947,6 +3978,8 @@
         if ($("giftCouponOnePerBrowser")) $("giftCouponOnePerBrowser").checked = hp.giftCouponOnePerBrowser !== false;
         if ($("giftCouponTitle")) $("giftCouponTitle").value = hp.giftCouponTitle || "هديتك وصلتلك بكل حب";
         if ($("giftCouponMessage")) $("giftCouponMessage").value = hp.giftCouponMessage || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.";
+        GIFT_BAGS = Array.isArray(hp.giftBags) ? hp.giftBags.map((bag, i) => ({ id: bag.id || ("gift-bag-" + (i + 1)), name: bag.name || "", image: bag.image || "", active: bag.active !== false })) : [];
+        renderGiftBagRows();
         if ($("giftCouponStats")) $("giftCouponStats").textContent = "إجمالي مرات استخدام الأكواد في الطلبات: " + (Number(data?.totalUses) || 0);
         if (!COUPON_ROWS.length) {
           COUPON_ROWS = [
@@ -3959,6 +3992,19 @@
         alert("تعذر تحميل الأكواد");
       }
     }
+
+    $("addGiftBagRow")?.addEventListener("click", () => {
+      syncGiftBagRowsFromUI();
+      GIFT_BAGS.push({ id: "gift-bag-" + Date.now(), name: "", image: "", active: true });
+      renderGiftBagRows();
+    });
+    $("giftBagsList")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-del-gift-bag]");
+      if (!btn) return;
+      syncGiftBagRowsFromUI();
+      GIFT_BAGS.splice(Number(btn.getAttribute("data-del-gift-bag")), 1);
+      renderGiftBagRows();
+    });
 
     $("addCouponRow")?.addEventListener("click", () => {
       syncCouponRowsFromUI();
@@ -3982,13 +4028,15 @@
       if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
       try {
         syncCouponRowsFromUI();
+        syncGiftBagRowsFromUI();
         const data = await api("update_coupons", { codes: COUPON_ROWS });
         if (!data.ok) throw new Error(data.error || "فشل");
         const giftConfig = await api("update_hero", { homepage: {
           giftCouponEnabled: $("giftCouponEnabled")?.checked !== false,
           giftCouponOnePerBrowser: $("giftCouponOnePerBrowser")?.checked !== false,
           giftCouponTitle: $("giftCouponTitle")?.value.trim() || "هديتك وصلتلك بكل حب",
-          giftCouponMessage: $("giftCouponMessage")?.value.trim() || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي."
+          giftCouponMessage: $("giftCouponMessage")?.value.trim() || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.",
+          giftBags: GIFT_BAGS.filter(bag => String(bag.name || "").trim()).map(bag => ({ id: bag.id, name: String(bag.name).trim(), image: String(bag.image || "").trim(), active: bag.active !== false }))
         }});
         if (!giftConfig.ok) throw new Error(giftConfig.error || "تعذر حفظ إعدادات الهدية");
         COUPON_ROWS = data.codes || COUPON_ROWS;

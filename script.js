@@ -1146,6 +1146,53 @@ window.applyCouponFromInput = applyCouponFromInput;
     } catch (e) {}
   }
   window.markGiftCouponUsed = markGiftCouponUsed;
+  function renderGiftBagChoices(giftConfig) {
+    const wrap = document.getElementById("giftBagsChoice");
+    const list = document.getElementById("giftBagsList");
+    const msg = document.getElementById("giftBagChoiceMsg");
+    const bags = Array.isArray(giftConfig.giftBags) ? giftConfig.giftBags.filter(function (bag) { return bag && bag.active !== false && bag.name; }) : [];
+    if (!wrap || !list || !bags.length) { if (wrap) wrap.hidden = true; return; }
+    wrap.hidden = false;
+    list.innerHTML = "";
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem("nx_gift_bag_choice") || "null"); } catch (e) {}
+    const alreadyChosen = !!(saved && saved.id);
+    bags.forEach(function (bag, index) {
+      const id = String(bag.id || ("gift-bag-" + index));
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "gift-bag-option" + (saved && String(saved.id) === id ? " selected" : "");
+      button.dataset.bagId = id;
+      button.disabled = alreadyChosen;
+      if (bag.image) {
+        const image = document.createElement("img");
+        image.src = String(bag.image);
+        image.alt = String(bag.name);
+        image.loading = "lazy";
+        button.appendChild(image);
+      } else {
+        const icon = document.createElement("span");
+        icon.className = "gift-bag-placeholder";
+        icon.textContent = "🎁";
+        button.appendChild(icon);
+      }
+      const label = document.createElement("span");
+      label.textContent = String(bag.name);
+      button.appendChild(label);
+      button.addEventListener("click", function () {
+        if (localStorage.getItem("nx_gift_bag_claimed") === "1") return;
+        try {
+          localStorage.setItem("nx_gift_bag_choice", JSON.stringify({ id: id, name: String(bag.name), image: String(bag.image || "") }));
+          localStorage.setItem("nx_gift_bag_claimed", "1");
+        } catch (e) {}
+        list.querySelectorAll(".gift-bag-option").forEach(function (item) { item.disabled = true; });
+        button.classList.add("selected");
+        if (msg) msg.textContent = "تم اختيار شنطة هديتك ✓";
+      });
+      list.appendChild(button);
+    });
+    if (msg && alreadyChosen) msg.textContent = "تم اختيار شنطة هديتك من قبل ✓";
+  }
   function showGiftModal(code, percent) {
     const modal = document.getElementById("giftCouponModal");
     const codeEl = document.getElementById("giftCouponCode");
@@ -1160,6 +1207,7 @@ window.applyCouponFromInput = applyCouponFromInput;
     if (pctEl) pctEl.textContent = "خصم " + percent + "% على طلبك";
     if (textEl) textEl.textContent = giftConfig.message || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.";
     if (msgEl) msgEl.textContent = "تم تطبيق الكود على السلة تلقائيًا";
+    renderGiftBagChoices(giftConfig);
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
     modal.classList.remove("is-revealing");
