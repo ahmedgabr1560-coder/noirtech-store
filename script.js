@@ -388,7 +388,7 @@ function bindCheckoutDraft() {
 }
 
 
-let SHIPPING_ZONES = null;
+var SHIPPING_ZONES = null;
 
 async function loadShippingZones(force) {
   if (SHIPPING_ZONES && !force) return SHIPPING_ZONES;
@@ -1001,7 +1001,7 @@ function renderAll() {
   }
 }
 
-let COUPON_CODES = {
+var COUPON_CODES = {
   NEXORA10: 10,
   WELCOME10: 10,
   FIRST10: 10,
@@ -2717,11 +2717,12 @@ async function bootStore() {
   try { await loadCoupons(); } catch (e) {}
 
   bindCheckoutDraft();
-  loadShippingZones().then(() => {
+  loadShippingZones(true).then(() => {
     populateGovSelect();
     bindShippingSelects();
     restoreCheckoutDraft();
     populateCenterSelect();
+    try { updateCartUI(); } catch (e) {}
   }).catch(() => {});
 
   try { ensureHomeOnStart(); } catch (e) {}
@@ -2765,6 +2766,8 @@ async function bootStore() {
   try { if (typeof renderBundleSection === "function") renderBundleSection(); } catch (e) {}
   try { bindCategoryUI(); } catch (e) { console.warn(e); }
   try { updateCartUI(); } catch (e) {}
+  // مزامنة أخيرة بعد انتهاء كل السكربتات والبيانات حتى لا يظهر العداد بصفر.
+  setTimeout(function () { try { loadCartFromStorage(); updateCartUI(); } catch (e) {} }, 0);
   try { updateUserUI(); } catch (e) {}
   try {
     if (typeof setShopFilter === "function" && CATEGORIES.some(c => c.id === "fashion")) {
