@@ -4458,3 +4458,8 @@ html[data-theme="light"] .order-success-icon { background: #eaf9ef; color: #1683
   .order-success { padding: 25px 17px 19px; }
   .order-success h3 { font-size: 1.28rem; }
 }
+
+/* Gift-only promotion banner: no navigation to the shop */
+.gift-only-banner { cursor: default; }
+.gift-only-banner .promo-icon { cursor: pointer; }
+.gift-only-banner .txt { pointer-events: none; }
