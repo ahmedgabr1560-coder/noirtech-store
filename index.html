@@ -633,13 +633,19 @@
   <div class="modal order-success-modal" id="orderSuccessModal" role="dialog">
     <div class="order-success">
       <div class="order-success-icon">✓</div>
-      <h3>تم استلام طلبك بنجاح</h3>
+      <span class="order-success-kicker">تم التأكيد بنجاح</span>
+      <h3>طلبك وصلنا يا جميلة</h3>
       <p class="muted" style="margin-bottom:4px">رقم الطلب</p>
-      <p style="margin:0 0 12px;font-size:1.15rem;font-weight:800;letter-spacing:.03em;direction:ltr" id="orderSuccessId">—</p>
+      <p class="order-success-id" id="orderSuccessId">—</p>
       <p class="muted" id="orderSuccessMsg" style="line-height:1.7">شكرًا لطلبكِ من ATHAR | أثر.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.</p>
-      <button type="button" class="btn btn-primary btn-block" id="orderSuccessClose"
+      <div class="order-success-actions">
+        <a class="btn order-success-whatsapp" id="orderSuccessWhatsapp" data-whatsapp-link href="https://wa.me/201283431213" target="_blank" rel="noopener">
+          <span aria-hidden="true">◔</span> تواصلي معنا على واتساب
+        </a>
+        <button type="button" class="btn btn-primary btn-block" id="orderSuccessClose"
           style="pointer-events:auto;cursor:pointer;position:relative;z-index:60"
           onclick="try{if(window.closeOrderSuccess)window.closeOrderSuccess();else{document.getElementById('orderSuccessOverlay')&&document.getElementById('orderSuccessOverlay').classList.remove('open');document.getElementById('orderSuccessModal')&&document.getElementById('orderSuccessModal').classList.remove('open');document.body.style.overflow='';}}catch(e){console.warn(e)}">متابعة التسوق</button>
+      </div>
     </div>
   </div>
 

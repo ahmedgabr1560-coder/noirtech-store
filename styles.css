@@ -4406,3 +4406,55 @@ html[data-theme="light"] .athar-flat-copy .hero-desc {
     padding: 6px 9px;
   }
 }
+
+/* Order confirmation — ATHAR light/dark responsive card */
+.order-success-modal {
+  width: min(92vw, 430px) !important;
+  overflow: hidden;
+  border: 1px solid rgba(232, 213, 163, .22) !important;
+  border-radius: 26px !important;
+  background: linear-gradient(150deg, #17111d 0%, #0b0a10 100%) !important;
+  box-shadow: 0 28px 80px rgba(0,0,0,.48), 0 0 0 1px rgba(122,31,61,.18);
+}
+.order-success { padding: 30px 24px 24px; }
+.order-success-icon {
+  width: 72px; height: 72px; margin: 0 auto 16px;
+  background: rgba(34,197,94,.13); color: #72e39a;
+  border: 1px solid rgba(114,227,154,.46);
+  box-shadow: 0 0 0 8px rgba(114,227,154,.05), 0 12px 30px rgba(34,197,94,.12);
+  font-size: 2rem;
+}
+.order-success-kicker {
+  display: inline-flex; padding: 5px 11px; border-radius: 999px;
+  color: #f0d78c; background: rgba(122,31,61,.28);
+  border: 1px solid rgba(240,215,140,.22); font-size: .72rem; font-weight: 800;
+}
+.order-success h3 { margin: 12px 0 8px; color: #fff8f0; font-size: 1.45rem; }
+.order-success-id {
+  margin: 0 0 12px; color: #f0d78c; font-size: 1.22rem; font-weight: 900;
+  letter-spacing: .04em; direction: ltr;
+}
+.order-success #orderSuccessMsg { margin: 0 auto 20px; max-width: 330px; color: #d8cdd8 !important; }
+.order-success-actions { display: grid; gap: 9px; }
+.order-success-actions .btn { min-height: 48px; border-radius: 14px; font-weight: 850; }
+.order-success-whatsapp {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  color: #082014 !important; background: linear-gradient(135deg,#7bf0a3,#25d366) !important;
+  border: 0 !important; box-shadow: 0 10px 24px rgba(37,211,102,.18);
+  text-decoration: none;
+}
+.order-success-whatsapp span { font-size: 1.25rem; font-weight: 900; }
+html[data-theme="light"] .order-success-modal {
+  background: linear-gradient(150deg, #fffafc 0%, #fff 100%) !important;
+  border-color: rgba(122,31,61,.18) !important;
+  box-shadow: 0 24px 70px rgba(74,16,40,.22), 0 0 0 1px rgba(122,31,61,.06);
+}
+html[data-theme="light"] .order-success h3 { color: #4b1028 !important; }
+html[data-theme="light"] .order-success #orderSuccessMsg { color: #665461 !important; }
+html[data-theme="light"] .order-success-kicker { color: #7a1f3d; background: #fff0f5; border-color: #edc5d3; }
+html[data-theme="light"] .order-success-icon { background: #eaf9ef; color: #168348; border-color: #9bdcb3; }
+@media (max-width: 480px) {
+  .order-success-modal { width: min(92vw, 390px) !important; }
+  .order-success { padding: 25px 17px 19px; }
+  .order-success h3 { font-size: 1.28rem; }
+}

@@ -1805,6 +1805,16 @@ function showOrderSuccess(orderId) {
   if (idEl) idEl.textContent = orderId || "—";
   const msg = document.getElementById("orderSuccessMsg");
   if (msg) msg.innerHTML = "شكرًا لطلبكِ من ATHAR | أثر.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.";
+  const wa = document.getElementById("orderSuccessWhatsapp");
+  if (wa) {
+    try {
+      const cfg = window.siteConfig || {};
+      const number = String(cfg.whatsapp || cfg.phone || "01283431213").replace(/\D/g, "");
+      const normalized = number.startsWith("20") ? number : (number.startsWith("0") ? "20" + number.slice(1) : "20" + number);
+      const text = "مرحبًا أثر، أريد الاستفسار عن طلبي رقم " + (orderId || "—");
+      wa.href = "https://wa.me/" + normalized + "?text=" + encodeURIComponent(text);
+    } catch (e) {}
+  }
   const ov = document.getElementById("orderSuccessOverlay");
   const md = document.getElementById("orderSuccessModal");
   if (ov) { ov.classList.add("open"); ov.style.display = "block"; }
