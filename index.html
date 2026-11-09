@@ -247,12 +247,26 @@
     </section>
     <section class="container athar-promo-wrap">
       <a class="athar-promo-banner" id="atharPromoBanner" href="#shop">
-        <span class="promo-icon" aria-hidden="true">🎁</span>
+        <button type="button" class="promo-icon promo-gift-btn" id="promoGiftBtn" aria-label="افتحي هديتك">🎁</button>
         <img class="promo-image" alt="" aria-hidden="true" style="display:none" />
         <div class="txt"><b>خصومات مميزة في انتظارك</b><span>عروض حصرية على أحدث التشكيلة</span></div>
         <span class="promo-cta">تسوقي الآن ←</span>
       </a>
     </section>
+    <div class="gift-modal" id="giftCouponModal" hidden aria-hidden="true">
+      <div class="gift-modal-backdrop" data-gift-close></div>
+      <section class="gift-modal-card" role="dialog" aria-modal="true" aria-labelledby="giftCouponTitle">
+        <button type="button" class="gift-modal-close" data-gift-close aria-label="إغلاق">×</button>
+        <div class="gift-modal-icon" aria-hidden="true">🎁</div>
+        <p class="gift-modal-kicker">هدية من أثر</p>
+        <h2 id="giftCouponTitle">مبروك يا جميلة</h2>
+        <p id="giftCouponText">هديتك كود خصم خاص، استخدميه الآن في السلة.</p>
+        <div class="gift-coupon-code" id="giftCouponCode" dir="ltr">—</div>
+        <div class="gift-coupon-percent" id="giftCouponPercent"></div>
+        <button type="button" class="btn btn-primary gift-copy-btn" id="giftCopyBtn">نسخ الكود</button>
+        <p class="gift-modal-msg" id="giftCouponMsg" role="status"></p>
+      </section>
+    </div>
 
 
     <!-- Categories -->

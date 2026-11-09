@@ -1120,6 +1120,91 @@ async function applyCouponFromInput() {
 }
 window.applyCouponFromInput = applyCouponFromInput;
 
+// هدية بانر الخصومات: تختار كودًا فعالًا من القائمة الحالية وتطبقه على السلة.
+(function bindPromoGift() {
+  function readGiftClaim() {
+    try { return localStorage.getItem("nx_gift_coupon_claimed") === "1"; } catch (e) { return false; }
+  }
+  function saveGiftClaim() {
+    try { localStorage.setItem("nx_gift_coupon_claimed", "1"); } catch (e) {}
+  }
+  function showGiftModal(code, percent) {
+    const modal = document.getElementById("giftCouponModal");
+    const codeEl = document.getElementById("giftCouponCode");
+    const pctEl = document.getElementById("giftCouponPercent");
+    const msgEl = document.getElementById("giftCouponMsg");
+    if (!modal || !codeEl) return;
+    codeEl.textContent = code;
+    if (pctEl) pctEl.textContent = "خصم " + percent + "% على طلبك";
+    if (msgEl) msgEl.textContent = "تم تطبيق الكود على السلة تلقائيًا";
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("gift-modal-open");
+  }
+  function closeGiftModal() {
+    const modal = document.getElementById("giftCouponModal");
+    if (!modal) return;
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("gift-modal-open");
+  }
+  async function claimGift(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const btn = document.getElementById("promoGiftBtn");
+    if (btn) btn.classList.add("is-opening");
+    try {
+      await loadCoupons(true);
+      const entries = Object.keys(COUPON_CODES || {}).filter(function(code) {
+        return /^[A-Z0-9_-]{3,40}$/.test(code) && Number(COUPON_CODES[code]) > 0;
+      });
+      if (!entries.length) throw new Error("no active coupons");
+      const code = entries[Math.floor(Math.random() * entries.length)];
+      const percent = Number(COUPON_CODES[code]) || 0;
+      try { sessionStorage.setItem("nx_coupon_code", code); } catch (e1) {}
+      try { localStorage.setItem("nx_coupon_code", code); } catch (e2) {}
+      saveGiftClaim();
+      showGiftModal(code, percent);
+      try { updateCartUI(); } catch (e3) {}
+    } catch (err) {
+      const modal = document.getElementById("giftCouponModal");
+      const msg = document.getElementById("giftCouponMsg");
+      if (modal) { modal.hidden = false; modal.setAttribute("aria-hidden", "false"); document.body.classList.add("gift-modal-open"); }
+      if (msg) msg.textContent = "مفيش أكواد متاحة حاليًا، جربي مرة تانية قريبًا.";
+    } finally {
+      if (btn) setTimeout(function() { btn.classList.remove("is-opening"); }, 500);
+    }
+  }
+  function bind() {
+    const gift = document.getElementById("promoGiftBtn");
+    if (gift && gift.dataset.bound !== "1") {
+      gift.dataset.bound = "1";
+      gift.addEventListener("click", claimGift);
+      gift.title = readGiftClaim() ? "اضغطي لعرض كود هديتك" : "اضغطي لفتح هديتك";
+    }
+    document.querySelectorAll("[data-gift-close]").forEach(function(el) {
+      if (el.dataset.bound === "1") return;
+      el.dataset.bound = "1";
+      el.addEventListener("click", closeGiftModal);
+    });
+    const copy = document.getElementById("giftCopyBtn");
+    if (copy && copy.dataset.bound !== "1") {
+      copy.dataset.bound = "1";
+      copy.addEventListener("click", async function() {
+        const code = document.getElementById("giftCouponCode")?.textContent || "";
+        try { await navigator.clipboard.writeText(code); } catch (e) {
+          const range = document.createRange(); range.selectNodeContents(document.getElementById("giftCouponCode"));
+          const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range); document.execCommand("copy"); selection.removeAllRanges();
+        }
+        const msg = document.getElementById("giftCouponMsg");
+        if (msg) msg.textContent = "تم نسخ الكود ✓";
+        copy.textContent = "تم النسخ ✓";
+        setTimeout(function() { copy.textContent = "نسخ الكود"; }, 1800);
+      });
+    }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true }); else bind();
+})();
+
 
 function updateCartUI() {
   try { loadCartFromStorage(); } catch (e0) {}
