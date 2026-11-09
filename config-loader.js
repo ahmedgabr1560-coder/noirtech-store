@@ -129,8 +129,9 @@
         if (badge) badge.hidden = !source.heroBadge;
       }
       if (heroDesc) {
-        heroDesc.textContent = source.heroDesc || "";
-        heroDesc.hidden = !source.heroDesc;
+        const subtitle = source.heroSubtitle || source.heroDesc || "";
+        heroDesc.textContent = subtitle;
+        heroDesc.hidden = !subtitle;
       }
       if (source.heroBtnLink && heroButton) heroButton.href = source.heroBtnLink;
       if (source.heroBtn != null && heroButton) {

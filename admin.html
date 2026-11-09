@@ -1089,7 +1089,18 @@
             <label>عنوان بطاقة المنتج<input id="hChipTitle" placeholder="منتج من تشكيلتنا" /></label>
             <label>وصف بطاقة المنتج<input id="hChipSub" placeholder="تشكيلة جديدة" /></label>
           </div>
-          <label>وصف الواجهة<textarea id="hDesc" rows="2" placeholder="وصف قصير تحت العنوان"></textarea></label>
+          <label>الجملة الفرعية الظاهرة تحت عنوان الواجهة
+            <select id="hSubtitlePreset">
+              <option value="يكفينا مرورك الراقي في أثر.. شاركينا رأيك بذوق منتجاتنا حتى لو اكتفيتِ بالمشاهدة اليوم.">أنيق وراقٍ — يكفينا مرورك الراقي...</option>
+              <option value="سواء نورتينا بقطعة جديدة في خزانتك اليوم أو بمجرد إطلالة على المتجر، رأيك يهمنا ويسعدنا.">أنيق وراقٍ — سواء نورتينا بقطعة جديدة...</option>
+              <option value="زهرتنا الجميلة، رأيك في تشكيلة أثر يهمنا.. شاركينا انطباعك ولا تحرمينا ذوقك الراقي.">لطيف وقريب للقلب — زهرتنا الجميلة...</option>
+              <option value="مروركم هو الأجمل.. شاركينا رأيك بكل صراحة لتقديم الأفضل دائماً.">لطيف وقريب للقلب — مروركم هو الأجمل...</option>
+              <option value="ذوقك يهمنا في أثر.. شاركينا رأيك بصراحة.">قصير للسوشيال — ذوقك يهمنا في أثر...</option>
+              <option value="يسعدنا رأيك بقطعنا الجديدة، حتى في زيارتك الأولى.">قصير للسوشيال — يسعدنا رأيك بقطعنا الجديدة...</option>
+              <option value="__custom__">نص مخصص — استخدمي الوصف أسفل القائمة</option>
+            </select>
+          </label>
+          <label>وصف مخصص للواجهة<textarea id="hDesc" rows="2" placeholder="اختاري نصًا من القائمة أو اكتبي نصًا مخصصًا"></textarea></label>
           <div class="form-grid">
             <label>صورة الهيدر الأولى
               <input id="hImg1Url" placeholder="رابط صورة المنتج" dir="ltr" />
@@ -3323,6 +3334,7 @@
       set("hChipTitle", c.heroChipTitle);
       set("hChipSub", c.heroChipSub);
       set("hDesc", c.heroDesc);
+      set("hSubtitlePreset", c.heroSubtitle || c.heroDesc);
       set("hImg1Url", c.heroImage1);
       set("hImg2Url", c.heroImage2);
       setPrev("hImg1Prev", c.heroImage1);
@@ -3516,6 +3528,8 @@
     $("saveHeroBtn")?.addEventListener("click", async () => {
       const btn = $("saveHeroBtn");
       const msg = $("heroMsg");
+      const subtitlePreset = $("hSubtitlePreset")?.value || "__custom__";
+      const heroSubtitle = subtitlePreset !== "__custom__" ? subtitlePreset : ($("hDesc")?.value.trim() || "");
       if (btn) btn.disabled = true;
       if (msg) { msg.className = "msg"; msg.textContent = "جاري النشر السريع..."; }
       try {
@@ -3527,10 +3541,11 @@
           heroBtnLink: $("hBtnLink")?.value.trim() || "#shop",
           heroChipTitle: $("hChipTitle")?.value.trim() || "",
           heroChipSub: $("hChipSub")?.value.trim() || "",
-          heroDesc: $("hDesc")?.value.trim() || "",
           heroEnabled: $("hHeroEnabled")?.checked !== false,
           heroRotateFromProducts: $("hRotateProducts")?.checked === true,
           heroRotateSeconds: Number($("hRotateSeconds")?.value || 5),
+          heroDesc: heroSubtitle,
+          heroSubtitle: heroSubtitle,
           heroImage1: pendingHero1 || $("hImg1Url")?.value.trim() || "",
           heroImage2: pendingHero2 || $("hImg2Url")?.value.trim() || "",
           heroScale: $("hScale") ? Number($("hScale").value) / 100 : 1,
@@ -3538,6 +3553,8 @@
           homepage: {
             heroTitle: $("hTitle")?.value.trim() || "أناقة بلا حدود",
             heroBtn: $("hBtn")?.value.trim() || "تسوقي الآن",
+            heroSubtitle: heroSubtitle,
+            heroSubtitlePreset: subtitlePreset,
             promoText: $("hpPromoText")?.value.trim() || "خصومات مميزة في انتظارك",
             promoIcon: $("hpPromoIcon")?.value.trim() || "🎁",
             promoImage: $("hpPromoImage")?.value.trim() || "/product-images/ref-gift_banner.jpg",

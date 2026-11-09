@@ -454,6 +454,18 @@ button, input, select, textarea { font-family: inherit; }
   margin-bottom: 28px;
   line-height: 1.7;
 }
+.athar-flat-copy .hero-desc {
+  max-width: 500px;
+  color: #f0d78c;
+  font-size: clamp(.92rem, 1.55vw, 1.12rem);
+  line-height: 1.9;
+  margin: -8px 0 22px;
+  text-shadow: 0 2px 12px rgba(0,0,0,.45);
+}
+html[data-theme="light"] .athar-flat-copy .hero-desc {
+  color: #7a1f3d;
+  text-shadow: 0 1px 8px rgba(255,255,255,.55);
+}
 .hero-cta {
   display: flex; flex-wrap: wrap; gap: 12px;
   margin-bottom: 36px;
