@@ -1,22 +1,33 @@
 {
   "stats": {
-    "totalEnters": 3043,
+    "totalEnters": 3044,
     "totalLeaves": 806,
-    "uniqueSessions": 3037,
-    "todayEnters": 37,
+    "uniqueSessions": 3038,
+    "todayEnters": 38,
     "todayLeaves": 0,
     "todayDate": "2026-11-09",
     "accountsTotal": 0,
-    "uniqueDevices": 1776,
+    "uniqueDevices": 1777,
     "deviceTypes": {
       "android": 58,
-      "iphone": 46,
+      "iphone": 47,
       "ipad": 4,
       "desktop": 1650,
       "other": 2
     }
   },
   "sessions": {
+    "s_xulotxtlkf8mw8pw1mc": {
+      "firstSeen": "2026-11-09T03:44:19.941Z",
+      "lastSeen": "2026-11-09T03:44:19.941Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_2wks4zxlxfhmw8pw1mc",
+      "deviceType": "iphone",
+      "ipMasked": "156.203.141.xxx"
+    },
     "s_3cvj6ekbbwjmw8ptv2t": {
       "firstSeen": "2026-11-09T03:42:38.066Z",
       "lastSeen": "2026-11-09T03:42:50.332Z",
@@ -54,7 +65,7 @@
       "firstSeen": "2026-11-09T03:32:52.089Z",
       "lastSeen": "2026-11-09T03:33:00.052Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
       "leaves": 0,
       "deviceId": "d_6ha0oi9hjw7mw4qrex6",
@@ -4405,20 +4416,15 @@
       "deviceId": "d_ic9i78hokucmw4qk1sf",
       "deviceType": "desktop",
       "ipMasked": "13.57.148.xxx"
-    },
-    "s_ccxgv89n03nmw4qk9o4": {
-      "firstSeen": "2026-11-06T08:52:05.752Z",
-      "lastSeen": "2026-11-06T08:52:05.752Z",
-      "path": "/",
-      "status": "left",
-      "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_ydf2qh2wqdbmw4qk9o4",
-      "deviceType": "desktop",
-      "ipMasked": "13.57.148.xxx"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_xulotxtl…",
+      "path": "/",
+      "at": "2026-11-09T03:44:19.941Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_4t0vcowd…",
@@ -4892,15 +4898,15 @@
       "sessionId": "s_xnfu6aqh…",
       "path": "/",
       "at": "2026-11-08T18:38:51.246Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_4alkmco7…",
-      "path": "/",
-      "at": "2026-11-08T18:38:48.182Z"
     }
   ],
   "devices": {
+    "d_2wks4zxlxfhmw8pw1mc": {
+      "firstSeen": "2026-11-09T03:44:19.941Z",
+      "lastSeen": "2026-11-09T03:44:19.941Z",
+      "type": "iphone",
+      "ipMasked": "156.203.141.xxx"
+    },
     "d_k2oswnifpnlmw8ptv2t": {
       "firstSeen": "2026-11-09T03:42:38.066Z",
       "lastSeen": "2026-11-09T03:42:50.332Z",
