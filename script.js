@@ -1186,7 +1186,6 @@ window.applyCouponFromInput = applyCouponFromInput;
     const gift = document.getElementById("promoGiftBtn");
     if (gift && gift.dataset.bound !== "1") {
       gift.dataset.bound = "1";
-      gift.addEventListener("click", claimGift);
       gift.title = readGiftClaim() ? "اضغطي لعرض كود هديتك" : "اضغطي لفتح هديتك";
     }
     document.querySelectorAll("[data-gift-close]").forEach(function(el) {
@@ -1210,6 +1209,13 @@ window.applyCouponFromInput = applyCouponFromInput;
       });
     }
   }
+  // Delegation works even when config-loader or the dynamic homepage finishes later.
+  // Capture phase prevents the surrounding banner link from navigating to #shop.
+  document.addEventListener("click", function(e) {
+    const gift = e.target && e.target.closest ? e.target.closest("#promoGiftBtn") : null;
+    if (!gift) return;
+    claimGift(e);
+  }, true);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true }); else bind();
 })();
 
