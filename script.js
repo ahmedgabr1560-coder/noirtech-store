@@ -1228,6 +1228,11 @@ window.applyCouponFromInput = applyCouponFromInput;
 function updateCartUI() {
   try { loadCartFromStorage(); } catch (e0) {}
   const list = Array.isArray(cart) ? cart : [];
+  try {
+    const savedCoupon = typeof getCouponCode === "function" ? getCouponCode() : "";
+    const couponInput = document.getElementById("couponInput");
+    if (couponInput && savedCoupon) couponInput.value = savedCoupon;
+  } catch (eCouponSync) {}
   const count = list.reduce(function (s, i) { return s + (Number(i.qty) || 0); }, 0);
   const countEl = document.getElementById("cartCount");
   if (countEl) countEl.textContent = String(count);
@@ -1466,12 +1471,6 @@ async function ensureCartExtras() {
   } catch (e7) {}
   try { updateCartUI(); } catch (e8) {}
   try { bindCheckoutButton(); } catch (e9) {}
-  try {
-    var ci = document.getElementById("couponInput");
-    if (ci) ci.value = "";
-    var cm = document.getElementById("couponMsg");
-    if (cm) cm.textContent = "";
-  } catch (e10) {}
 }
 
 async function openCart() {
@@ -1505,7 +1504,6 @@ function clearCartCoupon() {
 }
 
 function closeCart() {
-  try { clearCartCoupon(); } catch (eClear) {}
   try {
     const overlay = document.getElementById("cartOverlay");
     const drawer = document.getElementById("cartDrawer");
