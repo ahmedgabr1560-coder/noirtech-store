@@ -3063,9 +3063,9 @@ window.addEventListener("storage", (e) => {
   window.addEventListener("storage", (e) => {
     if (e.key === "nx_catalog_bump") refresh(true);
   });
-  setInterval(() => {
-    if (document.visibilityState === "visible") refresh(true);
-  }, 25000);
+  // لا تعيد رسم شبكة المنتجات دوريًا بدون تغيير؛ إعادة بناء DOM أثناء التمرير
+  // كانت تسبب وميضًا واختفاءً مؤقتًا للكروت. التحديث يتم عند إشارة من الأدمن
+  // أو عند تغيير التبويب/النافذة فقط.
 })();
 
 document.getElementById("applyCouponBtn")?.addEventListener("click", applyCouponFromInput);
