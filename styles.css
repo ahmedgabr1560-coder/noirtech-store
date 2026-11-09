@@ -4386,3 +4386,23 @@ main { display:flex !important; flex-direction:column !important; }
   .athar-flat-banner .hero-chip strong { font-size:.64rem !important; }
   .athar-flat-banner .hero-chip span { font-size:.53rem !important; }
 }
+
+/* Light-mode hero subtitle readability */
+html[data-theme="light"] .athar-flat-copy .hero-desc {
+  color: #4b1028 !important;
+  background: rgba(255, 248, 251, .86);
+  border-inline-start: 3px solid #7a1f3d;
+  border-radius: 10px;
+  padding: 7px 12px;
+  text-shadow: none !important;
+  box-shadow: 0 5px 18px rgba(74, 16, 40, .12);
+  backdrop-filter: blur(3px);
+}
+@media (max-width: 640px) {
+  html[data-theme="light"] .athar-flat-copy .hero-desc {
+    max-width: 88%;
+    font-size: .82rem;
+    line-height: 1.7;
+    padding: 6px 9px;
+  }
+}
