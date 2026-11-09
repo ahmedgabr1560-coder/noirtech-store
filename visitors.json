@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3145,
-    "totalLeaves": 890,
+    "totalLeaves": 891,
     "uniqueSessions": 3136,
     "todayEnters": 139,
-    "todayLeaves": 84,
+    "todayLeaves": 85,
     "todayDate": "2026-11-09",
     "accountsTotal": 0,
     "uniqueDevices": 1882,
@@ -25,13 +25,13 @@
   "sessions": {
     "s_fza1muuagvomw9rjet0": {
       "firstSeen": "2026-11-09T21:18:16.190Z",
-      "lastSeen": "2026-11-09T21:18:16.190Z",
+      "lastSeen": "2026-11-09T21:18:43.645Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 1,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.203.141.xxx"
     },
     "s_5ocbficgprjmw9r5un4": {
@@ -4426,6 +4426,12 @@
   },
   "recent": [
     {
+      "type": "leave",
+      "sessionId": "s_fza1muua…",
+      "path": "/",
+      "at": "2026-11-09T21:18:43.645Z"
+    },
+    {
       "type": "enter",
       "sessionId": "s_fza1muua…",
       "path": "/",
@@ -4898,26 +4904,20 @@
       "sessionId": "s_5r21krex…",
       "path": "/",
       "at": "2026-11-09T16:21:01.626Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_74mx4uvb…",
-      "path": "/",
-      "at": "2026-11-09T16:21:01.168Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-09T21:18:43.645Z",
+      "type": "ipad",
+      "ipMasked": "156.203.141.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-09T21:18:16.190Z",
       "type": "desktop",
       "ipMasked": "156.203.141.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-09T21:14:43.033Z",
-      "type": "ipad",
-      "ipMasked": "156.203.148.xxx"
     },
     "d_w38wnrlk6zmvh1zkhq": {
       "firstSeen": "2026-10-20T19:05:26.316Z",
