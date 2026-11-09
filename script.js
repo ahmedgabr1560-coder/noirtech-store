@@ -875,7 +875,7 @@ function getMixedOfferImages(p) {
 function productCard(p) {
   const off = discountPct(p);
   return `<article class="product-card" data-id="${p.id}">
-    <button type="button" class="btn-fav" data-fav="${p.id}" aria-label="مفضلة" onclick="event.preventDefault();event.stopPropagation();try{const added=toggleFav&&toggleFav(${p.id});if(added){setTimeout(function(){location.href='/favorites.html'},550)}}catch(e){}">♡</button>
+    <button type="button" class="btn-fav" data-fav="${p.id}" aria-label="مفضلة" onclick="event.preventDefault();event.stopPropagation();try{if(typeof toggleFav==='function')toggleFav(${p.id})}catch(e){}">♡</button>
     <a class="product-media ${isMixedBundle(p) ? "mixed-split" : ""}" href="/product.html?id=${p.id}" data-open="${p.id}">
       ${isMixedBundle(p) ? (function(){
           const imgs = getMixedOfferImages(p);
