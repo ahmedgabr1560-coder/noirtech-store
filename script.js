@@ -1187,6 +1187,7 @@ window.applyCouponFromInput = applyCouponFromInput;
     if (gift && gift.dataset.bound !== "1") {
       gift.dataset.bound = "1";
       gift.title = readGiftClaim() ? "اضغطي لعرض كود هديتك" : "اضغطي لفتح هديتك";
+      gift.addEventListener("click", claimGift);
     }
     document.querySelectorAll("[data-gift-close]").forEach(function(el) {
       if (el.dataset.bound === "1") return;
@@ -1213,7 +1214,7 @@ window.applyCouponFromInput = applyCouponFromInput;
   // Capture phase prevents the surrounding banner link from navigating to #shop.
   document.addEventListener("click", function(e) {
     const gift = e.target && e.target.closest ? e.target.closest("#promoGiftBtn") : null;
-    if (!gift) return;
+    if (!gift || gift.dataset.bound === "1") return;
     claimGift(e);
   }, true);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true }); else bind();
