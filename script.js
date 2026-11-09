@@ -1127,6 +1127,25 @@ window.applyCouponFromInput = applyCouponFromInput;
   function saveGiftClaim() {
     try { localStorage.setItem("nx_gift_coupon_claimed", "1"); } catch (e) {}
   }
+  function readUsedGiftCodes() {
+    try {
+      const list = JSON.parse(localStorage.getItem("nx_gift_coupon_used_codes") || "[]");
+      return Array.isArray(list) ? list.map(function (x) { return String(x).toUpperCase(); }) : [];
+    } catch (e) { return []; }
+  }
+  function markGiftCouponUsed() {
+    try {
+      if (localStorage.getItem("nx_gift_coupon_claimed") !== "1") return;
+      const code = String(sessionStorage.getItem("nx_coupon_code") || localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+      if (code) {
+        const used = readUsedGiftCodes();
+        if (!used.includes(code)) used.push(code);
+        localStorage.setItem("nx_gift_coupon_used_codes", JSON.stringify(used));
+      }
+      localStorage.removeItem("nx_gift_coupon_claimed");
+    } catch (e) {}
+  }
+  window.markGiftCouponUsed = markGiftCouponUsed;
   function showGiftModal(code, percent) {
     const modal = document.getElementById("giftCouponModal");
     const codeEl = document.getElementById("giftCouponCode");
@@ -1168,8 +1187,13 @@ window.applyCouponFromInput = applyCouponFromInput;
         return /^[A-Z0-9_-]{3,40}$/.test(code) && Number(COUPON_CODES[code]) > 0;
       });
       if (!entries.length) throw new Error("no active coupons");
+      const used = readUsedGiftCodes();
+      const unusedEntries = entries.filter(function (code) { return !used.includes(String(code).toUpperCase()); });
+      if (!unusedEntries.length) throw new Error("no unused coupons");
       const savedCode = giftConfig.onePerBrowser !== false && readGiftClaim() ? getCouponCode() : "";
-      const code = savedCode && COUPON_CODES[savedCode] ? savedCode : entries[Math.floor(Math.random() * entries.length)];
+      const code = savedCode && COUPON_CODES[savedCode] && !used.includes(savedCode)
+        ? savedCode
+        : unusedEntries[Math.floor(Math.random() * unusedEntries.length)];
       const percent = Number(COUPON_CODES[code]) || 0;
       try { sessionStorage.setItem("nx_coupon_code", code); } catch (e1) {}
       try { localStorage.setItem("nx_coupon_code", code); } catch (e2) {}
@@ -3649,6 +3673,7 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     if (ok) {
       try {
         localStorage.setItem("nx_cart", "[]");
+        try { if (typeof window.markGiftCouponUsed === "function") window.markGiftCouponUsed(); } catch (eGiftUsed) {}
         try { clearCartCoupon(); } catch (eC) {}
         if (typeof cart !== "undefined") cart = [];
         if (typeof saveCart === "function") saveCart();

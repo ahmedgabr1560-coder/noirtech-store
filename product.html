@@ -1175,6 +1175,15 @@
             body: JSON.stringify({ type: "order", order })
           });
         } catch (eN) {}
+        try {
+          if (localStorage.getItem("nx_gift_coupon_claimed") === "1") {
+            const giftCode = String(sessionStorage.getItem("nx_coupon_code") || localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+            const usedGiftCodes = JSON.parse(localStorage.getItem("nx_gift_coupon_used_codes") || "[]");
+            if (giftCode && Array.isArray(usedGiftCodes) && !usedGiftCodes.includes(giftCode)) usedGiftCodes.push(giftCode);
+            if (giftCode) localStorage.setItem("nx_gift_coupon_used_codes", JSON.stringify(usedGiftCodes));
+            localStorage.removeItem("nx_gift_coupon_claimed");
+          }
+        } catch (eGiftUsed) {}
         writeCart([]);
         renderCart();
         if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "تم إرسال الطلب"; }
