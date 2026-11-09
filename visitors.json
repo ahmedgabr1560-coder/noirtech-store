@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3148,
-    "totalLeaves": 901,
+    "totalLeaves": 902,
     "uniqueSessions": 3139,
     "todayEnters": 142,
-    "todayLeaves": 95,
+    "todayLeaves": 96,
     "todayDate": "2026-11-09",
     "accountsTotal": 0,
     "uniqueDevices": 1884,
@@ -25,13 +25,13 @@
   "sessions": {
     "s_5nf8sh5fsgjmw9rp1md": {
       "firstSeen": "2026-11-09T21:22:38.861Z",
-      "lastSeen": "2026-11-09T21:24:58.175Z",
+      "lastSeen": "2026-11-09T21:24:59.777Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 9,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 10,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.221.87.xxx"
     },
     "s_ui5oqhjfqvmw9rpbhy": {
@@ -4429,6 +4429,12 @@
       "type": "leave",
       "sessionId": "s_5nf8sh5f…",
       "path": "/",
+      "at": "2026-11-09T21:24:59.777Z"
+    },
+    {
+      "type": "leave",
+      "sessionId": "s_5nf8sh5f…",
+      "path": "/",
       "at": "2026-11-09T21:24:55.697Z"
     },
     {
@@ -4898,25 +4904,19 @@
       "sessionId": "s_kblz98ye…",
       "path": "/",
       "at": "2026-11-09T17:56:19.676Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_ovfpmr8d…",
-      "path": "/",
-      "at": "2026-11-09T17:56:15.779Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-09T21:24:59.777Z",
+      "type": "ipad",
+      "ipMasked": "156.221.87.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-09T21:24:58.175Z",
       "type": "desktop",
-      "ipMasked": "156.221.87.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-09T21:24:55.697Z",
-      "type": "ipad",
       "ipMasked": "156.221.87.xxx"
     },
     "d_rktyiqf248mw9rpbhy": {
