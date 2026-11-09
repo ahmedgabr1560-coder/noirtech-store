@@ -1167,6 +1167,25 @@ html[data-theme="light"] .phones-stack .phone {
   flex-shrink: 0;
 }
 .drawer-head h3 { font-size: 1rem; font-weight: 800; color: #fff; margin: 0; }
+.drawer-head { position: relative; }
+.cart-drag-handle {
+  position: absolute; top: max(8px, env(safe-area-inset-top)); left: 50%;
+  width: 72px; height: 6px; border-radius: 999px;
+  transform: translateX(-50%); background: rgba(255,255,255,.38);
+  cursor: grab; touch-action: none; z-index: 4;
+}
+.cart-drag-handle:active { cursor: grabbing; background: var(--gold-light, #f0d78c); }
+#cartDrawer #closeCart.cart-close-btn,
+#cartDrawer #closeCart.icon-close {
+  position: absolute; left: 14px; top: calc(max(12px, env(safe-area-inset-top)) + 8px);
+  width: 40px; height: 40px; display: grid; place-items: center;
+  border: 1px solid rgba(255,255,255,.2); border-radius: 50%;
+  background: rgba(122,31,61,.86); color: #fff; font-size: 1.7rem;
+  line-height: 1; z-index: 5; cursor: pointer; transition: transform .18s, background .18s;
+}
+#cartDrawer #closeCart:hover { background: #9a284e; transform: scale(1.05); }
+#cartDrawer.cart-dragging { transition: none !important; }
+#cartDrawer.cart-dragging .drawer-scroll { pointer-events: none; }
 .drawer-scroll {
   flex: 1;
   min-height: 0;

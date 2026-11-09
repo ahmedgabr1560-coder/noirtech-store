@@ -224,12 +224,13 @@
   <div class="drawer-overlay" id="cartOverlay"></div>
   <aside class="drawer" id="cartDrawer" aria-label="سلة التسوق">
     <div class="drawer-head">
+      <span class="cart-drag-handle" aria-hidden="true"></span>
       <div>
         <h3 style="margin:0;color:#fff;font-size:1.08rem">سلة التسوق</h3>
         <small style="display:block;color:#b8b2c8;margin-top:3px">راجعي المنتجات قبل تأكيد الطلب</small>
       </div>
       <span id="cartItemsCount" style="min-width:28px;height:28px;padding:0 8px;border-radius:999px;display:grid;place-items:center;background:#8b5cf6;color:#fff;font-weight:900;font-size:.8rem">0</span>
-      <button type="button" class="icon-close" id="closeCart" aria-label="إغلاق">×</button>
+      <button type="button" class="icon-close cart-close-btn" id="closeCart" aria-label="إغلاق">×</button>
     </div>
     <div class="drawer-scroll">
       <div class="drawer-body" id="cartItems"></div>
@@ -1267,5 +1268,6 @@
       sync();
     })();
   </script>
+  <script src="/cart-gestures.js?v=20261109" defer></script>
 </body>
 </html>
