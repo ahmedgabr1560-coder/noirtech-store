@@ -1183,10 +1183,16 @@ html[data-theme="light"] .phones-stack .phone {
 .cart-drag-handle {
   position: absolute; top: max(8px, env(safe-area-inset-top)); left: 50%;
   width: 72px; height: 6px; border-radius: 999px;
-  transform: translateX(-50%); background: rgba(255,255,255,.38);
+  transform: translateX(-50%); background: var(--link, #7a1f3d);
   cursor: grab; touch-action: none; z-index: 4;
 }
-.cart-drag-handle:active { cursor: grabbing; background: var(--gold-light, #f0d78c); }
+.cart-drag-handle::before {
+  content: "";
+  position: absolute;
+  inset: -14px -34px;
+  background: transparent;
+}
+.cart-drag-handle:active { cursor: grabbing; background: #9a284e; }
 #cartDrawer #closeCart.cart-close-btn,
 #cartDrawer #closeCart.icon-close {
   position: absolute; left: 14px; top: calc(max(12px, env(safe-area-inset-top)) + 8px);
