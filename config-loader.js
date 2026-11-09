@@ -143,16 +143,25 @@
       if (chipSub && source.heroChipSub != null) chipSub.textContent = source.heroChipSub;
       const promo = document.getElementById("atharPromoBanner");
       if (promo) {
+        const giftEnabled = hp.giftCouponEnabled !== false;
+        window.giftCouponConfig = {
+          enabled: giftEnabled,
+          onePerBrowser: hp.giftCouponOnePerBrowser !== false,
+          title: hp.giftCouponTitle || "هديتك وصلتلك بكل حب",
+          message: hp.giftCouponMessage || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي."
+        };
         promo.style.display = hp.promoEnabled === false ? "none" : "";
         promo.href = hp.promoLink || "#shop";
         if (hp.promoBg) promo.style.setProperty("--promo-bg", hp.promoBg); else promo.style.removeProperty("--promo-bg");
         if (hp.promoTextColor) promo.style.setProperty("--promo-text", hp.promoTextColor); else promo.style.removeProperty("--promo-text");
         const icon = promo.querySelector(".promo-icon");
         if (icon) icon.textContent = hp.promoIcon || "🎁";
-        const title = promo.querySelector(".txt b");
+        const title = promo.querySelector("#promoBannerTitle, .txt b");
         if (title && hp.promoText != null) title.textContent = hp.promoText;
-        const sub = promo.querySelector(".txt span");
+        const sub = promo.querySelector("#promoBannerSub, .txt span");
         if (sub && hp.promoSub != null) sub.textContent = hp.promoSub;
+        const giftBtn = document.getElementById("promoGiftBtn");
+        if (giftBtn) giftBtn.style.display = giftEnabled ? "grid" : "none";
         const cta = promo.querySelector(".promo-cta");
         if (cta) cta.textContent = hp.promoCta || "تسوقي الآن ←";
         const image = promo.querySelector(".promo-image");

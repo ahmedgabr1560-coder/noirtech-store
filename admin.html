@@ -890,6 +890,17 @@
         <div class="card">
           <h3>أكواد الخصم</h3>
           <p class="hint" style="margin-bottom:12px">أضيفي أو عدّلي أكواد الخصم. النسبة من 0 إلى 90%. الكود غير المفعّل مش بيشتغل في المتجر.</p>
+          <div class="card" style="margin:0 0 14px;padding:14px;border:1px solid var(--border,#ead7df)">
+            <h4 style="margin:0 0 8px">هدية بانر الخصومات</h4>
+            <p class="hint" style="margin:0 0 10px">عند تفعيلها، العميل يضغط صندوق الهدية ويحصل على كود عشوائي من الأكواد الفعالة.</p>
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row;margin-bottom:8px"><input type="checkbox" id="giftCouponEnabled" style="width:auto" checked /> تفعيل هدية صندوق الخصومات</label>
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row;margin-bottom:10px"><input type="checkbox" id="giftCouponOnePerBrowser" style="width:auto" checked /> السماح بهدية واحدة لكل متصفح</label>
+            <div class="form-grid">
+              <label>عنوان رسالة الهدية<input id="giftCouponTitle" placeholder="هديتك وصلتلك بكل حب" /></label>
+              <label>النص أسفل العنوان<input id="giftCouponMessage" placeholder="اختارتلك أثر هديتك بحب.." /></label>
+            </div>
+            <p id="giftCouponStats" class="hint" style="margin:10px 0 0"></p>
+          </div>
           <div id="couponsList"></div>
           <button type="button" class="btn btn-ghost" id="addCouponRow" style="margin-top:10px">+ إضافة كود</button>
           <button type="button" class="btn btn-primary" id="saveCouponsBtn" style="margin-top:12px;margin-right:8px">حفظ الأكواد</button>
@@ -3881,12 +3892,13 @@
         return;
       }
       box.innerHTML = `<div class="table-wrap"><table class="tbl"><thead><tr>
-        <th>الكود</th><th>النسبة %</th><th>مفعّل</th><th>ملاحظة</th><th></th>
+        <th>الكود</th><th>النسبة %</th><th>مفعّل</th><th>عدد الاستخدام</th><th>ملاحظة</th><th></th>
       </tr></thead><tbody>
       ${COUPON_ROWS.map((r, i) => `<tr>
         <td><input data-c="code" data-i="${i}" value="${String(r.code||"").replace(/"/g,"&quot;")}" dir="ltr" style="text-transform:uppercase;max-width:140px" /></td>
         <td><input type="number" min="0" max="90" data-c="percent" data-i="${i}" value="${r.percent!=null?r.percent:0}" dir="ltr" style="max-width:90px" /></td>
         <td style="text-align:center"><input type="checkbox" data-c="active" data-i="${i}" ${r.active!==false?"checked":""} style="width:auto" /></td>
+        <td style="text-align:center;font-weight:800;color:var(--link,#7a1f3d)">${Number(r.usageCount)||0}</td>
         <td><input data-c="note" data-i="${i}" value="${String(r.note||"").replace(/"/g,"&quot;")}" placeholder="اختياري" /></td>
         <td><button type="button" class="btn btn-ghost" data-del-coupon="${i}" style="color:#f87171">حذف</button></td>
       </tr>`).join("")}
@@ -3908,6 +3920,13 @@
       try {
         const data = await api("get_coupons");
         COUPON_ROWS = (data && data.codes) ? data.codes.map(c => ({...c})) : [];
+        const cfg = await api("get_config");
+        const hp = (cfg && cfg.config && cfg.config.homepage) || {};
+        if ($("giftCouponEnabled")) $("giftCouponEnabled").checked = hp.giftCouponEnabled !== false;
+        if ($("giftCouponOnePerBrowser")) $("giftCouponOnePerBrowser").checked = hp.giftCouponOnePerBrowser !== false;
+        if ($("giftCouponTitle")) $("giftCouponTitle").value = hp.giftCouponTitle || "هديتك وصلتلك بكل حب";
+        if ($("giftCouponMessage")) $("giftCouponMessage").value = hp.giftCouponMessage || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.";
+        if ($("giftCouponStats")) $("giftCouponStats").textContent = "إجمالي مرات استخدام الأكواد في الطلبات: " + (Number(data?.totalUses) || 0);
         if (!COUPON_ROWS.length) {
           COUPON_ROWS = [
             {code:"NEXORA10",percent:10,active:true,note:""},
@@ -3944,6 +3963,13 @@
         syncCouponRowsFromUI();
         const data = await api("update_coupons", { codes: COUPON_ROWS });
         if (!data.ok) throw new Error(data.error || "فشل");
+        const giftConfig = await api("update_hero", { homepage: {
+          giftCouponEnabled: $("giftCouponEnabled")?.checked !== false,
+          giftCouponOnePerBrowser: $("giftCouponOnePerBrowser")?.checked !== false,
+          giftCouponTitle: $("giftCouponTitle")?.value.trim() || "هديتك وصلتلك بكل حب",
+          giftCouponMessage: $("giftCouponMessage")?.value.trim() || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي."
+        }});
+        if (!giftConfig.ok) throw new Error(giftConfig.error || "تعذر حفظ إعدادات الهدية");
         COUPON_ROWS = data.codes || COUPON_ROWS;
         renderCouponRows();
         if (typeof bustStoreCaches === "function") bustStoreCaches();

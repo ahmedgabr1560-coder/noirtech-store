@@ -1134,10 +1134,13 @@ window.applyCouponFromInput = applyCouponFromInput;
     const pctEl = document.getElementById("giftCouponPercent");
     const textEl = document.getElementById("giftCouponText");
     const msgEl = document.getElementById("giftCouponMsg");
+    const titleEl = document.getElementById("giftCouponTitle");
     if (!modal || !codeEl) return;
+    const giftConfig = window.giftCouponConfig || {};
+    if (titleEl && giftConfig.title) titleEl.textContent = giftConfig.title;
     codeEl.textContent = code;
     if (pctEl) pctEl.textContent = "خصم " + percent + "% على طلبك";
-    if (textEl) textEl.textContent = "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.";
+    if (textEl) textEl.textContent = giftConfig.message || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.";
     if (msgEl) msgEl.textContent = "تم تطبيق الكود على السلة تلقائيًا";
     modal.hidden = false;
     modal.setAttribute("aria-hidden", "false");
@@ -1153,6 +1156,8 @@ window.applyCouponFromInput = applyCouponFromInput;
   async function claimGift(e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     const btn = document.getElementById("promoGiftBtn");
+    const giftConfig = window.giftCouponConfig || { enabled: true, onePerBrowser: true };
+    if (giftConfig.enabled === false) return;
     if (btn) btn.classList.add("is-opening");
     try {
       await loadCoupons(true);
@@ -1160,7 +1165,8 @@ window.applyCouponFromInput = applyCouponFromInput;
         return /^[A-Z0-9_-]{3,40}$/.test(code) && Number(COUPON_CODES[code]) > 0;
       });
       if (!entries.length) throw new Error("no active coupons");
-      const code = entries[Math.floor(Math.random() * entries.length)];
+      const savedCode = giftConfig.onePerBrowser !== false && readGiftClaim() ? getCouponCode() : "";
+      const code = savedCode && COUPON_CODES[savedCode] ? savedCode : entries[Math.floor(Math.random() * entries.length)];
       const percent = Number(COUPON_CODES[code]) || 0;
       try { sessionStorage.setItem("nx_coupon_code", code); } catch (e1) {}
       try { localStorage.setItem("nx_coupon_code", code); } catch (e2) {}

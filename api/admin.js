@@ -702,7 +702,21 @@ export default async function handler(req, res) {
       if (!f) return res.status(200).json({ ok: true, codes: [] });
       let data = {};
       try { data = JSON.parse(f.content); } catch { data = {}; }
-      return res.status(200).json({ ok: true, codes: Array.isArray(data.codes) ? data.codes : [] });
+      let orders = [];
+      try {
+        const of = await ghGet("orders.json");
+        orders = of ? JSON.parse(of.content) : [];
+      } catch { orders = []; }
+      const usage = {};
+      (Array.isArray(orders) ? orders : []).forEach((order) => {
+        const code = String(order?.coupon || order?.couponCode || "").trim().toUpperCase();
+        if (code) usage[code] = (usage[code] || 0) + 1;
+      });
+      const codes = (Array.isArray(data.codes) ? data.codes : []).map((row) => ({
+        ...row,
+        usageCount: usage[String(row.code || "").trim().toUpperCase()] || 0
+      }));
+      return res.status(200).json({ ok: true, codes, totalUses: Object.values(usage).reduce((sum, n) => sum + n, 0) });
     }
 
     if (action === "update_coupons") {
@@ -831,7 +845,7 @@ export default async function handler(req, res) {
       if (homepage && typeof homepage === "object" && !Array.isArray(homepage)) {
         const current = (config.homepage && typeof config.homepage === "object") ? config.homepage : {};
         const next = { ...current };
-        const textKeys = ["heroTitle", "heroBtn", "promoText", "promoSub", "promoIcon", "promoCta", "promoImage", "promoLink", "promoBg", "promoTextColor"];
+        const textKeys = ["heroTitle", "heroBtn", "promoText", "promoSub", "promoIcon", "promoCta", "promoImage", "promoLink", "promoBg", "promoTextColor", "giftCouponTitle", "giftCouponMessage"];
         for (const k of textKeys) {
           if (homepage[k] != null) next[k] = String(homepage[k]).slice(0, k === "promoImage" || k === "promoLink" ? 1000 : 500);
         }
@@ -839,7 +853,7 @@ export default async function handler(req, res) {
           const count = Number(homepage.bestCount);
           if (Number.isFinite(count)) next.bestCount = Math.max(3, Math.min(12, Math.round(count)));
         }
-        for (const k of ["promoEnabled", "benefitsEnabled", "hideMainCategories"]) {
+        for (const k of ["promoEnabled", "benefitsEnabled", "hideMainCategories", "giftCouponEnabled", "giftCouponOnePerBrowser"]) {
           if (homepage[k] != null) next[k] = homepage[k] === true || homepage[k] === "true" || homepage[k] === 1 || homepage[k] === "1";
         }
         config.homepage = next;
