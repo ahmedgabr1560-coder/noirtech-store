@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3096,
-    "totalLeaves": 819,
+    "totalLeaves": 820,
     "uniqueSessions": 3090,
     "todayEnters": 90,
-    "todayLeaves": 13,
+    "todayLeaves": 14,
     "todayDate": "2026-11-09",
     "accountsTotal": 0,
     "uniqueDevices": 1821,
@@ -19,11 +19,11 @@
   "sessions": {
     "s_i69nn0psyimw93zsp6": {
       "firstSeen": "2026-11-09T10:19:09.698Z",
-      "lastSeen": "2026-11-09T10:20:21.013Z",
+      "lastSeen": "2026-11-09T10:20:23.405Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 1,
+      "leaves": 2,
       "deviceId": "d_9u8vm1uag34mvgkeeg3",
       "deviceType": "ipad",
       "ipMasked": "156.203.141.xxx"
@@ -4423,6 +4423,12 @@
       "type": "leave",
       "sessionId": "s_i69nn0ps…",
       "path": "/",
+      "at": "2026-11-09T10:20:23.405Z"
+    },
+    {
+      "type": "leave",
+      "sessionId": "s_i69nn0ps…",
+      "path": "/",
       "at": "2026-11-09T10:19:13.489Z"
     },
     {
@@ -4892,18 +4898,12 @@
       "sessionId": "s_l3wc269t…",
       "path": "/",
       "at": "2026-11-09T03:26:19.863Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_wv234g73…",
-      "path": "/",
-      "at": "2026-11-09T03:26:19.420Z"
     }
   ],
   "devices": {
     "d_9u8vm1uag34mvgkeeg3": {
       "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-09T10:20:21.013Z",
+      "lastSeen": "2026-11-09T10:20:23.405Z",
       "type": "ipad",
       "ipMasked": "156.203.141.xxx"
     },
