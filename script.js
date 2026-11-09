@@ -227,7 +227,6 @@ function applyBrandConfig(c) {
   if (meta) meta.setAttribute("content", name + " — متجر الموضة والأزياء");
 }
 
-async 
 function applyHeroScaleFromConfig(c) {
   if (!c) return;
   try {
