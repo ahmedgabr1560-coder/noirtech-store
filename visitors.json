@@ -1,9 +1,9 @@
 {
   "stats": {
-    "totalEnters": 3127,
+    "totalEnters": 3128,
     "totalLeaves": 865,
-    "uniqueSessions": 3120,
-    "todayEnters": 121,
+    "uniqueSessions": 3121,
+    "todayEnters": 122,
     "todayLeaves": 59,
     "todayDate": "2026-11-09",
     "accountsTotal": 0,
@@ -23,6 +23,17 @@
     }
   },
   "sessions": {
+    "s_3r8yauchfibmw9mrufm": {
+      "firstSeen": "2026-11-09T19:04:51.701Z",
+      "lastSeen": "2026-11-09T19:04:51.701Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
+      "deviceType": "desktop",
+      "ipMasked": "156.221.89.xxx"
+    },
     "s_0jil0p9pek7omw9kj3sj": {
       "firstSeen": "2026-11-09T18:02:05.168Z",
       "lastSeen": "2026-11-09T18:05:58.038Z",
@@ -71,7 +82,7 @@
       "firstSeen": "2026-11-09T17:56:15.779Z",
       "lastSeen": "2026-11-09T17:56:35.772Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
       "leaves": 1,
       "deviceId": "d_mz3rngxqm1mw9kbmp8",
@@ -82,7 +93,7 @@
       "firstSeen": "2026-11-09T17:56:28.523Z",
       "lastSeen": "2026-11-09T17:56:30.672Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 0,
       "leaves": 1,
       "deviceId": "d_5vkrb9narh7mw9kbmpt",
@@ -93,7 +104,7 @@
       "firstSeen": "2026-11-09T17:56:25.731Z",
       "lastSeen": "2026-11-09T17:56:25.731Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
       "leaves": 0,
       "deviceId": "d_eqo2szibwgsmw9kbu80",
@@ -104,7 +115,7 @@
       "firstSeen": "2026-11-09T17:56:25.251Z",
       "lastSeen": "2026-11-09T17:56:25.251Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
       "leaves": 0,
       "deviceId": "d_z088zktky9rmw9kbu88",
@@ -115,7 +126,7 @@
       "firstSeen": "2026-11-09T17:56:06.456Z",
       "lastSeen": "2026-11-09T17:56:19.905Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
       "leaves": 1,
       "deviceId": "d_5qd785hvjjqmw9kbfoe",
@@ -126,7 +137,7 @@
       "firstSeen": "2026-11-09T17:56:06.207Z",
       "lastSeen": "2026-11-09T17:56:06.207Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
       "leaves": 0,
       "deviceId": "d_tjeag5rxggfmw9kbfjf",
@@ -4411,20 +4422,15 @@
       "deviceId": "d_lxdgk8gqt1mw4tygjk",
       "deviceType": "desktop",
       "ipMasked": "13.57.148.xxx"
-    },
-    "s_qbej93vv1bmw4ty5cp": {
-      "firstSeen": "2026-11-06T10:26:52.305Z",
-      "lastSeen": "2026-11-06T10:26:52.305Z",
-      "path": "/",
-      "status": "left",
-      "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
-      "ipMasked": "156.203.224.xxx"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_3r8yauch…",
+      "path": "/",
+      "at": "2026-11-09T19:04:51.701Z"
+    },
     {
       "type": "leave",
       "sessionId": "s_0jil0p9p…",
@@ -4898,15 +4904,15 @@
       "sessionId": "s_i69nn0ps…",
       "path": "/",
       "at": "2026-11-09T10:19:09.698Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_3rf2v80m…",
-      "path": "/",
-      "at": "2026-11-09T10:12:07.959Z"
     }
   ],
   "devices": {
+    "d_6ha0oi9hjw7mw4qrex6": {
+      "firstSeen": "2026-11-06T08:57:38.760Z",
+      "lastSeen": "2026-11-09T19:04:51.701Z",
+      "type": "desktop",
+      "ipMasked": "156.221.89.xxx"
+    },
     "d_fuqqxfil17pmw9kj4y5": {
       "firstSeen": "2026-11-09T18:02:06.622Z",
       "lastSeen": "2026-11-09T18:05:58.038Z",
@@ -4936,12 +4942,6 @@
       "lastSeen": "2026-11-09T18:02:05.168Z",
       "type": "android",
       "ipMasked": "156.203.200.xxx"
-    },
-    "d_6ha0oi9hjw7mw4qrex6": {
-      "firstSeen": "2026-11-06T08:57:38.760Z",
-      "lastSeen": "2026-11-09T17:58:18.248Z",
-      "type": "desktop",
-      "ipMasked": "156.221.89.xxx"
     },
     "d_mz3rngxqm1mw9kbmp8": {
       "firstSeen": "2026-11-09T17:56:15.921Z",
