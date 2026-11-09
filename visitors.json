@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3162,
-    "totalLeaves": 953,
+    "totalLeaves": 954,
     "uniqueSessions": 3153,
     "todayEnters": 12,
-    "todayLeaves": 33,
+    "todayLeaves": 34,
     "todayDate": "2026-11-10",
     "accountsTotal": 0,
     "uniqueDevices": 1896,
@@ -25,13 +25,13 @@
   "sessions": {
     "s_i1we86td4mw9ukrhp": {
       "firstSeen": "2026-11-09T22:43:18.036Z",
-      "lastSeen": "2026-11-09T22:54:42.118Z",
+      "lastSeen": "2026-11-09T22:56:02.806Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 9,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 10,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.221.89.xxx"
     },
     "s_mjw4ls3bkamw9ut2wj": {
@@ -4429,6 +4429,12 @@
       "type": "leave",
       "sessionId": "s_i1we86td…",
       "path": "/",
+      "at": "2026-11-09T22:56:02.806Z"
+    },
+    {
+      "type": "leave",
+      "sessionId": "s_i1we86td…",
+      "path": "/",
       "at": "2026-11-09T22:54:37.404Z"
     },
     {
@@ -4898,25 +4904,19 @@
       "sessionId": "s_fza1muua…",
       "path": "/",
       "at": "2026-11-09T21:18:43.645Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_fza1muua…",
-      "path": "/",
-      "at": "2026-11-09T21:18:43.645Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-09T22:56:02.806Z",
+      "type": "ipad",
+      "ipMasked": "156.221.89.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-09T22:54:42.118Z",
       "type": "desktop",
-      "ipMasked": "156.221.89.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-09T22:54:37.404Z",
-      "type": "ipad",
       "ipMasked": "156.221.89.xxx"
     },
     "d_ak7wdn4b67emw9ut38k": {
