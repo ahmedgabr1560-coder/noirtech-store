@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3182,
-    "totalLeaves": 985,
+    "totalLeaves": 986,
     "uniqueSessions": 3173,
     "todayEnters": 32,
-    "todayLeaves": 65,
+    "todayLeaves": 66,
     "todayDate": "2026-11-10",
     "accountsTotal": 0,
     "uniqueDevices": 1921,
@@ -25,13 +25,13 @@
   "sessions": {
     "s_6hy0yp7inicmwa5c8nu": {
       "firstSeen": "2026-11-10T03:44:36.080Z",
-      "lastSeen": "2026-11-10T03:44:48.055Z",
+      "lastSeen": "2026-11-10T03:44:51.078Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 4,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 5,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.203.191.xxx"
     },
     "s_ex36naew2s6mwa5b9mc": {
@@ -4429,6 +4429,12 @@
       "type": "leave",
       "sessionId": "s_6hy0yp7i…",
       "path": "/",
+      "at": "2026-11-10T03:44:51.078Z"
+    },
+    {
+      "type": "leave",
+      "sessionId": "s_6hy0yp7i…",
+      "path": "/",
       "at": "2026-11-10T03:44:47.733Z"
     },
     {
@@ -4898,25 +4904,19 @@
       "sessionId": "s_8jlbrbe7…",
       "path": "/",
       "at": "2026-11-09T22:25:45.038Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_uyo8t65x…",
-      "path": "/",
-      "at": "2026-11-09T22:22:56.253Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-10T03:44:51.078Z",
+      "type": "ipad",
+      "ipMasked": "156.203.191.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-10T03:44:48.055Z",
       "type": "desktop",
-      "ipMasked": "156.203.191.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-10T03:44:47.733Z",
-      "type": "ipad",
       "ipMasked": "156.203.191.xxx"
     },
     "d_kn0cs08e8famw9g9akz": {
