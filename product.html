@@ -1226,6 +1226,7 @@
         alert(err.message || "تعذر إتمام الطلب");
       }
     });
+    window.renderProductCart = renderCart;
     updateCount();
     loadZones();
   })();
@@ -1255,15 +1256,17 @@
           } catch (eSaved) {}
         } catch (e) {}
       }
-      refreshCodes().then(() => { try { if (typeof renderCart === "function") renderCart(); } catch (eRefresh) {} });
+      const codesReady = refreshCodes();
+      codesReady.then(() => { try { window.renderProductCart?.(); } catch (eRefresh) {} });
       async function applyCoupon() {
+        await codesReady;
         const input = document.getElementById("couponInput");
         const msg = document.getElementById("couponMsg");
         const raw = String(input?.value || "").trim().toUpperCase();
         if (!raw) {
           try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
           if (msg) msg.textContent = "اكتبي كود الخصم";
-          try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
+          try { window.renderProductCart?.(); } catch (e) {}
           return;
         }
         if (!CODES[raw] && /^[A-Z0-9_-]{3,40}$/.test(raw)) {
@@ -1280,12 +1283,12 @@
         if (!CODES[raw]) {
           try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
           if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";
-          try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
+          try { window.renderProductCart?.(); } catch (e) {}
           return;
         }
         try { sessionStorage.setItem("nx_coupon_code", raw); localStorage.setItem("nx_coupon_code", raw); } catch (e) {}
         if (msg) msg.textContent = "تم تطبيق الخصم ✓";
-        try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
+        try { window.renderProductCart?.(); } catch (e) {}
       }
       document.getElementById("applyCouponBtn")?.addEventListener("click", applyCoupon);
       document.getElementById("couponInput")?.addEventListener("keydown", (e) => {

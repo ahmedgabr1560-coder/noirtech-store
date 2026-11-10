@@ -1379,9 +1379,16 @@ function updateCartUI() {
     const couponInput = document.getElementById("couponInput");
     if (couponInput && savedCoupon) couponInput.value = savedCoupon;
   } catch (eCouponSync) {}
-  const count = list.reduce(function (s, i) { return s + (Number(i.qty) || 0); }, 0);
+  const count = list.reduce(function (s, i) { return s + (Number(i.qty) || 1); }, 0);
   const countEl = document.getElementById("cartCount");
   if (countEl) countEl.textContent = String(count);
+  const bottomCountEl = document.getElementById("bnCartCount");
+  if (bottomCountEl) {
+    bottomCountEl.textContent = String(count);
+    bottomCountEl.hidden = count < 1;
+  }
+  const drawerCountEl = document.getElementById("cartItemsCount");
+  if (drawerCountEl) drawerCountEl.textContent = String(count);
   const box = document.getElementById("cartItems");
   const fields = document.getElementById("checkoutFields");
   const setTxt = function (id, val) {
