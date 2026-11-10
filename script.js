@@ -1281,9 +1281,6 @@ window.applyCouponFromInput = applyCouponFromInput;
       saveGiftClaim();
       showGiftModal(autoCode, autoPercent);
       try { updateCartUI(); } catch (eAutoCart) {}
-      saveGiftClaim();
-      showGiftModal(code, percent);
-      try { updateCartUI(); } catch (e3) {}
     } catch (err) {
       const modal = document.getElementById("giftCouponModal");
       const msg = document.getElementById("giftCouponMsg");
