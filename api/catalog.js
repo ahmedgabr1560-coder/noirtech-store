@@ -18,19 +18,81 @@ async function ghGet(path) {
   return value;
 }
 
+async function ghGetFile(path) {
+  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Catalog" }
+  });
+  if (!r.ok) return null;
+  const data = await r.json();
+  return { sha: data.sha, content: Buffer.from(data.content || "", "base64").toString("utf8") };
+}
+
+async function ghPut(path, content, message, sha) {
+  const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "Content-Type": "application/json", "User-Agent": "NEXORA-Catalog" },
+    body: JSON.stringify({ message, content: Buffer.from(content, "utf8").toString("base64"), branch: "main", ...(sha ? { sha } : {}) })
+  });
+  return { ok: r.ok, status: r.status, data: await r.json().catch(() => ({})) };
+}
+
+function randomGiftCode(existing) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const code = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    if (!existing.has(code)) return code;
+  }
+  return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+}
+
+function weightedGiftPercent(min, max) {
+  let total = 0;
+  for (let p = min; p <= max; p++) total += Math.pow(max - p + 1, 2);
+  let pick = Math.random() * total;
+  for (let p = min; p <= max; p++) {
+    pick -= Math.pow(max - p + 1, 2);
+    if (pick < 0) return p;
+  }
+  return min;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   // كاش قصير جدًا: أسرع بكثير، مع انعكاس تغييرات الأدمن خلال ثانيتين كحد أقصى.
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
   res.setHeader("CDN-Cache-Control", "no-store");
   res.setHeader("Pragma", "no-cache");
   if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "GET") return res.status(405).json({ ok: false, error: "GET only" });
-
   try {
     const type = String(req.query?.type || "products").toLowerCase();
+    if (req.method === "POST" && type === "gift-code") {
+      if (!GH_TOKEN) return res.status(500).json({ ok: false, error: "GITHUB_TOKEN missing" });
+      const configFile = await ghGet("site-config.json");
+      let config = {};
+      try { config = configFile ? JSON.parse(configFile) : {}; } catch { config = {}; }
+      const settings = config.homepage?.giftAutoCodes || {};
+      if (settings.enabled !== true) return res.status(403).json({ ok: false, error: "auto gift codes disabled" });
+      const min = Math.max(1, Math.min(90, Math.round(Number(settings.minPercent) || 9)));
+      const max = Math.max(min, Math.min(90, Math.round(Number(settings.maxPercent) || 15)));
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const file = await ghGetFile("gift-auto-codes.json");
+        let records = [];
+        try { records = file ? JSON.parse(file.content || "{}").issued : []; } catch { records = []; }
+        if (!Array.isArray(records)) records = [];
+        const existing = new Set(records.map(row => String(row.code || "").toUpperCase()));
+        const code = randomGiftCode(existing);
+        const percent = weightedGiftPercent(min, max);
+        records.push({ code, percent, issuedAt: new Date().toISOString(), status: "issued", usedAt: "", orderId: "" });
+        if (records.length > 5000) records = records.slice(-5000);
+        const put = await ghPut("gift-auto-codes.json", JSON.stringify({ issued: records }, null, 2), `Gift auto code issued ${code}`, file?.sha);
+        if (put.ok) return res.status(200).json({ ok: true, code, percent });
+        if (!(put.status === 409 || /sha|conflict/i.test(String(put.data?.message || "")))) break;
+      }
+      return res.status(409).json({ ok: false, error: "تعذر إصدار كود جديد، حاولي مرة أخرى" });
+    }
+    if (req.method !== "GET") return res.status(405).json({ ok: false, error: "GET or POST only" });
     if (type === "products") {
       const raw = await ghGet("products.json");
       if (!raw) return res.status(502).json({ ok: false, error: "products unavailable" });

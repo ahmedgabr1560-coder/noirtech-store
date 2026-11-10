@@ -1269,7 +1269,7 @@ window.applyCouponFromInput = applyCouponFromInput;
         try { autoCode = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); autoPercent = Number(localStorage.getItem("nx_coupon_percent")) || 0; } catch (eAutoSaved) {}
       }
       if (!autoCode || !autoPercent) {
-        const autoRes = await fetch("/api/gift-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store" });
+        const autoRes = await fetch("/api/catalog?type=gift-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store" });
         const autoData = await autoRes.json().catch(function () { return {}; });
         if (!autoRes.ok || !autoData.ok || !autoData.code) throw new Error(autoData.error || "auto gift code failed");
         autoCode = String(autoData.code).toUpperCase();
