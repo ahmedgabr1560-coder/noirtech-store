@@ -949,6 +949,11 @@
               <label>أقل نسبة خصم<input id="giftAutoCodesMin" type="number" min="1" max="90" value="9" /></label>
               <label>أعلى نسبة خصم<input id="giftAutoCodesMax" type="number" min="1" max="90" value="15" /></label>
             </div>
+            <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:12px">
+              <div class="stat-card"><span>تم إنشاؤها</span><b id="giftAutoCodesCreated">0</b></div>
+              <div class="stat-card"><span>تم مسحها من المتاح</span><b id="giftAutoCodesDeleted">0</b></div>
+              <div class="stat-card"><span>تم استخدامها</span><b id="giftAutoCodesUsed">0</b></div>
+            </div>
             <p id="giftAutoCodesStats" class="hint" style="margin:10px 0 0"></p>
             <button type="button" class="btn btn-primary" id="saveGiftAutoCodesBtn" style="margin-top:10px">حفظ إعدادات الأكواد التلقائية</button>
             <div class="msg" id="giftAutoCodesMsg"></div>
@@ -4061,6 +4066,9 @@
         if ($("giftAutoCodesEnabled")) $("giftAutoCodesEnabled").checked = autoCodes.enabled === true;
         if ($("giftAutoCodesMin")) $("giftAutoCodesMin").value = Number(autoCodes.minPercent) || 9;
         if ($("giftAutoCodesMax")) $("giftAutoCodesMax").value = Number(autoCodes.maxPercent) || 15;
+        if ($("giftAutoCodesCreated")) $("giftAutoCodesCreated").textContent = Number(data?.autoCodes?.issued) || 0;
+        if ($("giftAutoCodesDeleted")) $("giftAutoCodesDeleted").textContent = Number(data?.autoCodes?.deleted) || 0;
+        if ($("giftAutoCodesUsed")) $("giftAutoCodesUsed").textContent = Number(data?.autoCodes?.used) || 0;
         if ($("giftAutoCodesStats")) $("giftAutoCodesStats").textContent = "إجمالي الأكواد التي تم إصدارها: " + (Number(data?.autoCodes?.issued) || 0) + " — المستخدمة: " + (Number(data?.autoCodes?.used) || 0) + " — كل ضغطة تنشئ كودًا جديدًا.";
         if (!COUPON_ROWS.length) {
           COUPON_ROWS = [

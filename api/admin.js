@@ -722,7 +722,8 @@ export default async function handler(req, res) {
         const ad = af ? JSON.parse(af.content || "{}") : {};
         autoIssued = Array.isArray(ad.issued) ? ad.issued : [];
       } catch { autoIssued = []; }
-      return res.status(200).json({ ok: true, codes, totalUses: Object.values(usage).reduce((sum, n) => sum + n, 0), autoCodes: { issued: autoIssued.length, used: autoIssued.filter(row => row.status === "used").length, available: 0 } });
+      const autoUsed = autoIssued.filter(row => row.status === "used").length;
+      return res.status(200).json({ ok: true, codes, totalUses: Object.values(usage).reduce((sum, n) => sum + n, 0), autoCodes: { issued: autoIssued.length, deleted: autoIssued.length, used: autoUsed, available: 0 } });
     }
 
     if (action === "update_coupons") {
