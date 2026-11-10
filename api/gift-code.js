@@ -35,6 +35,23 @@ function randomCode(existing) {
   return Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
+function weightedPercent(min, max) {
+  // النسب الصغيرة أكثر شيوعًا، والنسب الكبيرة أندر بشكل واضح.
+  const weights = [];
+  let total = 0;
+  for (let percent = min; percent <= max; percent++) {
+    const weight = Math.pow(max - percent + 1, 2);
+    weights.push({ percent, weight });
+    total += weight;
+  }
+  let pick = Math.random() * total;
+  for (const item of weights) {
+    pick -= item.weight;
+    if (pick < 0) return item.percent;
+  }
+  return min;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
@@ -60,7 +77,7 @@ export default async function handler(req, res) {
       if (!Array.isArray(records)) records = [];
       const existing = new Set(records.map(row => String(row.code || "").toUpperCase()));
       const code = randomCode(existing);
-      const percent = min + Math.floor(Math.random() * (max - min + 1));
+      const percent = weightedPercent(min, max);
       records.push({ code, percent, issuedAt: new Date().toISOString(), status: "issued", usedAt: "", orderId: "" });
       if (records.length > 5000) records = records.slice(-5000);
       const put = await ghPut("gift-auto-codes.json", JSON.stringify({ issued: records }, null, 2), `Gift auto code issued ${code}`, file?.sha);
