@@ -1052,6 +1052,12 @@
           <label>نص الفوتر<input id="gFooter" placeholder="© 2026 ATHAR | أثر" /></label>
           <label>نبذة عن المتجر<textarea id="gAbout"></textarea></label>
           <div style="margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:14px">
+            <h4 style="margin-bottom:6px">حالة المتجر</h4>
+            <p class="hint" style="margin-bottom:10px">لو المتجر مفتوح، الشريط الأحمر لا يظهر للعملاء.</p>
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row;margin-bottom:10px"><input type="checkbox" id="gStoreOpen" style="width:auto" /> المتجر مفتوح ويستقبل الطلبات</label>
+            <label>رسالة إغلاق المتجر<input id="gStoreClosedMsg" placeholder="المتجر متوقف مؤقتًا للتحديث. رجّعوا لنا بعد قليل." /></label>
+          </div>
+          <div style="margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:14px">
             <h4 style="margin-bottom:6px">رسالة تأكيد الطلب</h4>
             <p class="hint" style="margin-bottom:10px">النصوص دي بتظهر للعميل بعد الضغط على «إتمام الطلب». اكتبِي كل سطر في سطر منفصل.</p>
             <div class="form-grid">
@@ -3806,7 +3812,7 @@
           showFloatWhatsapp: !!$("gShowWa")?.checked,
           showFloatTelegram: !!$("gShowTg")?.checked,
           showFloatAI: !!$("gShowAi")?.checked,
-          storeOpen: !!$("gStoreOpen")?.checked,
+          storeOpen: $("gStoreOpen") ? !!$("gStoreOpen").checked : undefined,
           storeClosedMessage: $("gStoreClosedMsg")?.value.trim() || "المتجر متوقف مؤقتًا للتحديث. رجّعوا لنا بعد قليل."
         });
         if (!data.ok) throw new Error(data.error || "فشل");
