@@ -1111,6 +1111,16 @@ async function applyCouponFromInput() {
     // أكواد احتياطية مضمونة
     var FALLBACK = { NEXORA10: 10, WELCOME10: 10, FIRST10: 10, SAVE10: 10, EGYPT10: 10, AHMED: 50 };
     if (!COUPON_CODES[raw] && FALLBACK[raw]) COUPON_CODES[raw] = FALLBACK[raw];
+    if (!COUPON_CODES[raw] && /^[A-Z0-9_-]{3,40}$/.test(raw)) {
+      try {
+        const issuedRes = await fetch("/api/catalog?type=gift-code&code=" + encodeURIComponent(raw), { cache: "no-store" });
+        const issuedData = await issuedRes.json().catch(function () { return {}; });
+        if (issuedRes.ok && issuedData.ok && Number(issuedData.percent) > 0) {
+          COUPON_CODES[raw] = Math.min(90, Math.round(Number(issuedData.percent)));
+          try { localStorage.setItem("nx_coupon_percent", String(COUPON_CODES[raw])); } catch (eIssued) {}
+        }
+      } catch (eIssuedFetch) {}
+    }
     if (!COUPON_CODES[raw]) {
       try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
       if (msg) msg.textContent = "الكود غير صالح أو غير مفعّل";

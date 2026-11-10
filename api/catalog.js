@@ -119,6 +119,18 @@ export default async function handler(req, res) {
       return res.status(409).json({ ok: false, error: "تعذر إصدار كود جديد، حاولي مرة أخرى" });
     }
     if (req.method !== "GET") return res.status(405).json({ ok: false, error: "GET or POST only" });
+    if (type === "gift-code") {
+      const requested = String(req.query?.code || "").trim().toUpperCase();
+      if (!/^[A-Z0-9_-]{3,40}$/.test(requested)) return res.status(400).json({ ok: false, error: "invalid gift code" });
+      let payload = {};
+      try { payload = JSON.parse((await ghGet("gift-auto-codes.json")) || "{}"); } catch { payload = {}; }
+      const row = (Array.isArray(payload.issued) ? payload.issued : []).find((item) => {
+        const issuedAt = Date.parse(String(item?.issuedAt || ""));
+        return String(item?.code || "").toUpperCase() === requested && Number(item?.percent) > 0 && Number.isFinite(issuedAt) && Date.now() - issuedAt < 60 * 1000;
+      });
+      if (!row) return res.status(404).json({ ok: false, error: "gift code expired or invalid" });
+      return res.status(200).json({ ok: true, code: requested, percent: Math.min(90, Math.round(Number(row.percent))) });
+    }
     if (type === "products") {
       const raw = await ghGet("products.json");
       if (!raw) return res.status(502).json({ ok: false, error: "products unavailable" });
