@@ -905,16 +905,17 @@
               <div id="giftBagsList"></div>
               <button type="button" class="btn btn-ghost" id="addGiftBagRow" style="margin-top:8px">+ إضافة شنطة هدية</button>
             </div>
-            <div class="card" style="margin:14px 0 0;padding:14px;border:1px solid var(--border,#ead7df)">
-              <h4 style="margin:0 0 8px">تقرير تفاعل العملاء مع الهدية</h4>
-              <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
-                <div class="stat-card"><span>فتحوا الهدية</span><b id="giftOpensReport">—</b></div>
-                <div class="stat-card"><span>اختاروا شنطة</span><b id="giftBagSelectionsReport">—</b></div>
-              </div>
-              <div id="giftBagsReport" class="hint" style="margin-top:10px">لا توجد اختيارات شنط حتى الآن</div>
-              <button type="button" class="btn btn-ghost" id="refreshGiftReport" style="margin-top:10px">تحديث التقرير</button>
-            </div>
             <p id="giftCouponStats" class="hint" style="margin:10px 0 0"></p>
+          </div>
+          <div class="card" style="margin:14px 0;padding:16px;border:1px solid var(--border,#ead7df)">
+            <h3 style="margin:0 0 6px">تقرير تفاعل العملاء مع الهدايا</h3>
+            <p class="hint" style="margin:0 0 12px">هنا هتلاقي عدد مرات فتح الهدية وعدد اختيارات كل شنطة.</p>
+            <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+              <div class="stat-card"><span>فتحوا الهدية</span><b id="giftOpensReport">—</b></div>
+              <div class="stat-card"><span>اختاروا شنطة</span><b id="giftBagSelectionsReport">—</b></div>
+            </div>
+            <div id="giftBagsReport" class="hint" style="margin-top:10px">لا توجد اختيارات شنط حتى الآن</div>
+            <button type="button" class="btn btn-ghost" id="refreshGiftReport" style="margin-top:10px">تحديث التقرير</button>
           </div>
           <div id="couponsList"></div>
           <button type="button" class="btn btn-ghost" id="addCouponRow" style="margin-top:10px">+ إضافة كود</button>
