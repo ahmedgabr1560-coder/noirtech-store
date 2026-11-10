@@ -623,7 +623,7 @@
     "brand": "Zara",
     "price": 200,
     "costPrice": 0,
-    "oldPrice": 350,
+    "oldPrice": 250,
     "image": "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/product-images/37_1.jpg?t=1792524451492",
     "images": [
       "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/product-images/37_1.jpg?t=1792524451492"
@@ -635,51 +635,61 @@
     "colors": [
       {
         "name": "أسود",
-        "code": "#111111"
+        "code": "#888888"
       },
       {
         "name": "برجاندي",
-        "code": "#6B1E3C"
+        "code": "#888888"
       },
       {
         "name": "بيج",
-        "code": "#d2b48c"
+        "code": "#888888"
       },
       {
         "name": "أزرق",
-        "code": "#2563eb"
+        "code": "#888888"
       },
       {
         "name": "كحلي",
-        "code": "#1e3a5f"
+        "code": "#888888"
       },
       {
         "name": "بني",
-        "code": "#8B4513"
+        "code": "#888888"
       },
       {
         "name": "أبيض",
-        "code": "#f5f5f5"
+        "code": "#888888"
       },
       {
         "name": "أحمر",
-        "code": "#dc2626"
+        "code": "#888888"
       },
       {
         "name": "وردي",
-        "code": "#ec4899"
+        "code": "#888888"
       }
     ],
-    "isOffer": false,
+    "isOffer": true,
     "sourceProductId": null,
-    "offerType": "discount",
-    "offerMeta": null,
+    "offerType": "mixed_bundle",
+    "offerMeta": {
+      "type": "bundle",
+      "tiers": [
+        {
+          "qty": 2,
+          "price": 480
+        }
+      ]
+    },
     "rating": 4.5,
     "reviews": 0,
     "best": false,
     "newest": true,
     "hidden": false,
-    "createdAt": "2026-10-20T19:27:31.788Z"
+    "createdAt": "2026-10-20T19:27:31.788Z",
+    "updatedAt": "2026-11-10T13:55:20.609Z",
+    "offerSection": ""
   },
   {
     "id": 36,
