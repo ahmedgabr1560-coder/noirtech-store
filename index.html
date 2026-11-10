@@ -271,6 +271,19 @@
       </section>
     </div>
 
+    <div class="gift-modal" id="orderGiftChoiceModal" hidden aria-hidden="true">
+      <div class="gift-modal-backdrop"></div>
+      <section class="gift-modal-card" role="dialog" aria-modal="true" aria-labelledby="orderGiftChoiceTitle">
+        <div class="gift-modal-icon" aria-hidden="true">🎁</div>
+        <p class="gift-modal-kicker">مبروك — هدية مجانية لطلبك</p>
+        <h2 id="orderGiftChoiceTitle">اختاري شنطة واحدة فقط</h2>
+        <p id="orderGiftChoiceText">اختاري شنطة هديتك، ولن يتم إضافة أي كود خصم لهذا الطلب.</p>
+        <div id="orderGiftChoices" class="gift-bags-list"></div>
+        <p id="orderGiftChoiceMsg" class="gift-modal-msg" role="status"></p>
+        <button type="button" class="btn btn-primary" id="confirmOrderGiftChoice" disabled>تأكيد اختيار الهدية</button>
+      </section>
+    </div>
+
 
     <!-- Categories -->
 

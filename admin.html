@@ -905,6 +905,20 @@
               <div id="giftBagsList"></div>
               <button type="button" class="btn btn-ghost" id="addGiftBagRow" style="margin-top:8px">+ إضافة شنطة هدية</button>
             </div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border,#ead7df)">
+              <h4 style="margin:0 0 6px">دورة منتج الهدية بعد الاستلام</h4>
+              <p class="hint" style="margin:0 0 10px">بعد استلام العدد المحدد من الطلبات، يحصل الطلب التالي على المنتج مجانًا. بعد المنح تتوقف الدورة ولا تبدأ دورة جديدة إلا بالزر.</p>
+              <label style="display:flex;align-items:center;gap:8px;flex-direction:row;margin-bottom:8px"><input type="checkbox" id="giftRewardEnabled" style="width:auto" /> تفعيل نظام منتج الهدية</label>
+              <div class="form-grid">
+                <label>عدد الطلبات المستلمة<input id="giftRewardThreshold" type="number" min="1" max="10000" value="20" /></label>
+                <label>رقم المنتج<input id="giftRewardProductId" type="number" min="0" placeholder="اختياري" /></label>
+                <label>اسم منتج الهدية<input id="giftRewardProductName" placeholder="مثال: شنطة هدية" /></label>
+                <label>رابط صورة المنتج<input id="giftRewardProductImage" placeholder="اختياري" dir="ltr" /></label>
+              </div>
+              <p id="giftRewardStatus" class="hint" style="margin:10px 0"></p>
+              <button type="button" class="btn btn-primary" id="startGiftRewardCycle">بدء دورة جديدة</button>
+              <div class="msg" id="giftRewardMsg"></div>
+            </div>
             <p id="giftCouponStats" class="hint" style="margin:10px 0 0"></p>
           </div>
           <div class="card" style="margin:14px 0;padding:16px;border:1px solid var(--border,#ead7df)">
@@ -4013,6 +4027,13 @@
         if ($("giftCouponMessage")) $("giftCouponMessage").value = hp.giftCouponMessage || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.";
         GIFT_BAGS = Array.isArray(hp.giftBags) ? hp.giftBags.map((bag, i) => ({ id: bag.id || ("gift-bag-" + (i + 1)), name: bag.name || "", image: bag.image || "", active: bag.active !== false })) : [];
         renderGiftBagRows();
+        const reward = (hp.giftReward && typeof hp.giftReward === "object") ? hp.giftReward : {};
+        if ($("giftRewardEnabled")) $("giftRewardEnabled").checked = reward.enabled === true;
+        if ($("giftRewardThreshold")) $("giftRewardThreshold").value = Number(reward.threshold) || 20;
+        if ($("giftRewardProductId")) $("giftRewardProductId").value = Number(reward.productId) || "";
+        if ($("giftRewardProductName")) $("giftRewardProductName").value = reward.productName || "";
+        if ($("giftRewardProductImage")) $("giftRewardProductImage").value = reward.productImage || "";
+        if ($("giftRewardStatus")) $("giftRewardStatus").textContent = reward.active === true ? "الدورة الحالية مفعّلة وتعد الطلبات المستلمة." : (reward.awardedOrderId ? "الدورة متوقفة بعد منح الهدية. اضغطي بدء دورة جديدة عند رغبتك." : "لا توجد دورة مفعّلة حاليًا.");
         if ($("giftCouponStats")) $("giftCouponStats").textContent = "إجمالي مرات استخدام الأكواد في الطلبات: " + (Number(data?.totalUses) || 0);
         if (!COUPON_ROWS.length) {
           COUPON_ROWS = [
@@ -4031,6 +4052,26 @@
       syncGiftBagRowsFromUI();
       GIFT_BAGS.push({ id: "gift-bag-" + Date.now(), name: "", image: "", active: true });
       renderGiftBagRows();
+    });
+    $("startGiftRewardCycle")?.addEventListener("click", async () => {
+      const btn = $("startGiftRewardCycle"), msg = $("giftRewardMsg");
+      const productName = $("giftRewardProductName")?.value.trim() || "";
+      if (!productName) { if (msg) msg.textContent = "اكتبي اسم منتج الهدية أولًا"; return; }
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري بدء الدورة..."; }
+      try {
+        const result = await api("start_gift_cycle", {
+          threshold: Number($("giftRewardThreshold")?.value) || 20,
+          enabled: $("giftRewardEnabled")?.checked === true,
+          productId: Number($("giftRewardProductId")?.value) || 0,
+          productName,
+          productImage: $("giftRewardProductImage")?.value.trim() || ""
+        });
+        if (!result.ok) throw new Error(result.error || "تعذر بدء الدورة");
+        if (msg) { msg.className = "msg ok"; msg.textContent = "بدأت دورة منتج الهدية بنجاح"; }
+        if ($("giftRewardStatus")) $("giftRewardStatus").textContent = "الدورة الحالية مفعّلة وتعد الطلبات المستلمة.";
+      } catch (e) { if (msg) { msg.className = "msg err"; msg.textContent = e.message || "تعذر بدء الدورة"; } }
+      finally { if (btn) btn.disabled = false; }
     });
     $("giftBagsList")?.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-del-gift-bag]");

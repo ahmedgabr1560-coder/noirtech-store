@@ -1,4 +1,5 @@
 // /api/order — حفظ الطلبات من المتجر (عام) بدون كلمة سر الأدمن
+import { awardGiftIfEligible, normalizeGiftRewardConfig, stoppedRewardConfig } from "./gift-reward.js";
 
 // Rate limit بسيط في ذاكرة الدالة (لكل instance)
 const __rl = globalThis.__ATHAR_RL_ORDER || (globalThis.__ATHAR_RL_ORDER = new Map());
@@ -111,6 +112,11 @@ function sanitizeOrder(order) {
       shipping: Number(order.shipping) || 0,
       total: Number(order.total) || 0,
       paymentMethod: String(order.paymentMethod || "cod").slice(0, 30),
+      giftBagChoice: order.giftBagChoice && typeof order.giftBagChoice === "object" ? {
+        id: String(order.giftBagChoice.id || "").slice(0, 80),
+        name: String(order.giftBagChoice.name || "").slice(0, 200),
+        image: String(order.giftBagChoice.image || "").slice(0, 500)
+      } : null,
       customer: {
         name: String(customer.name || "عميل").slice(0, 120),
         phone,
@@ -143,14 +149,25 @@ export default async function handler(req, res) {
     const order = cleaned.order;
 
     let put = { ok: false, data: {} };
+    let rewardResult = { awarded: false };
     for (let attempt = 0; attempt < 5; attempt++) {
       const f = await ghGet("orders.json");
       let orders = [];
       try { orders = f ? JSON.parse(f.content) : []; } catch { orders = []; }
       if (!Array.isArray(orders)) orders = [];
       const idx = orders.findIndex((o) => String(o.id) === String(order.id));
-      if (idx >= 0) orders[idx] = { ...orders[idx], ...order };
-      else orders.unshift(order);
+      if (idx >= 0) {
+        orders[idx] = { ...orders[idx], ...order };
+      } else {
+        let siteConfig = {};
+        const configFile = await ghGet("site-config.json");
+        try { siteConfig = configFile ? JSON.parse(configFile.content) : {}; } catch { siteConfig = {}; }
+        rewardResult = awardGiftIfEligible(order, orders, siteConfig);
+        if (rewardResult.needsChoice) {
+          return res.status(409).json({ ok: false, error: "gift_choice_required", giftBags: rewardResult.giftBags });
+        }
+        orders.unshift(rewardResult.order);
+      }
       if (orders.length > 500) orders = orders.slice(0, 500);
       put = await ghPut("orders.json", JSON.stringify(orders, null, 2), `Order ${order.id}`, f?.sha);
       if (put.ok) break;
@@ -160,6 +177,21 @@ export default async function handler(req, res) {
     }
 
     if (!put.ok) return res.status(500).json({ ok: false, error: "save failed", detail: put.data });
+
+    // بمجرد منح الهدية تتوقف الدورة؛ لا تبدأ دورة جديدة إلا من زر الإدارة.
+    if (rewardResult && rewardResult.awarded) {
+      try {
+        const configFile = await ghGet("site-config.json");
+        if (configFile) {
+          const siteConfig = JSON.parse(configFile.content || "{}");
+          const reward = normalizeGiftRewardConfig(siteConfig);
+          siteConfig.homepage = { ...(siteConfig.homepage || {}), giftReward: stoppedRewardConfig(reward, order.id) };
+          await ghPut("site-config.json", JSON.stringify(siteConfig, null, 2), `Gift reward awarded to order ${order.id}`, configFile.sha);
+        }
+      } catch (giftConfigError) {
+        console.warn("gift reward stop failed", giftConfigError);
+      }
+    }
 
     // إشعار تيليجرام احتياطي من السيرفر (لو العميل فشل)
     try {

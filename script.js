@@ -2025,6 +2025,47 @@ function bindOrderSuccessClose() {
 try { bindOrderSuccessClose(); } catch (e) {}
 document.addEventListener("DOMContentLoaded", function () { try { bindOrderSuccessClose(); } catch (e) {} });
 
+function requestOrderGiftChoice(bags) {
+  return new Promise(function (resolve) {
+    const modal = document.getElementById("orderGiftChoiceModal");
+    const list = document.getElementById("orderGiftChoices");
+    const confirm = document.getElementById("confirmOrderGiftChoice");
+    const msg = document.getElementById("orderGiftChoiceMsg");
+    if (!modal || !list || !confirm) return resolve(null);
+    let selected = null;
+    list.innerHTML = "";
+    confirm.disabled = true;
+    if (msg) msg.textContent = "اختاري شنطة واحدة لإكمال الطلب";
+    (Array.isArray(bags) ? bags : []).forEach(function (bag) {
+      const id = String(bag.id || "");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "gift-bag-option";
+      if (bag.image) { const image = document.createElement("img"); image.src = bag.image; image.alt = bag.name; button.appendChild(image); }
+      else { const icon = document.createElement("span"); icon.className = "gift-bag-placeholder"; icon.textContent = "🎁"; button.appendChild(icon); }
+      const label = document.createElement("span"); label.textContent = bag.name; button.appendChild(label);
+      button.addEventListener("click", function () {
+        selected = { id, name: String(bag.name || ""), image: String(bag.image || "") };
+        list.querySelectorAll(".gift-bag-option").forEach(function (item) { item.classList.remove("selected"); });
+        button.classList.add("selected");
+        confirm.disabled = false;
+        if (msg) msg.textContent = "تم اختيار شنطة — اضغطي تأكيد لإكمال الطلب";
+      });
+      list.appendChild(button);
+    });
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("gift-modal-open");
+    confirm.onclick = function () {
+      if (!selected) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("gift-modal-open");
+      resolve(selected);
+    };
+  });
+}
+
 
 window.__atharCheckoutRunner = async function () {
   try { if (typeof loadCartFromStorage === 'function') loadCartFromStorage(); } catch(e){}
@@ -2143,6 +2184,17 @@ window.__atharCheckoutRunner = async function () {
         });
         try { saveData = await saveRes.json(); } catch (e2) { saveData = null; }
       } catch (e1) { saveRes = null; saveData = null; }
+      if (saveRes && saveRes.status === 409 && saveData && saveData.error === "gift_choice_required") {
+        const choice = await requestOrderGiftChoice(saveData.giftBags || []);
+        if (!choice) {
+          toast("اختاري شنطة الهدية لإكمال الطلب");
+          if (btn) { btn.disabled = false; btn.dataset.submitting = ""; btn.textContent = "إتمام الطلب الآن"; }
+          return;
+        }
+        orderRecord.giftBagChoice = choice;
+        saveRes = await fetch("/api/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ order: orderRecord }) });
+        try { saveData = await saveRes.json(); } catch (eGift) { saveData = null; }
+      }
       // 2) احتياطي: api/admin
       if (!saveRes || !saveRes.ok || !saveData || saveData.ok === false) {
         try {

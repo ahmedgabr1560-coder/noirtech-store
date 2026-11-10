@@ -941,6 +941,32 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, config });
     }
 
+    if (action === "start_gift_cycle") {
+      const f = await ghGet("site-config.json");
+      if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });
+      let config = {};
+      try { config = JSON.parse(f.content || "{}"); } catch { config = {}; }
+      const current = (config.homepage && config.homepage.giftReward && typeof config.homepage.giftReward === "object") ? config.homepage.giftReward : {};
+      const threshold = Math.max(1, Math.min(10000, Math.round(Number(body.threshold) || 20)));
+      const productName = String(body.productName || current.productName || "").trim().slice(0, 200);
+      if (!productName) return res.status(400).json({ ok: false, error: "اسم منتج الهدية مطلوب" });
+      const giftReward = {
+        enabled: body.enabled !== false,
+        active: true,
+        threshold,
+        productId: Number(body.productId || current.productId) || 0,
+        productName,
+        productImage: String(body.productImage || current.productImage || "").trim().slice(0, 500),
+        startedAt: new Date().toISOString(),
+        cycleId: (Number(current.cycleId) || 0) + 1,
+        awardedOrderId: ""
+      };
+      config.homepage = { ...(config.homepage || {}), giftReward };
+      const put = await ghPut("site-config.json", JSON.stringify(config, null, 2), "Admin: start gift reward cycle", f.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر بدء دورة الهدية", detail: put.data });
+      return res.status(200).json({ ok: true, giftReward });
+    }
+
     if (action === "list_expenses") {
       const f = await ghGet("expenses.json");
       const expenses = f ? JSON.parse(f.content) : [];
