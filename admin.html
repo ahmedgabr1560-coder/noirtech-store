@@ -956,6 +956,7 @@
             </div>
             <p id="giftAutoCodesStats" class="hint" style="margin:10px 0 0"></p>
             <button type="button" class="btn btn-primary" id="saveGiftAutoCodesBtn" style="margin-top:10px">حفظ إعدادات الأكواد التلقائية</button>
+            <button type="button" class="btn btn-ghost" id="resetGiftAutoCodesBtn" style="margin-top:10px;margin-right:8px;color:#b91c1c">تصفير الإحصائيات</button>
             <div class="msg" id="giftAutoCodesMsg"></div>
           </div>
           <div id="couponsList"></div>
@@ -4174,6 +4175,23 @@
         if (!result.ok) throw new Error(result.error || "تعذر الحفظ");
         if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ إعدادات الأكواد التلقائية"; }
       } catch (e) { if (msg) { msg.className = "msg err"; msg.textContent = e.message || "تعذر الحفظ"; } }
+      finally { if (btn) btn.disabled = false; }
+    });
+
+    $("resetGiftAutoCodesBtn")?.addEventListener("click", async () => {
+      if (!confirm("سيتم حذف سجل الأكواد التلقائية وتصفير الإحصائيات فقط. الأكواد اليدوية وإعدادات النسب لن تتأثر. هل تريدين المتابعة؟")) return;
+      const btn = $("resetGiftAutoCodesBtn"), msg = $("giftAutoCodesMsg");
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري تصفير الإحصائيات..."; }
+      try {
+        const result = await api("reset_gift_auto_stats");
+        if (!result.ok) throw new Error(result.error || "تعذر التصفير");
+        if ($("giftAutoCodesCreated")) $("giftAutoCodesCreated").textContent = "0";
+        if ($("giftAutoCodesDeleted")) $("giftAutoCodesDeleted").textContent = "0";
+        if ($("giftAutoCodesUsed")) $("giftAutoCodesUsed").textContent = "0";
+        if ($("giftAutoCodesStats")) $("giftAutoCodesStats").textContent = "تم تصفير سجل الأكواد التلقائية.";
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم تصفير إحصائيات الأكواد التلقائية"; }
+      } catch (e) { if (msg) { msg.className = "msg err"; msg.textContent = e.message || "تعذر التصفير"; } }
       finally { if (btn) btn.disabled = false; }
     });
 

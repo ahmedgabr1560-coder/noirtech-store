@@ -726,6 +726,13 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, codes, totalUses: Object.values(usage).reduce((sum, n) => sum + n, 0), autoCodes: { issued: autoIssued.length, deleted: autoIssued.length, used: autoUsed, available: 0 } });
     }
 
+    if (action === "reset_gift_auto_stats") {
+      const f = await ghGet("gift-auto-codes.json");
+      const put = await ghPut("gift-auto-codes.json", JSON.stringify({ issued: [] }, null, 2), "Admin: reset automatic gift code statistics", f?.sha);
+      if (!put.ok) return res.status(500).json({ ok: false, error: "تعذر تصفير إحصائيات الأكواد التلقائية", detail: put.data });
+      return res.status(200).json({ ok: true, reset: true });
+    }
+
     if (action === "update_coupons") {
       let codes = body.codes;
       if (!Array.isArray(codes)) return res.status(400).json({ ok: false, error: "codes array required" });
