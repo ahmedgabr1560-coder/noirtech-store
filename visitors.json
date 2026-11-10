@@ -1,18 +1,18 @@
 {
   "stats": {
     "totalEnters": 3218,
-    "totalLeaves": 1033,
+    "totalLeaves": 1034,
     "uniqueSessions": 3205,
     "todayEnters": 68,
-    "todayLeaves": 113,
+    "todayLeaves": 114,
     "todayDate": "2026-11-10",
     "accountsTotal": 0,
-    "uniqueDevices": 1964,
+    "uniqueDevices": 1965,
     "deviceTypes": {
       "android": 62,
       "iphone": 57,
       "ipad": 6,
-      "desktop": 1821,
+      "desktop": 1822,
       "other": 2
     },
     "gift": {
@@ -27,6 +27,17 @@
     }
   },
   "sessions": {
+    "s_5no60gxlbamwal81rp": {
+      "firstSeen": "2026-11-10T11:09:14.183Z",
+      "lastSeen": "2026-11-10T11:09:26.437Z",
+      "path": "/",
+      "status": "left",
+      "enters": 1,
+      "leaves": 1,
+      "deviceId": "d_9ni5ibohcmwal8202",
+      "deviceType": "desktop",
+      "ipMasked": "13.57.148.xxx"
+    },
     "s_ha9xi9086wdmwal81rj": {
       "firstSeen": "2026-11-10T11:09:14.578Z",
       "lastSeen": "2026-11-10T11:09:14.578Z",
@@ -37,17 +48,6 @@
       "deviceId": "d_ie57ro8l1ssmwal81rj",
       "deviceType": "desktop",
       "ipMasked": "54.183.149.xxx"
-    },
-    "s_5no60gxlbamwal81rp": {
-      "firstSeen": "2026-11-10T11:09:14.183Z",
-      "lastSeen": "2026-11-10T11:09:14.183Z",
-      "path": "/",
-      "status": "online",
-      "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_y0rcsxcuyhmwal81rp",
-      "deviceType": "desktop",
-      "ipMasked": "13.57.148.xxx"
     },
     "s_ocx2g4zwvgjmwal7pzl": {
       "firstSeen": "2026-11-10T11:08:59.341Z",
@@ -4430,6 +4430,12 @@
   },
   "recent": [
     {
+      "type": "leave",
+      "sessionId": "s_5no60gxl…",
+      "path": "/",
+      "at": "2026-11-10T11:09:26.437Z"
+    },
+    {
       "type": "enter",
       "sessionId": "s_ha9xi908…",
       "path": "/",
@@ -4902,15 +4908,15 @@
       "sessionId": "s_6hy0yp7i…",
       "path": "/",
       "at": "2026-11-10T03:45:55.619Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_6hy0yp7i…",
-      "path": "/",
-      "at": "2026-11-10T03:45:50.757Z"
     }
   ],
   "devices": {
+    "d_9ni5ibohcmwal8202": {
+      "firstSeen": "2026-11-10T11:09:26.437Z",
+      "lastSeen": "2026-11-10T11:09:26.437Z",
+      "type": "desktop",
+      "ipMasked": "13.57.148.xxx"
+    },
     "d_ie57ro8l1ssmwal81rj": {
       "firstSeen": "2026-11-10T11:09:14.578Z",
       "lastSeen": "2026-11-10T11:09:14.578Z",
