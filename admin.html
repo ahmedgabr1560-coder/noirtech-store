@@ -1169,8 +1169,6 @@
               <label>نص بانر الخصومات<input id="hpPromoText" placeholder="خصومات مميزة في انتظارك" /></label>
               <label>أيقونة البانر<input id="hpPromoIcon" placeholder="🎁" /></label>
               <label>النص الفرعي للبانر<input id="hpPromoSub" placeholder="عروض حصرية على أحدث التشكيلة" /></label>
-              <label>نص زر البانر<input id="hpPromoCta" placeholder="تسوقي الآن ←" /></label>
-              <label>رابط البانر<input id="hpPromoLink" placeholder="#shop" dir="ltr" /></label>
               <label>خلفية البانر (لون أو تدرج)<input id="hpPromoBg" placeholder="linear-gradient(90deg,#7a1f3d,#b8325e)" dir="ltr" /></label>
               <label>لون نص البانر<input id="hpPromoTextColor" placeholder="#ffffff" dir="ltr" /></label>
               <label>عدد المنتجات المعروضة<input id="hpBestCount" type="number" min="3" max="12" value="6" dir="ltr" /></label>
@@ -3396,8 +3394,6 @@
       set("hpPromoText", hp.promoText || "خصومات مميزة في انتظارك");
       set("hpPromoIcon", hp.promoIcon || "🎁");
       set("hpPromoSub", hp.promoSub || "عروض حصرية على أحدث التشكيلة");
-      set("hpPromoCta", hp.promoCta || "تسوقي الآن ←");
-      set("hpPromoLink", hp.promoLink || "#shop");
       set("hpPromoBg", hp.promoBg || "");
       set("hpPromoTextColor", hp.promoTextColor || "");
       if ($("hpBestCount")) $("hpBestCount").value = hp.bestCount || 6;
@@ -3610,8 +3606,6 @@
             promoText: $("hpPromoText")?.value.trim() || "خصومات مميزة في انتظارك",
             promoIcon: $("hpPromoIcon")?.value.trim() || "🎁",
             promoSub: $("hpPromoSub")?.value.trim() || "عروض حصرية على أحدث التشكيلة",
-            promoCta: $("hpPromoCta")?.value.trim() || "تسوقي الآن ←",
-            promoLink: $("hpPromoLink")?.value.trim() || "#shop",
             promoBg: $("hpPromoBg")?.value.trim() || "",
             promoTextColor: $("hpPromoTextColor")?.value.trim() || "",
             bestCount: Number($("hpBestCount")?.value || 6),
