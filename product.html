@@ -445,9 +445,28 @@
         const add = document.getElementById("ppAdd");
         if (add) add.click();
       };
-      root.innerHTML = "المنتج غير موجود.<br><a href='/' style='color:var(--link, #7a1f3d)'>العودة للمتجر</a>";
+        root.innerHTML = "المنتج غير موجود.<br><a href='/' style='color:var(--link, #7a1f3d)'>العودة للمتجر</a>";
         return;
       }
+      const approvedReviews = Array.isArray(p.customerReviews)
+        ? p.customerReviews.filter(review => review && review.approved === true && String(review.message || "").trim())
+        : [];
+      const displayedReviewCount = approvedReviews.length || Math.max(0, Number(p.reviews) || 0);
+      const displayedRating = approvedReviews.length
+        ? approvedReviews.reduce((sum, review) => sum + Math.max(1, Math.min(5, Number(review.rating) || 5)), 0) / approvedReviews.length
+        : (displayedReviewCount > 0 ? (Number(p.rating) || 0) : 0);
+      const approvedReviewsMarkup = approvedReviews.map(review => {
+        const rating = Math.max(1, Math.min(5, Number(review.rating) || 5));
+        const name = esc(String(review.name || "عميلنا").slice(0, 80));
+        const message = esc(String(review.message || "").trim().slice(0, 1200));
+        const dateValue = Date.parse(String(review.createdAt || review.date || ""));
+        const dateLabel = Number.isFinite(dateValue) ? new Date(dateValue).toLocaleDateString("ar-EG") : "";
+        return `<article style="padding:14px 16px;margin:10px 0;border:1px solid rgba(212,175,55,.2);border-radius:14px;background:rgba(255,255,255,.025)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><strong>${name}</strong><span style="color:#d4af37" aria-label="${rating} من 5 نجوم">${stars(rating)}</span></div>
+          <p style="margin:9px 0 0;line-height:1.8;color:var(--text,#eee)">${message}</p>
+          ${dateLabel ? `<small style="display:block;margin-top:7px;color:#999">${dateLabel}</small>` : ""}
+        </article>`;
+      }).join("");
       document.title = p.name + " | ATHAR | أثر";
       const cats = catalog?.categories || [];
       const cat = cats.find(c => c.id === p.category);
@@ -572,7 +591,8 @@
               <h1 class="pd-title" style="margin-bottom:0">${esc(p.name)}</h1>
               <button type="button" class="pp-fav-btn" id="ppFavBtn" data-fav="${id}" aria-label="إضافة المنتج إلى المفضلة" aria-pressed="false">♡</button>
             </div>
-            <div class="rating pd-rating">${stars(p.rating)} <span>(${p.reviews || 0} تقييم)</span></div>
+            <div class="rating pd-rating">${stars(displayedRating)} <span>(${displayedReviewCount} تقييم)</span></div>
+            <a href="/feedback.html?productId=${encodeURIComponent(id)}" style="display:inline-block;margin:-4px 0 12px;color:var(--link,#d4af37);font-size:.84rem;font-weight:800;text-decoration:underline;text-underline-offset:3px">اكتبي رأيك في المنتج</a>
             <div class="price-row pd-price">
               <span class="price" style="font-size:1.5rem">${money(p.price)}</span>
               ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
@@ -612,6 +632,10 @@
               <h4>الوصف</h4>
               <p>${esc(desc)}</p>
             </div>
+            ${approvedReviews.length ? `<section aria-labelledby="approvedReviewsTitle" style="margin-top:22px">
+              <h3 id="approvedReviewsTitle" style="color:var(--text,#fff);margin:0 0 12px">آراء العملاء المعتمدة</h3>
+              ${approvedReviewsMarkup}
+            </section>` : ""}
 
         </div>
         ${related.length ? `

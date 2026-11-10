@@ -30,9 +30,9 @@
     .feedback-intro { color:var(--muted); line-height:1.8; margin:0 0 28px; }
     .feedback-form { display:grid; gap:16px; }
     .feedback-form label { display:grid; gap:8px; color:#eeeef5; font-size:.9rem; font-weight:700; }
-    .feedback-form input, .feedback-form textarea { width:100%; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:rgba(0,0,0,.22); color:#fff; padding:13px 14px; font:inherit; outline:none; }
+    .feedback-form input, .feedback-form textarea, .feedback-form select { width:100%; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:rgba(0,0,0,.22); color:#fff; padding:13px 14px; font:inherit; outline:none; }
     .feedback-form textarea { min-height:140px; resize:vertical; }
-    .feedback-form input:focus, .feedback-form textarea:focus { border-color:#7a1f3d; box-shadow:0 0 0 3px rgba(167,139,250,.12); }
+    .feedback-form input:focus, .feedback-form textarea:focus, .feedback-form select:focus { border-color:#7a1f3d; box-shadow:0 0 0 3px rgba(167,139,250,.12); }
     .feedback-rating { display:flex; flex-wrap:wrap; gap:8px; direction:rtl; }
     .feedback-rating input { position:absolute; opacity:0; pointer-events:none; }
     .feedback-rating label { display:inline-flex; width:48px; height:44px; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,.14); border-radius:12px; color:#777484; font-size:1.45rem; cursor:pointer; transition:.2s; }
@@ -55,8 +55,8 @@
     .feedback-card h1 { color:#fff8f0; }
     .feedback-intro { color:#b8a99a; }
     .feedback-form label { color:#f5efe8; }
-    .feedback-form input,.feedback-form textarea { border-color:rgba(212,175,55,.24); background:#121018; color:#f5efe8; }
-    .feedback-form input:focus,.feedback-form textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,55,.14); }
+    .feedback-form input,.feedback-form textarea,.feedback-form select { border-color:rgba(212,175,55,.24); background:#121018; color:#f5efe8; }
+    .feedback-form input:focus,.feedback-form textarea:focus,.feedback-form select:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,55,.14); }
     .feedback-rating label { border-color:rgba(212,175,55,.24); color:#8f8177; }
     .feedback-rating label:hover,.feedback-rating input:checked + label { color:var(--gold-light); border-color:var(--gold); background:rgba(122,31,61,.22); }
     .feedback-hint,.feedback-privacy { color:#a99588; }
@@ -67,7 +67,7 @@
     [data-theme="light"] .feedback-card { background:linear-gradient(145deg,#fff,#fff5f8); border-color:rgba(122,31,61,.16); box-shadow:0 28px 80px rgba(122,31,61,.12); }
     [data-theme="light"] .feedback-card h1,[data-theme="light"] .feedback-form label { color:#3b1224; }
     [data-theme="light"] .feedback-intro { color:#7d5363; }
-    [data-theme="light"] .feedback-form input,[data-theme="light"] .feedback-form textarea { background:#fff; color:#3b1224; border-color:#f0d4de; }
+    [data-theme="light"] .feedback-form input,[data-theme="light"] .feedback-form textarea,[data-theme="light"] .feedback-form select { background:#fff; color:#3b1224; border-color:#f0d4de; }
     [data-theme="light"] .feedback-hint,[data-theme="light"] .feedback-privacy { color:#8f6978; }
   </style>
 </head>
@@ -83,15 +83,18 @@
     <section class="feedback-card" aria-labelledby="feedbackTitle">
       <p class="feedback-kicker">نحن نسمعكِ</p>
       <h1 id="feedbackTitle">رأيك يهمنا</h1>
-      <p class="feedback-intro">تجربتك تساعدنا نطوّر المتجر ونختار لكِ الأفضل. اتركي تقييمك في أقل من دقيقة، وسيوصل مباشرة لفريقنا.</p>
+      <p class="feedback-intro">اختاري المنتج واكتبي رأيك وتقييمك. سيصل لفريقنا للمراجعة، ولن يظهر على الموقع قبل اعتماده.</p>
       <form class="feedback-form" id="feedbackForm">
-        <label>التقييم
+        <label for="feedbackProduct">المنتج الذي تقيّمينه
+          <select id="feedbackProduct" required><option value="">جاري تحميل المنتجات...</option></select>
+        </label>
+        <label>تقييمك للمنتج
           <span class="feedback-rating" aria-label="اختاري تقييمًا من نجمة إلى خمس نجوم">
-            <input type="radio" name="rating" value="5" checked /><label for="rating5" aria-label="5 نجوم">★</label>
-            <input type="radio" name="rating" value="4" /><label aria-label="4 نجوم">★</label>
-            <input type="radio" name="rating" value="3" /><label aria-label="3 نجوم">★</label>
-            <input type="radio" name="rating" value="2" /><label aria-label="نجمتان">★</label>
-            <input type="radio" name="rating" value="1" /><label aria-label="نجمة واحدة">★</label>
+            <input id="rating5" type="radio" name="rating" value="5" checked /><label for="rating5" aria-label="5 نجوم">★</label>
+            <input id="rating4" type="radio" name="rating" value="4" /><label for="rating4" aria-label="4 نجوم">★</label>
+            <input id="rating3" type="radio" name="rating" value="3" /><label for="rating3" aria-label="3 نجوم">★</label>
+            <input id="rating2" type="radio" name="rating" value="2" /><label for="rating2" aria-label="نجمتان">★</label>
+            <input id="rating1" type="radio" name="rating" value="1" /><label for="rating1" aria-label="نجمة واحدة">★</label>
           </span>
           <small class="feedback-hint">اختاري عدد النجوم الذي يعبّر عن تجربتك</small>
         </label>
@@ -104,7 +107,7 @@
         <label class="feedback-honeypot" aria-hidden="true" style="position:absolute;left:-9999px">اتركي هذا الحقل فارغًا<input id="feedbackWebsite" tabindex="-1" autocomplete="off" /></label>
         <button class="btn btn-primary btn-block" id="feedbackSubmit" type="submit">إرسال رأيي <span aria-hidden="true">←</span></button>
         <p class="feedback-status" id="feedbackStatus" role="status" aria-live="polite"></p>
-        <p class="feedback-privacy">لن نعرض بياناتك على الموقع. سيصل رأيك إلى فريق ATHAR لمتابعة التحسينات وخدمة العملاء.</p>
+        <p class="feedback-privacy">لن يظهر رأيك أو بياناتك للعامة قبل المراجعة والاعتماد. يصل التقييم واسم المنتج إلى فريق ATHAR لمتابعة الملاحظات.</p>
       </form>
     </section>
   </main>
@@ -137,24 +140,50 @@
     const form = document.getElementById("feedbackForm");
     const status = document.getElementById("feedbackStatus");
     const submit = document.getElementById("feedbackSubmit");
+    const productSelect = document.getElementById("feedbackProduct");
+    const requestedProductId = new URLSearchParams(location.search).get("productId") || "";
+    async function loadFeedbackProducts() {
+      const sources = ["/api/catalog?type=products", "/products.json", "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json"];
+      for (const source of sources) {
+        try {
+          const response = await fetch(source, { cache: "no-store" });
+          if (!response.ok) continue;
+          const payload = await response.json();
+          const products = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
+          const available = products.filter(product => product && product.hidden !== true && product.active !== false && product.id != null && product.name);
+          if (!available.length) continue;
+          productSelect.replaceChildren(new Option("اختاري المنتج", ""));
+          available.forEach(product => productSelect.add(new Option(String(product.name), String(product.id))));
+          if (requestedProductId && available.some(product => String(product.id) === String(requestedProductId))) {
+            productSelect.value = String(requestedProductId);
+          }
+          return;
+        } catch (error) {}
+      }
+      productSelect.replaceChildren(new Option("تعذر تحميل المنتجات — أعيدي تحميل الصفحة", ""));
+    }
+    loadFeedbackProducts();
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const message = document.getElementById("feedbackMessage").value.trim();
       const name = document.getElementById("feedbackName").value.trim() || "بدون اسم";
       const website = document.getElementById("feedbackWebsite").value.trim();
       const rating = form.querySelector('input[name="rating"]:checked')?.value || "5";
+      const productId = productSelect.value;
+      const productName = productSelect.selectedOptions[0]?.textContent || "";
       if (website) return;
+      if (!productId) { status.textContent = "اختاري المنتج الذي تقيّمينه"; status.className = "feedback-status error"; return; }
       if (!message) { status.textContent = "اكتبي رأيك أولًا"; status.className = "feedback-status error"; return; }
       submit.disabled = true;
       submit.textContent = "جاري الإرسال...";
       status.textContent = "";
       try {
-        const response = await fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "feedback", message: `⭐ التقييم: ${rating}/5\n👤 الاسم: ${name}\n📝 الرأي:\n${message}` }) });
+        const response = await fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "feedback", message: `📦 المنتج: ${productName}\n🆔 رقم المنتج: ${productId}\n⭐ التقييم: ${rating}/5\n👤 الاسم: ${name}\n📝 الرأي:\n${message}\n\n⏳ بانتظار المراجعة والاعتماد قبل النشر.` }) });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || data.ok === false) throw new Error(data.error || "تعذر الإرسال");
         form.reset();
         form.querySelector('input[name="rating"][value="5"]').checked = true;
-        status.textContent = "وصل رأيك بنجاح، شكرًا لمشاركتكِ معنا ✓";
+        status.textContent = "وصل تقييمك لفريقنا للمراجعة. لن يظهر على الموقع قبل اعتماده، شكرًا لمشاركتكِ ✓";
         status.className = "feedback-status";
       } catch (error) {
         status.textContent = "حصلت مشكلة بسيطة. حاولي مرة أخرى بعد قليل.";
