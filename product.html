@@ -1248,10 +1248,15 @@
             const p = Number(row.percent);
             if (c && p > 0 && row.active !== false) { CODES[c] = Math.min(90, Math.round(p)); window.PRODUCT_COUPON_CODES[c] = CODES[c]; }
           });
+          try {
+            const saved = String(localStorage.getItem("nx_coupon_code") || sessionStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+            const savedPct = Number(localStorage.getItem("nx_coupon_percent") || sessionStorage.getItem("nx_coupon_percent")) || 0;
+            if (saved && savedPct > 0) { CODES[saved] = Math.min(90, Math.round(savedPct)); window.PRODUCT_COUPON_CODES[saved] = CODES[saved]; }
+          } catch (eSaved) {}
         } catch (e) {}
       }
-      refreshCodes();
-      function applyCoupon() {
+      refreshCodes().then(() => { try { if (typeof renderCart === "function") renderCart(); } catch (eRefresh) {} });
+      async function applyCoupon() {
         const input = document.getElementById("couponInput");
         const msg = document.getElementById("couponMsg");
         const raw = String(input?.value || "").trim().toUpperCase();
@@ -1260,6 +1265,17 @@
           if (msg) msg.textContent = "اكتبي كود الخصم";
           try { if (typeof renderCart === "function") renderCart(); } catch (e) {}
           return;
+        }
+        if (!CODES[raw] && /^[A-Z0-9_-]{3,40}$/.test(raw)) {
+          try {
+            const issued = await fetch("/api/catalog?type=gift-code&code=" + encodeURIComponent(raw), { cache: "no-store" });
+            const data = await issued.json().catch(() => ({}));
+            if (issued.ok && data.ok && Number(data.percent) > 0) {
+              CODES[raw] = Math.min(90, Math.round(Number(data.percent)));
+              window.PRODUCT_COUPON_CODES[raw] = CODES[raw];
+              try { localStorage.setItem("nx_coupon_percent", String(CODES[raw])); } catch (ePct) {}
+            }
+          } catch (eIssued) {}
         }
         if (!CODES[raw]) {
           try { sessionStorage.removeItem("nx_coupon_code"); localStorage.removeItem("nx_coupon_code"); } catch (e) {}
