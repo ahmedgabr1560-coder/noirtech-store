@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3241,
-    "totalLeaves": 1076,
+    "totalLeaves": 1077,
     "uniqueSessions": 3225,
     "todayEnters": 91,
-    "todayLeaves": 156,
+    "todayLeaves": 157,
     "todayDate": "2026-11-10",
     "accountsTotal": 0,
     "uniqueDevices": 1991,
@@ -29,13 +29,13 @@
   "sessions": {
     "s_uhfoqda77hnmwapk1ub": {
       "firstSeen": "2026-11-10T13:10:33.637Z",
-      "lastSeen": "2026-11-10T13:12:36.295Z",
+      "lastSeen": "2026-11-10T13:12:39.945Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 8,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 9,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.203.139.xxx"
     },
     "s_dy6qch3t6immwapkdnu": {
@@ -4433,6 +4433,12 @@
       "type": "leave",
       "sessionId": "s_uhfoqda7…",
       "path": "/",
+      "at": "2026-11-10T13:12:39.945Z"
+    },
+    {
+      "type": "leave",
+      "sessionId": "s_uhfoqda7…",
+      "path": "/",
       "at": "2026-11-10T13:12:29.068Z"
     },
     {
@@ -4902,25 +4908,19 @@
       "sessionId": "s_mtzzw4m0…",
       "path": "/",
       "at": "2026-11-10T09:03:40.227Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_k37vs64g…",
-      "path": "/",
-      "at": "2026-11-10T09:03:29.811Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-10T13:12:39.945Z",
+      "type": "ipad",
+      "ipMasked": "156.203.139.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-10T13:12:36.295Z",
       "type": "desktop",
-      "ipMasked": "156.203.139.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-10T13:12:29.068Z",
-      "type": "ipad",
       "ipMasked": "156.203.139.xxx"
     },
     "d_lsslmfrdsumwapkdua": {
