@@ -286,12 +286,71 @@
     </div>
   </aside>
 
+  <!-- نفس نافذة تأكيد الطلب المستخدمة في سلة الصفحة الرئيسية -->
+  <div class="modal-overlay" id="orderSuccessOverlay"></div>
+  <div class="modal order-success-modal" id="orderSuccessModal" role="dialog" aria-modal="true" aria-labelledby="orderSuccessTitle">
+    <div class="order-success">
+      <div class="order-success-icon">✓</div>
+      <span class="order-success-kicker" id="orderSuccessKicker">تم التأكيد بنجاح</span>
+      <h3 id="orderSuccessTitle">طلبك وصلنا يا جميلة</h3>
+      <p class="muted" style="margin-bottom:4px">رقم الطلب</p>
+      <p class="order-success-id" id="orderSuccessId">—</p>
+      <p class="muted" id="orderSuccessMsg" style="line-height:1.7">شكرًا لطلبكِ من ATHAR | أثر.<br>هنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.</p>
+      <div class="order-success-actions">
+        <a class="btn order-success-whatsapp" id="orderSuccessWhatsapp" data-whatsapp-link href="https://wa.me/201283431213" target="_blank" rel="noopener">
+          <span aria-hidden="true">◔</span> <span id="orderSuccessWhatsappLabel">تواصلي معنا على واتساب</span>
+        </a>
+        <button type="button" class="btn btn-primary btn-block" id="orderSuccessClose">متابعة التسوق</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const money = (n) => Number(n).toLocaleString("ar-EG") + " ج.م";
     const stars = (r) => {
       const n = Math.round(Number(r) || 0);
       return "★".repeat(Math.min(5, n)) + "☆".repeat(Math.max(0, 5 - Math.min(5, n)));
     };
+    window.showOrderSuccess = function(orderId) {
+      const cfg = window.siteConfig || {};
+      const defaults = {
+        orderSuccessKicker: "تم التأكيد بنجاح",
+        orderSuccessTitle: "طلبك وصلنا يا جميلة",
+        orderSuccessMessage: "شكرًا لطلبكِ من ATHAR | أثر.\nهنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.",
+        orderSuccessWhatsappLabel: "تواصلي معنا على واتساب",
+        orderSuccessCloseLabel: "متابعة التسوق"
+      };
+      const text = key => String(cfg[key] || defaults[key]).trim() || defaults[key];
+      const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+      setText("orderSuccessKicker", text("orderSuccessKicker"));
+      setText("orderSuccessTitle", text("orderSuccessTitle"));
+      setText("orderSuccessWhatsappLabel", text("orderSuccessWhatsappLabel"));
+      setText("orderSuccessClose", text("orderSuccessCloseLabel"));
+      setText("orderSuccessId", orderId || "—");
+      const msg = document.getElementById("orderSuccessMsg");
+      if (msg) { msg.textContent = text("orderSuccessMessage"); msg.style.whiteSpace = "pre-line"; }
+      const wa = document.getElementById("orderSuccessWhatsapp");
+      if (wa) {
+        const number = String(cfg.whatsapp || cfg.phone || "01283431213").replace(/\D/g, "");
+        const normalized = number.startsWith("20") ? number : (number.startsWith("0") ? "20" + number.slice(1) : "20" + number);
+        wa.href = "https://wa.me/" + normalized + "?text=" + encodeURIComponent("مرحبًا أثر، أريد الاستفسار عن طلبي رقم " + (orderId || "—"));
+      }
+      const overlay = document.getElementById("orderSuccessOverlay");
+      const modal = document.getElementById("orderSuccessModal");
+      if (overlay) { overlay.classList.add("open"); overlay.style.display = "block"; }
+      if (modal) { modal.classList.add("open"); modal.style.display = "block"; }
+      document.body.style.overflow = "hidden";
+    };
+    window.closeOrderSuccess = function() {
+      const overlay = document.getElementById("orderSuccessOverlay");
+      const modal = document.getElementById("orderSuccessModal");
+      if (overlay) { overlay.classList.remove("open"); overlay.style.display = "none"; }
+      if (modal) { modal.classList.remove("open"); modal.style.display = "none"; }
+      document.body.style.overflow = "";
+      try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {}
+    };
+    document.getElementById("orderSuccessClose")?.addEventListener("click", window.closeOrderSuccess);
+    document.getElementById("orderSuccessOverlay")?.addEventListener("click", window.closeOrderSuccess);
     function esc(t) {
       return String(t || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
@@ -1187,40 +1246,10 @@
         writeCart([]);
         renderCart();
         if (btn) { btn.disabled = true; btn.dataset.submitting = "1"; btn.textContent = "تم إرسال الطلب"; }
-        try {
-          if (typeof showOrderSuccess === "function") showOrderSuccess(order.id);
-          else {
-            let successConfig = window.siteConfig || {};
-            if (!successConfig.orderSuccessTitle) {
-              try {
-                const configResponse = await fetch("/api/catalog?type=config&t=" + Date.now(), { cache: "no-store" });
-                const configPayload = configResponse.ok ? await configResponse.json() : {};
-                successConfig = (configPayload && configPayload.config) || configPayload || {};
-                window.siteConfig = successConfig;
-              } catch (eConfig) {}
-            }
-            const successText = (key, fallback) => String(successConfig[key] || fallback).trim() || fallback;
-            const box = document.createElement("div");
-            box.setAttribute("role", "dialog");
-            box.style.cssText = "position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);padding:20px";
-            box.innerHTML = `<div style="max-width:360px;width:100%;background:#12121a;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:24px;text-align:center;color:#fff;font-family:Cairo,sans-serif">
-              <div style="width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;font-size:1.6rem;background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)">✓</div>
-              <p id="productOrderSuccessKicker" style="margin:0 0 6px;color:#d4af37;font-size:.82rem;font-weight:800">تم التأكيد بنجاح</p>
-              <h3 id="productOrderSuccessTitle" style="margin:0 0 8px;font-size:1.2rem">طلبك وصلنا يا جميلة</h3>
-              <p style="margin:0 0 6px;color:#94a3b8;font-size:.92rem">رقم الطلب</p>
-              <p style="margin:0 0 14px;font-weight:700;letter-spacing:.04em;direction:ltr">${order.id}</p>
-              <p id="productOrderSuccessMessage" style="white-space:pre-line;margin:0 0 18px;color:#94a3b8;font-size:.88rem;line-height:1.6">شكرًا لطلبكِ من ATHAR | أثر.\nهنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.</p>
-              <button id="productOrderSuccessClose" type="button" style="width:100%;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:700">متابعة التسوق</button>
-            </div>`;
-            box.querySelector("#productOrderSuccessKicker").textContent = successText("orderSuccessKicker", "تم التأكيد بنجاح");
-            box.querySelector("#productOrderSuccessTitle").textContent = successText("orderSuccessTitle", "طلبك وصلنا يا جميلة");
-            box.querySelector("#productOrderSuccessMessage").textContent = successText("orderSuccessMessage", "شكرًا لطلبكِ من ATHAR | أثر.\nهنتواصل معاكِ قريبًا لتأكيد الطلب وترتيب التوصيل.");
-            box.querySelector("#productOrderSuccessClose").textContent = successText("orderSuccessCloseLabel", "متابعة التسوق");
-            box.querySelector("button").onclick = () => box.remove();
-            document.body.appendChild(box);
-          }
-        } catch (e) {}
         closeCart();
+        try {
+          window.showOrderSuccess(order.id);
+        } catch (e) { console.warn("تعذر عرض تأكيد الطلب", e); }
       } catch (err) {
         if (btn) { btn.disabled = false; btn.dataset.submitting = ""; btn.textContent = "إتمام الطلب الآن"; }
         alert(err.message || "تعذر إتمام الطلب");
