@@ -3986,12 +3986,13 @@
         return;
       }
       box.innerHTML = `<div class="table-wrap"><table class="tbl"><thead><tr>
-        <th>الكود</th><th>النسبة %</th><th>مفعّل</th><th>عدد الاستخدام</th><th>ملاحظة</th><th></th>
+        <th>الكود</th><th>النسبة %</th><th>مفعّل</th><th>يظهر في صندوق الهدايا</th><th>عدد الاستخدام</th><th>ملاحظة</th><th></th>
       </tr></thead><tbody>
       ${COUPON_ROWS.map((r, i) => `<tr>
         <td><input data-c="code" data-i="${i}" value="${String(r.code||"").replace(/"/g,"&quot;")}" dir="ltr" style="text-transform:uppercase;max-width:140px" /></td>
         <td><input type="number" min="0" max="90" data-c="percent" data-i="${i}" value="${r.percent!=null?r.percent:0}" dir="ltr" style="max-width:90px" /></td>
         <td style="text-align:center"><input type="checkbox" data-c="active" data-i="${i}" ${r.active!==false?"checked":""} style="width:auto" /></td>
+        <td style="text-align:center"><input type="checkbox" data-c="giftEnabled" data-i="${i}" ${r.giftEnabled!==false?"checked":""} style="width:auto" title="السماح بظهور الكود داخل صندوق الهدايا" /></td>
         <td style="text-align:center;font-weight:800;color:var(--link,#7a1f3d)">${Number(r.usageCount)||0}</td>
         <td><input data-c="note" data-i="${i}" value="${String(r.note||"").replace(/"/g,"&quot;")}" placeholder="اختياري" /></td>
         <td><button type="button" class="btn btn-ghost" data-del-coupon="${i}" style="color:#f87171">حذف</button></td>
@@ -4004,7 +4005,7 @@
         const i = Number(el.getAttribute("data-i"));
         const k = el.getAttribute("data-c");
         if (!COUPON_ROWS[i]) return;
-        if (k === "active") COUPON_ROWS[i].active = !!el.checked;
+        if (k === "active" || k === "giftEnabled") COUPON_ROWS[i][k] = !!el.checked;
         else if (k === "percent") COUPON_ROWS[i].percent = Number(el.value) || 0;
         else COUPON_ROWS[i][k] = el.value;
       });

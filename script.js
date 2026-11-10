@@ -1016,6 +1016,7 @@ var COUPON_CODES = {
   EGYPT10: 10,
   AHMED: 50
 };
+var COUPON_GIFT_CODES = null;
 
 async function loadCoupons(force) {
   try {
@@ -1025,6 +1026,7 @@ async function loadCoupons(force) {
         const o = JSON.parse(cached);
         if (o && o.t && Date.now() - o.t < 60000 && o.map) {
           COUPON_CODES = o.map;
+          COUPON_GIFT_CODES = o.giftMap || null;
           return COUPON_CODES;
         }
       }
@@ -1041,16 +1043,19 @@ async function loadCoupons(force) {
       const data = await r.json();
       const list = Array.isArray(data.codes) ? data.codes : [];
       const map = {};
+      const giftMap = {};
       list.forEach(row => {
         const code = String(row.code || "").trim().toUpperCase();
         const pct = Number(row.percent);
         if (!code || !Number.isFinite(pct) || pct <= 0) return;
         if (row.active === false) return;
         map[code] = Math.min(90, Math.round(pct));
+        if (row.giftEnabled !== false) giftMap[code] = map[code];
       });
       if (Object.keys(map).length || data.ok) {
         COUPON_CODES = Object.keys(map).length ? map : COUPON_CODES;
-        try { sessionStorage.setItem("nx_coupons", JSON.stringify({ t: Date.now(), map: COUPON_CODES })); } catch (e) {}
+        COUPON_GIFT_CODES = Object.keys(giftMap).length ? giftMap : {};
+        try { sessionStorage.setItem("nx_coupons", JSON.stringify({ t: Date.now(), map: COUPON_CODES, giftMap: COUPON_GIFT_CODES })); } catch (e) {}
         return COUPON_CODES;
       }
     } catch (e) {}
@@ -1258,7 +1263,8 @@ window.applyCouponFromInput = applyCouponFromInput;
     if (btn) btn.classList.add("is-opening");
     try {
       await loadCoupons(true);
-      const entries = Object.keys(COUPON_CODES || {}).filter(function(code) {
+      const giftCodes = COUPON_GIFT_CODES || COUPON_CODES || {};
+      const entries = Object.keys(giftCodes).filter(function(code) {
         return /^[A-Z0-9_-]{3,40}$/.test(code) && Number(COUPON_CODES[code]) > 0;
       });
       if (!entries.length) throw new Error("no active coupons");

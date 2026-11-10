@@ -736,6 +736,7 @@ export default async function handler(req, res) {
           code,
           percent,
           active: row.active === true || row.active === "true" || row.active === 1 || row.active === "1",
+          giftEnabled: row.giftEnabled !== false && row.giftEnabled !== "false" && row.giftEnabled !== 0 && row.giftEnabled !== "0",
           note: String(row.note || "").slice(0, 120)
         });
       }
