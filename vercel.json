@@ -23,6 +23,18 @@
       "destination": "/return-policy.html"
     },
     {
+      "source": "/api/auth/google",
+      "destination": "/api/auth?provider=google"
+    },
+    {
+      "source": "/api/auth/facebook",
+      "destination": "/api/auth?provider=facebook"
+    },
+    {
+      "source": "/api/auth/session",
+      "destination": "/api/auth?provider=session"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     }
