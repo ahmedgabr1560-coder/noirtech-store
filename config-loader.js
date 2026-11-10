@@ -152,9 +152,9 @@
           giftBags: Array.isArray(hp.giftBags) ? hp.giftBags.filter(function (bag) { return bag && bag.active !== false && bag.name; }) : [],
           autoCodes: hp.giftAutoCodes && typeof hp.giftAutoCodes === "object" ? {
             enabled: hp.giftAutoCodes.enabled === true,
-            minPercent: Number(hp.giftAutoCodes.minPercent) || 5,
+            minPercent: Number(hp.giftAutoCodes.minPercent) || 9,
             maxPercent: Number(hp.giftAutoCodes.maxPercent) || 15
-          } : { enabled: false, minPercent: 5, maxPercent: 15 }
+          } : { enabled: false, minPercent: 9, maxPercent: 15 }
         };
         promo.style.display = hp.promoEnabled === false ? "none" : "";
         promo.href = hp.promoLink || "#shop";

@@ -67,7 +67,7 @@ export default async function handler(req, res) {
     try { config = configFile ? JSON.parse(configFile.content || "{}") : {}; } catch { config = {}; }
     const settings = config.homepage?.giftAutoCodes || {};
     if (settings.enabled !== true) return res.status(403).json({ ok: false, error: "auto gift codes disabled" });
-    const min = Math.max(1, Math.min(90, Math.round(Number(settings.minPercent) || 5)));
+    const min = Math.max(1, Math.min(90, Math.round(Number(settings.minPercent) || 9)));
     const max = Math.max(min, Math.min(90, Math.round(Number(settings.maxPercent) || 15)));
 
     for (let attempt = 0; attempt < 5; attempt++) {
