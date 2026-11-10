@@ -124,6 +124,24 @@
     .pd-thumb{flex:0 0 auto;padding:0;border:2px solid transparent;border-radius:10px;overflow:hidden;cursor:pointer;background:none;opacity:.75}
     .pd-thumb.active,.pd-thumb:hover{opacity:1;border-color:#a78bfa}
     .pd-thumb img{width:64px;height:64px;object-fit:cover;display:block}
+    .pd-review-box{grid-column:1/-1;width:100%;margin:28px 0 4px;padding:20px;border:1px solid rgba(212,175,55,.28);border-radius:18px;background:linear-gradient(145deg,rgba(122,31,61,.08),rgba(255,255,255,.025))}
+    .pd-review-box h2{margin:0 0 6px;color:var(--text,#fff);font-size:1.18rem}
+    .pd-review-box p{margin:0 0 14px;color:var(--muted,#aaa);font-size:.88rem;line-height:1.7}
+    .pd-review-stars{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:5px;margin:0 0 12px}
+    .pd-review-star{padding:0 2px;border:0;background:transparent;color:#807b72;font-size:2rem;line-height:1;cursor:pointer;transition:transform .15s,color .15s}
+    .pd-review-star:hover{transform:translateY(-2px)}
+    .pd-review-star.is-active{color:#d4af37}
+    .pd-review-row{display:flex;gap:9px;align-items:stretch}
+    #productReviewText{flex:1;min-width:0;min-height:48px;padding:11px 14px;border:1px solid rgba(212,175,55,.3);border-radius:12px;background:rgba(0,0,0,.18);color:var(--text,#fff);font:inherit;outline:none}
+    #productReviewText:focus{border-color:#d4af37;box-shadow:0 0 0 3px rgba(212,175,55,.13)}
+    #productReviewSubmit{min-width:112px;padding:10px 18px;border:0;border-radius:12px;background:linear-gradient(135deg,#7a1f3d,#9a284e);color:#fff8f0;font-family:inherit;font-size:.9rem;font-weight:800;cursor:pointer;white-space:nowrap}
+    #productReviewSubmit:disabled{opacity:.65;cursor:wait}
+    .pd-review-status{min-height:22px;margin:10px 0 0!important;color:#d4af37!important;font-weight:700}
+    .pd-review-status.error{color:#fca5a5!important}
+    [data-theme="light"] .pd-review-box{background:linear-gradient(145deg,#fff5f8,#fff);border-color:rgba(122,31,61,.2)}
+    [data-theme="light"] #productReviewText{background:#fff;color:#3b1224;border-color:#eccbd6}
+    [data-theme="light"] .pd-review-box h2{color:#3b1224}
+    @media(max-width:520px){.pd-review-box{padding:17px 14px}.pd-review-row{flex-direction:row;gap:7px}#productReviewSubmit{min-width:88px;padding:10px;min-height:48px;font-size:.82rem}}
     @media(max-width:600px){
       .pd-nav-btn{width:36px;height:36px}
       .pd-thumb img{width:56px;height:56px}
@@ -592,7 +610,7 @@
               <button type="button" class="pp-fav-btn" id="ppFavBtn" data-fav="${id}" aria-label="إضافة المنتج إلى المفضلة" aria-pressed="false">♡</button>
             </div>
             <div class="rating pd-rating">${stars(displayedRating)} <span>(${displayedReviewCount} تقييم)</span></div>
-            <a href="/feedback.html?productId=${encodeURIComponent(id)}" style="display:inline-block;margin:-4px 0 12px;color:var(--link,#d4af37);font-size:.84rem;font-weight:800;text-decoration:underline;text-underline-offset:3px">اكتبي رأيك في المنتج</a>
+            <a href="#productReviewForm" style="display:inline-block;margin:-4px 0 12px;color:var(--link,#d4af37);font-size:.84rem;font-weight:800;text-decoration:underline;text-underline-offset:3px">اكتبي رأيك في المنتج</a>
             <div class="price-row pd-price">
               <span class="price" style="font-size:1.5rem">${money(p.price)}</span>
               ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
@@ -638,6 +656,24 @@
             </section>` : ""}
 
         </div>
+        <section id="productReviewForm" class="pd-review-box" aria-labelledby="productReviewTitle">
+          <h2 id="productReviewTitle">رأيك يهمنا</h2>
+          <p>قيّمي المنتج من خمس نجوم واكتبي رأيك. هنراجعه قبل ما يظهر على صفحة المنتج.</p>
+          <form id="productReviewFormElement">
+            <div class="pd-review-stars" role="radiogroup" aria-label="تقييم من نجمة إلى خمس نجوم">
+              <button type="button" class="pd-review-star is-active" role="radio" aria-checked="false" aria-label="نجمة واحدة" data-review-rating="1">★</button>
+              <button type="button" class="pd-review-star is-active" role="radio" aria-checked="false" aria-label="نجمتان" data-review-rating="2">★</button>
+              <button type="button" class="pd-review-star is-active" role="radio" aria-checked="false" aria-label="3 نجوم" data-review-rating="3">★</button>
+              <button type="button" class="pd-review-star is-active" role="radio" aria-checked="false" aria-label="4 نجوم" data-review-rating="4">★</button>
+              <button type="button" class="pd-review-star is-active" role="radio" aria-checked="true" aria-label="5 نجوم" data-review-rating="5">★</button>
+            </div>
+            <div class="pd-review-row">
+              <input id="productReviewText" type="text" maxlength="500" required placeholder="اكتبي رأيك في المنتج..." aria-label="رأيك في المنتج" />
+              <button id="productReviewSubmit" type="submit">إرسال التقييم</button>
+            </div>
+            <p id="productReviewStatus" class="pd-review-status" role="status" aria-live="polite"></p>
+          </form>
+        </section>
         ${related.length ? `
         <div style="margin-top:28px">
           <h3 style="color:#fff;margin-bottom:12px">منتجات مشابهة</h3>
@@ -652,6 +688,51 @@
           </div>
         </div>` : ""}
       `;
+
+      const reviewForm = document.getElementById("productReviewFormElement");
+      const reviewText = document.getElementById("productReviewText");
+      const reviewStatus = document.getElementById("productReviewStatus");
+      const reviewSubmit = document.getElementById("productReviewSubmit");
+      const reviewStars = Array.from(document.querySelectorAll("[data-review-rating]"));
+      let selectedReviewRating = 5;
+      function setReviewRating(value) {
+        selectedReviewRating = Math.max(1, Math.min(5, Number(value) || 5));
+        reviewStars.forEach(button => {
+          const buttonRating = Number(button.dataset.reviewRating);
+          button.classList.toggle("is-active", buttonRating <= selectedReviewRating);
+          button.setAttribute("aria-checked", buttonRating === selectedReviewRating ? "true" : "false");
+          button.tabIndex = buttonRating === selectedReviewRating ? 0 : -1;
+        });
+      }
+      reviewStars.forEach(button => button.addEventListener("click", () => setReviewRating(button.dataset.reviewRating)));
+      setReviewRating(selectedReviewRating);
+      reviewForm?.addEventListener("submit", async event => {
+        event.preventDefault();
+        const message = String(reviewText?.value || "").trim();
+        if (!message) { reviewStatus.textContent = "اكتبي رأيك الأول"; reviewStatus.classList.add("error"); return; }
+        reviewSubmit.disabled = true;
+        reviewSubmit.textContent = "جاري الإرسال...";
+        reviewStatus.textContent = "";
+        reviewStatus.classList.remove("error");
+        try {
+          const response = await fetch("/api/notify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "feedback", message: `📦 المنتج: ${p.name}\n🆔 رقم المنتج: ${id}\n⭐ التقييم: ${selectedReviewRating}/5\n📝 رأي العميل:\n${message}\n\n⏳ بانتظار المراجعة والاعتماد قبل النشر.` })
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || data.ok === false) throw new Error(data.error || "تعذر إرسال التقييم");
+          reviewText.value = "";
+          setReviewRating(5);
+          reviewStatus.textContent = "وصل رأيك للمراجعة، شكرًا لمشاركتكِ. لن يظهر قبل اعتماده ✓";
+        } catch (error) {
+          reviewStatus.textContent = "حصلت مشكلة بسيطة. حاولي الإرسال مرة أخرى.";
+          reviewStatus.classList.add("error");
+        } finally {
+          reviewSubmit.disabled = false;
+          reviewSubmit.textContent = "إرسال التقييم";
+        }
+      });
 
       const ppFavBtn = document.getElementById("ppFavBtn");
       function readProductFavorites() {
