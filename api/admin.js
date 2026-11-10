@@ -864,6 +864,18 @@ export default async function handler(req, res) {
             active: bag.active !== false
           })).filter(bag => bag.name);
         }
+        if (homepage.giftReward && typeof homepage.giftReward === "object" && !Array.isArray(homepage.giftReward)) {
+          const currentReward = (current.giftReward && typeof current.giftReward === "object") ? current.giftReward : {};
+          const threshold = Number(homepage.giftReward.threshold);
+          next.giftReward = {
+            ...currentReward,
+            enabled: homepage.giftReward.enabled === true || homepage.giftReward.enabled === "true" || homepage.giftReward.enabled === 1 || homepage.giftReward.enabled === "1",
+            threshold: Number.isFinite(threshold) ? Math.max(1, Math.min(10000, Math.round(threshold))) : (Number(currentReward.threshold) || 20),
+            productId: Number(homepage.giftReward.productId) || 0,
+            productName: String(homepage.giftReward.productName || "").trim().slice(0, 200),
+            productImage: String(homepage.giftReward.productImage || "").trim().slice(0, 500)
+          };
+        }
         config.homepage = next;
       }
 
