@@ -1017,7 +1017,14 @@ var COUPON_CODES = {
   AHMED: 50
 };
 var COUPON_GIFT_CODES = null;
-
+function preserveIssuedGiftCoupon(map) {
+  try {
+    const code = String(sessionStorage.getItem("nx_coupon_code") || localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase();
+    const percent = Number(localStorage.getItem("nx_coupon_percent") || sessionStorage.getItem("nx_coupon_percent")) || 0;
+    if (/^[A-Z0-9_-]{3,40}$/.test(code) && percent > 0) map[code] = Math.min(90, Math.round(percent));
+  } catch (e) {}
+  return map;
+}
 async function loadCoupons(force) {
   try {
     if (!force) {
@@ -1025,7 +1032,7 @@ async function loadCoupons(force) {
       if (cached) {
         const o = JSON.parse(cached);
         if (o && o.t && Date.now() - o.t < 60000 && o.map) {
-          COUPON_CODES = o.map;
+          COUPON_CODES = preserveIssuedGiftCoupon({ ...o.map });
           COUPON_GIFT_CODES = o.giftMap || null;
           return COUPON_CODES;
         }
@@ -1053,7 +1060,7 @@ async function loadCoupons(force) {
         if (row.giftEnabled !== false) giftMap[code] = map[code];
       });
       if (Object.keys(map).length || data.ok) {
-        COUPON_CODES = Object.keys(map).length ? map : COUPON_CODES;
+        COUPON_CODES = preserveIssuedGiftCoupon(Object.keys(map).length ? map : { ...COUPON_CODES });
         COUPON_GIFT_CODES = Object.keys(giftMap).length ? giftMap : {};
         try { sessionStorage.setItem("nx_coupons", JSON.stringify({ t: Date.now(), map: COUPON_CODES, giftMap: COUPON_GIFT_CODES })); } catch (e) {}
         return COUPON_CODES;
