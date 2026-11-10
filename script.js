@@ -269,7 +269,8 @@ async function loadHeroConfig() {
       const url = String(val);
       const bust = url + (url.indexOf("?") >= 0 ? "&" : "?") + "v=" + Date.now();
       el.setAttribute("src", bust);
-      el.loading = "eager";
+      el.loading = id === "heroImg1" ? "eager" : "lazy";
+      try { el.fetchPriority = id === "heroImg1" ? "high" : "low"; } catch (ePriority) {}
       el.style.opacity = "1";
       el.onerror = function () {
         // fallback without bust
