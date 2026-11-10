@@ -1263,42 +1263,24 @@ window.applyCouponFromInput = applyCouponFromInput;
     if (btn) btn.classList.add("is-opening");
     try {
       const auto = giftConfig.autoCodes || {};
-      if (auto.enabled === true) {
-        let autoCode = "", autoPercent = 0;
-        if (giftConfig.onePerBrowser !== false && readGiftClaim()) {
-          try { autoCode = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); autoPercent = Number(localStorage.getItem("nx_coupon_percent")) || 0; } catch (eAutoSaved) {}
-        }
-        if (!autoCode || !autoPercent) {
-          const autoRes = await fetch("/api/gift-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store" });
-          const autoData = await autoRes.json().catch(function () { return {}; });
-          if (!autoRes.ok || !autoData.ok || !autoData.code) throw new Error(autoData.error || "auto gift code failed");
-          autoCode = String(autoData.code).toUpperCase();
-          autoPercent = Number(autoData.percent) || 0;
-          COUPON_CODES[autoCode] = autoPercent;
-          try { localStorage.setItem("nx_coupon_percent", String(autoPercent)); } catch (eAutoSave) {}
-        }
-        try { sessionStorage.setItem("nx_coupon_code", autoCode); localStorage.setItem("nx_coupon_code", autoCode); } catch (eAutoCode) {}
-        saveGiftClaim();
-        showGiftModal(autoCode, autoPercent);
-        try { updateCartUI(); } catch (eAutoCart) {}
-        return;
+      if (auto.enabled !== true) throw new Error("automatic gift codes disabled");
+      let autoCode = "", autoPercent = 0;
+      if (giftConfig.onePerBrowser !== false && readGiftClaim()) {
+        try { autoCode = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); autoPercent = Number(localStorage.getItem("nx_coupon_percent")) || 0; } catch (eAutoSaved) {}
       }
-      await loadCoupons(true);
-      const giftCodes = COUPON_GIFT_CODES || COUPON_CODES || {};
-      const entries = Object.keys(giftCodes).filter(function(code) {
-        return /^[A-Z0-9_-]{3,40}$/.test(code) && Number(COUPON_CODES[code]) > 0;
-      });
-      if (!entries.length) throw new Error("no active coupons");
-      const used = readUsedGiftCodes();
-      const unusedEntries = entries.filter(function (code) { return !used.includes(String(code).toUpperCase()); });
-      if (!unusedEntries.length) throw new Error("no unused coupons");
-      const savedCode = giftConfig.onePerBrowser !== false && readGiftClaim() ? getCouponCode() : "";
-      const code = savedCode && COUPON_CODES[savedCode] && !used.includes(savedCode)
-        ? savedCode
-        : unusedEntries[Math.floor(Math.random() * unusedEntries.length)];
-      const percent = Number(COUPON_CODES[code]) || 0;
-      try { sessionStorage.setItem("nx_coupon_code", code); } catch (e1) {}
-      try { localStorage.setItem("nx_coupon_code", code); } catch (e2) {}
+      if (!autoCode || !autoPercent) {
+        const autoRes = await fetch("/api/gift-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store" });
+        const autoData = await autoRes.json().catch(function () { return {}; });
+        if (!autoRes.ok || !autoData.ok || !autoData.code) throw new Error(autoData.error || "auto gift code failed");
+        autoCode = String(autoData.code).toUpperCase();
+        autoPercent = Number(autoData.percent) || 0;
+        COUPON_CODES[autoCode] = autoPercent;
+        try { localStorage.setItem("nx_coupon_percent", String(autoPercent)); } catch (eAutoSave) {}
+      }
+      try { sessionStorage.setItem("nx_coupon_code", autoCode); localStorage.setItem("nx_coupon_code", autoCode); } catch (eAutoCode) {}
+      saveGiftClaim();
+      showGiftModal(autoCode, autoPercent);
+      try { updateCartUI(); } catch (eAutoCart) {}
       saveGiftClaim();
       showGiftModal(code, percent);
       try { updateCartUI(); } catch (e3) {}

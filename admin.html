@@ -893,7 +893,7 @@
           <p class="hint" style="margin-bottom:12px">كل ما يتعلق بالهدايا: صندوق هدية الخصم، شنط الهدايا، دورة منتج الهدية، وتقارير التفاعل.</p>
           <div class="card" style="margin:0 0 14px;padding:14px;border:1px solid var(--border,#ead7df)">
             <h4 style="margin:0 0 8px">هدية بانر الخصومات</h4>
-            <p class="hint" style="margin:0 0 10px">عند تفعيلها، العميل يضغط صندوق الهدية ويحصل على كود عشوائي من الأكواد الفعالة.</p>
+            <p class="hint" style="margin:0 0 10px">عند تفعيلها، العميل يضغط صندوق الهدية ويحصل على كود تلقائي جديد من خمس خانات. الأكواد اليدوية لا تظهر داخل الصندوق.</p>
             <label style="display:flex;align-items:center;gap:8px;flex-direction:row;margin-bottom:8px"><input type="checkbox" id="giftCouponEnabled" style="width:auto" checked /> تفعيل هدية صندوق الخصومات</label>
             <label style="display:flex;align-items:center;gap:8px;flex-direction:row;margin-bottom:10px"><input type="checkbox" id="giftCouponOnePerBrowser" style="width:auto" checked /> السماح بهدية واحدة لكل متصفح</label>
             <div class="form-grid">
@@ -3998,13 +3998,12 @@
         return;
       }
       box.innerHTML = `<div class="table-wrap"><table class="tbl"><thead><tr>
-        <th>الكود</th><th>النسبة %</th><th>مفعّل</th><th>يظهر في صندوق الهدايا</th><th>عدد الاستخدام</th><th>ملاحظة</th><th></th>
+        <th>الكود</th><th>النسبة %</th><th>مفعّل</th><th>عدد الاستخدام</th><th>ملاحظة</th><th></th>
       </tr></thead><tbody>
       ${COUPON_ROWS.map((r, i) => `<tr>
         <td><input data-c="code" data-i="${i}" value="${String(r.code||"").replace(/"/g,"&quot;")}" dir="ltr" style="text-transform:uppercase;max-width:140px" /></td>
         <td><input type="number" min="0" max="90" data-c="percent" data-i="${i}" value="${r.percent!=null?r.percent:0}" dir="ltr" style="max-width:90px" /></td>
         <td style="text-align:center"><input type="checkbox" data-c="active" data-i="${i}" ${r.active!==false?"checked":""} style="width:auto" /></td>
-        <td style="text-align:center"><input type="checkbox" data-c="giftEnabled" data-i="${i}" ${r.giftEnabled!==false?"checked":""} style="width:auto" title="السماح بظهور الكود داخل صندوق الهدايا" /></td>
         <td style="text-align:center;font-weight:800;color:var(--link,#7a1f3d)">${Number(r.usageCount)||0}</td>
         <td><input data-c="note" data-i="${i}" value="${String(r.note||"").replace(/"/g,"&quot;")}" placeholder="اختياري" /></td>
         <td><button type="button" class="btn btn-ghost" data-del-coupon="${i}" style="color:#f87171">حذف</button></td>
