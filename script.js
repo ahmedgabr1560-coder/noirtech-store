@@ -2200,7 +2200,8 @@ window.__atharCheckoutRunner = async function () {
         color: i.color || i.selectedColor || "",
         colors: Array.isArray(i.colors) ? i.colors : ((i.color || i.selectedColor) ? String(i.color || i.selectedColor).split(/،|,/).map(s=>s.trim()).filter(Boolean) : []),
         specs: (p && p.specs) || {},
-        offerMeta: (p && p.offerMeta) || null
+        offerMeta: (p && p.offerMeta) || null,
+        giftRewardBag: i.giftRewardBag === true
       };
     });
     const subtotal = richItems.reduce((s, it) => s + Number(it.lineTotal != null ? it.lineTotal : (it.price * it.qty)), 0);
