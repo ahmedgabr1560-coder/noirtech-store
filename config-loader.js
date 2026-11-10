@@ -166,10 +166,7 @@
         const cta = promo.querySelector(".promo-cta");
         if (cta) cta.textContent = hp.promoCta || "تسوقي الآن ←";
         const image = promo.querySelector(".promo-image");
-        if (image) {
-          image.src = hp.promoImage || "";
-          image.style.display = hp.promoImage ? "block" : "none";
-        }
+        if (image) image.remove();
         // The promo banner is text-only by design; remove any legacy image
         // left by older saved configurations.
         const legacyImage = promo.querySelector(".athar-promo-image");
