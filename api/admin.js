@@ -623,19 +623,21 @@ export default async function handler(req, res) {
       }
       const giftStats = stats.gift && typeof stats.gift === "object" ? stats.gift : {};
       let autoIssued = [];
+      let autoTotals = { created: 0, deleted: 0, used: 0 };
       let orderCouponCodes = [];
       try {
         const [autoFile, ordersFile] = await Promise.all([ghGet("gift-auto-codes.json"), ghGet("orders.json")]);
         const autoData = autoFile ? JSON.parse(autoFile.content || "{}") : {};
         autoIssued = Array.isArray(autoData.issued) ? autoData.issued : [];
+        autoTotals = { created: Math.max(0, Number(autoData.totals?.created) || autoIssued.length), deleted: Math.max(0, Number(autoData.totals?.deleted) || 0), used: Math.max(0, Number(autoData.totals?.used) || 0) };
         const orders = ordersFile ? JSON.parse(ordersFile.content || "[]") : [];
         orderCouponCodes = (Array.isArray(orders) ? orders : []).map(order => String(order?.coupon || order?.couponCode || "").trim().toUpperCase()).filter(Boolean);
       } catch (eGiftStats) {}
       const usedAutoCodes = new Set(orderCouponCodes);
       stats.giftAutoCodes = {
-        created: asInt(autoIssued.length),
-        deleted: asInt(autoIssued.length),
-        used: asInt(autoIssued.filter(row => row.status === "used" || usedAutoCodes.has(String(row.code || "").toUpperCase())).length),
+        created: asInt(autoTotals.created),
+        deleted: asInt(autoTotals.deleted),
+        used: asInt(Math.max(autoTotals.used, autoIssued.filter(row => row.status === "used" || usedAutoCodes.has(String(row.code || "").toUpperCase())).length)),
         manualUses: asInt(orderCouponCodes.length)
       };
       return res.status(200).json({
@@ -734,13 +736,27 @@ export default async function handler(req, res) {
         usageCount: usage[String(row.code || "").trim().toUpperCase()] || 0
       }));
       let autoIssued = [];
+      let autoTotals = { created: 0, deleted: 0, used: 0 };
+      let autoRecent = [];
       try {
         const af = await ghGet("gift-auto-codes.json");
         const ad = af ? JSON.parse(af.content || "{}") : {};
-        autoIssued = Array.isArray(ad.issued) ? ad.issued : [];
+        const allIssued = Array.isArray(ad.issued) ? ad.issued : [];
+        autoTotals = { created: Math.max(0, Number(ad.totals?.created) || allIssued.length), deleted: Math.max(0, Number(ad.totals?.deleted) || 0), used: Math.max(0, Number(ad.totals?.used) || 0) };
+        const now = Date.now();
+        autoIssued = allIssued.filter((row) => {
+          const issuedAt = Date.parse(String(row?.issuedAt || ""));
+          return !(Number.isFinite(issuedAt) && now - issuedAt >= 60 * 1000);
+        });
+        const removed = allIssued.length - autoIssued.length;
+        autoTotals.deleted += removed;
+        autoRecent = autoIssued.slice().sort((a, b) => Date.parse(String(b.issuedAt || 0)) - Date.parse(String(a.issuedAt || 0)));
+        if (removed || !ad.totals || autoIssued.length !== allIssued.length) {
+          await ghPut("gift-auto-codes.json", JSON.stringify({ issued: autoIssued, totals: autoTotals }, null, 2), "Cleanup expired automatic gift-code log", af?.sha);
+        }
       } catch { autoIssued = []; }
       const autoUsed = autoIssued.filter(row => row.status === "used").length;
-      return res.status(200).json({ ok: true, codes, totalUses: Object.values(usage).reduce((sum, n) => sum + n, 0), autoCodes: { issued: autoIssued.length, deleted: autoIssued.length, used: autoUsed, available: 0 } });
+      return res.status(200).json({ ok: true, codes, totalUses: Object.values(usage).reduce((sum, n) => sum + n, 0), autoCodes: { issued: autoTotals.created, deleted: autoTotals.deleted, used: Math.max(autoTotals.used, autoUsed), available: autoRecent.length, recent: autoRecent.slice(0, 50) } });
     }
 
     if (action === "reset_gift_auto_stats") {

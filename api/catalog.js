@@ -56,6 +56,29 @@ function weightedGiftPercent(min, max) {
   return min;
 }
 
+function cleanGiftRecords(payload) {
+  const data = payload && typeof payload === "object" ? payload : {};
+  const records = Array.isArray(data.issued) ? data.issued : [];
+  const totals = data.totals && typeof data.totals === "object" ? data.totals : {};
+  const now = Date.now();
+  let removed = 0;
+  const live = records.filter((row) => {
+    const issuedAt = Date.parse(String(row?.issuedAt || ""));
+    const expired = Number.isFinite(issuedAt) && now - issuedAt >= 60 * 1000;
+    if (expired) removed++;
+    return !expired;
+  });
+  return {
+    issued: live,
+    totals: {
+      created: Math.max(0, Number(totals.created) || records.length),
+      deleted: Math.max(0, Number(totals.deleted) || 0) + removed,
+      used: Math.max(0, Number(totals.used) || 0)
+    },
+    removed
+  };
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -78,15 +101,18 @@ export default async function handler(req, res) {
       const max = Math.max(min, Math.min(90, Math.round(Number(settings.maxPercent) || 15)));
       for (let attempt = 0; attempt < 5; attempt++) {
         const file = await ghGetFile("gift-auto-codes.json");
-        let records = [];
-        try { records = file ? JSON.parse(file.content || "{}").issued : []; } catch { records = []; }
-        if (!Array.isArray(records)) records = [];
+        let payload = {};
+        try { payload = file ? JSON.parse(file.content || "{}") : {}; } catch { payload = {}; }
+        const cleaned = cleanGiftRecords(payload);
+        let records = cleaned.issued;
+        const totals = cleaned.totals;
         const existing = new Set(records.map(row => String(row.code || "").toUpperCase()));
         const code = randomGiftCode(existing);
         const percent = weightedGiftPercent(min, max);
-        records.push({ code, percent, issuedAt: new Date().toISOString(), status: "issued", usedAt: "", orderId: "" });
+        records.push({ code, percent, issuedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 60 * 1000).toISOString(), status: "issued", usedAt: "", orderId: "" });
+        totals.created++;
         if (records.length > 5000) records = records.slice(-5000);
-        const put = await ghPut("gift-auto-codes.json", JSON.stringify({ issued: records }, null, 2), `Gift auto code issued ${code}`, file?.sha);
+        const put = await ghPut("gift-auto-codes.json", JSON.stringify({ issued: records, totals }, null, 2), `Gift auto code issued ${code}`, file?.sha);
         if (put.ok) return res.status(200).json({ ok: true, code, percent });
         if (!(put.status === 409 || /sha|conflict/i.test(String(put.data?.message || "")))) break;
       }

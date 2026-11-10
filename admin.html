@@ -473,6 +473,13 @@
     .athar-editor-workbench { padding: 10px; }
     #homepageRefCard { padding: 12px !important; }
   }
+  .gift-auto-log { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: rgba(122,31,61,.04); }
+  .gift-auto-log-head { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:8px; font-size:.82rem; }
+  .gift-auto-log-head span { color:var(--muted); font-size:.72rem; }
+  .gift-auto-log-row { display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center; padding:9px 0; border-top:1px solid var(--border); font-size:.8rem; }
+  .gift-auto-log-code { direction:ltr; text-align:right; font-weight:900; letter-spacing:.08em; color:var(--gold); }
+  .gift-auto-log-time, .gift-auto-log-status { color:var(--muted); font-size:.72rem; }
+  @media (max-width: 520px) { .gift-auto-log-row { grid-template-columns:1fr auto; } .gift-auto-log-status { grid-column:2; } }
 </style>
 
 </head>
@@ -964,6 +971,10 @@
               <div class="stat-card"><span>تم استخدامها</span><b id="giftAutoCodesUsed">0</b></div>
             </div>
             <p id="giftAutoCodesStats" class="hint" style="margin:10px 0 0"></p>
+            <div class="gift-auto-log" aria-live="polite">
+              <div class="gift-auto-log-head"><strong>سجل الأكواد الأخيرة</strong><span>يتم حذف كل سجل بعد دقيقة</span></div>
+              <div id="giftAutoCodesLog"><p class="hint">لا توجد أكواد صادرة خلال آخر دقيقة.</p></div>
+            </div>
             <button type="button" class="btn btn-primary" id="saveGiftAutoCodesBtn" style="margin-top:10px">حفظ إعدادات الأكواد التلقائية</button>
             <button type="button" class="btn btn-ghost" id="resetGiftAutoCodesBtn" style="margin-top:10px;margin-right:8px;color:#b91c1c">تصفير الإحصائيات</button>
             <div class="msg" id="giftAutoCodesMsg"></div>
@@ -4059,6 +4070,43 @@
       } catch (e) { console.warn("gift report", e); }
     }
 
+    function renderGiftAutoCodeLog(rows) {
+      const box = $("giftAutoCodesLog");
+      if (!box) return;
+      box.replaceChildren();
+      if (!Array.isArray(rows) || !rows.length) {
+        const empty = document.createElement("p");
+        empty.className = "hint";
+        empty.textContent = "لا توجد أكواد صادرة خلال آخر دقيقة.";
+        box.appendChild(empty);
+        return;
+      }
+      rows.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "gift-auto-log-row";
+        const issued = Date.parse(String(item.issuedAt || ""));
+        row.dataset.expiresAt = String(Date.parse(String(item.expiresAt || "")) || (Number.isFinite(issued) ? issued + 60000 : Date.now() + 60000));
+        const code = document.createElement("strong");
+        code.className = "gift-auto-log-code";
+        code.textContent = String(item.code || "—");
+        const percent = document.createElement("span");
+        percent.className = "gift-auto-log-status";
+        percent.textContent = "خصم " + (Number(item.percent) || 0) + "%";
+        const time = document.createElement("span");
+        time.className = "gift-auto-log-time";
+        const stamp = Date.parse(String(item.issuedAt || ""));
+        time.textContent = Number.isFinite(stamp) ? new Date(stamp).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "الآن";
+        row.append(code, percent, time);
+        box.appendChild(row);
+      });
+    }
+
+    setInterval(() => {
+      document.querySelectorAll("#giftAutoCodesLog .gift-auto-log-row").forEach((row) => {
+        if (Number(row.dataset.expiresAt || 0) <= Date.now()) row.remove();
+      });
+    }, 5000);
+
     async function loadCouponsPanel() {
       try {
         const data = await api("get_coupons");
@@ -4087,6 +4135,7 @@
         if ($("giftAutoCodesDeleted")) $("giftAutoCodesDeleted").textContent = Number(data?.autoCodes?.deleted) || 0;
         if ($("giftAutoCodesUsed")) $("giftAutoCodesUsed").textContent = Number(data?.autoCodes?.used) || 0;
         if ($("giftAutoCodesStats")) $("giftAutoCodesStats").textContent = "إجمالي الأكواد التي تم إصدارها: " + (Number(data?.autoCodes?.issued) || 0) + " — المستخدمة: " + (Number(data?.autoCodes?.used) || 0) + " — كل ضغطة تنشئ كودًا جديدًا.";
+        renderGiftAutoCodeLog(data?.autoCodes?.recent || []);
         if (!COUPON_ROWS.length) {
           COUPON_ROWS = [
             {code:"NEXORA10",percent:10,active:true,note:""},
