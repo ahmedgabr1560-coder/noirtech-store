@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3245,
-    "totalLeaves": 1087,
+    "totalLeaves": 1088,
     "uniqueSessions": 3229,
     "todayEnters": 95,
-    "todayLeaves": 167,
+    "todayLeaves": 168,
     "todayDate": "2026-11-10",
     "accountsTotal": 0,
     "uniqueDevices": 1993,
@@ -31,12 +31,12 @@
   "sessions": {
     "s_fmotz2wyvlemwaqsxlo": {
       "firstSeen": "2026-11-10T13:45:26.201Z",
-      "lastSeen": "2026-11-10T13:45:26.201Z",
+      "lastSeen": "2026-11-10T13:45:30.057Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_i7s9jkuubomw5138wj",
+      "leaves": 1,
+      "deviceId": "d_hu9usayobtkmvlelc6p",
       "deviceType": "desktop",
       "ipMasked": "156.203.139.xxx"
     },
@@ -4432,6 +4432,12 @@
   },
   "recent": [
     {
+      "type": "leave",
+      "sessionId": "s_fmotz2wy…",
+      "path": "/",
+      "at": "2026-11-10T13:45:30.057Z"
+    },
+    {
       "type": "enter",
       "sessionId": "s_fmotz2wy…",
       "path": "/",
@@ -4904,15 +4910,15 @@
       "sessionId": "s_luhto3ip…",
       "path": "/",
       "at": "2026-11-10T11:09:38.974Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_5no60gxl…",
-      "path": "/",
-      "at": "2026-11-10T11:09:26.436Z"
     }
   ],
   "devices": {
+    "d_hu9usayobtkmvlelc6p": {
+      "firstSeen": "2026-10-23T20:09:23.844Z",
+      "lastSeen": "2026-11-10T13:45:30.057Z",
+      "type": "desktop",
+      "ipMasked": "156.203.139.xxx"
+    },
     "d_i7s9jkuubomw5138wj": {
       "firstSeen": "2026-11-06T13:46:47.019Z",
       "lastSeen": "2026-11-10T13:45:26.201Z",
@@ -4928,12 +4934,6 @@
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-10T13:44:19.809Z",
-      "type": "desktop",
-      "ipMasked": "156.203.139.xxx"
-    },
-    "d_hu9usayobtkmvlelc6p": {
-      "firstSeen": "2026-10-23T20:09:23.844Z",
-      "lastSeen": "2026-11-10T13:38:58.917Z",
       "type": "desktop",
       "ipMasked": "156.203.139.xxx"
     },
