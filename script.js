@@ -1262,6 +1262,27 @@ window.applyCouponFromInput = applyCouponFromInput;
     if (giftConfig.enabled === false) return;
     if (btn) btn.classList.add("is-opening");
     try {
+      const auto = giftConfig.autoCodes || {};
+      if (auto.enabled === true) {
+        let autoCode = "", autoPercent = 0;
+        if (giftConfig.onePerBrowser !== false && readGiftClaim()) {
+          try { autoCode = String(localStorage.getItem("nx_coupon_code") || "").trim().toUpperCase(); autoPercent = Number(localStorage.getItem("nx_coupon_percent")) || 0; } catch (eAutoSaved) {}
+        }
+        if (!autoCode || !autoPercent) {
+          const autoRes = await fetch("/api/gift-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", cache: "no-store" });
+          const autoData = await autoRes.json().catch(function () { return {}; });
+          if (!autoRes.ok || !autoData.ok || !autoData.code) throw new Error(autoData.error || "auto gift code failed");
+          autoCode = String(autoData.code).toUpperCase();
+          autoPercent = Number(autoData.percent) || 0;
+          COUPON_CODES[autoCode] = autoPercent;
+          try { localStorage.setItem("nx_coupon_percent", String(autoPercent)); } catch (eAutoSave) {}
+        }
+        try { sessionStorage.setItem("nx_coupon_code", autoCode); localStorage.setItem("nx_coupon_code", autoCode); } catch (eAutoCode) {}
+        saveGiftClaim();
+        showGiftModal(autoCode, autoPercent);
+        try { updateCartUI(); } catch (eAutoCart) {}
+        return;
+      }
       await loadCoupons(true);
       const giftCodes = COUPON_GIFT_CODES || COUPON_CODES || {};
       const entries = Object.keys(giftCodes).filter(function(code) {

@@ -716,7 +716,13 @@ export default async function handler(req, res) {
         ...row,
         usageCount: usage[String(row.code || "").trim().toUpperCase()] || 0
       }));
-      return res.status(200).json({ ok: true, codes, totalUses: Object.values(usage).reduce((sum, n) => sum + n, 0) });
+      let autoIssued = [];
+      try {
+        const af = await ghGet("gift-auto-codes.json");
+        const ad = af ? JSON.parse(af.content || "{}") : {};
+        autoIssued = Array.isArray(ad.issued) ? ad.issued : [];
+      } catch { autoIssued = []; }
+      return res.status(200).json({ ok: true, codes, totalUses: Object.values(usage).reduce((sum, n) => sum + n, 0), autoCodes: { issued: autoIssued.length, used: autoIssued.filter(row => row.status === "used").length, available: 0 } });
     }
 
     if (action === "update_coupons") {
@@ -876,6 +882,11 @@ export default async function handler(req, res) {
             productName: String(homepage.giftReward.productName || "").trim().slice(0, 200),
             productImage: String(homepage.giftReward.productImage || "").trim().slice(0, 500)
           };
+        }
+        if (homepage.giftAutoCodes && typeof homepage.giftAutoCodes === "object" && !Array.isArray(homepage.giftAutoCodes)) {
+          const min = Math.max(1, Math.min(90, Math.round(Number(homepage.giftAutoCodes.minPercent) || 5)));
+          const max = Math.max(min, Math.min(90, Math.round(Number(homepage.giftAutoCodes.maxPercent) || 15)));
+          next.giftAutoCodes = { enabled: homepage.giftAutoCodes.enabled === true || homepage.giftAutoCodes.enabled === "true" || homepage.giftAutoCodes.enabled === 1 || homepage.giftAutoCodes.enabled === "1", minPercent: min, maxPercent: max };
         }
         config.homepage = next;
       }

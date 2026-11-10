@@ -941,6 +941,18 @@
         <div class="card">
           <h3>أكواد الخصم</h3>
           <p class="hint" style="margin-bottom:12px">أضيفي أو عدّلي أكواد الخصم. النسبة من 0 إلى 90%. الكود غير المفعّل مش بيشتغل في المتجر.</p>
+          <div class="card" style="margin:0 0 14px;padding:14px;border:1px solid var(--border,#ead7df)">
+            <h4 style="margin:0 0 6px">الأكواد التلقائية لصندوق الهدايا</h4>
+            <p class="hint" style="margin:0 0 10px">عند ضغط العميل على الصندوق، يتم إنشاء كود جديد عشوائيًا. الكود الذي ظهر لا يعود لقائمة الأكواد المتاحة.</p>
+            <label style="display:flex;align-items:center;gap:8px;flex-direction:row;margin-bottom:10px"><input type="checkbox" id="giftAutoCodesEnabled" style="width:auto" /> تفعيل التوليد التلقائي</label>
+            <div class="form-grid">
+              <label>أقل نسبة خصم<input id="giftAutoCodesMin" type="number" min="1" max="90" value="5" /></label>
+              <label>أعلى نسبة خصم<input id="giftAutoCodesMax" type="number" min="1" max="90" value="15" /></label>
+            </div>
+            <p id="giftAutoCodesStats" class="hint" style="margin:10px 0 0"></p>
+            <button type="button" class="btn btn-primary" id="saveGiftAutoCodesBtn" style="margin-top:10px">حفظ إعدادات الأكواد التلقائية</button>
+            <div class="msg" id="giftAutoCodesMsg"></div>
+          </div>
           <div id="couponsList"></div>
           <button type="button" class="btn btn-ghost" id="addCouponRow" style="margin-top:10px">+ إضافة كود</button>
           <button type="button" class="btn btn-primary" id="saveCouponsBtn" style="margin-top:12px;margin-right:8px">حفظ الأكواد</button>
@@ -4046,6 +4058,11 @@
         if ($("giftRewardProductImage")) $("giftRewardProductImage").value = reward.productImage || "";
         if ($("giftRewardStatus")) $("giftRewardStatus").textContent = reward.active === true ? "الدورة الحالية مفعّلة وتعد الطلبات المستلمة." : (reward.awardedOrderId ? "الدورة متوقفة بعد منح الهدية. اضغطي بدء دورة جديدة عند رغبتك." : "لا توجد دورة مفعّلة حاليًا.");
         if ($("giftCouponStats")) $("giftCouponStats").textContent = "إجمالي مرات استخدام الأكواد في الطلبات: " + (Number(data?.totalUses) || 0);
+        const autoCodes = (hp.giftAutoCodes && typeof hp.giftAutoCodes === "object") ? hp.giftAutoCodes : {};
+        if ($("giftAutoCodesEnabled")) $("giftAutoCodesEnabled").checked = autoCodes.enabled === true;
+        if ($("giftAutoCodesMin")) $("giftAutoCodesMin").value = Number(autoCodes.minPercent) || 5;
+        if ($("giftAutoCodesMax")) $("giftAutoCodesMax").value = Number(autoCodes.maxPercent) || 15;
+        if ($("giftAutoCodesStats")) $("giftAutoCodesStats").textContent = "إجمالي الأكواد التي تم إصدارها: " + (Number(data?.autoCodes?.issued) || 0) + " — المستخدمة: " + (Number(data?.autoCodes?.used) || 0) + " — كل ضغطة تنشئ كودًا جديدًا.";
         if (!COUPON_ROWS.length) {
           COUPON_ROWS = [
             {code:"NEXORA10",percent:10,active:true,note:""},
@@ -4133,6 +4150,24 @@
       } catch (err) {
         if (msg) { msg.className = "msg err"; msg.textContent = err.message || "خطأ"; }
       } finally { if (btn) btn.disabled = false; }
+    });
+
+    $("saveGiftAutoCodesBtn")?.addEventListener("click", async () => {
+      const btn = $("saveGiftAutoCodesBtn"), msg = $("giftAutoCodesMsg");
+      if (btn) btn.disabled = true;
+      if (msg) { msg.className = "msg"; msg.textContent = "جاري الحفظ..."; }
+      try {
+        const min = Math.max(1, Math.min(90, Math.round(Number($("giftAutoCodesMin")?.value) || 5)));
+        const max = Math.max(min, Math.min(90, Math.round(Number($("giftAutoCodesMax")?.value) || 15)));
+        const result = await api("update_hero", { homepage: { giftAutoCodes: {
+          enabled: $("giftAutoCodesEnabled")?.checked === true,
+          minPercent: min,
+          maxPercent: max
+        } } });
+        if (!result.ok) throw new Error(result.error || "تعذر الحفظ");
+        if (msg) { msg.className = "msg ok"; msg.textContent = "تم حفظ إعدادات الأكواد التلقائية"; }
+      } catch (e) { if (msg) { msg.className = "msg err"; msg.textContent = e.message || "تعذر الحفظ"; } }
+      finally { if (btn) btn.disabled = false; }
     });
 
     $("saveGiftSettingsBtn")?.addEventListener("click", async () => {

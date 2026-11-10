@@ -149,7 +149,12 @@
           onePerBrowser: hp.giftCouponOnePerBrowser !== false,
           title: hp.giftCouponTitle || "هديتك وصلتلك بكل حب",
           message: hp.giftCouponMessage || "اختارتلك أثر هديتك بحب.. احتفظي بالكود واستخدميه وقت ما تحبي.",
-          giftBags: Array.isArray(hp.giftBags) ? hp.giftBags.filter(function (bag) { return bag && bag.active !== false && bag.name; }) : []
+          giftBags: Array.isArray(hp.giftBags) ? hp.giftBags.filter(function (bag) { return bag && bag.active !== false && bag.name; }) : [],
+          autoCodes: hp.giftAutoCodes && typeof hp.giftAutoCodes === "object" ? {
+            enabled: hp.giftAutoCodes.enabled === true,
+            minPercent: Number(hp.giftAutoCodes.minPercent) || 5,
+            maxPercent: Number(hp.giftAutoCodes.maxPercent) || 15
+          } : { enabled: false, minPercent: 5, maxPercent: 15 }
         };
         promo.style.display = hp.promoEnabled === false ? "none" : "";
         promo.href = hp.promoLink || "#shop";
