@@ -511,7 +511,7 @@
         <button data-panel="visitors">الزوار والحسابات</button>
         <button data-panel="ai">شات الذكاء الاصطناعي</button>
         <button data-panel="shipping">الشحن</button>
-        <button data-panel="coupons">أكواد الخصم</button>
+        <button data-panel="gifts">الهدايا والخصومات</button>
         <button data-panel="finance">المالية والمخزون</button>
         <button data-panel="general">إعدادات الموقع</button>
         <button data-panel="brand">الاسم والأيقونة</button>
@@ -886,9 +886,9 @@
 
 
 
-      <section class="panel" id="panel-coupons">
+      <section class="panel" id="panel-gifts">
         <div class="card">
-          <h3>أكواد الخصم</h3>
+          <h3>الهدايا والخصومات</h3>
           <p class="hint" style="margin-bottom:12px">أضيفي أو عدّلي أكواد الخصم. النسبة من 0 إلى 90%. الكود غير المفعّل مش بيشتغل في المتجر.</p>
           <div class="card" style="margin:0 0 14px;padding:14px;border:1px solid var(--border,#ead7df)">
             <h4 style="margin:0 0 8px">هدية بانر الخصومات</h4>
@@ -1382,7 +1382,7 @@
           else if (panelId === "finance") loadFinanceDashboard();
           else if (panelId === "theme") loadThemePanel();
           else if (panelId === "visitors") { if (typeof loadVisitorsPanel === "function") loadVisitorsPanel(); }
-          else if (panelId === "coupons") { if (typeof loadCouponsPanel === "function") loadCouponsPanel(); }
+          else if (panelId === "gifts") { if (typeof loadCouponsPanel === "function") loadCouponsPanel(); }
           else if (panelId === "shipping") { if (typeof loadShippingSettings === "function") loadShippingSettings(); }
         } catch (e) { console.warn(e); }
       };
@@ -3244,7 +3244,7 @@
       btn.addEventListener("click", () => {
         if (btn.dataset.panel === "visitors") loadVisitorsPanel();
         if (btn.dataset.panel === "shipping") loadShippingSettings();
-        if (btn.dataset.panel === "coupons") loadCouponsPanel();
+        if (btn.dataset.panel === "gifts") loadCouponsPanel();
       });
     });
 
