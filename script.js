@@ -1279,6 +1279,11 @@ window.applyCouponFromInput = applyCouponFromInput;
     if (giftConfig.enabled === false) return;
     if (btn) btn.classList.add("is-opening");
     try {
+      const rewardStatus = await getGiftRewardStatus();
+      if (rewardStatus.eligible) {
+        await openGiftRewardChoice(rewardStatus, true);
+        return;
+      }
       const auto = giftConfig.autoCodes || {};
       if (auto.enabled !== true) throw new Error("automatic gift codes disabled");
       let autoCode = "", autoPercent = 0;
@@ -1308,6 +1313,24 @@ window.applyCouponFromInput = applyCouponFromInput;
     }
   }
   window.openGiftCoupon = claimGift;
+  async function announceGiftRewardIfEligible() {
+    const status = await getGiftRewardStatus();
+    const btn = document.getElementById("promoGiftBtn");
+    const title = document.getElementById("promoBannerTitle");
+    const sub = document.getElementById("promoBannerSub");
+    if (!status.eligible) return;
+    if (btn) { btn.textContent = "👜"; btn.setAttribute("aria-label", "اختاري شنطتك المجانية من المتجر"); btn.title = "اختاري شنطتك المجانية من المتجر"; }
+    if (title) title.textContent = "لقد ربحتي شنطة مجانية";
+    if (sub) sub.textContent = "اختاري شنطتك المجانية من المتجر — شنطة واحدة فقط 🎁";
+    const seenKey = "nx_gift_reward_seen_" + String(status.cycleId || 0);
+    let seen = false;
+    try { seen = localStorage.getItem(seenKey) === "1"; } catch (e) {}
+    if (!seen) {
+      try { localStorage.setItem(seenKey, "1"); } catch (e) {}
+      setTimeout(function () { openGiftRewardChoice(status, true); }, 450);
+    }
+  }
+  window.announceGiftRewardIfEligible = announceGiftRewardIfEligible;
   function bind() {
     const gift = document.getElementById("promoGiftBtn");
     if (gift && gift.dataset.bound !== "1") {
@@ -1335,6 +1358,7 @@ window.applyCouponFromInput = applyCouponFromInput;
         setTimeout(function() { copy.textContent = "نسخ الكود"; }, 1800);
       });
     }
+    announceGiftRewardIfEligible();
   }
   // Delegation works even when config-loader or the dynamic homepage finishes later.
   // Capture phase prevents the surrounding banner link from navigating to #shop.
@@ -2048,7 +2072,30 @@ function bindOrderSuccessClose() {
 try { bindOrderSuccessClose(); } catch (e) {}
 document.addEventListener("DOMContentLoaded", function () { try { bindOrderSuccessClose(); } catch (e) {} });
 
-function requestOrderGiftChoice(bags) {
+function addGiftRewardBagToCart(choice, cycleId) {
+  try {
+    loadCartFromStorage();
+    cart = (Array.isArray(cart) ? cart : []).filter((item) => !item || item.giftRewardBag !== true);
+    cart.push({ id: -900000 - (Number(cycleId) || 0), name: choice.name, price: 0, qty: 1, image: choice.image || "", color: "", colors: [], isGift: true, giftRewardBag: true, giftCycleId: Number(cycleId) || 0 });
+    localStorage.setItem("nx_gift_reward_choice", JSON.stringify({ ...choice, cycleId: Number(cycleId) || 0 }));
+    saveCart();
+    toast("تمت إضافة شنطتك المجانية للسلة ✓");
+  } catch (e) { console.warn("gift reward cart", e); }
+}
+async function getGiftRewardStatus() {
+  try {
+    const response = await fetch("/api/catalog?type=gift-reward&t=" + Date.now(), { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    return response.ok && data.ok ? data : { eligible: false };
+  } catch (e) { return { eligible: false }; }
+}
+async function openGiftRewardChoice(status, announce) {
+  if (!status || !status.eligible || !Array.isArray(status.bags) || !status.bags.length) return null;
+  const choice = await requestOrderGiftChoice(status.bags, announce === true);
+  if (choice) addGiftRewardBagToCart(choice, status.cycleId);
+  return choice;
+}
+function requestOrderGiftChoice(bags, announce) {
   return new Promise(function (resolve) {
     const modal = document.getElementById("orderGiftChoiceModal");
     const list = document.getElementById("orderGiftChoices");
@@ -2058,7 +2105,7 @@ function requestOrderGiftChoice(bags) {
     let selected = null;
     list.innerHTML = "";
     confirm.disabled = true;
-    if (msg) msg.textContent = "اختاري شنطة واحدة لإكمال الطلب";
+    if (msg) msg.textContent = announce ? "اختاري شنطتك المجانية من المتجر — شنطة واحدة فقط" : "اختاري شنطة واحدة لإكمال الطلب";
     (Array.isArray(bags) ? bags : []).forEach(function (bag) {
       const id = String(bag.id || "");
       const button = document.createElement("button");
@@ -2190,6 +2237,10 @@ window.__atharCheckoutRunner = async function () {
       status: "new",
       paymentMethod: payMethod
     };
+    try {
+      const savedRewardChoice = JSON.parse(localStorage.getItem("nx_gift_reward_choice") || "null");
+      if (savedRewardChoice && savedRewardChoice.id) orderRecord.giftBagChoice = { id: String(savedRewardChoice.id), name: String(savedRewardChoice.name || ""), image: String(savedRewardChoice.image || "") };
+    } catch (eRewardChoice) {}
     try {
       const orders = JSON.parse(localStorage.getItem("nx_orders") || "[]");
       orders.unshift(orderRecord);

@@ -97,7 +97,8 @@ function sanitizeOrder(order) {
       lineTotal: Math.max(0, Number(item.lineTotal) || 0),
       color: String(item.color || colors[0] || "").slice(0, 100),
       colors,
-      image: String(item.image || "").slice(0, 500)
+      image: String(item.image || "").slice(0, 500),
+      giftRewardBag: item.giftRewardBag === true
     };
   });
 

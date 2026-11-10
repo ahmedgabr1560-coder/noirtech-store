@@ -64,9 +64,10 @@ export function awardGiftIfEligible(order, existingOrders = [], siteConfig = {})
     image: giftImage,
     isGift: true
   };
+  const alreadyInCart = Array.isArray(order.items) && order.items.some((item) => item && item.giftRewardBag === true && String(item.name || "") === String(giftName));
   const nextOrder = {
     ...order,
-    items: [...(Array.isArray(order.items) ? order.items : []), giftItem],
+    items: alreadyInCart ? (Array.isArray(order.items) ? order.items : []) : [...(Array.isArray(order.items) ? order.items : []), giftItem],
     coupon: "",
     discount: 0,
     total: (Number(order.subtotal) || 0) + (Number(order.shipping) || 0),

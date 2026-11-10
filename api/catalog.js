@@ -131,6 +131,18 @@ export default async function handler(req, res) {
       if (!row) return res.status(404).json({ ok: false, error: "gift code expired or invalid" });
       return res.status(200).json({ ok: true, code: requested, percent: Math.min(90, Math.round(Number(row.percent))) });
     }
+    if (type === "gift-reward") {
+      let config = {};
+      let orders = [];
+      try { config = JSON.parse((await ghGet("site-config.json")) || "{}"); } catch { config = {}; }
+      try { orders = JSON.parse((await ghGet("orders.json")) || "[]"); } catch { orders = []; }
+      const reward = config.homepage?.giftReward && typeof config.homepage.giftReward === "object" ? config.homepage.giftReward : {};
+      const threshold = Math.max(1, Math.min(10000, Math.round(Number(reward.threshold) || 20)));
+      const bags = Array.isArray(config.homepage?.giftBags) ? config.homepage.giftBags.filter((bag) => bag && bag.active !== false && bag.name).map((bag) => ({ id: String(bag.id || "").slice(0, 80), name: String(bag.name).slice(0, 200), image: String(bag.image || "").slice(0, 500) })) : [];
+      const delivered = (Array.isArray(orders) ? orders : []).filter((order) => ["delivered", "completed"].includes(String(order?.status || "").toLowerCase()));
+      const eligible = reward.enabled === true && reward.active === true && !reward.awardedOrderId && delivered.length >= threshold && bags.length > 0;
+      return res.status(200).json({ ok: true, eligible, threshold, deliveredCount: delivered.length, cycleId: Number(reward.cycleId) || 0, bags });
+    }
     if (type === "products") {
       const raw = await ghGet("products.json");
       if (!raw) return res.status(502).json({ ok: false, error: "products unavailable" });
