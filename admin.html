@@ -1168,7 +1168,6 @@
             <div class="form-grid">
               <label>نص بانر الخصومات<input id="hpPromoText" placeholder="خصومات مميزة في انتظارك" /></label>
               <label>أيقونة البانر<input id="hpPromoIcon" placeholder="🎁" /></label>
-              <label>صورة البانر أو رابطها<input id="hpPromoImage" placeholder="/product-images/ref-gift_banner.jpg" dir="ltr" /></label>
               <label>النص الفرعي للبانر<input id="hpPromoSub" placeholder="عروض حصرية على أحدث التشكيلة" /></label>
               <label>نص زر البانر<input id="hpPromoCta" placeholder="تسوقي الآن ←" /></label>
               <label>رابط البانر<input id="hpPromoLink" placeholder="#shop" dir="ltr" /></label>
@@ -3396,7 +3395,6 @@
       const hp = c.homepage || {};
       set("hpPromoText", hp.promoText || "خصومات مميزة في انتظارك");
       set("hpPromoIcon", hp.promoIcon || "🎁");
-      set("hpPromoImage", hp.promoImage || "/product-images/ref-gift_banner.jpg");
       set("hpPromoSub", hp.promoSub || "عروض حصرية على أحدث التشكيلة");
       set("hpPromoCta", hp.promoCta || "تسوقي الآن ←");
       set("hpPromoLink", hp.promoLink || "#shop");
@@ -3611,7 +3609,6 @@
             heroSubtitlePreset: subtitlePreset,
             promoText: $("hpPromoText")?.value.trim() || "خصومات مميزة في انتظارك",
             promoIcon: $("hpPromoIcon")?.value.trim() || "🎁",
-            promoImage: $("hpPromoImage")?.value.trim() || "/product-images/ref-gift_banner.jpg",
             promoSub: $("hpPromoSub")?.value.trim() || "عروض حصرية على أحدث التشكيلة",
             promoCta: $("hpPromoCta")?.value.trim() || "تسوقي الآن ←",
             promoLink: $("hpPromoLink")?.value.trim() || "#shop",
