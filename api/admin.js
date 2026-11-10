@@ -621,6 +621,23 @@ export default async function handler(req, res) {
           stats.deviceTypes[k] = asInt(stats.deviceTypes[k]);
         }
       }
+      const giftStats = stats.gift && typeof stats.gift === "object" ? stats.gift : {};
+      let autoIssued = [];
+      let orderCouponCodes = [];
+      try {
+        const [autoFile, ordersFile] = await Promise.all([ghGet("gift-auto-codes.json"), ghGet("orders.json")]);
+        const autoData = autoFile ? JSON.parse(autoFile.content || "{}") : {};
+        autoIssued = Array.isArray(autoData.issued) ? autoData.issued : [];
+        const orders = ordersFile ? JSON.parse(ordersFile.content || "[]") : [];
+        orderCouponCodes = (Array.isArray(orders) ? orders : []).map(order => String(order?.coupon || order?.couponCode || "").trim().toUpperCase()).filter(Boolean);
+      } catch (eGiftStats) {}
+      const usedAutoCodes = new Set(orderCouponCodes);
+      stats.giftAutoCodes = {
+        created: asInt(autoIssued.length),
+        deleted: asInt(autoIssued.length),
+        used: asInt(autoIssued.filter(row => row.status === "used" || usedAutoCodes.has(String(row.code || "").toUpperCase())).length),
+        manualUses: asInt(orderCouponCodes.length)
+      };
       return res.status(200).json({
         ok: true,
         stats,

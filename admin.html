@@ -861,6 +861,15 @@
             <div class="card" style="margin:0"><div class="k">كمبيوتر</div><div class="v" id="vDesktop">—</div></div>
             <div class="card" style="margin:0"><div class="k">الحسابات</div><div class="v" id="vAccounts">—</div></div>
           </div>
+          <h3 style="margin:18px 0 8px;font-size:1rem">تفاعل العملاء مع الهدايا والأكواد</h3>
+          <div class="cards" id="visitorGiftCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:14px">
+            <div class="card" style="margin:0"><div class="k">فتح صندوق الهدية</div><div class="v" id="vGiftOpens">—</div></div>
+            <div class="card" style="margin:0"><div class="k">اختيار شنطة</div><div class="v" id="vGiftBagSelections">—</div></div>
+            <div class="card" style="margin:0"><div class="k">أكواد تلقائية أُنشئت</div><div class="v" id="vAutoCodesCreated">—</div></div>
+            <div class="card" style="margin:0"><div class="k">أكواد تلقائية أُزيلت</div><div class="v" id="vAutoCodesDeleted">—</div></div>
+            <div class="card" style="margin:0"><div class="k">أكواد تلقائية مستخدمة</div><div class="v" id="vAutoCodesUsed">—</div></div>
+            <div class="card" style="margin:0"><div class="k">استخدام الأكواد في الطلبات</div><div class="v" id="vCouponUses">—</div></div>
+          </div>
           <button type="button" class="btn btn-primary" id="btnRefreshVisitors">تحديث</button>
           <h3 style="margin:18px 0 8px;font-size:1rem">آخر الحسابات</h3>
           <div class="table-wrap">
@@ -3225,6 +3234,13 @@
         const gift = st.gift || {};
         set("giftOpensReport", fmt(gift.opens || 0));
         set("giftBagSelectionsReport", fmt(gift.bagSelections || 0));
+        const visitorAutoCodes = st.giftAutoCodes || {};
+        set("vGiftOpens", fmt(gift.opens || 0));
+        set("vGiftBagSelections", fmt(gift.bagSelections || 0));
+        set("vAutoCodesCreated", fmt(visitorAutoCodes.created || 0));
+        set("vAutoCodesDeleted", fmt(visitorAutoCodes.deleted || 0));
+        set("vAutoCodesUsed", fmt(visitorAutoCodes.used || 0));
+        set("vCouponUses", fmt(visitorAutoCodes.manualUses || 0));
         const giftReport = $("giftBagsReport");
         const bagCounts = gift.bags || {};
         const bagNames = gift.bagNames || {};
