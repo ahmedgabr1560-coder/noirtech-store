@@ -78,10 +78,10 @@ export default async function handler(req, res) {
     if (!productId || !productName || !message || message.length < 2 || !Number.isInteger(rating) || rating < 1 || rating > 5) return res.status(400).json({ ok: false, error: "بيانات التقييم غير مكتملة" });
     for (let attempt = 0; attempt < 4; attempt++) {
       const file = await getFile();
-      const review = { id: `rv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, productId, productName, name, rating, message, createdAt: new Date().toISOString(), status: "pending" };
+      const review = { id: `rv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, productId, productName, name, rating, message, createdAt: new Date().toISOString(), status: "approved" };
       const reviews = [review, ...file.reviews].slice(0, 2000);
       const saved = await saveFile(reviews, file.sha);
-      if (saved.ok) return res.status(200).json({ ok: true, pending: true });
+      if (saved.ok) return res.status(200).json({ ok: true, pending: false });
       if (saved.status !== 409 && !/sha|conflict/i.test(String(saved.data?.message || ""))) break;
       await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1)));
     }
