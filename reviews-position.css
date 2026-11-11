@@ -1,0 +1,11 @@
+/* Customer reviews must sit just above contact, not at the top of the page */
+main { display: flex !important; flex-direction: column !important; }
+#home { order: 1 !important; }
+#atharBenefits { order: 2 !important; }
+.athar-promo-wrap { order: 3 !important; }
+#atharBestSection { order: 4 !important; }
+#bundles { order: 5 !important; }
+#shop { order: 6 !important; }
+#site-reviews { order: 7 !important; }
+#contact { order: 8 !important; }
+.site-footer { order: 9 !important; }
