@@ -83,12 +83,9 @@
     <section class="feedback-card" aria-labelledby="feedbackTitle">
       <p class="feedback-kicker">نحن نسمعكِ</p>
       <h1 id="feedbackTitle">رأيك يهمنا</h1>
-      <p class="feedback-intro">اختاري المنتج واكتبي رأيك وتقييمك. سيصل لفريقنا للمراجعة، ولن يظهر على الموقع قبل اعتماده.</p>
+      <p class="feedback-intro">شاركي رأيك في تجربة التسوق والموقع بشكل عام. سيصل لفريقنا للمراجعة، ولن يظهر قبل اعتماده.</p>
       <form class="feedback-form" id="feedbackForm">
-        <label for="feedbackProduct">المنتج الذي تقيّمينه
-          <select id="feedbackProduct" required><option value="">جاري تحميل المنتجات...</option></select>
-        </label>
-        <label>تقييمك للمنتج
+        <label>تقييمك لتجربة الموقع
           <span class="feedback-rating" aria-label="اختاري تقييمًا من نجمة إلى خمس نجوم">
             <input id="rating5" type="radio" name="rating" value="5" checked /><label for="rating5" aria-label="5 نجوم">★</label>
             <input id="rating4" type="radio" name="rating" value="4" /><label for="rating4" aria-label="4 نجوم">★</label>
@@ -101,13 +98,13 @@
         <label>اسمك (اختياري)
           <input id="feedbackName" type="text" maxlength="80" placeholder="مثال: سارة" autocomplete="name" />
         </label>
-        <label>رأيك أو اقتراحك
-          <textarea id="feedbackMessage" maxlength="1200" required placeholder="إيه أكتر حاجة عجبتك؟ وإيه ممكن نحسّنه؟"></textarea>
+        <label>رأيك عن الموقع
+          <input id="feedbackMessage" type="text" maxlength="500" required placeholder="احكيلنا عن تجربتك مع المتجر..." />
         </label>
         <label class="feedback-honeypot" aria-hidden="true" style="position:absolute;left:-9999px">اتركي هذا الحقل فارغًا<input id="feedbackWebsite" tabindex="-1" autocomplete="off" /></label>
         <button class="btn btn-primary btn-block" id="feedbackSubmit" type="submit">إرسال رأيي <span aria-hidden="true">←</span></button>
         <p class="feedback-status" id="feedbackStatus" role="status" aria-live="polite"></p>
-        <p class="feedback-privacy">لن يظهر رأيك أو بياناتك للعامة قبل المراجعة والاعتماد. يصل التقييم واسم المنتج إلى فريق ATHAR لمتابعة الملاحظات.</p>
+        <p class="feedback-privacy">لن يظهر رأيك أو بياناتك للعامة قبل المراجعة والاعتماد. نستخدم ملاحظاتك لتحسين تجربة ATHAR.</p>
       </form>
     </section>
   </main>
@@ -140,45 +137,19 @@
     const form = document.getElementById("feedbackForm");
     const status = document.getElementById("feedbackStatus");
     const submit = document.getElementById("feedbackSubmit");
-    const productSelect = document.getElementById("feedbackProduct");
-    const requestedProductId = new URLSearchParams(location.search).get("productId") || "";
-    async function loadFeedbackProducts() {
-      const sources = ["/api/catalog?type=products", "/products.json", "https://raw.githubusercontent.com/ahmedgabr1560-coder/noirtech-store/main/products.json"];
-      for (const source of sources) {
-        try {
-          const response = await fetch(source, { cache: "no-store" });
-          if (!response.ok) continue;
-          const payload = await response.json();
-          const products = Array.isArray(payload) ? payload : (Array.isArray(payload.products) ? payload.products : []);
-          const available = products.filter(product => product && product.hidden !== true && product.active !== false && product.id != null && product.name);
-          if (!available.length) continue;
-          productSelect.replaceChildren(new Option("اختاري المنتج", ""));
-          available.forEach(product => productSelect.add(new Option(String(product.name), String(product.id))));
-          if (requestedProductId && available.some(product => String(product.id) === String(requestedProductId))) {
-            productSelect.value = String(requestedProductId);
-          }
-          return;
-        } catch (error) {}
-      }
-      productSelect.replaceChildren(new Option("تعذر تحميل المنتجات — أعيدي تحميل الصفحة", ""));
-    }
-    loadFeedbackProducts();
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const message = document.getElementById("feedbackMessage").value.trim();
       const name = document.getElementById("feedbackName").value.trim() || "بدون اسم";
       const website = document.getElementById("feedbackWebsite").value.trim();
       const rating = form.querySelector('input[name="rating"]:checked')?.value || "5";
-      const productId = productSelect.value;
-      const productName = productSelect.selectedOptions[0]?.textContent || "";
       if (website) return;
-      if (!productId) { status.textContent = "اختاري المنتج الذي تقيّمينه"; status.className = "feedback-status error"; return; }
       if (!message) { status.textContent = "اكتبي رأيك أولًا"; status.className = "feedback-status error"; return; }
       submit.disabled = true;
       submit.textContent = "جاري الإرسال...";
       status.textContent = "";
       try {
-        const response = await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, productName, rating, name, message }) });
+        const response = await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: "site", productName: "تجربة الموقع — ATHAR | أثر", rating, name, message }) });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || data.ok === false) throw new Error(data.error || "تعذر الإرسال");
         form.reset();

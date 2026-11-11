@@ -475,13 +475,13 @@
       const displayedRating = approvedReviews.length
         ? approvedReviews.reduce((sum, review) => sum + Math.max(1, Math.min(5, Number(review.rating) || 5)), 0) / approvedReviews.length
         : (displayedReviewCount > 0 ? (Number(p.rating) || 0) : 0);
-      const approvedReviewsMarkup = approvedReviews.map(review => {
+      const approvedReviewsMarkup = approvedReviews.map((review, index) => {
         const rating = Math.max(1, Math.min(5, Number(review.rating) || 5));
         const name = esc(String(review.name || "عميلنا").slice(0, 80));
         const message = esc(String(review.message || "").trim().slice(0, 1200));
         const dateValue = Date.parse(String(review.createdAt || review.date || ""));
         const dateLabel = Number.isFinite(dateValue) ? new Date(dateValue).toLocaleDateString("ar-EG") : "";
-        return `<article style="padding:14px 16px;margin:10px 0;border:1px solid rgba(212,175,55,.2);border-radius:14px;background:rgba(255,255,255,.025)">
+        return `<article data-product-review-index="${index}" style="${index ? "display:none;" : ""}padding:14px 16px;margin:10px 0;border:1px solid rgba(212,175,55,.2);border-radius:14px;background:rgba(255,255,255,.025)">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><strong>${name}</strong><span style="color:#d4af37" aria-label="${rating} من 5 نجوم">${stars(rating)}</span></div>
           <p style="margin:9px 0 0;line-height:1.8;color:var(--text,#eee)">${message}</p>
           ${dateLabel ? `<small style="display:block;margin-top:7px;color:#999">${dateLabel}</small>` : ""}
@@ -655,6 +655,7 @@
             ${approvedReviews.length ? `<section aria-labelledby="approvedReviewsTitle" style="margin-top:22px">
               <h3 id="approvedReviewsTitle" style="color:var(--text,#fff);margin:0 0 12px">آراء العملاء المعتمدة</h3>
               ${approvedReviewsMarkup}
+              ${approvedReviews.length > 1 ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px"><button type="button" id="productReviewPrev" class="btn btn-ghost" aria-label="الرأي السابق">السابق</button><span id="productReviewCounter" style="color:#d4af37;font-size:.85rem">1 / ${approvedReviews.length}</span><button type="button" id="productReviewNext" class="btn btn-ghost" aria-label="الرأي التالي">التالي</button></div>` : ""}
             </section>` : ""}
 
         </div>
@@ -696,6 +697,19 @@
       const reviewStatus = document.getElementById("productReviewStatus");
       const reviewSubmit = document.getElementById("productReviewSubmit");
       const reviewStars = Array.from(document.querySelectorAll("[data-review-rating]"));
+      const reviewCards = Array.from(document.querySelectorAll("[data-product-review-index]"));
+      if (reviewCards.length > 1) {
+        let activeReview = 0;
+        const showReview = index => {
+          activeReview = (index + reviewCards.length) % reviewCards.length;
+          reviewCards.forEach((card, i) => { card.style.display = i === activeReview ? "block" : "none"; });
+          const counter = document.getElementById("productReviewCounter");
+          if (counter) counter.textContent = `${activeReview + 1} / ${reviewCards.length}`;
+        };
+        document.getElementById("productReviewPrev")?.addEventListener("click", () => showReview(activeReview - 1));
+        document.getElementById("productReviewNext")?.addEventListener("click", () => showReview(activeReview + 1));
+        window.setInterval(() => showReview(activeReview + 1), 7000);
+      }
       let selectedReviewRating = 5;
       function setReviewRating(value) {
         selectedReviewRating = Math.max(1, Math.min(5, Number(value) || 5));
