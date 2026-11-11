@@ -178,7 +178,7 @@
       submit.textContent = "جاري الإرسال...";
       status.textContent = "";
       try {
-        const response = await fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "feedback", message: `📦 المنتج: ${productName}\n🆔 رقم المنتج: ${productId}\n⭐ التقييم: ${rating}/5\n👤 الاسم: ${name}\n📝 الرأي:\n${message}\n\n⏳ بانتظار المراجعة والاعتماد قبل النشر.` }) });
+        const response = await fetch("/api/reviews", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, productName, rating, name, message }) });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || data.ok === false) throw new Error(data.error || "تعذر الإرسال");
         form.reset();

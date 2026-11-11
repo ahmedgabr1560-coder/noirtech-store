@@ -466,9 +466,11 @@
         root.innerHTML = "المنتج غير موجود.<br><a href='/' style='color:var(--link, #7a1f3d)'>العودة للمتجر</a>";
         return;
       }
-      const approvedReviews = Array.isArray(p.customerReviews)
-        ? p.customerReviews.filter(review => review && review.approved === true && String(review.message || "").trim())
-        : [];
+      let reviewFeed = null;
+      try { const reviewResponse = await fetch("/api/reviews?productId=" + encodeURIComponent(id), { cache: "no-store" }); if (reviewResponse.ok) reviewFeed = await reviewResponse.json(); } catch (e) {}
+      const approvedReviews = Array.isArray(reviewFeed?.reviews)
+        ? reviewFeed.reviews.filter(review => review && String(review.message || "").trim())
+        : (Array.isArray(p.customerReviews) ? p.customerReviews.filter(review => review && review.approved === true && String(review.message || "").trim()) : []);
       const displayedReviewCount = approvedReviews.length || Math.max(0, Number(p.reviews) || 0);
       const displayedRating = approvedReviews.length
         ? approvedReviews.reduce((sum, review) => sum + Math.max(1, Math.min(5, Number(review.rating) || 5)), 0) / approvedReviews.length
@@ -715,10 +717,10 @@
         reviewStatus.textContent = "";
         reviewStatus.classList.remove("error");
         try {
-          const response = await fetch("/api/notify", {
+          const response = await fetch("/api/reviews", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type: "feedback", message: `📦 المنتج: ${p.name}\n🆔 رقم المنتج: ${id}\n⭐ التقييم: ${selectedReviewRating}/5\n📝 رأي العميل:\n${message}\n\n⏳ بانتظار المراجعة والاعتماد قبل النشر.` })
+            body: JSON.stringify({ productId: id, productName: p.name, rating: selectedReviewRating, message, name: "عميلنا" })
           });
           const data = await response.json().catch(() => ({}));
           if (!response.ok || data.ok === false) throw new Error(data.error || "تعذر إرسال التقييم");

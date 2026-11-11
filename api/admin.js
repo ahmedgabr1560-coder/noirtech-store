@@ -1205,6 +1205,35 @@ export default async function handler(req, res) {
     }
 
 
+    if (action === "list_reviews") {
+      const file = await ghGet("reviews.json");
+      let reviews = [];
+      try { reviews = file ? JSON.parse(file.content || "[]") : []; } catch {}
+      if (!Array.isArray(reviews)) reviews = [];
+      return res.status(200).json({ ok: true, reviews: reviews.slice(0, 2000) });
+    }
+
+    if (action === "set_review_status") {
+      const reviewId = String(body.reviewId || "").slice(0, 100);
+      const status = String(body.status || "");
+      if (!reviewId || !["pending", "approved", "hidden"].includes(status)) return res.status(400).json({ ok: false, error: "بيانات المراجعة غير صالحة" });
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const file = await ghGet("reviews.json");
+        let reviews = [];
+        try { reviews = file ? JSON.parse(file.content || "[]") : []; } catch {}
+        if (!Array.isArray(reviews)) reviews = [];
+        const row = reviews.find(review => String(review.id) === reviewId);
+        if (!row) return res.status(404).json({ ok: false, error: "التقييم غير موجود" });
+        row.status = status;
+        row.moderatedAt = new Date().toISOString();
+        const saved = await ghPut("reviews.json", JSON.stringify(reviews, null, 2), `Moderate review ${reviewId}: ${status}`, file?.sha);
+        if (saved.ok) return res.status(200).json({ ok: true, status });
+        if (saved.status !== 409 && !/sha|conflict/i.test(String(saved.data?.message || ""))) break;
+        await new Promise(resolve => setTimeout(resolve, 200 * (attempt + 1)));
+      }
+      return res.status(500).json({ ok: false, error: "تعذر حفظ حالة التقييم" });
+    }
+
     if (action === "update_theme") {
       let f = await ghGet("site-config.json");
       if (!f) return res.status(404).json({ ok: false, error: "site-config missing" });

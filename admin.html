@@ -513,6 +513,7 @@
         <button data-panel="products">المنتجات</button>
         <button data-panel="add">إضافة منتج</button>
         <button data-panel="orders">الطلبات</button>
+        <button data-panel="reviews">آراء العملاء</button>
         <button data-panel="labels">طباعة الملصقات</button>
         <button data-panel="policy">إدارة السياسات</button>
         <button data-panel="visitors">الزوار والحسابات</button>
@@ -708,6 +709,17 @@
       </section>
 
 
+
+      <section class="panel" id="panel-reviews">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+            <div><h3 style="margin:0 0 5px">آراء العملاء وتقييمات المنتجات</h3><p class="hint">اختاري الآراء التي تظهر للزوار. التقييم المعلّق أو المخفي لا يظهر في صفحة المنتج.</p></div>
+            <div class="toolbar" style="margin:0"><select id="reviewsFilter"><option value="all">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="approved">معروض</option><option value="hidden">مخفي</option></select><button type="button" class="btn btn-ghost" id="reviewsRefresh">تحديث</button></div>
+          </div>
+          <div id="reviewsTable">جاري تحميل الآراء...</div>
+          <div class="msg" id="reviewsMsg"></div>
+        </div>
+      </section>
 
       <section class="panel" id="panel-labels">
         <div class="card">
@@ -1363,6 +1375,41 @@
       if (data && data.ok && !readOnly) bustStoreCaches();
       return data;
     }
+    function reviewHtml(value) { return String(value == null ? "" : value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+    let ADMIN_REVIEWS = [];
+    function renderAdminReviews() {
+      const target = $("reviewsTable");
+      if (!target) return;
+      const filter = $("reviewsFilter")?.value || "all";
+      const rows = ADMIN_REVIEWS.filter(row => filter === "all" || String(row.status || "pending") === filter);
+      if (!rows.length) { target.innerHTML = '<p class="hint">لا توجد آراء في هذا التصنيف.</p>'; return; }
+      const statusNames = { pending: "بانتظار المراجعة", approved: "معروض", hidden: "مخفي" };
+      target.innerHTML = '<div style="overflow:auto"><table><thead><tr><th>المنتج</th><th>التقييم</th><th>رأي العميل</th><th>التاريخ والحالة</th><th>الإجراء</th></tr></thead><tbody>' + rows.map(row => {
+        const state = ["pending","approved","hidden"].includes(row.status) ? row.status : "pending";
+        const next = state === "approved" ? "hidden" : "approved";
+        const actionLabel = state === "pending" ? "اعتماد وعرض" : (state === "approved" ? "إخفاء" : "إظهار");
+        const when = Date.parse(String(row.createdAt || ""));
+        const date = Number.isFinite(when) ? new Date(when).toLocaleDateString("ar-EG") : "";
+        return '<tr><td><strong>' + reviewHtml(row.productName || "منتج") + '</strong><br><small>#' + reviewHtml(row.productId) + '</small></td><td style="color:#d4af37;white-space:nowrap">' + "★".repeat(Math.max(1,Math.min(5,Number(row.rating)||5))) + '</td><td><strong>' + reviewHtml(row.name || "عميلنا") + '</strong><p style="white-space:pre-wrap;max-width:460px;margin-top:5px">' + reviewHtml(row.message) + '</p></td><td><span class="badge ' + (state === "approved" ? "on" : (state === "pending" ? "off" : "")) + '">' + statusNames[state] + '</span><br><small>' + date + '</small></td><td><button type="button" class="btn ' + (next === "approved" ? "btn-ok" : "btn-ghost") + '" data-review-action="' + next + '" data-review-id="' + reviewHtml(row.id) + '">' + actionLabel + '</button></td></tr>';
+      }).join("") + '</tbody></table></div>';
+    }
+    async function loadAdminReviews() {
+      const target = $("reviewsTable"); if (target) target.textContent = "جاري تحميل الآراء...";
+      const result = await api("list_reviews");
+      if (!result.ok) { if (target) target.textContent = result.error || "تعذر تحميل الآراء"; return; }
+      ADMIN_REVIEWS = Array.isArray(result.reviews) ? result.reviews : [];
+      renderAdminReviews();
+    }
+    $("reviewsRefresh")?.addEventListener("click", loadAdminReviews);
+    $("reviewsFilter")?.addEventListener("change", renderAdminReviews);
+    $("reviewsTable")?.addEventListener("click", async event => {
+      const button = event.target.closest("[data-review-action]"); if (!button) return;
+      button.disabled = true;
+      const result = await api("set_review_status", { reviewId: button.dataset.reviewId, status: button.dataset.reviewAction });
+      if (!result.ok) { const msg = $("reviewsMsg"); if (msg) { msg.className = "msg err"; msg.textContent = result.error || "تعذر تحديث حالة الرأي"; } button.disabled = false; return; }
+      const msg = $("reviewsMsg"); if (msg) { msg.className = "msg ok"; msg.textContent = "تم تحديث حالة الرأي"; }
+      await loadAdminReviews();
+    });
     function money(n){ return Number(n||0).toLocaleString("ar-EG") + " ج.م"; }
 
     function showApp() {
@@ -1422,6 +1469,7 @@
         // تحميل بيانات القسم عند فتحه
         try {
           if (panelId === "orders") loadOrders();
+          else if (panelId === "reviews") loadAdminReviews();
           else if (panelId === "labels") loadLabelsPanel();
           else if (panelId === "policy") loadPolicyPanel();
           else if (panelId === "products") loadProducts();
