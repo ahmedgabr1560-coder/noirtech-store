@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3360,
-    "totalLeaves": 1170,
+    "totalLeaves": 1171,
     "uniqueSessions": 3341,
     "todayEnters": 80,
-    "todayLeaves": 44,
+    "todayLeaves": 45,
     "todayDate": "2026-11-11",
     "accountsTotal": 0,
     "uniqueDevices": 2143,
@@ -31,11 +31,11 @@
   "sessions": {
     "s_98x4q8bmqatmwchamnp": {
       "firstSeen": "2026-11-11T18:54:48.606Z",
-      "lastSeen": "2026-11-11T18:54:59.312Z",
+      "lastSeen": "2026-11-11T19:52:32.726Z",
       "path": "/",
       "status": "left",
       "enters": 1,
-      "leaves": 1,
+      "leaves": 2,
       "deviceId": "d_9u8vm1uag34mvgkeeg3",
       "deviceType": "ipad",
       "ipMasked": "156.221.93.xxx"
@@ -44,7 +44,7 @@
       "firstSeen": "2026-11-11T18:54:33.202Z",
       "lastSeen": "2026-11-11T18:54:33.726Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
       "leaves": 0,
       "deviceId": "d_cmz4rgqhgpbmwchab13",
@@ -55,7 +55,7 @@
       "firstSeen": "2026-11-11T18:54:15.631Z",
       "lastSeen": "2026-11-11T18:54:17.238Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
       "leaves": 0,
       "deviceId": "d_r579mdm3psomwch9ygs",
@@ -4435,6 +4435,12 @@
       "type": "leave",
       "sessionId": "s_98x4q8bm…",
       "path": "/",
+      "at": "2026-11-11T19:52:32.726Z"
+    },
+    {
+      "type": "leave",
+      "sessionId": "s_98x4q8bm…",
+      "path": "/",
       "at": "2026-11-11T18:54:59.312Z"
     },
     {
@@ -4904,18 +4910,12 @@
       "sessionId": "s_rchprhtv…",
       "path": "/",
       "at": "2026-11-11T16:11:18.470Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_algfw218…",
-      "path": "/",
-      "at": "2026-11-11T16:11:08.745Z"
     }
   ],
   "devices": {
     "d_9u8vm1uag34mvgkeeg3": {
       "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-11T18:54:59.312Z",
+      "lastSeen": "2026-11-11T19:52:32.726Z",
       "type": "ipad",
       "ipMasked": "156.221.93.xxx"
     },
