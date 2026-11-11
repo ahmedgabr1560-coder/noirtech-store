@@ -693,7 +693,7 @@
     }
     fetch("/api/reviews?productId=site",{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(data){
       rows=data&&Array.isArray(data.reviews)?data.reviews:[];
-      if(rows.length){showReview(0); if(rows.length>1)window.setInterval(function(){showReview(current+1);},6500);}
+      if(rows.length){showReview(0); if(rows.length>1){var seconds=Math.max(3,Math.min(60,Number(data.settings&&data.settings.intervalSeconds)||7));window.setInterval(function(){showReview(current+1);},seconds*1000);}}
     }).catch(function(){});
     $("siteReviewPrev").addEventListener("click",function(){showReview(current-1);});
     $("siteReviewNext").addEventListener("click",function(){showReview(current+1);});

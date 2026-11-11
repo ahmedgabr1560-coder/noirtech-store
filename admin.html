@@ -716,6 +716,12 @@
             <div><h3 style="margin:0 0 5px">آراء العملاء وتقييمات المنتجات</h3><p class="hint">اختاري الآراء التي تظهر للزوار. التقييم المعلّق أو المخفي لا يظهر في صفحة المنتج.</p></div>
             <div class="toolbar" style="margin:0"><select id="reviewsFilter"><option value="all">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="approved">معروض</option><option value="hidden">مخفي</option></select><button type="button" class="btn btn-ghost" id="reviewsRefresh">تحديث</button></div>
           </div>
+          <div style="display:flex;align-items:end;gap:10px;flex-wrap:wrap;padding:14px;margin:0 0 14px;border:1px solid var(--border);border-radius:14px;background:rgba(122,31,61,.04)">
+            <label style="margin:0;min-width:160px">مدة الانتقال (ثوانٍ)<input id="reviewIntervalSeconds" type="number" min="3" max="60" value="7" /></label>
+            <label style="margin:0;min-width:160px">عدد الآراء في العرض<input id="reviewMaxCount" type="number" min="1" max="50" value="10" /></label>
+            <button type="button" class="btn btn-primary" id="saveReviewSettings">حفظ إعدادات العرض</button>
+            <span class="hint" id="reviewSettingsStatus" role="status"></span>
+          </div>
           <div id="reviewsTable">جاري تحميل الآراء...</div>
           <div class="msg" id="reviewsMsg"></div>
         </div>
@@ -1400,6 +1406,20 @@
       ADMIN_REVIEWS = Array.isArray(result.reviews) ? result.reviews : [];
       renderAdminReviews();
     }
+    async function loadAdminReviewSettings() {
+      const result = await api("get_review_settings");
+      if (!result.ok) return;
+      $("reviewIntervalSeconds").value = result.settings.intervalSeconds || 7;
+      $("reviewMaxCount").value = result.settings.maxReviews || 10;
+    }
+    $("saveReviewSettings")?.addEventListener("click", async function(){
+      const seconds = Math.max(3,Math.min(60,Math.round(Number($("reviewIntervalSeconds").value)||7)));
+      const maxReviews = Math.max(1,Math.min(50,Math.round(Number($("reviewMaxCount").value)||10)));
+      $("reviewIntervalSeconds").value = seconds; $("reviewMaxCount").value = maxReviews;
+      const status = $("reviewSettingsStatus"); status.textContent = "جاري الحفظ...";
+      const result = await api("update_review_settings", { settings: { intervalSeconds: seconds, maxReviews } });
+      status.textContent = result.ok ? "تم حفظ الإعدادات" : (result.error || "تعذر الحفظ");
+    });
     $("reviewsRefresh")?.addEventListener("click", loadAdminReviews);
     $("reviewsFilter")?.addEventListener("change", renderAdminReviews);
     $("reviewsTable")?.addEventListener("click", async event => {
@@ -1469,7 +1489,7 @@
         // تحميل بيانات القسم عند فتحه
         try {
           if (panelId === "orders") loadOrders();
-          else if (panelId === "reviews") loadAdminReviews();
+          else if (panelId === "reviews") { loadAdminReviews(); loadAdminReviewSettings(); }
           else if (panelId === "labels") loadLabelsPanel();
           else if (panelId === "policy") loadPolicyPanel();
           else if (panelId === "products") loadProducts();

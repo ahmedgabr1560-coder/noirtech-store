@@ -27,6 +27,21 @@ async function getFile() {
   const parsed = JSON.parse(content || "[]");
   return { sha: data.sha, reviews: Array.isArray(parsed) ? parsed : [] };
 }
+async function getCarouselSettings() {
+  const defaults = { intervalSeconds: 7, maxReviews: 10 };
+  const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/reviews-settings.json`, {
+    headers: { Authorization: `Bearer ${TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "NEXORA-Reviews" }, cache: "no-store"
+  });
+  if (!r.ok) return defaults;
+  try {
+    const data = await r.json();
+    const settings = JSON.parse(Buffer.from(data.content || "", "base64").toString("utf8") || "{}");
+    return {
+      intervalSeconds: Math.max(3, Math.min(60, Math.round(Number(settings.intervalSeconds) || defaults.intervalSeconds))),
+      maxReviews: Math.max(1, Math.min(50, Math.round(Number(settings.maxReviews) || defaults.maxReviews)))
+    };
+  } catch { return defaults; }
+}
 async function saveFile(reviews, sha) {
   const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/reviews.json`, {
     method: "PUT",
@@ -48,9 +63,9 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       const productId = String(req.query?.productId || "").slice(0, 80);
       if (!productId) return res.status(400).json({ ok: false, error: "productId مطلوب" });
-      const { reviews } = await getFile();
+      const [{ reviews }, settings] = await Promise.all([getFile(), getCarouselSettings()]);
       const approved = reviews.filter(row => String(row.productId) === productId && row.status === "approved").map(({ id, productId, productName, rating, name, message, createdAt }) => ({ id, productId, productName, rating, name, message, createdAt }));
-      return res.status(200).json({ ok: true, reviews: approved });
+      return res.status(200).json({ ok: true, reviews: approved.slice(0, settings.maxReviews), settings });
     }
     if (req.method !== "POST") return res.status(405).json({ ok: false, error: "POST only" });
     if (!rateLimit(req)) return res.status(429).json({ ok: false, error: "تم استلام تقييمات كثيرة من هذا الاتصال، حاولي لاحقًا" });
