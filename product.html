@@ -466,6 +466,15 @@
         root.innerHTML = "المنتج غير موجود.<br><a href='/' style='color:var(--link, #7a1f3d)'>العودة للمتجر</a>";
         return;
       }
+      if (p.offerType === "mixed_bundle" || p.offerMeta?.type === "mixed_bundle") {
+        const meta = p.offerMeta || {};
+        const ids = meta.productIds || meta.sourceProductIds || [];
+        const id1 = p.sourceProductId || meta.sourceProductId || ids[0];
+        const id2 = p.sourceProductId2 || meta.sourceProductId2 || ids[1];
+        const source1 = list.find(x => String(x.id) === String(id1));
+        const source2 = list.find(x => String(x.id) === String(id2));
+        p.oldPrice = source1 && source2 ? (Number(source1.price) || 0) + (Number(source2.price) || 0) : null;
+      }
       let reviewFeed = null;
       try { const reviewResponse = await fetch("/api/reviews?productId=" + encodeURIComponent(id), { cache: "no-store" }); if (reviewResponse.ok) reviewFeed = await reviewResponse.json(); } catch (e) {}
       const approvedReviews = Array.isArray(reviewFeed?.reviews)
@@ -523,12 +532,12 @@
         if (add) add.click();
       };
       const minQty = (function(){
+        if (p.offerType === "mixed_bundle" || (p.offerMeta && p.offerMeta.type === "mixed_bundle")) return 1;
         const tiers = p.offerMeta && Array.isArray(p.offerMeta.tiers) ? p.offerMeta.tiers : [];
         if (tiers.length) {
           const qs = tiers.map(function(t){ return Number(t.qty)||0; }).filter(function(q){ return q>0; });
           if (qs.length) return Math.min.apply(null, qs);
         }
-        if (p.offerMeta && p.offerMeta.type === "mixed_bundle") return 1;
         if (p.isOffer) return 2;
         if (/قطعتين|2 قطعه|2 قطعة|عرض القطع/i.test(String(p.name||""))) return 2;
         return 1;
@@ -618,7 +627,7 @@
               ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
               ${off ? `<span class="badge-off" style="position:static">-${off}%</span>` : ""}
             </div>
-            ${Array.isArray(p.offerMeta?.tiers) && p.offerMeta.tiers.length ? `
+            ${p.offerType !== "mixed_bundle" && p.offerMeta?.type !== "mixed_bundle" && Array.isArray(p.offerMeta?.tiers) && p.offerMeta.tiers.length ? `
             <div style="margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.35);color:#fdba74;font-weight:700;line-height:1.6">
               🔥 عروض الكمية:<br>
               ${p.offerMeta.tiers.map(t => `• ${t.qty} قطع بـ ${money(t.price)}`).join("<br>")}
@@ -989,7 +998,7 @@
         } catch (e) {}
         let note = "تمت الإضافة ✓";
         if (picks.length) note += " | " + picks.join("، ");
-        if (p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) {
+        if (p.offerType !== "mixed_bundle" && p.offerMeta?.type !== "mixed_bundle" && Array.isArray(p.offerMeta?.tiers) && p.offerMeta.tiers.length) {
           const t = [...p.offerMeta.tiers].filter(x => x.qty > 0).sort((a,b)=>b.qty-a.qty).find(x => qty >= x.qty);
           if (t) note = "تمت الإضافة ✓ (" + t.qty + " بـ " + money(t.price) + ")";
         }

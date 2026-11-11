@@ -372,35 +372,42 @@ export default async function handler(req, res) {
         badge: body.badge != null ? String(body.badge) : prev.badge,
         updatedAt: new Date().toISOString()
       };
-      // offer fields if provided
-      if (body.isOffer != null) updated.isOffer = !!body.isOffer;
-      if (body.offerType) updated.offerType = String(body.offerType);
       if (body.offerSection != null) updated.offerSection = String(body.offerSection).slice(0, 30);
-      if (body.sourceProductId) updated.sourceProductId = body.sourceProductId;
-      if (body.offerMeta) updated.offerMeta = body.offerMeta;
-      else if (body.bundle2Price || body.bundle3Price || body.sourceProductId2 || body.offerType === "mixed_bundle") {
-        const tiers = [];
-        const b2 = Number(body.bundle2Price || 0);
-        const b3 = Number(body.bundle3Price || 0);
-        if (b2 > 0) tiers.push({ qty: 2, price: Math.round(b2) });
-        if (b3 > 0 && body.offerType !== "mixed_bundle") tiers.push({ qty: 3, price: Math.round(b3) });
-        const id1 = body.sourceProductId || body.offerMeta?.sourceProductId;
-        const id2 = body.sourceProductId2;
-        if (body.offerType === "mixed_bundle" && id1 && id2) {
-          updated.offerMeta = {
-            type: "mixed_bundle",
-            sourceProductIds: [String(id1), String(id2)],
-            productIds: [String(id1), String(id2)],
-            tiers: b2 > 0 ? [{ qty: 2, price: Math.round(b2) }] : (tiers.length ? tiers : [])
-          };
-          updated.isOffer = true;
-          updated.offerType = "mixed_bundle";
+      if (body.isOffer != null) {
+        const isOffer = body.isOffer === true || body.isOffer === "true" || body.isOffer === 1 || body.isOffer === "1";
+        updated.isOffer = isOffer;
+        if (!isOffer) {
+          delete updated.offerType; delete updated.offerMeta; delete updated.sourceProductId; delete updated.sourceProductId2;
+        } else {
+          const type = String(body.offerType || "");
+          const id1 = Number(body.sourceProductId || 0);
+          const id2 = Number(body.sourceProductId2 || 0);
+          const source1 = products.find(p => Number(p.id) === id1);
+          const source2 = id2 ? products.find(p => Number(p.id) === id2) : null;
+          const b2 = Math.round(Number(body.bundle2Price) || 0);
+          const b3 = Math.round(Number(body.bundle3Price) || 0);
+          if (!["discount", "bundle", "both", "mixed_bundle"].includes(type) || !source1 || id1 === id) return res.status(400).json({ ok: false, error: "نوع العرض أو المنتج الأساسي غير صالح" });
+          updated.offerType = type;
           updated.sourceProductId = id1;
-          updated.sourceProductId2 = id2;
-          if (b2 > 0) updated.price = Math.round(b2);
-        } else if (tiers.length) {
-          updated.offerMeta = { type: "bundle", tiers, sourceProductId: id1 || undefined };
-          updated.isOffer = true;
+          delete updated.sourceProductId2;
+          if (type === "mixed_bundle") {
+            const originalPair = (Number(source1.price) || 0) + (Number(source2?.price) || 0);
+            if (!source2 || id2 === id1 || id2 === id || b2 <= 0 || b2 >= originalPair || b3 > 0) return res.status(400).json({ ok: false, error: "اختاري منتجين مختلفين وحددي سعرًا للعرض أقل من مجموع سعريهما" });
+            updated.price = b2;
+            updated.oldPrice = originalPair;
+            updated.sourceProductId2 = id2;
+            updated.offerMeta = { type, sourceProductId: id1, sourceProductId2: id2, sourceProductIds: [String(id1), String(id2)], productIds: [String(id1), String(id2)], pairPrice: b2, tiers: [] };
+          } else {
+            const baseUnit = Number(updated.price) || 0;
+            const sourcePrice = Number(source1.price) || 0;
+            const tiers = [];
+            if (type !== "discount" && b2 > 0) tiers.push({ qty: 2, price: b2 });
+            if (["bundle", "both"].includes(type) && b3 > 0) tiers.push({ qty: 3, price: b3 });
+            if (baseUnit <= 0 || baseUnit > sourcePrice || (type === "discount" && baseUnit >= sourcePrice) || (type === "bundle" && !tiers.length) || (type === "both" && baseUnit >= sourcePrice && !tiers.length)) return res.status(400).json({ ok: false, error: "بيانات السعر لا تحقق نوع العرض المحدد" });
+            for (const tier of tiers) if (tier.price >= baseUnit * tier.qty) return res.status(400).json({ ok: false, error: `سعر عرض ${tier.qty} قطع يجب أن يكون أقل من السعر بدون العرض` });
+            updated.oldPrice = sourcePrice;
+            updated.offerMeta = { type, sourceProductId: id1, tiers };
+          }
         }
       }
       products[idx] = updated;

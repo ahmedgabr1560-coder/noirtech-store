@@ -538,6 +538,9 @@ function dealPriceForQty(product, qty) {
   qty = Math.max(1, Number(qty) || 1);
   const unit = Number(product?.price || 0);
   const meta = product?.offerMeta;
+  if (product?.offerType === "mixed_bundle" || meta?.type === "mixed_bundle") {
+    return { lineTotal: unit * qty, unitEffective: unit, dealLabel: "" };
+  }
   if (!meta || !Array.isArray(meta.tiers) || !meta.tiers.length) {
     return { lineTotal: unit * qty, unitEffective: unit, dealLabel: "" };
   }
@@ -676,9 +679,23 @@ function saveCart() {
   try { localStorage.setItem("nx_cart", JSON.stringify(cart || [])); } catch (e) {}
   try { updateCartUI(); } catch (e2) { console.warn(e2); }
 }
+function originalPriceForOffer(p) {
+  if (isMixedBundle(p)) {
+    const meta = p.offerMeta || {};
+    const ids = meta.productIds || meta.sourceProductIds || [];
+    const id1 = p.sourceProductId || meta.sourceProductId || ids[0];
+    const id2 = p.sourceProductId2 || meta.sourceProductId2 || ids[1];
+    const pool = Array.isArray(PRODUCTS) ? PRODUCTS : [];
+    const one = pool.find(x => String(x.id) === String(id1));
+    const two = pool.find(x => String(x.id) === String(id2));
+    return one && two ? (Number(one.price) || 0) + (Number(two.price) || 0) : 0;
+  }
+  return Number(p.oldPrice) || 0;
+}
 function discountPct(p) {
-  if (!p.oldPrice || p.oldPrice <= p.price) return null;
-  return Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
+  const original = originalPriceForOffer(p);
+  if (!original || original <= Number(p.price || 0)) return null;
+  return Math.round(((original - Number(p.price || 0)) / original) * 100);
 }
 
 
@@ -874,6 +891,7 @@ function getMixedOfferImages(p) {
 
 function productCard(p) {
   const off = discountPct(p);
+  const originalPrice = originalPriceForOffer(p);
   return `<article class="product-card" data-id="${p.id}">
     <button type="button" class="btn-fav" data-fav="${p.id}" aria-label="مفضلة" onclick="event.preventDefault();event.stopPropagation();try{if(typeof toggleFav==='function')toggleFav(${p.id})}catch(e){}">♡</button>
     <a class="product-media ${isMixedBundle(p) ? "mixed-split" : ""}" href="/product.html?id=${p.id}" data-open="${p.id}">
@@ -892,9 +910,9 @@ function productCard(p) {
       <div class="rating" title="تقييم">${stars(p.rating)} <span>(${p.reviews} تقييم)</span></div>
       <div class="price-row">
         <span class="price">${money(p.price)}</span>
-        ${p.oldPrice ? `<span class="old-price">${money(p.oldPrice)}</span>` : ""}
+        ${originalPrice > Number(p.price || 0) ? `<span class="old-price">${money(originalPrice)}</span>` : ""}
       </div>
-      ${(p.offerMeta && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) ? `<div style="font-size:.72rem;color:#fdba74;margin-top:4px;font-weight:700">🔥 ${p.offerMeta.tiers.map(t => t.qty + " بـ " + Number(t.price).toLocaleString("ar-EG")).join(" · ")}</div>` : ""}
+      ${(p.offerType !== "mixed_bundle" && p.offerMeta && p.offerMeta.type !== "mixed_bundle" && Array.isArray(p.offerMeta.tiers) && p.offerMeta.tiers.length) ? `<div style="font-size:.72rem;color:#fdba74;margin-top:4px;font-weight:700">🔥 ${p.offerMeta.tiers.map(t => t.qty + " بـ " + Number(t.price).toLocaleString("ar-EG")).join(" · ")}</div>` : ""}
       <button type="button" class="add-btn" data-add="${p.id}" onclick="event.preventDefault();event.stopPropagation();try{addToCart(${p.id},{fromHome:true});}catch(e){console.warn(e);}">أضف للسلة</button>
     </div>
   </article>`;

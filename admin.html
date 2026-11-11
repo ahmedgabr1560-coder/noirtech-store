@@ -605,13 +605,13 @@
                 </select>
               </label>
               <div class="form-grid" style="margin-top:8px">
-                <label>سعر القطعة بعد العرض *
+                <label><span id="pPriceOfferLabelText">سعر القطعة بعد العرض *</span>
                   <input id="pPriceOffer" type="number" placeholder="مثال: 250" />
                 </label>
                 <label>السعر الأصلي (يتحدد تلقائي)
                   <input id="pOldAuto" type="number" readonly />
                 </label>
-                <label>٢ قطع بسعر
+                <label><span id="bundle2PriceLabelText">٢ قطع بسعر</span>
                   <input id="bundle2Price" type="number" placeholder="مثال: 450" />
                 </label>
                 <label>٣ قطع بسعر
@@ -2919,6 +2919,7 @@
       pendingImages = [];
       try { renderMultiPrev(); showPreview(""); } catch (e) {}
       if ($("addForm")) $("addForm").reset();
+      if (typeof previousOfferKind !== "undefined") previousOfferKind = $("offerKind")?.value || "discount";
       if ($("editBanner")) $("editBanner").style.display = "none";
       if ($("addBtn")) $("addBtn").textContent = "حفظ ونشر المنتج";
       if ($("pType")) setAddType("product");
@@ -2953,8 +2954,8 @@
       }
       // colors
       if ($("pColors")) {
-        const cols = Array.isArray(p.colors) ? p.colors.map(c => typeof c === "string" ? c : (c.name || "")).filter(Boolean) : [];
-        $("pColors").value = cols.join("، ");
+        selectedProductColors = Array.isArray(p.colors) ? p.colors.map(c => typeof c === "string" ? { name: c, code: "" } : { name: String(c.name || c.label || "").trim(), code: String(c.code || c.hex || "").trim() }).filter(c => c.name) : [];
+        syncColorsHidden();
       }
       // images
       pendingImages = Array.isArray(p.images) && p.images.length ? p.images.slice() : (p.image ? [p.image] : []);
@@ -2965,12 +2966,21 @@
         const t2 = p.offerMeta.tiers.find(t => Number(t.qty) === 2);
         const t3 = p.offerMeta.tiers.find(t => Number(t.qty) === 3);
         if ($("bundle2Price") && t2) $("bundle2Price").value = t2.price;
+        if ($("bundle2Price") && !t2 && (p.offerType === "mixed_bundle" || p.offerMeta.type === "mixed_bundle")) $("bundle2Price").value = p.offerMeta.pairPrice || p.price || "";
         if ($("bundle3Price") && t3) $("bundle3Price").value = t3.price;
-        if ($("offerKind")) $("offerKind").value = p.offerType || p.offerMeta.type || "bundle";
+        if ($("offerKind")) {
+          $("offerKind").value = p.offerType || p.offerMeta.type || "bundle";
+          if (typeof previousOfferKind !== "undefined") previousOfferKind = $("offerKind").value;
+        }
+        if ($("pPriceOffer") && ["discount", "both"].includes(p.offerType)) $("pPriceOffer").value = p.price || "";
       }
-      if (p.sourceProductId && $("offerSourceProduct")) {
+      const editSource1Id = p.sourceProductId || p.offerMeta?.sourceProductId || p.offerMeta?.sourceProductIds?.[0] || p.offerMeta?.productIds?.[0];
+      const editSource2Id = p.sourceProductId2 || p.offerMeta?.sourceProductId2 || p.offerMeta?.sourceProductIds?.[1] || p.offerMeta?.productIds?.[1];
+      if (editSource1Id && $("offerSourceProduct")) {
         fillOfferProductSelect().then(() => {
-          if ($("offerSourceProduct")) $("offerSourceProduct").value = String(p.sourceProductId);
+          if ($("offerSourceProduct")) $("offerSourceProduct").value = String(editSource1Id);
+          if ($("offerSourceProduct2")) $("offerSourceProduct2").value = editSource2Id != null ? String(editSource2Id) : "";
+          if ((p.offerType === "mixed_bundle" || p.offerMeta?.type === "mixed_bundle") && typeof applyMixedBundleNames === "function") applyMixedBundleNames(true);
         }).catch(() => {});
       }
       // switch to add panel
@@ -3155,42 +3165,59 @@
 
     $("addForm").onsubmit = async (e) => {
       e.preventDefault();
+      let offerPayload = null;
       if ($("pType")?.value === "offer") {
         const srcId = $("offerSourceProduct")?.value;
-        if (!srcId) { alert("اختاري المنتج الأساسي للعرض"); return; }
-        const kind = $("offerKind")?.value || "";
         const srcId2 = $("offerSourceProduct2")?.value || "";
-        if (kind === "mixed_bundle") {
-          if (!srcId2) { alert("اختاري المنتج الثاني للعرض المشترك"); return; }
-          if (String(srcId2) === String(srcId)) { alert("اختاري منتجين مختلفين"); return; }
-          const b2 = Number($("bundle2Price")?.value || $("pPriceOffer")?.value || $("pPrice")?.value || 0);
-          if (!b2) { alert("أدخلي سعر العرض للمنتجين معًا (٢ قطع بسعر)"); return; }
-        }
-        let unit = Number($("pPriceOffer")?.value || $("pPrice")?.value || 0);
+        const kind = $("offerKind")?.value || "";
+        const src = (PRODUCTS || []).find(p => String(p.id) === String(srcId));
+        const src2 = srcId2 ? (PRODUCTS || []).find(p => String(p.id) === String(srcId2)) : null;
+        if (!src) { alert("اختاري منتجًا أساسيًا صالحًا للعرض"); return; }
+        if (!["discount", "bundle", "both", "mixed_bundle"].includes(kind)) { alert("اختاري نوع عرض صحيح"); return; }
+        const sourceUnit = Number(src.price) || 0;
+        const typedUnit = Number($("pPriceOffer")?.value || 0);
         const b2 = Number($("bundle2Price")?.value || 0);
         const b3 = Number($("bundle3Price")?.value || 0);
-        const oldP = Number($("pOldAuto")?.value || $("pOld")?.value || 0);
-        if (!unit && !b2 && !b3) { alert("حددي سعر القطعة أو عرض ٢/٣ قطع"); return; }
-        // عرض كمية فقط: سعر القطعة = الأصلي لو فاضي
-        if (!unit && oldP) unit = oldP;
-        if (!unit && (b2 || b3)) {
-          // fallback من المنتج المختار
-          const src = (PRODUCTS || []).find(p => String(p.id) === String(srcId));
-          if (src && src.price) unit = Number(src.price);
+        let unit = typedUnit || sourceUnit;
+        let originalTotal = sourceUnit;
+        if (kind === "mixed_bundle") {
+          if (!srcId2 || !src2) { alert("اختاري المنتج الثاني للعرض المشترك"); return; }
+          if (String(srcId2) === String(srcId)) { alert("اختاري منتجين مختلفين"); return; }
+          originalTotal = sourceUnit + (Number(src2.price) || 0);
+          if (b2 <= 0) { alert("أدخلي السعر الإجمالي للمنتجين في خانة «٢ قطع بسعر»"); return; }
+          if (originalTotal <= 0 || b2 >= originalTotal) { alert("سعر العرض للمنتجين يجب أن يكون أقل من مجموع سعريهما الأصليين"); return; }
+          if (b3 > 0) { alert("العرض المشترك يستخدم سعر قطعتين فقط؛ امسحي سعر ٣ قطع"); return; }
+          unit = b2;
+          $("pPrice").value = String(b2);
+          $("pPriceOffer").value = String(b2);
+          $("pOld").value = String(originalTotal);
+          $("pOldAuto").value = String(originalTotal);
+        } else if (kind === "discount") {
+          if (typedUnit <= 0 || sourceUnit <= 0 || typedUnit >= sourceUnit) { alert("أدخلي سعرًا بعد الخصم أقل من السعر الأصلي للمنتج"); return; }
+          if (b2 > 0 || b3 > 0) { alert("لإضافة أسعار كمية اختاري نوع «خصم + عروض كمية»"); return; }
+          unit = typedUnit;
+          $("pPrice").value = String(unit);
+          $("pOld").value = String(sourceUnit);
+        } else {
+          if (unit <= 0 || sourceUnit <= 0 || unit > sourceUnit) { alert("سعر القطعة بعد العرض يجب ألا يتجاوز السعر الأصلي"); return; }
+          if (kind === "bundle" && b2 <= 0 && b3 <= 0) { alert("أدخلي سعر عرض قطعتين أو ثلاث قطع على الأقل"); return; }
+          if (kind === "both" && typedUnit > 0 && typedUnit >= sourceUnit && b2 <= 0 && b3 <= 0) { alert("أدخلي خصمًا على القطعة أو سعر عرض كمية مخفضًا"); return; }
+          for (const [qty, dealPrice] of [[2, b2], [3, b3]]) {
+            if (dealPrice > 0 && dealPrice >= unit * qty) { alert(`سعر عرض ${qty} قطع يجب أن يكون أقل من ${Math.round(unit * qty)} ج.م`); return; }
+          }
+          $("pPrice").value = String(unit);
+          $("pOld").value = String(sourceUnit);
         }
-        if (unit && oldP && unit >= oldP && !b2 && !b3) {
-          alert("سعر العرض لازم يكون أقل من السعر الأصلي، أو أضيفي عرض كمية");
-          return;
-        }
-        if (unit) {
-          $("pPrice").value = unit;
-          if ($("pPriceOffer")) $("pPriceOffer").value = unit;
-        }
-        if (oldP) $("pOld").value = oldP;
-        // لو صورة فاضيّة من المصدر
+        offerPayload = {
+          sourceProductId: srcId,
+          sourceProductId2: kind === "mixed_bundle" ? srcId2 : "",
+          offerType: kind,
+          bundle2Price: kind === "discount" ? "" : (kind === "mixed_bundle" ? String(b2) : (b2 > 0 ? String(b2) : "")),
+          bundle3Price: ["bundle", "both"].includes(kind) && b3 > 0 ? String(b3) : ""
+        };
         if (!$("pImageUrl")?.value && !pendingImage) {
-          const src = (PRODUCTS || []).find(p => String(p.id) === String(srcId));
-          if (src && src.image) $("pImageUrl").value = src.image;
+          const source = src;
+          if (source.image) $("pImageUrl").value = source.image;
         }
       }
       const btn = $("addBtn");
@@ -3209,29 +3236,30 @@
           subcategory: $("pSub").value,
           stock: Number($("pStock").value||0),
           available: $("pAvailable")?.value !== "false",
-          colors: $("pColors")?.value.trim() || "",
+          colors: selectedProductColors.map(c => ({ name: c.name, code: c.code || "" })),
           badge: $("pBadge").value.trim() || ($("pType")?.value === "offer" ? "عرض" : "جديد"),
           description: $("pDesc").value.trim(),
           image: imageVal,
           images: await shrinkAllImages((pendingImages && pendingImages.length) ? pendingImages : (imageVal ? [imageVal] : [])),
           isOffer: $("pType")?.value === "offer",
-          oldPrice: $("pOld")?.value || $("pOldAuto")?.value || "",
-          sourceProductId: $("offerSourceProduct")?.value || "",
-          sourceProductId2: $("offerSourceProduct2")?.value || "",
-          offerType: $("offerKind")?.value || "discount",
-          bundle2Price: $("bundle2Price")?.value || "",
-          bundle3Price: $("bundle3Price")?.value || "",
+          oldPrice: $("pOld").value || $("pOldAuto").value || "",
+          sourceProductId: offerPayload?.sourceProductId || "",
+          sourceProductId2: offerPayload?.sourceProductId2 || "",
+          offerType: offerPayload?.offerType || "",
+          bundle2Price: offerPayload?.bundle2Price || "",
+          bundle3Price: offerPayload?.bundle3Price || "",
           offerSection: $("offerSection")?.value || ""
         };
-        if ($("pType")?.value === "offer" && ($("offerKind")?.value === "mixed_bundle")) {
-          const a = $("offerSourceProduct")?.value;
-          const b = $("offerSourceProduct2")?.value;
-          const pairPrice = Number($("bundle2Price")?.value || $("pPriceOffer")?.value || $("pPrice")?.value || 0);
+        if ($("pType")?.value === "offer" && offerPayload?.offerType === "mixed_bundle") {
+          const a = offerPayload.sourceProductId;
+          const b = offerPayload.sourceProductId2;
+          const pairPrice = Number(offerPayload.bundle2Price);
           payload.offerMeta = {
             type: "mixed_bundle",
             sourceProductIds: [a, b],
             productIds: [a, b],
-            tiers: pairPrice > 0 ? [{ qty: 2, price: Math.round(pairPrice) }] : []
+            pairPrice,
+            tiers: []
           };
           payload.isOffer = true;
           payload.offerType = "mixed_bundle";
@@ -3248,8 +3276,10 @@
           const p1 = (PRODUCTS || []).find(x => String(x.id) === String(a));
           const p2 = (PRODUCTS || []).find(x => String(x.id) === String(b));
           const imgs = [];
-          if (p1) { if (p1.image) imgs.push(p1.image); (p1.images || []).forEach(im => { if (im && !imgs.includes(im)) imgs.push(im); }); }
-          if (p2) { if (p2.image) imgs.push(p2.image); (p2.images || []).forEach(im => { if (im && !imgs.includes(im)) imgs.push(im); }); }
+          const addImage = im => { if (im && !imgs.includes(im)) imgs.push(im); };
+          [p1, p2].forEach(source => addImage(source?.image || source?.images?.[0]));
+          (pendingImages || []).forEach(addImage);
+          [p1, p2].forEach(source => (source?.images || []).forEach(addImage));
           if (imgs.length) {
             payload.images = imgs.slice(0, 8);
             payload.image = imgs[0];
@@ -3274,6 +3304,8 @@
           msg.className = "msg ok";
           msg.textContent = "تم نشر المنتج #" + data.product.id + " — يظهر في المتجر خلال ثوانٍ (حدّثي المتجر إن لزم)";
           e.target.reset(); pendingImage = ""; pendingImages = []; showPreview("");
+          if (typeof previousOfferKind !== "undefined") previousOfferKind = $("offerKind")?.value || "discount";
+          setAddType("product");
           try { renderMultiPrev(); } catch (err) {}
         }
         bustStoreCaches(); await loadProducts(true); await loadStats();
@@ -4375,6 +4407,35 @@
     ];
     let selectedProductColors = [];
 
+    function setProductColorsFromSources(sources) {
+      const byName = new Map();
+      (sources || []).forEach(product => {
+        (Array.isArray(product?.colors) ? product.colors : []).forEach(color => {
+          const item = typeof color === "string" ? { name: color, code: "" } : { name: String(color.name || color.label || "").trim(), code: String(color.code || color.hex || "").trim() };
+          const key = item.name.toLocaleLowerCase();
+          if (item.name && !byName.has(key)) byName.set(key, item);
+        });
+      });
+      selectedProductColors = [...byName.values()];
+      syncColorsHidden();
+    }
+
+    function setOfferImagesFromSources(sources) {
+      const unique = [];
+      const add = src => { if (src && !unique.includes(src)) unique.push(src); };
+      (sources || []).forEach(product => add(product?.image || product?.images?.[0]));
+      (sources || []).forEach(product => {
+        [product?.image, ...(Array.isArray(product?.images) ? product.images : [])].forEach(src => {
+          add(src);
+        });
+      });
+      pendingImages = unique.slice(0, 8);
+      pendingImage = pendingImages[0] || "";
+      if ($("pImageUrl")) $("pImageUrl").value = pendingImage;
+      showPreview(pendingImage);
+      renderMultiPrev();
+    }
+
     function syncColorsHidden() {
       const hidden = $("pColors");
       if (hidden) {
@@ -4546,25 +4607,43 @@
     }
 
 
-    function applyMixedBundleNames() {
+    function applyMixedBundleNames(syncSourceData) {
+      updateOfferPriceLabel();
       const id1 = $("offerSourceProduct")?.value;
       const id2 = $("offerSourceProduct2")?.value;
       const kind = $("offerKind")?.value;
       if (kind === "mixed_bundle" && id1 && id2 && id1 !== id2) {
         const p1 = (PRODUCTS || []).find(p => String(p.id) === String(id1));
         const p2 = (PRODUCTS || []).find(p => String(p.id) === String(id2));
+        if (syncSourceData && p1 && p2) {
+          setProductColorsFromSources([p1, p2]);
+          setOfferImagesFromSources([p1, p2]);
+        }
         if (p1 && p2 && $("pName")) {
           $("pName").value = "عرض: " + (p1.name || "") + " + " + (p2.name || "");
         }
         if ($("offerKind")) $("offerKind").value = "mixed_bundle";
+        const originalTotal = (Number(p1?.price) || 0) + (Number(p2?.price) || 0);
+        if ($("pOldAuto")) $("pOldAuto").value = String(originalTotal);
+        if ($("pOld")) $("pOld").value = String(originalTotal);
         const b2 = $("bundle2Price");
         const price = $("pPrice");
         const po = $("pPriceOffer");
-        if (b2 && b2.value && price && !price.value) price.value = b2.value;
+        if (b2 && b2.value && price) price.value = b2.value;
+        else if (price) price.value = String(originalTotal);
         if (b2 && b2.value && po) po.value = b2.value;
         const prev = $("offerPreview");
-        if (prev) prev.textContent = "عرض مشترك: " + (p1?.name || id1) + " + " + (p2?.name || id2) + (b2 && b2.value ? (" — السعر للاثنين: " + b2.value + " ج.م") : "");
+        if (prev) prev.textContent = "عرض مشترك: " + (p1?.name || id1) + " + " + (p2?.name || id2) + " — السعر الأصلي للاثنين: " + originalTotal.toLocaleString("ar-EG") + " ج.م" + (b2 && b2.value ? (" — سعر العرض للاثنين: " + b2.value + " ج.م") : " — أدخلي سعر العرض الإجمالي في خانة «٢ قطع بسعر»") + (syncSourceData ? " — صور وألوان المنتجين تُضاف تلقائيًا" : "");
       }
+    }
+
+    function updateOfferPriceLabel() {
+      const label = $("pPriceOfferLabelText");
+      const kind = $("offerKind")?.value;
+      const isMixed = kind === "mixed_bundle";
+      if (label) label.textContent = isMixed ? "السعر الإجمالي للمنتجين (ينسخ من خانة العرض أدناه)" : "سعر القطعة بعد العرض *";
+      if ($("pPriceOffer")) $("pPriceOffer").readOnly = isMixed;
+      if ($("bundle2PriceLabelText")) $("bundle2PriceLabelText").textContent = isMixed ? "سعر العرض للمنتجين معًا *" : "٢ قطع بسعر";
     }
 
     function applyOfferSourceProduct() {
@@ -4572,6 +4651,12 @@
       if (!sel || !sel.value) return;
       const src = (PRODUCTS || []).find(p => String(p.id) === String(sel.value));
       if (!src) return;
+      const sources = [src];
+      if ($("offerKind")?.value === "mixed_bundle") {
+        const second = (PRODUCTS || []).find(p => String(p.id) === String($("offerSourceProduct2")?.value));
+        if (second && String(second.id) !== String(src.id)) sources.push(second);
+      }
+      setProductColorsFromSources(sources);
       if ($("pName") && !$("pName").value) $("pName").value = (src.name || "") + " (عرض)";
       if ($("pName") && $("pType")?.value === "offer") {
         // حدّث الاسم لو فاضي أو كان من مصدر سابق
@@ -4626,6 +4711,7 @@
       if (oldInp) oldInp.required = false;
       const ob = $("offerBuilder");
       if (ob) ob.style.display = isOffer ? "block" : "none";
+      updateOfferPriceLabel();
       if (isOffer) fillOfferProductSelect();
     }
     $("tabProduct")?.addEventListener("click", () => setAddType("product"));
@@ -4641,9 +4727,26 @@
       });
     });
 
-    $("offerSourceProduct")?.addEventListener("change", function(){ applyOfferSourceProduct(); applyMixedBundleNames(); });
-    $("offerSourceProduct2")?.addEventListener("change", applyMixedBundleNames);
-    $("offerKind")?.addEventListener("change", applyMixedBundleNames);
+    $("offerSourceProduct")?.addEventListener("change", function(){ applyOfferSourceProduct(); applyMixedBundleNames(true); });
+    $("offerSourceProduct2")?.addEventListener("change", function(){ applyMixedBundleNames(true); });
+    let previousOfferKind = $("offerKind")?.value || "discount";
+    $("offerKind")?.addEventListener("change", function(){
+      const nextKind = $("offerKind").value;
+      if (previousOfferKind === "mixed_bundle" || nextKind === "mixed_bundle") {
+        $("bundle2Price").value = ""; $("bundle3Price").value = ""; $("pPriceOffer").value = "";
+        const source = (PRODUCTS || []).find(p => String(p.id) === String($("offerSourceProduct")?.value));
+        if (source) {
+          $("pPrice").value = source.price || ""; $("pOld").value = source.price || ""; $("pOldAuto").value = source.price || "";
+          if (previousOfferKind === "mixed_bundle" && nextKind !== "mixed_bundle") {
+            setProductColorsFromSources([source]); setOfferImagesFromSources([source]);
+            if ($("pName")) $("pName").value = (source.name || "") + " (عرض)";
+          }
+        }
+      }
+      previousOfferKind = nextKind;
+      updateOfferPriceLabel();
+      applyMixedBundleNames(nextKind === "mixed_bundle");
+    });
     $("bundle2Price")?.addEventListener("input", applyMixedBundleNames);
     $("pBadge")?.addEventListener("input", () => { if ($("pBadge")) $("pBadge").dataset.touched = "1"; });
 

@@ -135,7 +135,8 @@ export default async function handler(req, res) {
     if (!category) category = "fashion";
 
     // Offer from existing product
-    let sourceProductId = body.sourceProductId != null ? Number(body.sourceProductId) : null;
+    let sourceProductId = body.sourceProductId != null && body.sourceProductId !== "" ? Number(body.sourceProductId) : null;
+    let sourceProductId2 = body.sourceProductId2 != null && body.sourceProductId2 !== "" ? Number(body.sourceProductId2) : null;
     let offerType = String(body.offerType || (isOfferFlag ? "discount" : "")).trim();
     let offerMeta = null;
     if (isOfferFlag) {
@@ -174,6 +175,37 @@ export default async function handler(req, res) {
     if (!file) return res.status(500).json({ ok: false, error: "تعذر قراءة products.json" });
     let products = [];
     try { products = JSON.parse(file.content); } catch { return res.status(500).json({ ok: false, error: "ملف منتجات تالف" }); }
+
+    if (isOfferFlag) {
+      const source1 = products.find(p => Number(p.id) === Number(sourceProductId));
+      if (!source1) return res.status(400).json({ ok: false, error: "المنتج الأساسي للعرض غير موجود" });
+      const base1 = Number(source1.price) || 0;
+        const baseUnit = price;
+      if (!["discount", "bundle", "both", "mixed_bundle"].includes(offerType)) return res.status(400).json({ ok: false, error: "نوع العرض غير صالح" });
+      if (offerType === "mixed_bundle") {
+        const source2 = products.find(p => Number(p.id) === Number(sourceProductId2));
+        if (!sourceProductId2 || sourceProductId2 === sourceProductId || !source2) return res.status(400).json({ ok: false, error: "يجب اختيار منتجين مختلفين موجودين للعرض المشترك" });
+        const originalPairPrice = base1 + (Number(source2.price) || 0);
+        const pairPrice = Math.round(Number(body.bundle2Price) || 0);
+        if (pairPrice <= 0 || originalPairPrice <= 0 || pairPrice >= originalPairPrice) return res.status(400).json({ ok: false, error: "سعر العرض المشترك يجب أن يكون أقل من مجموع السعرين الأصليين" });
+        if (Number(body.bundle3Price) > 0) return res.status(400).json({ ok: false, error: "العرض المشترك لمنتجين لا يقبل سعر ثلاث قطع" });
+        price = pairPrice;
+        body.oldPrice = originalPairPrice;
+        offerMeta = { type: "mixed_bundle", sourceProductId, sourceProductId2, sourceProductIds: [String(sourceProductId), String(sourceProductId2)], productIds: [String(sourceProductId), String(sourceProductId2)], pairPrice, tiers: [] };
+      } else {
+        if (baseUnit <= 0 || baseUnit > base1) return res.status(400).json({ ok: false, error: "سعر القطعة للعرض يجب ألا يتجاوز السعر الأصلي" });
+        if (offerType === "discount" && baseUnit >= base1) return res.status(400).json({ ok: false, error: "سعر الخصم يجب أن يكون أقل من السعر الأصلي" });
+        if (offerType === "discount" && offerMeta.tiers.length) return res.status(400).json({ ok: false, error: "خصم سعر القطعة لا يقبل أسعار عروض كمية" });
+        if (offerType === "bundle" && !offerMeta.tiers.length) return res.status(400).json({ ok: false, error: "عرض الكمية يحتاج سعر قطعتين أو ثلاث قطع على الأقل" });
+        if (offerType === "both" && baseUnit >= base1 && !offerMeta.tiers.length) return res.status(400).json({ ok: false, error: "أدخلي خصمًا أو عرض كمية مخفضًا" });
+        for (const tier of offerMeta.tiers) {
+          if (tier.price >= baseUnit * tier.qty) return res.status(400).json({ ok: false, error: `سعر عرض ${tier.qty} قطع يجب أن يكون أقل من السعر بدون العرض` });
+        }
+        offerMeta.type = offerType;
+        offerMeta.sourceProductId = sourceProductId;
+        body.oldPrice = base1;
+      }
+    }
 
     const id = Math.max(0, ...products.map(x => Number(x.id) || 0)) + 1;
 
@@ -281,6 +313,7 @@ const product = {
       colors,
       isOffer: isOfferFlag,
       sourceProductId: sourceProductId || null,
+      sourceProductId2: sourceProductId2 || null,
       offerType: offerType || null,
       offerMeta,
       rating: 4.5,
