@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3367,
-    "totalLeaves": 1174,
+    "totalLeaves": 1175,
     "uniqueSessions": 3348,
     "todayEnters": 87,
-    "todayLeaves": 48,
+    "todayLeaves": 49,
     "todayDate": "2026-11-11",
     "accountsTotal": 0,
     "uniqueDevices": 2154,
@@ -31,13 +31,13 @@
   "sessions": {
     "s_4crf2n6gnmhmwcn1eoa": {
       "firstSeen": "2026-11-11T21:35:36.862Z",
-      "lastSeen": "2026-11-11T21:35:36.862Z",
+      "lastSeen": "2026-11-11T21:35:37.397Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 1,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.221.93.xxx"
     },
     "s_enavmsrq0bamwcjdya4": {
@@ -4432,6 +4432,12 @@
   },
   "recent": [
     {
+      "type": "leave",
+      "sessionId": "s_4crf2n6g…",
+      "path": "/",
+      "at": "2026-11-11T21:35:37.397Z"
+    },
+    {
       "type": "enter",
       "sessionId": "s_4crf2n6g…",
       "path": "/",
@@ -4904,15 +4910,15 @@
       "sessionId": "s_imgap2ff…",
       "path": "/",
       "at": "2026-11-11T16:12:25.576Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_1ujqdn44…",
-      "path": "/",
-      "at": "2026-11-11T16:12:25.145Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-11T21:35:37.397Z",
+      "type": "ipad",
+      "ipMasked": "156.221.93.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-11T21:35:36.862Z",
@@ -4984,12 +4990,6 @@
       "lastSeen": "2026-11-11T19:52:47.022Z",
       "type": "desktop",
       "ipMasked": "54.183.149.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-11T19:52:32.726Z",
-      "type": "ipad",
-      "ipMasked": "156.221.93.xxx"
     },
     "d_cmz4rgqhgpbmwchab13": {
       "firstSeen": "2026-11-11T18:54:33.726Z",
