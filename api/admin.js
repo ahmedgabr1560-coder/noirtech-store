@@ -194,6 +194,7 @@ export default async function handler(req, res) {
       const cancelled = ordersP.filter(o => String(o.status) === "cancelled");
       const pending = ordersP.filter(o => !["delivered", "completed", "cancelled"].includes(String(o.status || "new")));
       const sales = delivered.reduce((s, o) => s + (Number(o.total) || 0), 0);
+      const pendingSales = pending.reduce((s, o) => s + (Number(o.total) || 0), 0);
       const shippingRev = delivered.reduce((s, o) => s + (Number(o.shipping) || 0), 0);
       const discounts = delivered.reduce((s, o) => s + (Number(o.discount) || 0), 0);
 
@@ -234,6 +235,8 @@ export default async function handler(req, res) {
 
       const gross = sales - cogs;
       const net = gross - expTotal;
+      // Legacy dashboard field: estimated net profit using the existing net formula.
+      const estimatedProfit = net;
 
       // top products by qty in delivered
       const soldMap = {};
@@ -258,6 +261,7 @@ export default async function handler(req, res) {
           cancelled: cancelled.length,
           pending: pending.length,
           newOrders: ordersP.filter(o => (o.status || "new") === "new").length,
+          pendingSales,
           sales,
           shippingRevenue: shippingRev,
           discounts,
@@ -268,6 +272,7 @@ export default async function handler(req, res) {
           expenses: expTotal,
           expensesByCategory: expByCat,
           netProfit: net,
+          profit: estimatedProfit,
           stockUnits,
           stockValueCost: stockValue,
           stockValueSell: stockSellValue,
