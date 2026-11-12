@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3404,
-    "totalLeaves": 1195,
+    "totalLeaves": 1196,
     "uniqueSessions": 3384,
     "todayEnters": 32,
-    "todayLeaves": 18,
+    "todayLeaves": 19,
     "todayDate": "2026-11-12",
     "accountsTotal": 0,
     "uniqueDevices": 2208,
@@ -31,13 +31,13 @@
   "sessions": {
     "s_fepie5oxiowmwdf5gov": {
       "firstSeen": "2026-11-12T10:42:34.573Z",
-      "lastSeen": "2026-11-12T10:46:01.585Z",
+      "lastSeen": "2026-11-12T10:46:03.964Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 3,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 4,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.221.93.xxx"
     },
     "s_rc87sywlf8mwdev8mp": {
@@ -4435,6 +4435,12 @@
       "type": "leave",
       "sessionId": "s_fepie5ox…",
       "path": "/",
+      "at": "2026-11-12T10:46:03.964Z"
+    },
+    {
+      "type": "leave",
+      "sessionId": "s_fepie5ox…",
+      "path": "/",
       "at": "2026-11-12T10:45:58.862Z"
     },
     {
@@ -4904,25 +4910,19 @@
       "sessionId": "s_h665ipvx…",
       "path": "/",
       "at": "2026-11-11T17:55:35.493Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_h665ipvx…",
-      "path": "/",
-      "at": "2026-11-11T17:55:35.379Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-12T10:46:03.964Z",
+      "type": "ipad",
+      "ipMasked": "156.221.93.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-12T10:46:01.585Z",
       "type": "desktop",
-      "ipMasked": "156.221.93.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-12T10:45:58.862Z",
-      "type": "ipad",
       "ipMasked": "156.221.93.xxx"
     },
     "d_kibboaw6klmwdevjue": {
