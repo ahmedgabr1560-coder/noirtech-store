@@ -1,6 +1,7 @@
 const GH_OWNER = process.env.GH_OWNER || "ahmedgabr1560-coder";
 const GH_REPO = process.env.GH_REPO || "noirtech-store";
 // استخدم GH_TOKEN الذي تم تحديثه في Vercel أولًا؛ المفاتيح القديمة قد ترجع Bad credentials.
+import { countOnlineVisitors, isAutomatedVisitorRequest, shouldCountEnterToday } from "../lib/visitor-analytics.mjs";
 const GH_TOKEN = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN1 || "";
 
 async function ghGet(path) {
@@ -116,20 +117,6 @@ function pruneSessions(sessions) {
   return out;
 }
 
-function countOnline(sessions) {
-  const now = Date.now();
-  let n = 0;
-  for (const s of Object.values(sessions || {})) {
-    if (!s) continue;
-    const last = new Date(s.lastSeen || 0).getTime();
-    if (!last || Number.isNaN(last)) continue;
-    // متصل فقط لو آخر نشاط خلال 5 دقائق ولم يسجّل مغادرة
-    if (s.status === "left") continue;
-    if (now - last <= 5 * 60 * 1000) n++;
-  }
-  return n;
-}
-
 function pruneDevices(devices) {
   const now = Date.now();
   const entries = Object.entries(devices || {}).filter(([, d]) => {
@@ -169,7 +156,7 @@ export default async function handler(req, res) {
       try { if (f && f.content) data = JSON.parse(f.content); } catch (e) {}
       if (!data.stats) data.stats = emptyVisitors().stats;
       data.stats = rollDay(data.stats || emptyVisitors().stats);
-      const online = countOnline(data.sessions || {});
+      const online = countOnlineVisitors(data.sessions || {});
       return res.status(200).json({
         ok: true,
         stats: { ...data.stats, onlineNow: online },
@@ -179,6 +166,9 @@ export default async function handler(req, res) {
 
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const action = body.action || "ping";
+    if (["enter", "leave", "ping", "gift_open", "gift_bag_select"].includes(action) && isAutomatedVisitorRequest(req, body)) {
+      return res.status(200).json({ ok: true, ignored: true });
+    }
 
     if (action === "gift_open" || action === "gift_bag_select") {
       const visitorKey = String(body.deviceId || body.sessionId || "").slice(0, 100);
@@ -257,9 +247,6 @@ export default async function handler(req, res) {
       if (action === "ping" && Math.random() > 0.55) {
         return res.status(200).json({ ok: true, soft: true, skipped: true });
       }
-      if (action === "leave" && Math.random() > 0.55) {
-        return res.status(200).json({ ok: true, soft: true, skipped: true });
-      }
       const sid = String(body.sessionId || "").slice(0, 64);
       if (!sid || sid.length < 8) return res.status(400).json({ ok: false, error: "sessionId" });
       const path = String(body.path || "/").slice(0, 120);
@@ -319,26 +306,30 @@ export default async function handler(req, res) {
           prev.ipMasked = ipMasked;
         }
 
+        const entryDate = todayStr();
         if (action === "enter") {
-          if (isNew) {
-            v.stats.uniqueSessions = (v.stats.uniqueSessions || 0) + 1;
+          if (shouldCountEnterToday(prev, entryDate)) {
+            if (isNew) v.stats.uniqueSessions = (v.stats.uniqueSessions || 0) + 1;
+            prev.enters = (prev.enters || 0) + 1;
+            prev.lastEnterDate = entryDate;
+            v.stats.totalEnters = (v.stats.totalEnters || 0) + 1;
+            v.stats.todayEnters = (v.stats.todayEnters || 0) + 1;
+            v.recent.unshift({ type: "enter", sessionId: sid.slice(0, 10) + "…", path, at: now });
           }
-          // مرة واحدة لكل تحميل صفحة (العميل يمنع التكرار بجلسة)
-          prev.enters = (prev.enters || 0) + 1;
           prev.status = "online";
           prev.path = path;
           prev.lastSeen = now;
           if (isNew) prev.firstSeen = now;
-          v.stats.totalEnters = (v.stats.totalEnters || 0) + 1;
-          v.stats.todayEnters = (v.stats.todayEnters || 0) + 1;
-          v.recent.unshift({ type: "enter", sessionId: sid.slice(0, 10) + "…", path, at: now });
         } else if (action === "leave") {
+          const countLeave = prev.status !== "left" && Number(prev.enters || 0) > 0;
           prev.status = "left";
           prev.lastSeen = now;
-          prev.leaves = (prev.leaves || 0) + 1;
-          v.stats.totalLeaves = (v.stats.totalLeaves || 0) + 1;
-          v.stats.todayLeaves = (v.stats.todayLeaves || 0) + 1;
-          v.recent.unshift({ type: "leave", sessionId: sid.slice(0, 10) + "…", path, at: now });
+          if (countLeave) {
+            prev.leaves = (prev.leaves || 0) + 1;
+            v.stats.totalLeaves = (v.stats.totalLeaves || 0) + 1;
+            v.stats.todayLeaves = (v.stats.todayLeaves || 0) + 1;
+            v.recent.unshift({ type: "leave", sessionId: sid.slice(0, 10) + "…", path, at: now });
+          }
         } else {
           // ping
           prev.status = "online";
@@ -354,7 +345,7 @@ export default async function handler(req, res) {
       }, "visitors.json", "track: " + action);
 
       if (!result.ok) return res.status(200).json({ ok: true, soft: true, error: result.error || "save failed" });
-      const online = countOnline(result.data.sessions || {});
+      const online = countOnlineVisitors(result.data.sessions || {});
       return res.status(200).json({ ok: true, online });
     }
 

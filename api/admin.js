@@ -2,6 +2,7 @@
 // /api/admin — unified admin API for NEXORA (GitHub JSON CMS)
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
+import { countOnlineVisitors, isSessionOnline } from "../lib/visitor-analytics.mjs";
 const GH_TOKENS = [...new Set([
   process.env.GH_TOKEN,
   process.env.GITHUB_TOKEN1,
@@ -601,11 +602,9 @@ export default async function handler(req, res) {
       } catch (eRoll) {}
       const sessions = data.sessions || {};
       const now = Date.now();
-      let online = 0;
+      const online = countOnlineVisitors(sessions, now);
       const sessionList = Object.entries(sessions).map(([id, s]) => {
-        const last = new Date(s.lastSeen || 0).getTime();
-        const isOnline = s.status !== "left" && (now - last < 5 * 60 * 1000);
-        if (isOnline) online++;
+        const isOnline = isSessionOnline(s, now);
         return {
           id: id.slice(0, 12) + "…",
           path: s.path || "/",

@@ -3098,16 +3098,26 @@ function nxDeviceType() {
 }
 function nxTrack(action) {
   try {
+    const normalizedAction = action || "ping";
+    const isAutomated = navigator.webdriver === true;
+    if (isAutomated) return;
+    if (normalizedAction === "leave") {
+      if (window.__nxVisitorLeaveQueued) return;
+      window.__nxVisitorLeaveQueued = true;
+    } else if (normalizedAction === "ping" || normalizedAction === "enter") {
+      window.__nxVisitorLeaveQueued = false;
+    }
     const payload = JSON.stringify({
-      action: action || "ping",
+      action: normalizedAction,
+      isAutomated: isAutomated,
       sessionId: nxSessionId(),
       deviceId: nxDeviceId(),
       deviceType: nxDeviceType(),
       path: (location.pathname + (location.search || "")).slice(0, 120)
     });
-    if (action === "leave" && navigator.sendBeacon) {
+    if (normalizedAction === "leave" && navigator.sendBeacon) {
       try {
-        navigator.sendBeacon("/api/track", new Blob([payload], { type: "application/json" }));
+        if (navigator.sendBeacon("/api/track", new Blob([payload], { type: "application/json" }))) return;
       } catch (eB) {}
     }
     fetch("/api/track", {
