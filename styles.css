@@ -4552,7 +4552,7 @@ html[data-theme="light"] .order-success-icon { background: #eaf9ef; color: #1683
 /* Mobile catalogue: give product names enough width and show the full title. */
 @media (max-width: 520px) {
   #shop .products-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 10px !important;
   }
   #shop .product-name {
