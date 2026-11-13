@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3465,
-    "totalLeaves": 1217,
+    "totalLeaves": 1218,
     "uniqueSessions": 3445,
     "todayEnters": 1,
-    "todayLeaves": 9,
+    "todayLeaves": 10,
     "todayDate": "2026-11-13",
     "accountsTotal": 0,
     "uniqueDevices": 2286,
@@ -31,13 +31,13 @@
   "sessions": {
     "s_q6opdmlsvppmwegubb7": {
       "firstSeen": "2026-11-13T04:17:39.651Z",
-      "lastSeen": "2026-11-13T04:17:55.181Z",
+      "lastSeen": "2026-11-13T04:17:58.676Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 1,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 2,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.221.93.xxx",
       "lastEnterDate": "2026-11-13"
     },
@@ -4436,6 +4436,12 @@
       "type": "leave",
       "sessionId": "s_q6opdmls…",
       "path": "/",
+      "at": "2026-11-13T04:17:58.676Z"
+    },
+    {
+      "type": "leave",
+      "sessionId": "s_q6opdmls…",
+      "path": "/",
       "at": "2026-11-13T04:17:55.121Z"
     },
     {
@@ -4905,25 +4911,19 @@
       "sessionId": "s_fepie5ox…",
       "path": "/",
       "at": "2026-11-12T10:50:33.324Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_fepie5ox…",
-      "path": "/",
-      "at": "2026-11-12T10:46:27.829Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-13T04:17:58.676Z",
+      "type": "ipad",
+      "ipMasked": "156.221.93.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-13T04:17:55.181Z",
       "type": "desktop",
-      "ipMasked": "156.221.93.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-13T04:17:55.121Z",
-      "type": "ipad",
       "ipMasked": "156.221.93.xxx"
     },
     "d_m9dw3dxsgemwefo8hp": {
