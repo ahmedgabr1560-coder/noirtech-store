@@ -1,9 +1,9 @@
 {
   "stats": {
-    "totalEnters": 3470,
+    "totalEnters": 3471,
     "totalLeaves": 1223,
-    "uniqueSessions": 3450,
-    "todayEnters": 6,
+    "uniqueSessions": 3451,
+    "todayEnters": 7,
     "todayLeaves": 15,
     "todayDate": "2026-11-13",
     "accountsTotal": 0,
@@ -29,6 +29,18 @@
     }
   },
   "sessions": {
+    "s_26d20d3devvmwfea3zi": {
+      "firstSeen": "2026-11-13T19:53:43.547Z",
+      "lastSeen": "2026-11-13T19:53:43.547Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_bmby9dl4ydvmw56ggpq",
+      "deviceType": "android",
+      "ipMasked": "197.43.132.xxx",
+      "lastEnterDate": "2026-11-13"
+    },
     "s_ngw692ena7kmwfe9fv8": {
       "firstSeen": "2026-11-13T19:53:12.357Z",
       "lastSeen": "2026-11-13T19:53:12.357Z",
@@ -4423,20 +4435,15 @@
       "deviceId": "d_hu9usayobtkmvlelc6p",
       "deviceType": "desktop",
       "ipMasked": "156.221.89.xxx"
-    },
-    "s_ssyk075fgpomw9nqs1e": {
-      "firstSeen": "2026-11-09T19:32:01.433Z",
-      "lastSeen": "2026-11-09T19:33:37.259Z",
-      "path": "/",
-      "status": "left",
-      "enters": 1,
-      "leaves": 2,
-      "deviceId": "d_hu9usayobtkmvlelc6p",
-      "deviceType": "desktop",
-      "ipMasked": "156.221.89.xxx"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_26d20d3d…",
+      "path": "/",
+      "at": "2026-11-13T19:53:43.547Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_ngw692en…",
@@ -4910,18 +4917,12 @@
       "sessionId": "s_ov2j8ylg…",
       "path": "/",
       "at": "2026-11-12T11:38:48.986Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_ibo2rcnq…",
-      "path": "/",
-      "at": "2026-11-12T11:38:37.155Z"
     }
   ],
   "devices": {
     "d_bmby9dl4ydvmw56ggpq": {
       "firstSeen": "2026-11-06T16:17:01.984Z",
-      "lastSeen": "2026-11-13T19:53:12.357Z",
+      "lastSeen": "2026-11-13T19:53:43.547Z",
       "type": "android",
       "ipMasked": "197.43.132.xxx"
     },
