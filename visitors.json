@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3473,
-    "totalLeaves": 1224,
+    "totalLeaves": 1225,
     "uniqueSessions": 3453,
     "todayEnters": 2,
-    "todayLeaves": 1,
+    "todayLeaves": 2,
     "todayDate": "2026-11-14",
     "accountsTotal": 0,
     "uniqueDevices": 2288,
@@ -31,13 +31,13 @@
   "sessions": {
     "s_qkflbrvfrsmwfjs1yv": {
       "firstSeen": "2026-11-13T22:27:39.737Z",
-      "lastSeen": "2026-11-13T22:27:39.737Z",
+      "lastSeen": "2026-11-13T22:27:52.699Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
-      "deviceType": "desktop",
+      "leaves": 1,
+      "deviceId": "d_9u8vm1uag34mvgkeeg3",
+      "deviceType": "ipad",
       "ipMasked": "156.221.93.xxx",
       "lastEnterDate": "2026-11-14"
     },
@@ -4441,6 +4441,12 @@
   },
   "recent": [
     {
+      "type": "leave",
+      "sessionId": "s_qkflbrvf…",
+      "path": "/",
+      "at": "2026-11-13T22:27:52.699Z"
+    },
+    {
       "type": "enter",
       "sessionId": "s_qkflbrvf…",
       "path": "/",
@@ -4913,15 +4919,15 @@
       "sessionId": "s_fcqjrxle…",
       "path": "/",
       "at": "2026-11-12T11:51:45.571Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_vfqzruzr…",
-      "path": "/",
-      "at": "2026-11-12T11:45:29.407Z"
     }
   ],
   "devices": {
+    "d_9u8vm1uag34mvgkeeg3": {
+      "firstSeen": "2026-10-20T10:53:05.816Z",
+      "lastSeen": "2026-11-13T22:27:52.699Z",
+      "type": "ipad",
+      "ipMasked": "156.221.93.xxx"
+    },
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
       "lastSeen": "2026-11-13T22:27:39.737Z",
@@ -4945,12 +4951,6 @@
       "lastSeen": "2026-11-13T19:53:43.547Z",
       "type": "android",
       "ipMasked": "197.43.132.xxx"
-    },
-    "d_9u8vm1uag34mvgkeeg3": {
-      "firstSeen": "2026-10-20T10:53:05.816Z",
-      "lastSeen": "2026-11-13T09:49:54.433Z",
-      "type": "ipad",
-      "ipMasked": "156.221.93.xxx"
     },
     "d_m9dw3dxsgemwefo8hp": {
       "firstSeen": "2026-11-13T03:44:56.763Z",
