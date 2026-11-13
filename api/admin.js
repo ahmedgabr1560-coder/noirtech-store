@@ -2,7 +2,7 @@
 // /api/admin — unified admin API for NEXORA (GitHub JSON CMS)
 const GH_OWNER = "ahmedgabr1560-coder";
 const GH_REPO = "noirtech-store";
-import { countOnlineVisitors, isSessionOnline } from "../lib/visitor-analytics.mjs";
+import { countOnlineVisitors, isSessionOnline } from "../lib/visitor-analytics.cjs";
 const GH_TOKENS = [...new Set([
   process.env.GH_TOKEN,
   process.env.GITHUB_TOKEN1,
