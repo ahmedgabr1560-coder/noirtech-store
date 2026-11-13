@@ -1,9 +1,9 @@
 {
   "stats": {
-    "totalEnters": 3466,
+    "totalEnters": 3467,
     "totalLeaves": 1222,
-    "uniqueSessions": 3446,
-    "todayEnters": 2,
+    "uniqueSessions": 3447,
+    "todayEnters": 3,
     "todayLeaves": 14,
     "todayDate": "2026-11-13",
     "accountsTotal": 0,
@@ -29,6 +29,18 @@
     }
   },
   "sessions": {
+    "s_xmo28bbsqhmwespgh9": {
+      "firstSeen": "2026-11-13T09:49:49.071Z",
+      "lastSeen": "2026-11-13T09:49:49.071Z",
+      "path": "/",
+      "status": "online",
+      "enters": 1,
+      "leaves": 0,
+      "deviceId": "d_6ha0oi9hjw7mw4qrex6",
+      "deviceType": "desktop",
+      "ipMasked": "156.221.93.xxx",
+      "lastEnterDate": "2026-11-13"
+    },
     "s_mqamhof56jmwegv2z9": {
       "firstSeen": "2026-11-13T04:18:15.496Z",
       "lastSeen": "2026-11-13T09:42:56.420Z",
@@ -4419,20 +4431,15 @@
       "deviceId": "d_d8erhjhnuihmw9msdls",
       "deviceType": "desktop",
       "ipMasked": "13.57.148.xxx"
-    },
-    "s_67djzl9a6fpmw9ms65p": {
-      "firstSeen": "2026-11-09T19:05:06.758Z",
-      "lastSeen": "2026-11-09T19:05:19.227Z",
-      "path": "/",
-      "status": "left",
-      "enters": 0,
-      "leaves": 2,
-      "deviceId": "d_s6op6sw9r4emw9ms6bq",
-      "deviceType": "desktop",
-      "ipMasked": "54.183.149.xxx"
     }
   },
   "recent": [
+    {
+      "type": "enter",
+      "sessionId": "s_xmo28bbs…",
+      "path": "/",
+      "at": "2026-11-13T09:49:49.071Z"
+    },
     {
       "type": "leave",
       "sessionId": "s_mqamhof5…",
@@ -4906,18 +4913,12 @@
       "sessionId": "s_mhydcl2y…",
       "path": "/",
       "at": "2026-11-12T11:21:48.923Z"
-    },
-    {
-      "type": "leave",
-      "sessionId": "s_1cp5d5bb…",
-      "path": "/",
-      "at": "2026-11-12T11:21:47.524Z"
     }
   ],
   "devices": {
     "d_6ha0oi9hjw7mw4qrex6": {
       "firstSeen": "2026-11-06T08:57:38.760Z",
-      "lastSeen": "2026-11-13T09:42:56.420Z",
+      "lastSeen": "2026-11-13T09:49:49.071Z",
       "type": "desktop",
       "ipMasked": "156.221.93.xxx"
     },
