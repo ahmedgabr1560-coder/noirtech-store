@@ -1,10 +1,10 @@
 {
   "stats": {
     "totalEnters": 3489,
-    "totalLeaves": 1233,
+    "totalLeaves": 1234,
     "uniqueSessions": 3467,
     "todayEnters": 1,
-    "todayLeaves": 0,
+    "todayLeaves": 1,
     "todayDate": "2026-11-25",
     "accountsTotal": 0,
     "uniqueDevices": 2294,
@@ -31,12 +31,12 @@
   "sessions": {
     "s_o0co0gaq2agmwwg37zi": {
       "firstSeen": "2026-11-25T18:16:25.431Z",
-      "lastSeen": "2026-11-25T18:16:25.431Z",
+      "lastSeen": "2026-11-25T18:16:42.471Z",
       "path": "/",
-      "status": "online",
+      "status": "left",
       "enters": 1,
-      "leaves": 0,
-      "deviceId": "d_i7s9jkuubomw5138wj",
+      "leaves": 1,
+      "deviceId": "d_hu9usayobtkmvlelc6p",
       "deviceType": "desktop",
       "ipMasked": "156.203.133.xxx",
       "lastEnterDate": "2026-11-25"
@@ -79,6 +79,12 @@
     }
   },
   "recent": [
+    {
+      "type": "leave",
+      "sessionId": "s_o0co0gaq…",
+      "path": "/",
+      "at": "2026-11-25T18:16:42.471Z"
+    },
     {
       "type": "enter",
       "sessionId": "s_o0co0gaq…",
@@ -552,15 +558,15 @@
       "sessionId": "s_xkcp74m7…",
       "path": "/",
       "at": "2026-11-13T03:41:38.461Z"
-    },
-    {
-      "type": "enter",
-      "sessionId": "s_15lulbqq…",
-      "path": "/",
-      "at": "2026-11-13T03:41:30.379Z"
     }
   ],
   "devices": {
+    "d_hu9usayobtkmvlelc6p": {
+      "firstSeen": "2026-10-23T20:09:23.844Z",
+      "lastSeen": "2026-11-25T18:16:42.471Z",
+      "type": "desktop",
+      "ipMasked": "156.203.133.xxx"
+    },
     "d_i7s9jkuubomw5138wj": {
       "firstSeen": "2026-11-06T13:46:47.019Z",
       "lastSeen": "2026-11-25T18:16:25.431Z",
@@ -578,12 +584,6 @@
       "lastSeen": "2026-11-19T22:52:59.633Z",
       "type": "android",
       "ipMasked": "156.203.150.xxx"
-    },
-    "d_hu9usayobtkmvlelc6p": {
-      "firstSeen": "2026-10-23T20:09:23.844Z",
-      "lastSeen": "2026-11-19T13:44:26.733Z",
-      "type": "desktop",
-      "ipMasked": "156.221.95.xxx"
     },
     "d_bqfoacz4mo7mwnb9xdr": {
       "firstSeen": "2026-11-19T08:51:46.597Z",
